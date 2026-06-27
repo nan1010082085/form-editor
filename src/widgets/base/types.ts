@@ -5,7 +5,7 @@ import type { InjectionKey, ComputedRef, Ref } from 'vue'
 // ============================================================
 
 /** 容器组件类型 */
-export type ContainerType = 'form' | 'card' | 'tabs' | 'dialog' | 'single-col' | 'double-col' | 'triple-col' | 'quad-col'
+export type ContainerType = 'form' | 'card' | 'tabs' | 'dialog' | 'single-col' | 'double-col' | 'triple-col' | 'quad-col' | 'micro-app-container'
 
 /** 基础组件类型 */
 export type BasicType =
@@ -34,7 +34,6 @@ export type BasicType =
   | 'date-time-slot'
   | 'time-picker'
   | 'cascader'
-  | 'rate'
   | 'color-picker'
   | 'tag-input'
   | 'autocomplete'
@@ -50,6 +49,9 @@ export type BasicType =
   | 'funnel' | 'compare-funnel'
   | 'candlestick'
   | 'statistic'
+  | 'approval-user-picker'
+  | 'approval-role-picker'
+  | 'approval-comment'
 
 /** 所有组件类型 */
 export type SchemaType = ContainerType | BasicType
@@ -584,14 +586,23 @@ export type PartialWidget = Omit<Widget, 'id' | 'name' | 'position' | 'children'
 /** 全宽组件类型集合 — 这些组件在 grid-col 中渲染时强制占满整行 */
 export const FULL_WIDTH_TYPES = [
   'table',
+  'advanced-table',
   'upload',
   'transfer',
   'banner',
   'tree-layout',
   'file-list',
   'descriptions',
-  'bar-chart', 'line-chart', 'pie-chart', 'scatter-chart',
-  'radar', 'gauge', 'heatmap', 'funnel', 'candlestick',
+  'statistic',
+  'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
+  'line-chart', 'area-chart',
+  'pie-chart', 'donut-chart',
+  'scatter-chart', 'bubble-chart',
+  'radar', 'filled-radar',
+  'gauge', 'multi-gauge',
+  'heatmap',
+  'funnel', 'compare-funnel',
+  'candlestick',
 ] as const
 
 /**

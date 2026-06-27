@@ -60,6 +60,14 @@ import { FgQuadCol, createQuadColWidget, quadColConfig } from './quad-col'
 import { FgApprovalUserPicker, createApprovalUserPickerWidget, approvalUserPickerConfig } from './approval-user-picker'
 import { FgApprovalRolePicker, createApprovalRolePickerWidget, approvalRolePickerConfig } from './approval-role-picker'
 import { FgApprovalComment, createApprovalCommentWidget, approvalCommentConfig } from './approval-comment'
+import { FgIconPicker, createIconPickerWidget, iconPickerConfig } from './icon-picker'
+import { FgIframe, iframeConfig } from './iframe'
+import { FgMicroApp, microAppConfig } from './micro-app'
+import { FgPermissionTree, createPermissionTreeWidget, permissionTreeConfig } from './permission-tree'
+import { FgRoleManagement, createRoleManagementWidget, roleManagementConfig } from './role-management'
+import { FgTreeSelect, createTreeSelectWidget, treeSelectConfig } from './tree-select'
+import { FgUserManagement, createUserManagementWidget, userManagementConfig } from './user-management'
+import { FgUserSelector, createUserSelectorWidget, userSelectorConfig } from './user-selector'
 
 export function registerAllWidgets() {
   // Layout widgets (结构布局)
@@ -389,4 +397,47 @@ export function registerAllWidgets() {
   registerWidget({ name: funnelConfig.name, displayName: funnelConfig.displayName, type: 'funnel', group: 'chart', component: FgFunnel, create: createFunnelWidget, config: funnelConfig })
   registerWidget({ name: compareFunnelConfig.name, displayName: compareFunnelConfig.displayName, type: 'compare-funnel', group: 'chart', component: FgCompareFunnel, create: createCompareFunnelWidget, config: compareFunnelConfig })
   registerWidget({ name: candlestickConfig.name, displayName: candlestickConfig.displayName, type: 'candlestick', group: 'chart', component: FgCandlestick, create: createCandlestickWidget, config: candlestickConfig })
+
+  // Extended business widgets (扩展业务组件)
+  registerWidget({ name: iconPickerConfig.name, displayName: iconPickerConfig.displayName, type: 'icon-picker', group: 'form', component: FgIconPicker, create: createIconPickerWidget, config: iconPickerConfig })
+  registerWidget({ name: treeSelectConfig.name, displayName: treeSelectConfig.displayName, type: 'tree-select', group: 'form', component: FgTreeSelect, create: createTreeSelectWidget, config: treeSelectConfig })
+
+  registerWidget({
+    name: iframeConfig.name,
+    displayName: iframeConfig.displayName,
+    type: 'iframe',
+    group: 'business',
+    component: FgIframe,
+    create: (id: string) => ({
+      id,
+      type: 'iframe',
+      name: iframeConfig.name,
+      label: iframeConfig.displayName,
+      props: { ...iframeConfig.defaultProps },
+      position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
+    }),
+    config: iframeConfig,
+  })
+
+  registerWidget({
+    name: microAppConfig.name,
+    displayName: microAppConfig.displayName,
+    type: 'micro-app',
+    group: 'business',
+    component: FgMicroApp,
+    create: (id: string) => ({
+      id,
+      type: 'micro-app',
+      name: microAppConfig.name,
+      label: microAppConfig.displayName,
+      props: { ...microAppConfig.defaultProps },
+      position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
+    }),
+    config: microAppConfig,
+  })
+
+  registerWidget({ name: permissionTreeConfig.name, displayName: permissionTreeConfig.displayName, type: 'permission-tree', group: 'business', component: FgPermissionTree, create: createPermissionTreeWidget, config: permissionTreeConfig })
+  registerWidget({ name: roleManagementConfig.name, displayName: roleManagementConfig.displayName, type: 'role-management', group: 'business', component: FgRoleManagement, create: createRoleManagementWidget, config: roleManagementConfig })
+  registerWidget({ name: userManagementConfig.name, displayName: userManagementConfig.displayName, type: 'user-management', group: 'business', component: FgUserManagement, create: createUserManagementWidget, config: userManagementConfig })
+  registerWidget({ name: userSelectorConfig.name, displayName: userSelectorConfig.displayName, type: 'user-selector', group: 'business', component: FgUserSelector, create: createUserSelectorWidget, config: userSelectorConfig })
 }
