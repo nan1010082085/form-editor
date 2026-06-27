@@ -6,6 +6,7 @@
  */
 import { onMounted, ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useDataLoading } from '@schema-platform/platform-shared/utils/useDataLoading'
 import {
   fetchSchemas,
   fetchSubmissions,
@@ -29,7 +30,7 @@ const submissions = ref<SubmissionItem[]>([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(20)
-const loading = ref(false)
+const { loading, withLoading } = useDataLoading({ timeout: 15000 })
 
 // ── 筛选 ──
 const activeStatus = ref('')
@@ -68,8 +69,7 @@ async function loadSubmissions() {
     return
   }
 
-  loading.value = true
-  try {
+  await withLoading(async () => {
     const res: PaginatedResponse<SubmissionItem> = await fetchSubmissions(selectedSchemaId.value, {
       status: activeStatus.value || undefined,
       page: page.value,
@@ -77,11 +77,7 @@ async function loadSubmissions() {
     })
     submissions.value = res.items
     total.value = res.total
-  } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '加载提交数据失败')
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 // ── 初始化 ──

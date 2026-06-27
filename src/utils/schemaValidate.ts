@@ -6,7 +6,6 @@
  */
 import { getComponentMap } from '@/widgets/registry'
 import type { PartialWidget, SchemaType } from '@/widgets/base/types'
-import { useBasicTypes, useBusinessTypes, useLayoutTypes } from '@/composables/useConstant'
 
 /**
  * Fallback set of known schema types when the widget registry is not yet populated
@@ -20,7 +19,7 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   'button-list', 'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
   'table', 'richtext', 'upload', 'banner', 'tree-layout', 'date-time-slot', 'time-picker',
   'file-list', 'transfer', 'cascader', 'rate', 'color-picker',
-  'tag-input', 'autocomplete',
+  'tag-input', 'autocomplete', 'search-list',
 ])
 
 /** Valid SchemaType values — lazily generated from widget registry */
@@ -40,15 +39,27 @@ const CONTAINER_TYPES = new Set<string>([
   'form', 'dialog', 'tabs',
 ])
 
+/** Static sets for component category classification (avoids ComputedRef issues in non-component context) */
+const BASIC_CATEGORY_TYPES = new Set<string>([
+  'input', 'select', 'number', 'radio', 'checkbox', 'date', 'textarea', 'switch', 'slider',
+  'button-list', 'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
+  'table', 'richtext', 'banner', 'date-time-slot', 'time-picker',
+  'transfer', 'cascader', 'rate', 'color-picker', 'tag-input', 'autocomplete',
+])
+
+const BUSINESS_CATEGORY_TYPES = new Set<string>([
+  'search-list', 'tree-layout', 'upload', 'file-list',
+])
+
 /** Get the category of a component type: 'basic', 'business', or 'layout' */
 function getComponentCategory(type: string): 'basic' | 'business' | 'layout' {
-  if (useBasicTypes().has(type as SchemaType)) return 'basic'
-  if (useBusinessTypes().has(type as SchemaType)) return 'business'
+  if (BASIC_CATEGORY_TYPES.has(type)) return 'basic'
+  if (BUSINESS_CATEGORY_TYPES.has(type)) return 'business'
   return 'layout'
 }
 
 /** Types that don't require a `field` property even though they're not layout types */
-const NO_FIELD_TYPES = new Set<string>(['button', 'toolbar-buttons', 'title', 'banner', 'file-list'])
+const NO_FIELD_TYPES = new Set<string>(['button', 'toolbar-buttons', 'title', 'banner', 'file-list', 'search-list'])
 
 /** Types that typically have options (select/radio/checkbox) */
 const OPTION_TYPES = new Set<string>(['select', 'radio', 'checkbox'])
@@ -165,7 +176,7 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
       }
 
       // 2. Missing field on non-layout components
-      if (!useLayoutTypes().has(item.type as SchemaType) && !NO_FIELD_TYPES.has(item.type) && !item.field) {
+      if (!CONTAINER_TYPES.has(item.type) && !NO_FIELD_TYPES.has(item.type) && !item.field) {
         errors.push({
           path: itemPath,
           type: 'missing-field',

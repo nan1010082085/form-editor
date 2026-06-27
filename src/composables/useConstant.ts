@@ -8,6 +8,15 @@ import { computed } from 'vue'
 import type { SchemaType } from '@/components/WidgetRenderer/types'
 import { getAllWidgets, type WidgetRegistryItem } from '@/widgets/registry'
 
+/**
+ * 静态容器类型集合（用于非组件上下文，如工具函数、碰撞检测等）
+ * 当 registry 未初始化时作为 fallback。
+ */
+export const LAYOUT_CONTAINER_TYPES: ReadonlySet<SchemaType> = new Set<SchemaType>([
+  'form', 'card', 'tabs', 'dialog',
+  'single-col', 'double-col', 'triple-col', 'quad-col',
+])
+
 /** 编辑历史最大快照数 */
 export const MAX_HISTORY_SIZE = 10
 
@@ -17,6 +26,7 @@ export const ID_HASH_LENGTH = 5
 /**
  * 从 registry 动态获取容器类型集合
  * container 分组的 widget 都是容器
+ * 当 registry 为空时 fallback 到 LAYOUT_CONTAINER_TYPES
  */
 function getContainerTypesFromRegistry(): Set<SchemaType> {
   const types = new Set<SchemaType>()
@@ -24,6 +34,9 @@ function getContainerTypesFromRegistry(): Set<SchemaType> {
     if (item.group === 'container' || item.group === 'layout') {
       types.add(item.type)
     }
+  }
+  if (types.size === 0) {
+    return new Set(LAYOUT_CONTAINER_TYPES)
   }
   return types
 }
@@ -74,6 +87,19 @@ export function useLayoutTypes(): ReadonlySet<SchemaType> {
   })
 }
 
+/** 静态基础类型 fallback（registry 未初始化时） */
+const FALLBACK_BASIC_TYPES = new Set<SchemaType>([
+  'input', 'select', 'number', 'radio', 'checkbox', 'date', 'textarea', 'switch', 'slider',
+  'button-list', 'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
+  'table', 'richtext', 'upload', 'banner', 'tree-layout', 'date-time-slot', 'time-picker',
+  'file-list', 'transfer', 'cascader', 'rate', 'color-picker', 'tag-input', 'autocomplete',
+])
+
+/** 静态业务类型 fallback（registry 未初始化时） */
+const FALLBACK_BUSINESS_TYPES = new Set<SchemaType>([
+  'search-list',
+])
+
 /** 表单控件 + 操作按钮 + 静态展示 + 表格（动态） */
 export function useBasicTypes(): ReadonlySet<SchemaType> {
   return computed(() => {
@@ -82,6 +108,9 @@ export function useBasicTypes(): ReadonlySet<SchemaType> {
       if (['form', 'action', 'static', 'table'].includes(item.group)) {
         types.add(item.type)
       }
+    }
+    if (types.size === 0) {
+      return FALLBACK_BASIC_TYPES
     }
     return types
   })
@@ -95,6 +124,9 @@ export function useBusinessTypes(): ReadonlySet<SchemaType> {
       if (item.group === 'business') {
         types.add(item.type)
       }
+    }
+    if (types.size === 0) {
+      return FALLBACK_BUSINESS_TYPES
     }
     return types
   })
