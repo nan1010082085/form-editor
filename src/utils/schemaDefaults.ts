@@ -1,0 +1,132 @@
+/**
+ * schemaDefaults — Default PartialWidget factory for each component type
+ *
+ * Extracted from EditorCanvas.vue createDefaultSchema() so it can be shared
+ * between the editor store and editor canvas component.
+ */
+import type { PartialWidget, SchemaType } from '@/widgets/base/types'
+import { isFullWidthType } from '@/widgets/base/types'
+
+/**
+ * Create a default PartialWidget for a given component type.
+ *
+ * Used when dragging from the component panel onto the canvas.
+ * Returns a fully initialized schema item with sensible defaults.
+ */
+export function createDefaultSchema(type: SchemaType): PartialWidget {
+  // ---- Layout types ----
+  if (type === 'card') {
+    return { type: 'card', label: 'Card', children: [], style: { padding: '16px', borderRadius: '4px', backgroundColor: 'var(--bg-color-gray)' } }
+  }
+  if (type === 'title') {
+    return { type: 'title', label: 'Title' }
+  }
+  if (type === 'divider') {
+    return { type: 'divider' }
+  }
+  if (type === 'spacer') {
+    return { type: 'spacer' }
+  }
+  if (type === 'tabs') {
+    return {
+      type: 'tabs',
+      props: { tabs: [{ title: 'Tab 1' }] },
+      children: [{ type: 'card', children: [] }],
+      style: { backgroundColor: 'var(--bg-color-gray)' },
+    }
+  }
+  if (type === 'dialog') {
+    return {
+      type: 'dialog',
+      label: 'Dialog',
+      props: { title: 'Dialog', width: '400px' },
+      children: [],
+      style: { backgroundColor: 'var(--bg-color-gray)' },
+    }
+  }
+
+  // ---- Form components: generate a unique field name ----
+  const field = `field_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`
+  const base: PartialWidget = { type, field }
+
+  let item: PartialWidget
+
+  switch (type) {
+    case 'input':
+    case 'textarea':
+      item = { ...base, label: 'Input', props: { placeholder: 'Please enter' }, style: { height: '40px' } }
+      break
+    case 'number':
+      item = { ...base, label: 'Number', props: { placeholder: 'Please enter' }, style: { height: '40px' } }
+      break
+    case 'select':
+      item = {
+        ...base,
+        label: 'Select',
+        options: [
+          { label: 'Option A', value: 'a' },
+          { label: 'Option B', value: 'b' },
+        ],
+        style: { height: '40px' },
+      }
+      break
+    case 'radio':
+      item = {
+        ...base,
+        label: 'Radio',
+        options: [
+          { label: 'Option A', value: 'a' },
+          { label: 'Option B', value: 'b' },
+        ],
+        style: { height: '40px' },
+      }
+      break
+    case 'checkbox':
+      item = {
+        ...base,
+        label: 'Checkbox',
+        options: [
+          { label: 'Option A', value: 'a' },
+          { label: 'Option B', value: 'b' },
+        ],
+        style: { height: '40px' },
+      }
+      break
+    case 'date':
+      item = { ...base, label: 'Date', style: { height: '40px' } }
+      break
+    case 'richtext':
+      item = { ...base, label: 'Rich Text', style: { height: '120px' } }
+      break
+    case 'upload':
+      item = { ...base, label: 'Upload' }
+      break
+    case 'banner':
+      item = { type: 'banner', props: { text: '提示信息', type: 'info', closable: true } }
+      break
+    case 'tree-layout':
+      item = { type: 'tree-layout', label: '树形布局', props: { title: '树形布局', showSearch: true }, children: [] }
+      break
+    case 'date-time-slot':
+      item = { ...base, label: '日期时间区间', props: { startPlaceholder: '开始时间', endPlaceholder: '结束时间', format: 'YYYY-MM-DD HH:mm:ss', rangeSeparator: '至' } }
+      break
+    case 'file-list':
+      item = { type: 'file-list', props: { title: '附件', allowDelete: true, allowPreview: true } }
+      break
+    case 'transfer':
+      item = { type: 'transfer', props: { titles: ['待选', '已选'], filterable: true } }
+      break
+    case 'table':
+      item = { ...base, label: 'Table', props: { columnSchema: [], showActions: true } }
+      break
+    default:
+      item = { type, field }
+  }
+
+  // Full-width components get span: 24 by default
+  if (isFullWidthType(type)) {
+    item.span = 24
+  }
+
+  return item
+}

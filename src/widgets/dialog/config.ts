@@ -1,0 +1,63 @@
+import type { WidgetConfig } from '../base/types'
+import { microappDefaults, createMicroappPropertyItems } from '../base/microappConfig'
+
+export const dialogConfig: WidgetConfig = {
+  name: 'FgDialog',
+  displayName: '弹窗容器',
+  description: '弹窗容器，支持编辑模式和微应用模式，可配置标题、宽度、按钮',
+  author: 'yangdongnan',
+  defaultStyle: {},
+  defaultProps: {
+    title: '弹窗标题',
+    width: '600px',
+    confirmText: '确定',
+    cancelText: '取消',
+    destroyOnClose: true,
+    contentMode: 'edit' as const,
+    showFooter: true,
+    closeOnClickModal: false,
+    draggable: true,
+    showFullscreenBtn: true,
+  },
+  propertyPanel: {
+    basic: [
+      { key: 'title', label: '标题', type: 'input', default: '弹窗标题' },
+      { key: 'width', label: '宽度', type: 'input', default: '600px' },
+      { key: 'confirmText', label: '确认按钮文字', type: 'input', default: '确定' },
+      { key: 'cancelText', label: '取消按钮文字', type: 'input', default: '取消' },
+      { key: 'destroyOnClose', label: '关闭时销毁', type: 'switch', default: true },
+      { key: 'showFooter', label: '显示底部按钮', type: 'switch', default: true },
+      { key: 'closeOnClickModal', label: '点击遮罩关闭', type: 'switch', default: false },
+      {
+        key: 'contentMode',
+        label: '内容模式',
+        type: 'select',
+        options: [
+          { label: '编辑模式', value: 'edit' },
+          { label: '微应用模式', value: 'microapp' },
+        ],
+        default: 'edit',
+      },
+      // 子应用配置区块 — 仅微应用模式可见
+      ...createMicroappPropertyItems("props.contentMode === 'microapp'"),
+    ],
+    style: [],
+    props: [
+      { key: 'draggable', label: '可拖拽', type: 'switch', default: true },
+      { key: 'showFullscreenBtn', label: '显示全屏按钮', type: 'switch', default: true },
+    ],
+  },
+  exposedValues: [
+    { key: 'visible', type: 'boolean', description: '弹窗是否可见' },
+    { key: 'dialogData', type: 'object', description: '弹窗表单数据' },
+  ],
+  eventTargets: [
+    { id: 'confirm', label: '确认按钮', description: '点击确认时触发' },
+    { id: 'cancel', label: '取消按钮', description: '点击取消时触发' },
+  ],
+  configPanels: ['events', 'variables'],
+  receivableEvents: [
+    { name: 'open', description: '打开弹窗' },
+    { name: 'close', description: '关闭弹窗' },
+  ],
+}

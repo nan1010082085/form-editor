@@ -1,0 +1,41 @@
+@use 'datasource-dialog-tokens' as *;
+
+.body {
+  @include datasource-dialog-body;
+}
+
+.row {
+  @include datasource-row;
+}
+
+.label {
+  @include datasource-label;
+  width: 70px;
+}
+
+.section {
+  border: $datasource-card-border;
+  border-radius: $datasource-card-radius;
+  padding: $datasource-card-padding;
+  background: $datasource-card-header-bg;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.sectionTitle {
+  font-size: $datasource-label-font-size;
+  font-weight: $datasource-title-font-weight;
+  color: $datasource-label-color;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}

@@ -1,0 +1,23 @@
+:global {
+  .el-input-number {
+    width: 100%;
+  }
+
+  .el-input-number .el-input__wrapper {
+    min-height: inherit;
+    height: inherit;
+  }
+
+  // controls-right 模式：按钮撑满各一半
+  .el-input-number.is-controls-right .el-input-number__increase {
+    height: 50%;
+    top: 1px;
+    bottom: auto;
+  }
+
+  .el-input-number.is-controls-right .el-input-number__decrease {
+    height: 50%;
+    top: auto;
+    bottom: 1px;
+  }
+}

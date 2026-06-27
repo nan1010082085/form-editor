@@ -1,0 +1,68 @@
+import type { WidgetConfig } from '../base/types'
+
+export const stackedBarChartConfig: WidgetConfig = {
+  name: 'FgStackedBarChart',
+  displayName: '堆叠柱状图',
+  type: 'stacked-bar-chart',
+  description: '堆叠柱状图，用于展示各部分占总量的比例',
+  author: 'yangdongnan',
+  defaultStyle: { width: '100%', height: '400px' },
+  defaultProps: {
+    staticData: [
+      { category: '1月', value1: 120, value2: 80 },
+      { category: '2月', value1: 200, value2: 120 },
+      { category: '3月', value1: 150, value2: 100 },
+      { category: '4月', value1: 80, value2: 60 },
+      { category: '5月', value1: 170, value2: 90 },
+    ] as Record<string, unknown>[],
+    xField: 'category',
+    seriesFields: ['value1', 'value2'],
+    seriesNames: ['系列1', '系列2'],
+    xAxisName: '',
+    yAxisName: '',
+    title: '',
+    showLegend: true,
+    legendPosition: 'bottom',
+    showTooltip: true,
+    showLabel: false,
+    colorScheme: 'default',
+    customColors: ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de'] as string[],
+    animation: true,
+    rawOption: null as Record<string, unknown> | null,
+  },
+  exposedValues: [
+    { key: 'loading', type: 'boolean', description: '加载状态' },
+    { key: 'chartData', type: 'array', description: '图表数据' },
+  ],
+  configPanels: ['api', 'variables'],
+  receivableEvents: [
+    { name: 'refresh', description: '重新加载数据' },
+    { name: 'set-data', description: '设置图表数据', params: { data: '数据数组' } },
+  ],
+  propertyPanel: {
+    basic: ['label'],
+    style: ['margin', 'padding', 'backgroundColor', 'borderRadius'],
+    props: [
+      { key: 'staticData', label: '静态数据', type: 'array-editor', fields: [
+        { key: 'category', label: '分类', type: 'text' },
+        { key: 'value1', label: '系列1', type: 'number' },
+        { key: 'value2', label: '系列2', type: 'number' },
+      ]},
+      { key: 'xField', label: 'X 轴字段', type: 'text', placeholder: '如: category' },
+      { key: 'seriesFields', label: '系列字段 (JSON)', type: 'json', placeholder: '["value1", "value2"]' },
+      { key: 'seriesNames', label: '系列名称 (JSON)', type: 'json', placeholder: '["系列1", "系列2"]' },
+      { key: 'title', label: '图表标题', type: 'text' },
+      { key: 'showLegend', label: '显示图例', type: 'switch', default: true },
+      { key: 'showTooltip', label: '显示提示', type: 'switch', default: true },
+      { key: 'showLabel', label: '显示标签', type: 'switch', default: false },
+      { key: 'animation', label: '动画', type: 'switch', default: true },
+      { key: 'colorScheme', label: '颜色主题', type: 'select', options: [
+        { label: '默认', value: 'default' },
+        { label: '暗色', value: 'dark' },
+        { label: '浅色', value: 'light' },
+      ]},
+      { key: 'customColors', label: '自定义颜色', type: 'color-array' },
+      { key: 'rawOption', label: '高级配置 (JSON)', type: 'json' },
+    ],
+  },
+}

@@ -1,0 +1,40 @@
+/* ---- Edit mode dialog shell ---- */
+.dialogShell {
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--border-color-light);
+  border-radius: 4px;
+  background: var(--bg-color-white);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dialogHeader {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color-light);
+  background: var(--bg-color-gray);
+}
+
+.dialogTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color-title);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.microappContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.microappIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}

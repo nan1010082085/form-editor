@@ -1,0 +1,71 @@
+// ============================================================
+// FormGrid 组件特定样式覆盖
+// 此文件仅保留 FormGrid 布局相关的组件样式
+// ============================================================
+@use './variables' as *;
+
+// ---- fg 容器内默认高度 ----
+.fg {
+  .el-input {
+    min-height: 44px;
+  }
+
+  .el-select {
+    min-height: 44px;
+  }
+
+  .el-input-number {
+    min-height: 44px;
+  }
+
+  .el-form-item__label {
+    line-height: 44px;
+    color: var(--text-color-secondary);
+  }
+}
+
+// ---- fg-cell-content 内组件高度自适应 ----
+.fg-cell-content {
+  .el-input {
+    height: 100%;
+  }
+
+  .el-date-editor {
+    height: 100%;
+  }
+
+  .el-textarea {
+    height: 100%;
+  }
+
+  .el-input-number {
+    height: 100%;
+  }
+}
+
+// ---- Dialog 弹窗（FormGrid 内嵌弹窗额外样式） ----
+.fg-dialog {
+  .el-dialog {
+    border-radius: $border-radius-md;
+  }
+}
+
+// ---- Table 表格 ----
+.fg-table {
+  .cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// ---- Pagination 分页 ----
+.fg-pagination {
+  margin-top: 24px;
+}
+
+// ---- Tag 标签 ----
+.fg-tag--info    { color: $color-primary; border-color: $color-primary; }
+.fg-tag--warning { color: $color-warning; border-color: $color-warning; }
+.fg-tag--danger  { color: $color-danger; border-color: $color-danger; }
+.fg-tag--success { color: $color-success; border-color: $color-success; }

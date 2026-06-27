@@ -1,0 +1,36 @@
+@use 'datasource-dialog-tokens' as *;
+
+.body {
+  @include datasource-dialog-body;
+}
+
+.empty {
+  @include datasource-empty;
+}
+
+.card {
+  @include datasource-card;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $datasource-card-header-margin-bottom;
+}
+
+.cardTitle {
+  @include datasource-card-title;
+}
+
+.row {
+  @include datasource-row;
+}
+
+.label {
+  @include datasource-label;
+}
+
+.error {
+  @include datasource-error;
+}

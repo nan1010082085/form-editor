@@ -1,0 +1,300 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: var(--glass-bg, rgba(17, 24, 32, 0.8));
+  backdrop-filter: var(--glass-blur, blur(20px));
+  -webkit-backdrop-filter: var(--glass-blur, blur(20px));
+
+  /* 属性面板内所有输入组件统一高度 32px */
+  /* 注意：CSS Module 中必须对每个 Element Plus 类名单独用 :global()，
+     嵌套的选择器会被 CSS Modules 哈希化导致不生效 */
+  :global(.el-input--small) {
+    --el-component-size-small: 32px;
+
+    :global(.el-input__wrapper) {
+      height: 32px;
+      min-height: 32px;
+    }
+
+    :global(.el-input__inner) {
+      height: 32px;
+    }
+  }
+
+  // 默认尺寸组件样式已移至 variables.scss 全局生效
+
+  :global(.el-input-number--small) {
+    --el-component-size-small: 32px;
+    height: 32px;
+
+    :global(.el-input__wrapper) {
+      height: 32px;
+      min-height: 32px;
+    }
+
+    :global(.el-input__inner) {
+      height: 32px;
+      line-height: 32px;
+    }
+  }
+
+  // 默认尺寸 input-number 统一 32px
+  :global(.el-input-number) {
+    --el-component-size: 32px;
+    height: 32px;
+
+    :global(.el-input__wrapper) {
+      height: 32px;
+      min-height: 32px;
+    }
+
+    :global(.el-input__inner) {
+      height: 32px;
+      line-height: 32px;
+    }
+  }
+
+  // controls-right 模式：按钮撑满各一半（覆盖 EP 默认固定高度，保留原有边框）
+  :global(.el-input-number.is-controls-right .el-input-number__increase) {
+    height: 50% !important;
+    top: 1px;
+    bottom: auto;
+    border-bottom: var(--el-border);
+    border-left: var(--el-border);
+  }
+
+  :global(.el-input-number.is-controls-right .el-input-number__decrease) {
+    height: 50% !important;
+    top: auto;
+    bottom: 1px;
+    border-left: var(--el-border);
+  }
+}
+
+.field {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  min-height: 32px;
+}
+
+.label {
+  width: 70px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-color-regular);
+  line-height: 32px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.control {
+  flex: 1;
+  min-width: 0;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.header {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-primary-lighter);
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-color-disabled);
+  font-size: 13px;
+}
+
+.widgetNameRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-primary-lighter);
+  flex-shrink: 0;
+}
+
+.widgetType {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-color-primary);
+}
+
+.questionIcon {
+  color: var(--text-color-placeholder);
+  cursor: help;
+  font-size: 14px;
+}
+
+.questionIcon:hover {
+  color: var(--color-primary);
+}
+
+.copyIdIcon {
+  color: var(--text-color-placeholder);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.copyIdIcon:hover {
+  color: var(--color-primary);
+}
+
+.scroll {
+  flex: 1;
+  height: 0;
+}
+
+.section {
+  border-bottom: 1px solid var(--color-primary-lighter);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.sectionHeader:hover {
+  background: var(--color-primary-lighter);
+}
+
+.arrow {
+  color: var(--text-color-placeholder);
+  flex-shrink: 0;
+}
+
+.sectionLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+  flex: 1;
+}
+
+.sectionCount {
+  font-size: 11px;
+  color: var(--text-color-placeholder);
+  background: var(--color-primary-lighter);
+  border-radius: 8px;
+  padding: 0 6px;
+  line-height: 18px;
+}
+
+.sectionBody {
+  padding: 8px 16px;
+  background: var(--bg-color-gray);
+  border-top: 1px solid var(--color-primary-lighter);
+  overflow: hidden;
+}
+
+.variableBtn {
+  margin-top: 8px;
+}
+
+.columnsSection {
+  margin-bottom: 8px;
+}
+
+.columnsLabel {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.configActions {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-primary-lighter);
+  flex-shrink: 0;
+}
+
+.configButtons {
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  margin-left: 4px;
+  font-size: 11px;
+  line-height: 1;
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: 8px;
+  box-shadow: 0 0 6px var(--color-primary-light);
+}
+
+.helpIconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.helpIconWrap:hover {
+  background-color: var(--color-primary-lighter);
+}
+
+.helpIcon {
+  font-size: 14px;
+  color: var(--text-color-placeholder);
+  transition: color 0.15s;
+}
+
+.helpIconWrap:hover .helpIcon {
+  color: var(--color-primary);
+}
+
+.helpContent {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text-color-regular);
+}
+
+.helpContent p {
+  margin: 0 0 6px;
+}
+
+.helpContent strong {
+  color: var(--text-color-primary);
+}
+
+.helpContent ul {
+  margin: 2px 0 8px;
+  padding-left: 16px;
+}
+
+.helpContent li {
+  margin-bottom: 2px;
+}
