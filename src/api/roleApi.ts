@@ -83,7 +83,17 @@ export function deleteRole(id: string): Promise<{ success: boolean; data: null }
   return apiClient.delete(`/api/roles/${encodeURIComponent(id)}`)
 }
 
+/** 权限列表分页响应 */
+export interface PermissionListResponse {
+  items: PermissionItem[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 /** 获取可用权限列表 */
-export function fetchPermissions(): Promise<{ success: boolean; data: PermissionItem[] }> {
-  return apiClient.get('/api/roles/permissions')
+export async function fetchPermissions(): Promise<{ success: boolean; data: PermissionItem[] }> {
+  const response = await apiClient.get<{ success: boolean; data: PermissionListResponse }>('/api/roles/permissions')
+  return { success: response.success, data: response.data.items }
 }

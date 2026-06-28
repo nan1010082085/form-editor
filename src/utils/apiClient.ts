@@ -643,7 +643,8 @@ export interface ApprovalLogItem {
 }
 
 export async function fetchApprovalLogs(instanceId: string): Promise<ApprovalLogItem[]> {
-  return apiClient.get<ApprovalLogItem[]>('/flow-approvals', { instanceId })
+  const response = await apiClient.get<{ items: ApprovalLogItem[]; total: number; page: number; pageSize: number; totalPages: number }>('/flow-approvals', { instanceId })
+  return response.items
 }
 
 // ---- 流程定义版本（含图数据）----

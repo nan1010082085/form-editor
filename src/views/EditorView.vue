@@ -194,7 +194,7 @@ onMounted(async () => {
   editorStore.setMode('edit')
 
   // Socket: 监听 AI 推送事件
-  connectSocket()
+  connectSocket({ path: import.meta.env.PROD ? '/schema-platform/ws' : '/ws' })
   onAiApply(async (data: AiApplyEvent) => {
     if (data.type === 'schema' && Array.isArray(data.payload)) {
       const { widgets } = parseSchemaJson(data.payload)
