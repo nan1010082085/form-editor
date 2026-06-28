@@ -328,7 +328,7 @@ export async function fetchSchemaById(id: string): Promise<SchemaDetail> {
 export async function publishSchema(id: string, version?: string): Promise<PublishedSchemaItem> {
   if (apiClient.isMockEnabled()) {
     const { mockPublishSchema } = await import('./mockApi')
-    return mockPublishSchema(id)
+    return mockPublishSchema(id, version)
   }
   return apiClient.post<PublishedSchemaItem>(
     `/schemas/${encodeURIComponent(id)}/publish`,
@@ -338,8 +338,8 @@ export async function publishSchema(id: string, version?: string): Promise<Publi
 
 export async function fetchPublishedByPublishId(publishId: string): Promise<PublishedSchemaItem | null> {
   if (apiClient.isMockEnabled()) {
-    const { mockFetchPublishedSchema } = await import('./mockApi')
-    return mockFetchPublishedSchema(publishId)
+    const { mockFetchPublishedByPublishId } = await import('./mockApi')
+    return mockFetchPublishedByPublishId(publishId)
   }
   try {
     return await apiClient.get<PublishedSchemaItem>(
@@ -415,6 +415,10 @@ export interface VersionListResponse {
 }
 
 export async function fetchVersions(editId: string, page?: number, pageSize?: number): Promise<VersionListResponse> {
+  if (apiClient.isMockEnabled()) {
+    const { mockFetchVersions } = await import('./mockApi')
+    return mockFetchVersions(editId, page, pageSize)
+  }
   const params = new URLSearchParams()
   if (page) params.set('page', String(page))
   if (pageSize) params.set('pageSize', String(pageSize))
@@ -425,12 +429,20 @@ export async function fetchVersions(editId: string, page?: number, pageSize?: nu
 }
 
 export async function fetchVersion(editId: string, version: string): Promise<SchemaDetail> {
+  if (apiClient.isMockEnabled()) {
+    const { mockFetchVersion } = await import('./mockApi')
+    return mockFetchVersion(editId, version)
+  }
   return apiClient.get<SchemaDetail>(
     `/schemas/${encodeURIComponent(editId)}/versions/${encodeURIComponent(version)}`,
   )
 }
 
 export async function deleteVersion(editId: string, version: string): Promise<null> {
+  if (apiClient.isMockEnabled()) {
+    const { mockDeleteVersion } = await import('./mockApi')
+    return mockDeleteVersion(editId, version)
+  }
   return apiClient.delete<null>(
     `/schemas/${encodeURIComponent(editId)}/versions/${encodeURIComponent(version)}`,
   )

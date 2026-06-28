@@ -5,9 +5,7 @@ export const tabsConfig: WidgetConfig = {
   description: '页签容器，支持动态增删标签页，组件绑定到指定标签',
   author: 'yangdongnan',
   defaultPosition: { w: 100, wUnit: '%', h: 200 },
-  defaultStyle: {
-    width: '100%',
-  },
+  defaultStyle: {},
   exposedValues: [
     { key: 'activeKey', type: 'string', description: '当前激活标签' },
   ],

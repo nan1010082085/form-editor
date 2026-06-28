@@ -7,7 +7,7 @@ export function createCardWidget(id: string): Widget {
     ...publicSchema(id, 'card'),
     name: cardConfig.name,
     label: cardConfig.displayName,
-    position: { x: 0, y: 0, w: 600, h: 600, zIndex: 1 },
+    position: { x: 0, y: 0, w: 100, wUnit: '%', h: 600, zIndex: 1 },
     style: { ...cardConfig.defaultStyle },
     props: { ...cardConfig.defaultProps },
     children: [],

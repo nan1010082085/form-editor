@@ -375,11 +375,13 @@ async function confirmEdit() {
 
 // ---- Version History ----
 const versionDialogVisible = ref(false)
+const versionDialogId = ref<string | null>(null)
 const versionDialogEditId = ref<string | null>(null)
 const versionDialogVersion = ref<string | undefined>(undefined)
 const versionDialogName = ref<string | undefined>(undefined)
 
 function handleShowVersions(item: SchemaListItem) {
+  versionDialogId.value = item.id
   versionDialogEditId.value = item.editId
   versionDialogVersion.value = item.version
   versionDialogName.value = item.name
@@ -422,7 +424,9 @@ function handleVersionPublished() {
         <div :class="styles['fg-instances__toolbar']">
           <FilterTabs v-model="activeTab" :options="filterTabs" />
           <div :class="styles['fg-instances__toolbar-right']">
-            <el-input v-model="searchInput" placeholder="搜索名称..." clearable :class="styles['fg-instances__search']" :prefix-icon="Search" @input="handleSearch" @clear="handleSearch('')" />
+            <el-input v-model="searchInput" placeholder="搜索名称..." clearable :class="styles['fg-instances__search']" @input="handleSearch" @clear="handleSearch('')">
+              <template #prefix><AppIcon name="search" :size="14" /></template>
+            </el-input>
             <el-dropdown @command="(cmd: string) => sortBy = cmd as any">
               <el-button size="small">
                 <AppIcon name="sort" class="el-icon--left" />
@@ -590,6 +594,7 @@ function handleVersionPublished() {
     <!-- Version History Dialog -->
     <VersionHistoryDialog
       v-model:visible="versionDialogVisible"
+      :id="versionDialogId"
       :edit-id="versionDialogEditId"
       :current-version="versionDialogVersion"
       :schema-name="versionDialogName"

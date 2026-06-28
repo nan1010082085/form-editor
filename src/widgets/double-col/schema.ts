@@ -7,7 +7,7 @@ export function createDoubleColWidget(id: string): Widget {
     ...publicSchema(id, 'double-col'),
     name: doubleColConfig.name,
     label: doubleColConfig.displayName,
-    position: { x: 0, y: 0, w: 600, h: 60, zIndex: 1 },
+    position: { x: 0, y: 0, w: 100, wUnit: '%', h: 60, zIndex: 1 },
     style: { ...doubleColConfig.defaultStyle },
     props: { ...doubleColConfig.defaultProps },
     children: [],

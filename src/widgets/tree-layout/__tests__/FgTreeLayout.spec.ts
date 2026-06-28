@@ -120,10 +120,12 @@ describe('FgTreeLayout', () => {
 
   // Style
   describe('样式', () => {
-    it('默认高度 400px', () => {
+    it('默认宽度 100%', () => {
       const widget = createWidget('tree-layout', 'test_widget')!
       store.addWidget(widget)
-      expect(store.findWidget('test_widget')!.style!.height).toBe('400px')
+      const w = store.findWidget('test_widget')!
+      expect(w.position.w).toBe(100)
+      expect(w.position.wUnit).toBe('%')
     })
   })
 

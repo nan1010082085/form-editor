@@ -24,6 +24,7 @@ import { triggerWidgetEvent } from '../../engine'
 import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY } from '../WidgetRenderer/types'
 import { useLinkage } from '../../composables/useLinkage'
 import styles from './EditorCanvas.module.scss'
+import rendererStyles from '../WidgetRenderer/style.module.scss'
 
 const emit = defineEmits<{
   openEvent: [widget: Widget]
@@ -212,7 +213,7 @@ provide(FORM_GRID_LINKAGE_KEY, linkageStateMap)
 </script>
 
 <template>
-  <div ref="canvasRef" :class="[styles.canvas, { [styles.canvasGrid]: !isPreview }]" :style="canvasStyle">
+  <div ref="canvasRef" :class="[styles.canvas, rendererStyles.fg, { [styles.canvasGrid]: !isPreview }]" :style="canvasStyle">
     <!-- 预览模式：纯净渲染，无编辑交互层 -->
     <SchemaRender v-if="isPreview" :widgets="widgetStore.widgets" />
     <!-- 编辑模式：带选中、拖拽、缩放的交互层 -->

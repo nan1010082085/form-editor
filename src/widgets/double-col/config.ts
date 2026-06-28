@@ -6,10 +6,7 @@ export const doubleColConfig: WidgetConfig = {
   description: '双列布局容器，每列可放置 1 个组件',
   author: 'yangdongnan',
   defaultPosition: { w: 100, wUnit: '%', h: 200 },
-  defaultStyle: {
-    width: '100%',
-    height: '60px',
-  },
+  defaultStyle: {},
   configPanels: ['events', 'variables'],
   defaultProps: {
     gutter: 16,

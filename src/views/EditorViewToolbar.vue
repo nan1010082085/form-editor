@@ -7,13 +7,13 @@
  */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import { useBoardStore, MIN_ZOOM, MAX_ZOOM } from '@/stores/board'
 import { useEditorStore } from '@/stores/editor'
 import { useWidgetStore } from '@/stores/widget'
 import { useSchemaValidation } from '@/composables/useSchemaValidation'
-import { fetchVersions, fetchVersion } from '@/api/schemaApi'
+import { fetchVersions, fetchVersion, deleteVersion } from '@/api/schemaApi'
 import { parseSchemaJson } from '@/utils/parseSchemaJson'
 import type { VersionEntry } from '@/types/api'
 import styles from './EditorView.module.scss'
@@ -133,6 +133,29 @@ async function handleLoadVersion(entry: VersionEntry) {
     ElMessage.success(`已加载版本 ${formatVersion(entry.version)}`)
   } catch {
     ElMessage.error('加载版本失败')
+  }
+}
+
+const deletingVersion = ref<string | null>(null)
+
+async function handleDeleteVersion(entry: VersionEntry) {
+  if (!props.currentEditId) return
+  try {
+    await ElMessageBox.confirm(
+      `确认删除版本 ${formatVersion(entry.version)}？删除后不可恢复。`,
+      '删除确认',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
+    )
+  } catch { return }
+  deletingVersion.value = entry.version
+  try {
+    await deleteVersion(props.currentEditId, entry.version)
+    ElMessage.success('已删除')
+    loadVersionList(versionPage.value)
+  } catch {
+    ElMessage.error('删除失败')
+  } finally {
+    deletingVersion.value = null
   }
 }
 
@@ -350,13 +373,23 @@ function handleClearCanvas() {
                     <el-tag v-if="entry.version === currentVersion" size="small">当前</el-tag>
                   </div>
                 </div>
-                <el-button
-                  v-if="entry.version !== currentVersion"
-                  size="small"
-                  text
-                  type="primary"
-                  @click="handleLoadVersion(entry)"
-                >加载</el-button>
+                <div :class="styles.versionActions">
+                  <el-button
+                    v-if="entry.version !== currentVersion"
+                    size="small"
+                    text
+                    type="primary"
+                    @click="handleLoadVersion(entry)"
+                  >加载</el-button>
+                  <el-button
+                    v-if="entry.version !== currentVersion"
+                    size="small"
+                    text
+                    type="danger"
+                    :loading="deletingVersion === entry.version"
+                    @click="handleDeleteVersion(entry)"
+                  >删除</el-button>
+                </div>
               </div>
             </div>
             <div v-if="versionTotal > versionPageSize" :class="styles.versionPagination">

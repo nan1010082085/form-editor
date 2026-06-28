@@ -5,8 +5,8 @@
  * 展示 Schema 的历史版本列表，标记发布版本，支持加载和发布特定版本。
  */
 import { ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { fetchVersions, publishSchema } from '@/utils/apiClient'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { fetchVersions, publishSchema, deleteVersion } from '@/utils/apiClient'
 import type { VersionEntry } from '@/types/api'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
@@ -14,6 +14,9 @@ import styles from './VersionHistoryDialog.module.scss'
 
 const props = defineProps<{
   visible: boolean
+  /** Schema 的 MongoDB ObjectId（用于 publish/delete 等写操作） */
+  id: string | null
+  /** Schema 的 editId（用于版本查询等读操作） */
   editId: string | null
   currentVersion?: string
   schemaName?: string
@@ -28,6 +31,7 @@ const emit = defineEmits<{
 const versions = ref<VersionEntry[]>([])
 const loading = ref(false)
 const publishingVersion = ref<string | null>(null)
+const deletingVersion = ref<string | null>(null)
 const currentPage = ref(1)
 const pageSize = 10
 const total = ref(0)
@@ -61,10 +65,10 @@ function handleLoadVersion(version: string) {
 }
 
 async function handlePublishVersion(version: string) {
-  if (!props.editId) return
+  if (!props.id) return
   publishingVersion.value = version
   try {
-    const result = await publishSchema(props.editId, version)
+    const result = await publishSchema(props.id, version)
     if (result) {
       ElMessage.success(`版本 ${version} 发布成功`)
       emit('published')
@@ -76,6 +80,29 @@ async function handlePublishVersion(version: string) {
     ElMessage.error('发布失败')
   } finally {
     publishingVersion.value = null
+  }
+}
+
+async function handleDeleteVersion(version: string) {
+  if (!props.id) return
+  try {
+    await ElMessageBox.confirm(
+      `确认删除版本 ${formatVersion(version)}？删除后不可恢复。`,
+      '删除确认',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
+    )
+  } catch {
+    return
+  }
+  deletingVersion.value = version
+  try {
+    await deleteVersion(props.id, version)
+    ElMessage.success('已删除')
+    loadVersions(currentPage.value)
+  } catch {
+    ElMessage.error('删除失败')
+  } finally {
+    deletingVersion.value = null
   }
 }
 
@@ -142,7 +169,7 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="200" align="center" fixed="right">
           <template #default="{ row }">
             <el-button
               v-if="row.version !== currentVersion"
@@ -162,6 +189,16 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
               @click="handlePublishVersion(row.version)"
             >
               发布
+            </el-button>
+            <el-button
+              v-if="row.version !== currentVersion"
+              type="danger"
+              link
+              size="small"
+              :loading="deletingVersion === row.version"
+              @click="handleDeleteVersion(row.version)"
+            >
+              删除
             </el-button>
           </template>
         </el-table-column>

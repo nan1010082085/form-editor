@@ -34,6 +34,7 @@ const formRef = ref<InstanceType<typeof WidgetRenderer>>()
 const appStore = useAppStore()
 
 const schema = ref<PartialWidget[]>([])
+const canvasConfig = ref<{ width?: number; height?: number; backgroundColor?: string; padding?: string; zoom?: number }>({})
 const loading = ref(true)
 const error = ref('')
 const schemaName = ref('')
@@ -65,7 +66,14 @@ async function loadSchema(id: string) {
       error.value = `未找到 ID 为 "${id}" 的已发布 Schema`
       return
     }
-    schema.value = publishedSchema.json
+    // json 可能是 Widget[] 或 { widgets: Widget[], board: {...} }
+    const raw = publishedSchema.json
+    if (Array.isArray(raw)) {
+      schema.value = raw
+    } else {
+      schema.value = raw?.widgets ?? []
+      canvasConfig.value = raw?.board?.canvas ?? {}
+    }
     schemaName.value = publishedSchema.name
   } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : `加载 Schema 失败`
@@ -167,6 +175,7 @@ onUnmounted(() => window.removeEventListener('message', handleMessage))
       ref="formRef"
       :schema="schema"
       layout="absolute"
+      :canvas-config="canvasConfig"
       :user="context.user"
       :request="context.request"
       :global="context.global"

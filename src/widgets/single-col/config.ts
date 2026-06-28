@@ -6,10 +6,7 @@ export const singleColConfig: WidgetConfig = {
   description: '单列布局容器，内部可放置 1 个组件',
   author: 'yangdongnan',
   defaultPosition: { w: 100, wUnit: '%', h: 200 },
-  defaultStyle: {
-    width: '100%',
-    height: '60px',
-  },
+  defaultStyle: {},
   configPanels: ['events', 'variables'],
   defaultProps: {
     gutter: 16,

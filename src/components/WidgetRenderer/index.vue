@@ -65,18 +65,18 @@ const props = defineProps<FormGridProps & {
 
 const isAbsoluteLayout = computed(() => props.layout === 'absolute')
 
-/** 绝对定位模式下，计算所有 widget 的包围盒，确保容器能容纳 */
+/** 绝对定位模式下，计算容器样式（画布尺寸 + 背景 + 包围盒） */
 const absoluteContainerStyle = computed(() => {
   if (!isAbsoluteLayout.value) return undefined
-  const canvasWidth = 1920 // 默认画布宽度
-  const canvasHeight = 1080 // 默认画布高度
+  const cc = props.canvasConfig
+  const canvasWidth = cc?.width ?? 1920
+  const canvasHeight = cc?.height ?? 1080
   let maxRight = 0
   let maxBottom = 0
   function walk(items: PartialWidget[]) {
     for (const item of items) {
       const pos = item.position
       if (pos) {
-        // 处理百分比宽高
         const wUnit = pos.wUnit ?? 'px'
         const hUnit = pos.hUnit ?? 'px'
         const w = wUnit === '%' ? (canvasWidth * pos.w / 100) : (pos.w ?? 0)
@@ -88,7 +88,16 @@ const absoluteContainerStyle = computed(() => {
     }
   }
   walk(props.schema)
-  return { position: 'relative' as const, minHeight: `${maxBottom}px`, minWidth: `${maxRight}px` }
+
+  const style: Record<string, string | number> = {
+    position: 'relative',
+    width: `${canvasWidth}px`,
+    minHeight: `${Math.max(maxBottom, canvasHeight)}px`,
+  }
+  if (cc?.backgroundColor) style.backgroundColor = cc.backgroundColor
+  if (cc?.padding) style.padding = cc.padding
+  if (cc?.zoom && cc.zoom !== 100) style.transform = `scale(${cc.zoom / 100})`
+  return style
 })
 
 const emit = defineEmits<{
@@ -183,6 +192,7 @@ const runtimeVariables = ref<Record<string, unknown>>({})
 const variablesContext = computed(() => {
   const vars: Record<string, unknown> = { ...(props.boardVariables ?? {}) }
   function collect(items: PartialWidget[]) {
+    if (!Array.isArray(items)) return
     for (const item of items) {
       if (item.variables?.length) {
         for (const v of item.variables) {

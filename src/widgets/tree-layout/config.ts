@@ -6,7 +6,7 @@ export const treeLayoutConfig: WidgetConfig = {
   description: '树形布局容器，支持树形结构展示和搜索',
   author: 'yangdongnan',
   defaultPosition: { w: 100, wUnit: '%', h: 200 },
-  defaultStyle: { width: '100%', height: '400px' },
+  defaultStyle: {},
   configPanels: ['events', 'api', 'variables'],
   defaultProps: {
     title: '树形布局',

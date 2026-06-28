@@ -7,7 +7,7 @@ export function createQuadColWidget(id: string): Widget {
     ...publicSchema(id, 'quad-col'),
     name: quadColConfig.name,
     label: quadColConfig.displayName,
-    position: { x: 0, y: 0, w: 600, h: 60, zIndex: 1 },
+    position: { x: 0, y: 0, w: 100, wUnit: '%', h: 60, zIndex: 1 },
     style: { ...quadColConfig.defaultStyle },
     props: { ...quadColConfig.defaultProps },
     children: [],

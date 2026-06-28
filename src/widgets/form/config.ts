@@ -6,7 +6,6 @@ export const formConfig: WidgetConfig = {
   author: 'yangdongnan',
   defaultPosition: { w: 100, wUnit: '%', h: 200 },
   defaultStyle: {
-    width: '100%',
     padding: '16px',
   },
   defaultProps: {

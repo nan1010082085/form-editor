@@ -4,7 +4,6 @@ import { ref, computed } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import ElementPlus from 'element-plus'
-import FgSearchList from '@/widgets/search-list/FgSearchList.vue'
 import { widgetDataKey } from '@/widgets/base/types'
 import type { Widget } from '@/widgets/base/types'
 import SearchFieldsEditor from '@/components/Editor/SearchFieldsEditor.vue'
@@ -103,7 +102,7 @@ describe('SearchFieldsEditor → schema output', () => {
       props: { searchFields: [] },
     })
 
-    await wrapper.find('.t-button').trigger('click')
+    await wrapper.find('button').trigger('click')
 
     const fields = wrapper.emitted<SearchFieldSchema[][]>('update:searchFields')![0][0]
     expect(fields).toHaveLength(1)
@@ -128,7 +127,7 @@ describe('ColumnsEditor → schema output', () => {
       props: { columns: [] },
     })
 
-    await wrapper.find('.t-button').trigger('click')
+    await wrapper.find('button').trigger('click')
 
     const cols = wrapper.emitted<SearchListColumnSchema[][]>('update:columns')![0][0]
     expect(cols).toHaveLength(1)
@@ -161,7 +160,7 @@ describe('RowActionsEditor → schema output', () => {
       props: { rowActions: [] },
     })
 
-    await wrapper.find('.t-button').trigger('click')
+    await wrapper.find('button').trigger('click')
 
     const actions = wrapper.emitted<SearchListRowAction[][]>('update:rowActions')![0][0]
     expect(actions).toHaveLength(1)
@@ -185,60 +184,6 @@ describe('RowActionsEditor → schema output', () => {
       if (action.type === 'navigate') expect(action).toHaveProperty('navigatePath')
       if (action.type === 'dialog') expect(action).toHaveProperty('dialogTitle')
     }
-  })
-})
-
-// ---- Renderer Tests with Widget FgSearchList ----
-
-/** Helper: create a mock Widget for search-list */
-function makeSearchListWidget(overrides: Partial<Widget> = {}): Widget {
-  return {
-    id: 'search-list_abc12',
-    name: 'FgSearchList',
-    type: 'search-list',
-    position: { x: 0, y: 0, w: 12, h: 8 },
-    props: {
-      title: 'Test List',
-    },
-    ...overrides,
-  }
-}
-
-describe('FgSearchList widget renders', () => {
-  it('renders title from widgetData', () => {
-    const widget = makeSearchListWidget({ props: { title: 'User List' } })
-    const wrapper = mountWithEl(FgSearchList, {
-      global: {
-        provide: { [widgetDataKey as symbol]: computed(() => widget) },
-        stubs: tableStubs,
-      },
-    })
-
-    expect(wrapper.text()).toContain('User List')
-  })
-
-  it('renders default title when not specified', () => {
-    const widget = makeSearchListWidget({ props: {} })
-    const wrapper = mountWithEl(FgSearchList, {
-      global: {
-        provide: { [widgetDataKey as symbol]: computed(() => widget) },
-        stubs: tableStubs,
-      },
-    })
-
-    expect(wrapper.text()).toContain('列表')
-  })
-
-  it('renders without error', () => {
-    const widget = makeSearchListWidget()
-    const wrapper = mountWithEl(FgSearchList, {
-      global: {
-        provide: { [widgetDataKey as symbol]: computed(() => widget) },
-        stubs: tableStubs,
-      },
-    })
-
-    expect(wrapper.exists()).toBe(true)
   })
 })
 

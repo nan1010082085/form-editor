@@ -7,7 +7,7 @@ export function createTreeLayoutWidget(id: string): Widget {
     ...publicSchema(id, 'tree-layout'),
     name: treeLayoutConfig.name,
     label: treeLayoutConfig.displayName,
-    position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
+    position: { x: 0, y: 0, w: 100, h: 200, wUnit: '%', zIndex: 1 },
     style: { ...treeLayoutConfig.defaultStyle },
     props: { ...treeLayoutConfig.defaultProps },
   }

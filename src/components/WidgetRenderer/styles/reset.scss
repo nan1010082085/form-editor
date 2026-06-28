@@ -64,15 +64,18 @@
     vertical-align: middle;
   }
 
-  // 表单元素重置
-  input, button, select, textarea {
+  // 表单元素重置：只重置原生元素，不排除 EP/TDesign 组件
+  input:not([class*="el-"]):not([class*="t-"]),
+  select:not([class*="el-"]):not([class*="t-"]),
+  textarea:not([class*="el-"]):not([class*="t-"]),
+  button:not([class*="el-"]):not([class*="t-"]) {
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
     color: inherit;
   }
 
-  button {
+  button:not([class*="el-"]):not([class*="t-"]) {
     cursor: pointer;
     border: none;
     background: none;

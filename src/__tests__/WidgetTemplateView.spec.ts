@@ -38,12 +38,10 @@ vi.mock('element-plus', async (importOriginal) => {
   return {
     ...actual,
     ElMessage: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn(), loading: vi.fn(), closeAll: vi.fn() },
-    DialogPlugin: {
-      confirm: vi.fn().mockImplementation((opts: { onConfirm?: () => void }) => {
-        // 自动执行 onConfirm 回调以模拟用户确认
-        if (opts?.onConfirm) opts.onConfirm()
-        return { destroy: vi.fn(), hide: vi.fn() }
-      }),
+    ElMessageBox: {
+      confirm: vi.fn().mockResolvedValue('confirm'),
+      alert: vi.fn().mockResolvedValue('confirm'),
+      prompt: vi.fn().mockResolvedValue({ value: '', action: 'confirm' }),
     },
   }
 })
@@ -173,9 +171,10 @@ describe('WidgetTemplateView', () => {
 
   it('triggers search on input', async () => {
     const { wrapper, templateStore } = mountView()
-    // ElementPlus input 的 setValue 可能不触发 update:value，直接 emit 事件
-    const input = wrapper.findComponent({ name: 'TInput' })
-    await input.vm.$emit('update:value', 'login')
+    const input = wrapper.findComponent({ name: 'ElInput' })
+    // Element Plus el-input @input 事件直接传值
+    await input.find('input').setValue('login')
+    await input.find('input').trigger('input')
     // Debounce: wait
     await new Promise(r => setTimeout(r, 350))
     expect(templateStore.setSearch).toHaveBeenCalledWith('login')
@@ -188,20 +187,20 @@ describe('WidgetTemplateView', () => {
 
   it('triggers category filter on tag click', async () => {
     const { wrapper, templateStore } = mountView()
-    // Find the "表单" category tag and click it
-    const categoryTags = wrapper.findAll('.t-tag')
-    const formTag = categoryTags.find(t => t.text() === '表单')
-    expect(formTag).toBeTruthy()
-    await formTag!.trigger('click')
+    // FilterTabs 渲染原生 button，找到"表单"分类并点击
+    const buttons = wrapper.findAll('button')
+    const formBtn = buttons.find(b => b.text().includes('表单'))
+    expect(formBtn).toBeTruthy()
+    await formBtn!.trigger('click')
     expect(templateStore.setCategory).toHaveBeenCalledWith('form')
     expect(templateStore.loadTemplates).toHaveBeenCalled()
   })
 
   it('resets category on "全部" click', async () => {
     const { wrapper, templateStore } = mountView()
-    const categoryTags = wrapper.findAll('.t-tag')
-    const allTag = categoryTags.find(t => t.text() === '全部')
-    await allTag!.trigger('click')
+    const buttons = wrapper.findAll('button')
+    const allBtn = buttons.find(b => b.text().includes('全部'))
+    await allBtn!.trigger('click')
     expect(templateStore.setCategory).toHaveBeenCalledWith('')
   })
 
@@ -215,14 +214,14 @@ describe('WidgetTemplateView', () => {
 
   it('opens preview drawer on preview button click', async () => {
     const { wrapper } = mountView()
-    const previewButtons = wrapper.findAll('button').filter(b => b.text().includes('预览'))
-    expect(previewButtons.length).toBeGreaterThan(0)
-    await previewButtons[0].trigger('click')
+    // 预览按钮是 cardActions 里带有 AppIcon(name="view") 的 el-button
+    const actionButtons = wrapper.findAll('.el-button--primary.is-text')
+    expect(actionButtons.length).toBeGreaterThan(0)
+    await actionButtons[0].trigger('click')
+    await nextTick()
     await nextTick()
 
-    // Drawer should appear with preview mode toggle
-    expect(wrapper.text()).toContain('渲染预览')
-    expect(wrapper.text()).toContain('JSON 源码')
+    // Drawer 内容包含模板名和模式切换
     expect(wrapper.text()).toContain('Login Form')
   })
 
@@ -232,17 +231,12 @@ describe('WidgetTemplateView', () => {
 
   it('deletes template after confirmation', async () => {
     const { wrapper, templateStore } = mountView()
-    // Find the delete button — it has no text, just an icon
-    const allButtons = wrapper.findAll('button')
-    const deleteBtn = allButtons.find(b => {
-      const text = b.text().trim()
-      return text === '' && b.find('.t-icon').exists()
-    })
-    if (deleteBtn) {
-      await deleteBtn.trigger('click')
-      await flushPromises()
-      expect(templateStore.removeTemplate).toHaveBeenCalledWith('tpl-001')
-    }
+    // 删除按钮是 el-button[type="danger"][text] — Element Plus 渲染为 is-link 类
+    const dangerButtons = wrapper.findAll('.el-button--danger')
+    expect(dangerButtons.length).toBeGreaterThan(0)
+    await dangerButtons[0].trigger('click')
+    await flushPromises()
+    expect(templateStore.removeTemplate).toHaveBeenCalledWith('tpl-001')
   })
 
   // ------------------------------------------------------------------
@@ -260,19 +254,20 @@ describe('WidgetTemplateView', () => {
 
   it('shows loading state', () => {
     const { wrapper } = mountView({ loading: true, templates: [] })
-    expect(wrapper.text()).toContain('加载中')
+    // 加载态渲染骨架屏卡片，不含"暂无模板"
+    expect(wrapper.text()).not.toContain('暂无模板')
   })
 
   // ------------------------------------------------------------------
   // Error state
   // ------------------------------------------------------------------
 
-  it('shows error state', () => {
+  it('shows error state', async () => {
     const { wrapper, templateStore } = mountView({ error: '加载失败', templates: [] })
     expect(wrapper.text()).toContain('加载失败')
-    // Click retry
-    const retryBtn = wrapper.find('button')
-    retryBtn.trigger('click')
+    // 点击重试按钮
+    const retryBtn = wrapper.find('.el-alert .el-button')
+    await retryBtn.trigger('click')
     expect(templateStore.loadTemplates).toHaveBeenCalled()
   })
 

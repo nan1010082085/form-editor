@@ -42,8 +42,6 @@ import { treeLayoutConfig } from '@/widgets/tree-layout/config'
 import { dateTimeSlotConfig } from '@/widgets/date-time-slot/config'
 import { fileListConfig } from '@/widgets/file-list/config'
 import { transferConfig } from '@/widgets/transfer/config'
-import { searchListConfig } from '@/widgets/search-list/config'
-import { editableTableConfig } from '@/widgets/editable-table/config'
 import { singleColConfig } from '@/widgets/single-col/config'
 import { doubleColConfig } from '@/widgets/double-col/config'
 import { tripleColConfig } from '@/widgets/triple-col/config'
@@ -96,7 +94,6 @@ const REGISTERED_TYPES: WidgetSchemaType[] = [
   'spacer', 'toolbar-buttons', 'table', 'button',
   'richtext', 'upload', 'banner', 'tree-layout', 'date-time-slot',
   'file-list', 'transfer',
-  'search-list', 'editable-table',
   'switch', 'cascader', 'time-picker',
   'slider', 'rate', 'color-picker',
   'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
@@ -136,8 +133,6 @@ const ALL_CONFIGS = [
   { name: 'date-time-slot', config: dateTimeSlotConfig },
   { name: 'file-list', config: fileListConfig },
   { name: 'transfer', config: transferConfig },
-  { name: 'search-list', config: searchListConfig },
-  { name: 'editable-table', config: editableTableConfig },
   { name: 'single-col', config: singleColConfig },
   { name: 'double-col', config: doubleColConfig },
   { name: 'triple-col', config: tripleColConfig },
@@ -178,9 +173,9 @@ describe('Widget Registry & Loading', () => {
     registerAllWidgets()
   })
 
-  it('registers exactly 57 widget types', () => {
+  it('registers exactly 68 widget types', () => {
     const all = getAllWidgets()
-    expect(all).toHaveLength(57)
+    expect(all).toHaveLength(68)
   })
 
   it('getComponentMap returns a component for every registered type', () => {
@@ -330,7 +325,6 @@ describe('Widget Default Schema', () => {
   const formComponentTypes: SchemaType[] = [
     'input', 'number', 'select', 'radio', 'checkbox',
     'date', 'textarea', 'richtext', 'upload', 'date-time-slot',
-    'editable-table',
   ]
 
   const layoutTypes: SchemaType[] = [
@@ -429,18 +423,6 @@ describe('Widget Default Schema', () => {
     expect(Array.isArray(schema.children)).toBe(true)
   })
 
-  it('search-list has comprehensive default structure', () => {
-    const schema = createDefaultSchema('search-list')
-    expect(schema.type).toBe('search-list')
-    expect(schema.listApi).toBeDefined()
-    expect(schema.listApi!.url).toBe('/api/list')
-    expect(schema.searchFields).toBeDefined()
-    expect(schema.searchFields!.length).toBeGreaterThan(0)
-    expect(schema.columns).toBeDefined()
-    expect(schema.columns!.length).toBeGreaterThan(0)
-    expect(schema.rowActions).toBeDefined()
-    expect(schema.buttons).toBeDefined()
-  })
 
   it('banner has props with text, type, closable', () => {
     const schema = createDefaultSchema('banner')
@@ -483,15 +465,6 @@ describe('Widget Default Schema', () => {
     expect(schema.props!.filterable).toBe(true)
   })
 
-  it('editable-table has field and props', () => {
-    const schema = createDefaultSchema('editable-table')
-    expect(schema.type).toBe('editable-table')
-    expect(schema.field).toBeDefined()
-    expect(schema.props!.title).toBe('可编辑表格')
-    expect(schema.props!.showAddButton).toBe(true)
-    expect(schema.props!.showDeleteButton).toBe(true)
-    expect(schema.props!.maxRows).toBe(0)
-  })
 })
 
 // =====================================================================

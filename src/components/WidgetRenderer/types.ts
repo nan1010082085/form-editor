@@ -155,6 +155,14 @@ export interface FormGridProps {
   dialogMode?: 'internal' | 'external'
   /** 画布级变量 — 从 boardStore 传入，与 widget.variables 合并后供事件/联动条件使用 */
   boardVariables?: Record<string, unknown>
+  /** 画布配置 — 绝对定位模式下用于计算容器尺寸和背景样式 */
+  canvasConfig?: {
+    width?: number
+    height?: number
+    backgroundColor?: string
+    padding?: string
+    zoom?: number
+  }
 }
 
 /** 动态数据请求配置 — 从 widgets/base/types 统一导出 */

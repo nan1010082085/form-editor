@@ -5,9 +5,7 @@ export const cardConfig: WidgetConfig = {
   description: '卡片容器，提供标题和阴影包裹，用于内容分组展示',
   author: 'yangdongnan',
   defaultPosition: { w: 100, wUnit: '%', h: 200 },
-  defaultStyle: {
-    width: '100%',
-  },
+  defaultStyle: {},
   configPanels: ['events', 'variables'],
   defaultProps: {
     title: '卡片标题',

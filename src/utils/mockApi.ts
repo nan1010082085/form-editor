@@ -93,13 +93,26 @@ export async function mockUpdateSchema(id: string, payload: SchemaUpdatePayload)
   await delay()
   const existing = MOCK_SCHEMAS.get(id)
   if (!existing) throw new Error(`Schema not found: ${id}`)
+
+  // 保存前将当前状态存入版本快照
+  const now = new Date()
+  const newVersion = now.toISOString().replace(/[-:T]/g, '').slice(0, 14)
+  const snapshot = {
+    version: existing.version || newVersion,
+    json: existing.json,
+    createdAt: existing.updatedAt || existing.createdAt,
+  }
+  const existingVersions: any[] = (existing as any).versions ?? []
+
   const updated: SchemaListItem = {
     ...existing,
     ...(payload.name !== undefined ? { name: payload.name } : {}),
     ...(payload.json !== undefined ? { json: payload.json } : {}),
     ...(payload.type !== undefined ? { type: payload.type } : {}),
-    updatedAt: new Date().toISOString(),
-  }
+    version: newVersion,
+    updatedAt: now.toISOString(),
+    versions: [...existingVersions, snapshot],
+  } as any
   MOCK_SCHEMAS.set(id, updated)
   return { ...updated, json: updated.json ?? [] }
 }
@@ -111,25 +124,42 @@ export async function mockDeleteSchema(id: string): Promise<null> {
   return null
 }
 
-export async function mockPublishSchema(id: string): Promise<PublishedSchemaItem> {
+export async function mockPublishSchema(id: string, version?: string): Promise<PublishedSchemaItem> {
   await delay()
   const schema = MOCK_SCHEMAS.get(id)
   if (!schema) throw new Error(`Schema not found: ${id}`)
 
+  const editId = schema.editId ?? id
+  // 复用已有 publishId，保证发布链接稳定；首次发布才生成新 ID
+  const existing = MOCK_PUBLISHED.get(editId)
+
+  // 如果指定了版本，从快照中查找；否则使用当前 schema
+  let publishJson = schema.json
+  let publishVersion = schema.version ?? '20250101000000'
+  if (version && version !== schema.version) {
+    const snapshot = (schema as any).versions?.find((v: any) => v.version === version)
+    if (snapshot) {
+      publishJson = snapshot.json
+      publishVersion = snapshot.version
+    }
+    // mock 无快照时仍使用当前 json，但保留版本号
+    publishVersion = version
+  }
+
   const published: PublishedSchemaItem = {
-    id: genId(),
-    sourceId: id,
+    id: existing?.id ?? genId(),
+    sourceId: editId,
     name: schema.name,
     type: schema.type,
     // @ts-ignore - json 格式兼容
-    json: (Array.isArray(schema.json) ? schema.json : schema.json?.widgets ?? []) as unknown[],
-    publishId: genId(),
-    version: schema.version ?? '20250101000000',
+    json: (Array.isArray(publishJson) ? publishJson : publishJson?.widgets ?? []) as unknown[],
+    publishId: existing?.publishId ?? genId(),
+    version: publishVersion,
     publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
-  MOCK_PUBLISHED.set(id, published)
+  MOCK_PUBLISHED.set(editId, published)
   return { ...published }
 }
 
@@ -137,4 +167,71 @@ export async function mockFetchPublishedSchema(sourceId: string): Promise<Publis
   await delay()
   // 404 is normal — schema not yet published
   return MOCK_PUBLISHED.get(sourceId) ?? null
+}
+
+export async function mockFetchPublishedByPublishId(publishId: string): Promise<PublishedSchemaItem | null> {
+  await delay()
+  for (const item of MOCK_PUBLISHED.values()) {
+    if (item.publishId === publishId) return { ...item }
+  }
+  return null
+}
+
+// ================================================================
+// 版本管理 Mock
+// ================================================================
+
+export async function mockFetchVersions(editId: string, page = 1, pageSize = 10): Promise<{ items: any[]; total: number }> {
+  await delay()
+  // 按 editId 或 id 查找 schema
+  const schema = MOCK_SCHEMAS.get(editId) ?? Array.from(MOCK_SCHEMAS.values()).find(s => s.editId === editId)
+  if (!schema) return { items: [], total: 0 }
+
+  const versions: any[] = (schema as any).versions ?? []
+  // 当前版本也加入列表
+  const allVersions = [
+    { version: schema.version, createdAt: schema.updatedAt || schema.createdAt, published: false },
+    ...versions.map((v: any) => ({ ...v, published: false })),
+  ].reverse() // 最新在前
+
+  // 标记已发布的版本
+  const published = MOCK_PUBLISHED.get(schema.editId ?? editId)
+  if (published) {
+    const pv = allVersions.find(v => v.version === published.version)
+    if (pv) pv.published = true
+  }
+
+  const start = (page - 1) * pageSize
+  const items = allVersions.slice(start, start + pageSize)
+  return { items, total: allVersions.length }
+}
+
+export async function mockFetchVersion(editId: string, version: string): Promise<any> {
+  await delay()
+  const schema = MOCK_SCHEMAS.get(editId) ?? Array.from(MOCK_SCHEMAS.values()).find(s => s.editId === editId)
+  if (!schema) throw new Error(`Schema not found: ${editId}`)
+
+  // 当前版本
+  if (schema.version === version) {
+    return { ...schema, json: schema.json ?? [] }
+  }
+
+  // 从快照中查找
+  const versions: any[] = (schema as any).versions ?? []
+  const snapshot = versions.find((v: any) => v.version === version)
+  if (snapshot) {
+    return { ...schema, version: snapshot.version, json: snapshot.json, createdAt: snapshot.createdAt }
+  }
+
+  throw new Error(`Version ${version} not found`)
+}
+
+export async function mockDeleteVersion(editId: string, version: string): Promise<null> {
+  await delay()
+  const schema = MOCK_SCHEMAS.get(editId) ?? Array.from(MOCK_SCHEMAS.values()).find(s => s.editId === editId)
+  if (!schema) throw new Error(`Schema not found: ${editId}`)
+
+  const versions: any[] = (schema as any).versions ?? []
+  ;(schema as any).versions = versions.filter((v: any) => v.version !== version)
+  return null
 }
