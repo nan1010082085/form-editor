@@ -6,21 +6,24 @@ import '@/styles/variables.scss'
 import { createApp, type App } from 'vue'
 import { createPinia } from 'pinia'
 import { setupElementPlus } from '@schema-platform/platform-shared/config/element'
-import { initQiankunLifecycle } from '@schema-platform/platform-shared/qiankun'
 import AppRoot from './App.vue'
 import { createEditorRouter } from './router'
 import { configureApiClient } from './utils/apiClient'
 import { registerAllWidgets } from './widgets'
 import { permissionDirective } from './directives/permission'
 
-registerAllWidgets()
-
 let app: App | null = null
 let router: ReturnType<typeof createEditorRouter> | null = null
 
 let currentRouteBase = '/instances'
+let widgetsRegistered = false
 
-function render(container?: HTMLElement) {
+function render() {
+  if (!widgetsRegistered) {
+    registerAllWidgets()
+    widgetsRegistered = true
+  }
+
   router = createEditorRouter(currentRouteBase)
   app = createApp(AppRoot)
   app.use(createPinia())
@@ -36,10 +39,9 @@ function render(container?: HTMLElement) {
     useMock: import.meta.env.VITE_USE_MOCK === 'true',
   })
 
-  const mountEl = container?.querySelector('#app') || container || document.getElementById('app')
-  if (mountEl) {
-    app.mount(mountEl)
-  }
+  const mountEl = document.getElementById('editor-app')
+  if (!mountEl) throw new Error('[editor] #editor-app not found')
+  app.mount(mountEl)
 }
 
 // ── Qiankun 生命周期 ──
@@ -48,32 +50,25 @@ export async function bootstrap() {
   console.log('[editor] bootstrap')
 }
 
-export async function mount(props: { container?: HTMLElement; initialPath?: string; getRouteBase?: () => string; emitEvent?: (event: string, data: unknown) => void }) {
+export async function mount(props: Record<string, unknown>) {
   console.log('[editor] mount start')
-  // 立即移除 index.html 中的 #loading（position: fixed 会覆盖整个视口）
   document.getElementById('loading')?.remove()
 
-  // 初始化 qiankun 生命周期（globalState 事件通道）
-  initQiankunLifecycle(props as Parameters<typeof initQiankunLifecycle>[0])
-
-  // 优先使用 getToken（动态获取），回退到 token（静态值）
-  const p = props as Record<string, unknown>
-  const token = (typeof p.getToken === 'function' ? (p.getToken as () => string)() : p.token as string) || undefined
+  // token
+  const getToken = props.getToken as (() => string) | undefined
+  const token = getToken ? getToken() : (props.token as string)
   if (token) localStorage.setItem('sfp_access_token', token)
 
-  // 从主应用 props 获取 routeBase，解析出子应用路由路径
-  if (props.getRouteBase) {
-    const routeBase = props.getRouteBase()
-    const browserPath = window.location.pathname
-    const subPath = browserPath.slice(routeBase.length) || '/instances'
-    const search = window.location.search
-    currentRouteBase = subPath + search
+  // 直接用 shell 传递的 routeBase，不要自己解析
+  const getRouteBase = props.getRouteBase as (() => string) | undefined
+  if (getRouteBase) {
+    currentRouteBase = getRouteBase()
   }
 
-  render(props.container)
+  render()
 
-  // 通知 shell 子应用已挂载
-  props.emitEvent?.('shell:sub-app-mounted', { app: 'editor' })
+  const emitEvent = props.emitEvent as ((event: string, data: unknown) => void) | undefined
+  emitEvent?.('shell:sub-app-mounted', { app: 'editor' })
   console.log('[editor] mount done')
 }
 
@@ -86,9 +81,7 @@ export async function unmount() {
   }
 }
 
-// 独立模式：延迟检查，让 qiankun 先设置 __POWERED_BY_QIANKUN__
-queueMicrotask(() => {
-  if (!window.__POWERED_BY_QIANKUN__) {
-    render()
-  }
-})
+// 独立模式：仅开发环境且非 qiankun 子应用时渲染
+if (import.meta.env.DEV && !window.__POWERED_BY_QIANKUN__) {
+  render()
+}

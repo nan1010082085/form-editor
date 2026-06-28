@@ -133,7 +133,7 @@ export function createEditorRouter(initialPath?: string) {
       // 跳转到统一登录页，带上当前路径作为 redirect 参数
       return {
         name: 'login',
-        query: { redirect: window.location.pathname },
+        query: { redirect: to.fullPath },
       }
     }
   })

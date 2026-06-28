@@ -23,7 +23,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         format: 'umd',
-        name: 'editorApp',
+        name: 'editor',
       },
     },
   },
