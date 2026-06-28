@@ -171,7 +171,6 @@ export class ApiClient {
     const token = this.getToken?.() ?? ''
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
-      headers['Sinosoft-Auth'] = token
     }
 
     const isGet = method.toUpperCase() === 'GET'
@@ -214,7 +213,6 @@ export class ApiClient {
     const token = this.getToken?.() ?? ''
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
-      headers['Sinosoft-Auth'] = token
     }
 
     const isGet = method.toUpperCase() === 'GET'
@@ -269,7 +267,6 @@ export class ApiClient {
     const token = this.getToken?.() ?? ''
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
-      headers['Sinosoft-Auth'] = token
     }
 
     return this.request<T>({ url, method, headers, body, params })
@@ -553,12 +550,16 @@ export interface LoginPayload {
 }
 
 export interface LoginResponse {
-  token: string
+  accessToken: string
+  refreshToken?: string
+  tokenType: string
+  expiresIn: number
   user: {
     id: string
     username: string
-    displayName: string
-    role: string
+    displayName?: string
+    roles?: string[]
+    tenantId?: string
   }
 }
 
@@ -715,7 +716,6 @@ export async function updateSubmissionStatus(
       const token = apiClient.getTokenValue()
       if (token) {
         h['Authorization'] = `Bearer ${token}`
-        h['Sinosoft-Auth'] = token
       }
       return h
     })(),
@@ -761,7 +761,6 @@ export async function exportSubmissions(
   const token = apiClient.getTokenValue()
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
-    headers['Sinosoft-Auth'] = token
   }
   const response = await fetch(url, { headers })
   if (!response.ok) {
