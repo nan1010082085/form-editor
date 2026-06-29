@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { useEditorStore } from '@/stores/editor'
 
@@ -113,11 +113,10 @@ const routes = [
   },
 ]
 
-export function createEditorRouter(initialPath?: string) {
+export function createEditorRouter(routeBase?: string) {
+  const base = routeBase || import.meta.env.VITE_ROUTE_BASE || '/'
   const router = createRouter({
-    history: isQiankunSubApp()
-      ? createMemoryHistory(initialPath || undefined)
-      : createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(base),
     routes,
   })
 
