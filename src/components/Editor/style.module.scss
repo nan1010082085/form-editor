@@ -1,3 +1,5 @@
+@use '../../styles/editor-ui-tokens' as editor;
+
 .panel {
   display: flex;
   flex-direction: column;
@@ -7,54 +9,7 @@
   backdrop-filter: var(--glass-blur, blur(20px));
   -webkit-backdrop-filter: var(--glass-blur, blur(20px));
 
-  /* 属性面板内所有输入组件统一高度 32px */
-  /* 注意：CSS Module 中必须对每个 Element Plus 类名单独用 :global()，
-     嵌套的选择器会被 CSS Modules 哈希化导致不生效 */
-  :global(.el-input--small) {
-    --el-component-size-small: 32px;
-
-    :global(.el-input__wrapper) {
-      height: 32px;
-      min-height: 32px;
-    }
-
-    :global(.el-input__inner) {
-      height: 32px;
-    }
-  }
-
-  // 默认尺寸组件样式已移至 variables.scss 全局生效
-
-  :global(.el-input-number--small) {
-    --el-component-size-small: 32px;
-    height: 32px;
-
-    :global(.el-input__wrapper) {
-      height: 32px;
-      min-height: 32px;
-    }
-
-    :global(.el-input__inner) {
-      height: 32px;
-      line-height: 32px;
-    }
-  }
-
-  // 默认尺寸 input-number 统一 32px
-  :global(.el-input-number) {
-    --el-component-size: 32px;
-    height: 32px;
-
-    :global(.el-input__wrapper) {
-      height: 32px;
-      min-height: 32px;
-    }
-
-    :global(.el-input__inner) {
-      height: 32px;
-      line-height: 32px;
-    }
-  }
+  @include editor.editor-unified-controls;
 
   // controls-right 模式：按钮撑满各一半（覆盖 EP 默认固定高度，保留原有边框）
   :global(.el-input-number.is-controls-right .el-input-number__increase) {

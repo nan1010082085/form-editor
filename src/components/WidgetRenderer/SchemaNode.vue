@@ -55,6 +55,7 @@ function getContainerTypes() {
  */
 const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
   'single-col', 'double-col', 'triple-col', 'quad-col',
+  'tree-layout',
 ])
 
 /**

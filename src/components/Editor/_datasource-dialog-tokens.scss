@@ -1,5 +1,6 @@
 // 数据源对话框统一样式令牌
 // 所有数据源相关的 dialog 组件必须使用这些令牌确保一致性
+@use '../../styles/editor-ui-tokens' as *;
 
 // ---- 表单布局 ----
 $datasource-label-width: 60px !default;
@@ -33,39 +34,7 @@ $datasource-error-margin-top: 3px !default;
 
 // ---- mixin: 统一表单控件高度 ----
 @mixin datasource-unified-controls {
-  // Input
-  :global(.el-input) {
-    height: $datasource-input-height !important;
-    min-height: $datasource-input-height !important;
-  }
-
-  // Select
-  :global(.el-select .el-input) {
-    height: $datasource-input-height !important;
-    min-height: $datasource-input-height !important;
-  }
-
-  // InputNumber
-  :global(.el-input-number) {
-    height: $datasource-control-height !important;
-    min-height: $datasource-control-height !important;
-  }
-
-  :global(.el-input-number .el-input) {
-    height: auto !important;
-    min-height: auto !important;
-  }
-
-  // Button (excluding text/link buttons)
-  :global(.el-button:not(.is-text)) {
-    height: $datasource-button-height !important;
-    min-height: $datasource-button-height !important;
-  }
-
-  // Textarea
-  :global(.el-textarea__inner) {
-    min-height: $datasource-control-height;
-  }
+  @include editor-unified-controls($datasource-control-height);
 }
 
 // ---- mixin: 统一卡片样式 ----

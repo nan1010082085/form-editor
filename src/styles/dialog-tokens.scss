@@ -2,6 +2,7 @@
 // Dialog 统一样式 Token（Mixin 库）
 // 所有弹窗组件共享的卡片、标签、控件高度等样式
 // ============================================================
+@use './editor-ui-tokens' as *;
 
 // 弹窗 body：左右分栏布局
 @mixin dialog-body {
@@ -73,12 +74,7 @@
   border-bottom: 1px solid var(--border-color-light);
 }
 
-// 统一表单控件高度 32px
+// 统一表单控件高度 32px（Element Plus 2.x：select 使用 .el-select__wrapper）
 @mixin unified-control-height {
-  :global(.el-input),
-  :global(.el-select .el-input),
-  :global(.el-button:not(.is-text)) {
-    height: 32px !important;
-    min-height: 32px !important;
-  }
+  @include editor-unified-controls(32px);
 }

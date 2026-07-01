@@ -16,7 +16,18 @@
     width: 100%;
     height: 100%;
     min-height: 0;
+    min-width: 0;
     vertical-align: top;
+  }
+
+  .el-select,
+  .el-tree-select {
+    display: block;
+    --el-select-width: 100%;
+  }
+
+  .el-select .el-select__wrapper {
+    width: 100%;
   }
 
   .el-form-item__label {

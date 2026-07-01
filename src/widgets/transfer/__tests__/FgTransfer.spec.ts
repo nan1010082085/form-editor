@@ -135,13 +135,10 @@ describe('FgTransfer', () => {
 
   // Config panels
   describe('配置面板声明', () => {
-    it('声明 events 和 rules 面板', () => {
+    it('声明 events、rules 与 api 面板', () => {
       expect(transferConfig.configPanels).toContain('events')
       expect(transferConfig.configPanels).toContain('rules')
-    })
-
-    it('无 api 面板', () => {
-      expect(transferConfig.configPanels).not.toContain('api')
+      expect(transferConfig.configPanels).toContain('api')
     })
   })
 })

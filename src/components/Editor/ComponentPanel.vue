@@ -17,13 +17,13 @@ import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.
 
 const GROUP_LABELS: Record<string, string> = {
   layout: '布局部件',
-  form: '表单部件',
   container: '容器部件',
+  form: '表单部件',
   table: '表格部件',
-  action: '操作部件',
-  static: '静态部件',
-  business: '业务部件',
   chart: '图表部件',
+  static: '展示部件',
+  action: '操作部件',
+  business: '业务部件',
 }
 
 // 部件类型图标映射

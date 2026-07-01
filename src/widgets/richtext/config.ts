@@ -3,7 +3,7 @@ import type { WidgetConfig } from '../base/types'
 export const richtextConfig: WidgetConfig = {
   name: 'FgRichtext',
   displayName: '富文本',
-  description: '富文本编辑器，支持格式化内容输入',
+  description: '多行富文本字段（纯文本模式，支持占位与双向绑定；后续可接入完整编辑器）',
   author: 'yangdongnan',
   defaultStyle: {
     width: '100%',
@@ -23,6 +23,7 @@ export const richtextConfig: WidgetConfig = {
     props: [
       { key: 'placeholder', label: '占位文字', type: 'input', default: '请输入内容' },
       { key: 'readonly', label: '只读', type: 'switch', default: false },
+      { key: 'showToolbar', label: '显示工具栏', type: 'switch', default: true },
     ],
   },
 }

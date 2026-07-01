@@ -105,13 +105,13 @@ export function createDefaultSchema(type: SchemaType): PartialWidget {
       item = { type: 'banner', props: { text: '提示信息', type: 'info', closable: true } }
       break
     case 'tree-layout':
-      item = { type: 'tree-layout', label: '树形布局', props: { title: '树形布局', showSearch: true }, children: [] }
+      item = { type: 'tree-layout', label: '侧栏面板', props: { title: '侧栏面板', showSearch: true }, children: [] }
       break
     case 'date-time-slot':
       item = { ...base, label: '日期时间区间', props: { startPlaceholder: '开始时间', endPlaceholder: '结束时间', format: 'YYYY-MM-DD HH:mm:ss', rangeSeparator: '至' } }
       break
     case 'file-list':
-      item = { type: 'file-list', props: { title: '附件', allowDelete: true, allowPreview: true } }
+      item = { type: 'file-list', props: { title: '附件', allowDelete: true, allowPreview: false } }
       break
     case 'transfer':
       item = { type: 'transfer', props: { titles: ['待选', '已选'], filterable: true } }

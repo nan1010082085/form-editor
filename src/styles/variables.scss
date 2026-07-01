@@ -652,11 +652,5 @@ $fg-nav-menu-height: 44px;
 $fg-nav-indent: 20px;
 $fg-nav-padding: 16px;
 
-// ========== 编辑器 UI 默认控件尺寸（属性面板/弹窗在各自 module 中覆盖） ==========
-// 注意：禁止在此对 .el-input__wrapper 写死 height，否则会覆盖画布内 widget 的配置高度
-.el-input,
-.el-select,
-.el-input-number {
-  --el-component-size: 32px;
-  --el-component-size-small: 32px;
-}
+// 编辑器 EP 控件尺寸见 src/styles/editor-ui-tokens.scss（属性面板 / 配置弹窗专用）
+// widget 画布控件尺寸由 SchemaNode + useWidgetControlSize 独立控制，禁止在此全局覆盖

@@ -10,5 +10,6 @@ export function createUploadWidget(id: string): Widget {
     position: { x: 0, y: 0, w: 240, h: 40, zIndex: 1 },
     style: { ...uploadConfig.defaultStyle },
     props: { ...uploadConfig.defaultProps },
+    defaultValue: [],
   }
 }

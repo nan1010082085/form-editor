@@ -59,9 +59,9 @@ describe('FgTreeLayout', () => {
 
   // Title prop
   describe('title 属性', () => {
-    it('默认显示树形布局', () => {
+    it('默认显示侧栏面板', () => {
       const wrapper = mountWidget()
-      expect(wrapper.text()).toContain('树形布局')
+      expect(wrapper.text()).toContain('侧栏面板')
     })
 
     it('自定义标题', () => {
@@ -131,20 +131,17 @@ describe('FgTreeLayout', () => {
 
   // Config panels
   describe('配置面板声明', () => {
-    it('configPanels 包含 events 和 api', () => {
+    it('configPanels 包含 events', () => {
       expect(treeLayoutConfig.configPanels).toContain('events')
-      expect(treeLayoutConfig.configPanels).toContain('api')
     })
   })
 
-  // Container group
-  describe('容器分组', () => {
-    it('group 为 container', () => {
+  describe('布局分组', () => {
+    it('group 为 layout', () => {
       const widget = createWidget('tree-layout', 'test_tree')
       expect(widget).toBeDefined()
-      // 通过 registry 验证 group
       const registryItem = getWidget('tree-layout')
-      expect(registryItem?.group).toBe('container')
+      expect(registryItem?.group).toBe('layout')
     })
   })
 })

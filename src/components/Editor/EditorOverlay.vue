@@ -111,6 +111,7 @@ onUnmounted(() => {
 /** 自渲染容器：children 在组件内部渲染，flattenWidgets 跳过其子组件 */
 const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
   'single-col', 'double-col', 'triple-col', 'quad-col',
+  'tree-layout',
 ])
 
 /** 交互式容器：hitArea 设为 pointer-events:none，点击穿透到实际 UI */

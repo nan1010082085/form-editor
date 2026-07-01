@@ -88,10 +88,10 @@ describe('FgFileList', () => {
 
   // allowPreview prop
   describe('allowPreview 属性', () => {
-    it('allowPreview 默认为 true', () => {
+    it('allowPreview 默认为 false', () => {
       const widget = createWidget('file-list', 'test_widget')!
       store.addWidget(widget)
-      expect(store.findWidget('test_widget')!.props!.allowPreview).toBe(true)
+      expect(store.findWidget('test_widget')!.props!.allowPreview).toBe(false)
     })
 
     it('可设置 allowPreview=false', () => {

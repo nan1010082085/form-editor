@@ -39,25 +39,48 @@
     box-sizing: border-box;
   }
 
-  /* 覆盖全局/EP 默认高度，使 --el-component-size 生效 */
+  /* Element Plus 表单控件：保留原生 display 模式，避免 select 宽度塌陷 */
   :global(.el-input),
-  :global(.el-select),
   :global(.el-input-number),
   :global(.el-date-editor),
-  :global(.el-cascader),
-  :global(.el-autocomplete),
-  :global(.el-tree-select) {
+  :global(.el-autocomplete) {
     display: inline-flex !important;
+    width: 100% !important;
+    height: 100% !important;
     vertical-align: top;
     min-height: 0 !important;
+  }
+
+  :global(.el-select),
+  :global(.el-cascader),
+  :global(.el-tree-select) {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    vertical-align: top;
+    min-height: 0 !important;
+    --el-select-width: 100%;
   }
 
   :global(.el-input .el-input__wrapper),
   :global(.el-select .el-select__wrapper),
   :global(.el-input-number .el-input__wrapper) {
+    width: 100% !important;
     height: 100% !important;
     min-height: unset !important;
     box-sizing: border-box;
+  }
+
+  :global(.el-cascader .el-input),
+  :global(.el-tree-select .el-select) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  :global(.el-cascader .el-input .el-input__wrapper),
+  :global(.el-tree-select .el-select .el-select__wrapper) {
+    width: 100% !important;
+    height: 100% !important;
   }
 
   :global(.el-input .el-input__inner) {

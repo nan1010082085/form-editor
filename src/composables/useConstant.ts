@@ -91,9 +91,9 @@ export function useLayoutTypes(): ReadonlySet<SchemaType> {
 const FALLBACK_BASIC_TYPES = new Set<SchemaType>([
   'input', 'select', 'number', 'radio', 'checkbox', 'date', 'textarea', 'switch', 'slider',
   'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
-  'table', 'richtext', 'upload', 'banner', 'tree-layout', 'date-time-slot', 'time-picker',
+  'table', 'richtext', 'upload', 'banner', 'date-time-slot', 'time-picker',
   'file-list', 'transfer', 'cascader', 'rate', 'color-picker', 'tag-input', 'autocomplete',
-  'descriptions', 'advanced-table', 'statistic', 'iframe',
+  'descriptions', 'advanced-table', 'statistic', 'permission-tree',
   'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
   'line-chart', 'area-chart',
   'pie-chart', 'donut-chart',
@@ -107,11 +107,11 @@ const FALLBACK_BASIC_TYPES = new Set<SchemaType>([
 
 /** 静态业务类型 fallback（registry 未初始化时） */
 const FALLBACK_BUSINESS_TYPES = new Set<SchemaType>([
-  'tree-layout', 'upload', 'file-list',
   'approval-user-picker', 'approval-role-picker', 'approval-comment',
+  'user-management', 'role-management', 'user-selector',
 ])
 
-/** 表单控件 + 操作按钮 + 静态展示 + 表格（动态） */
+/** 表单控件 + 操作 + 展示 + 表格（动态） */
 export function useBasicTypes(): ReadonlySet<SchemaType> {
   return computed(() => {
     const types = new Set<SchemaType>()

@@ -27,6 +27,7 @@ export function useWidgetControlSize(defaultHeight = 32, defaultWidth = 240) {
       '--el-component-size': `${h}px`,
       '--el-component-size-small': `${h}px`,
       '--el-component-size-large': `${h}px`,
+      '--el-select-width': '100%',
     }
     const fontSize = widgetStyle.value?.fontSize as string | undefined
     const color = widgetStyle.value?.color as string | undefined

@@ -41,6 +41,7 @@ export const descriptionsConfig: WidgetConfig = {
     title: '详情',
     column: 2,
     border: true,
+    staticData: { field1: '示例值1', field2: '示例值2' },
     items: [
       { label: '字段1', field: 'field1', type: 'text' },
       { label: '字段2', field: 'field2', type: 'text' },

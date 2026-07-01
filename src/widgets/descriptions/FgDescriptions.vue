@@ -43,6 +43,11 @@ onMounted(() => {
   const api = widgetData.value.props?.dataSource as { type?: string; url?: string } | undefined
   if (api?.type === 'api' && api.url) {
     loadData()
+    return
+  }
+  const staticData = widgetData.value.props?.staticData as Record<string, unknown> | undefined
+  if (staticData && typeof staticData === 'object') {
+    data.value = staticData
   }
 })
 

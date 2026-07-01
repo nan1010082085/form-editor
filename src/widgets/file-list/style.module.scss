@@ -54,6 +54,15 @@
   min-width: 0;
 }
 
+.fileNameClickable {
+  cursor: pointer;
+  color: var(--color-primary);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .remove {
   cursor: pointer;
   color: var(--text-color-muted);

@@ -19,10 +19,13 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   // 基础组件
   'input', 'select', 'number', 'radio', 'checkbox', 'date', 'textarea', 'switch', 'slider',
   'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
-  'table', 'richtext', 'upload', 'banner', 'tree-layout', 'date-time-slot', 'time-picker',
-  'file-list', 'transfer', 'cascader', 'rate', 'color-picker',
+  'table', 'richtext', 'upload', 'banner', 'date-time-slot', 'time-picker',
+  'file-list', 'transfer', 'cascader', 'rate', 'color-picker', 'permission-tree',
   'tag-input', 'autocomplete', 'descriptions', 'advanced-table', 'statistic',
-  // 图表
+  // 布局
+  'tree-layout',
+  // 嵌入容器
+  'iframe', 'micro-app',
   'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
   'line-chart', 'area-chart',
   'pie-chart', 'donut-chart',
@@ -34,7 +37,7 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   'candlestick',
   // 业务组件
   'approval-user-picker', 'approval-role-picker', 'approval-comment',
-  'iframe',
+  'user-management', 'role-management', 'user-selector',
 ])
 
 /** Valid SchemaType values — lazily generated from widget registry */
@@ -51,7 +54,8 @@ function getValidSchemaTypes(): Set<string> {
 /** Types that are containers (support children) */
 const CONTAINER_TYPES = new Set<string>([
   'card', 'single-col', 'double-col', 'triple-col', 'quad-col',
-  'form', 'dialog', 'tabs', 'micro-app-container',
+  'form', 'dialog', 'tabs', 'micro-app-container', 'tree-layout',
+  'iframe', 'micro-app',
 ])
 
 /** Static sets for component category classification (avoids ComputedRef issues in non-component context) */
@@ -59,8 +63,9 @@ const BASIC_CATEGORY_TYPES = new Set<string>([
   'input', 'select', 'number', 'radio', 'checkbox', 'date', 'textarea', 'switch', 'slider',
   'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
   'table', 'richtext', 'banner', 'date-time-slot', 'time-picker',
-  'transfer', 'cascader', 'rate', 'color-picker', 'tag-input', 'autocomplete',
-  'descriptions', 'advanced-table', 'statistic', 'iframe',
+  'upload', 'transfer', 'file-list', 'permission-tree',
+  'cascader', 'rate', 'color-picker', 'tag-input', 'autocomplete',
+  'descriptions', 'advanced-table', 'statistic',
   'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
   'line-chart', 'area-chart',
   'pie-chart', 'donut-chart',
@@ -73,8 +78,8 @@ const BASIC_CATEGORY_TYPES = new Set<string>([
 ])
 
 const BUSINESS_CATEGORY_TYPES = new Set<string>([
-  'tree-layout', 'upload', 'file-list',
   'approval-user-picker', 'approval-role-picker', 'approval-comment',
+  'user-management', 'role-management', 'user-selector',
 ])
 
 /** Get the category of a component type: 'basic', 'business', or 'layout' */

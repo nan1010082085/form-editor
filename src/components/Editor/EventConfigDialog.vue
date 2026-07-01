@@ -171,7 +171,7 @@ const flowItems = computed<FlowItem[]>(() =>
     width="1000px"
     @update:model-value="emit('update:visible', $event)"
   >
-    <div :class="styles.body">
+    <div :class="[styles.body, 'editor-ui']">
       <!-- 左侧：配置表单 -->
       <div :class="styles.form">
       <!-- 空状态 -->

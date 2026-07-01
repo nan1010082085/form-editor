@@ -227,12 +227,11 @@ describe('validateSchema', () => {
   // ---------- nesting violation ----------
 
   it('detects basic component nested inside business component', () => {
-    // tree-layout is business, input is basic
     const schema: PartialWidget[] = [
       {
-        type: 'tree-layout',
-        field: 'tree',
-        label: 'Tree',
+        type: 'user-management',
+        field: 'users',
+        label: 'Users',
         children: [
           { type: 'input', field: 'desc', label: 'Description' },
         ],
@@ -242,18 +241,17 @@ describe('validateSchema', () => {
     const nestingErrors = result.errors.filter((e) => e.type === 'nesting-violation')
     expect(nestingErrors).toHaveLength(1)
     expect(nestingErrors[0].severity).toBe('error')
-    expect(nestingErrors[0].message).toContain('tree-layout')
+    expect(nestingErrors[0].message).toContain('user-management')
     expect(nestingErrors[0].message).toContain('input')
   })
 
   it('detects business component nested inside basic component', () => {
-    // toolbar-buttons is action (basic category), tree-layout is business
     const schema: PartialWidget[] = [
       {
         type: 'toolbar-buttons',
         buttons: [{ text: 'Submit' }],
         children: [
-          { type: 'tree-layout', field: 'tree', label: 'Tree' },
+          { type: 'user-selector', field: 'user', label: 'User' },
         ],
       },
     ]
@@ -262,7 +260,22 @@ describe('validateSchema', () => {
     expect(nestingErrors).toHaveLength(1)
     expect(nestingErrors[0].severity).toBe('error')
     expect(nestingErrors[0].message).toContain('toolbar-buttons')
-    expect(nestingErrors[0].message).toContain('tree-layout')
+    expect(nestingErrors[0].message).toContain('user-selector')
+  })
+
+  it('allows basic components nested inside layout container (tree-layout)', () => {
+    const schema: PartialWidget[] = [
+      {
+        type: 'tree-layout',
+        label: 'Sidebar',
+        children: [
+          { type: 'input', field: 'desc', label: 'Description' },
+        ],
+      },
+    ]
+    const result = validateSchema(schema)
+    const nestingErrors = result.errors.filter((e) => e.type === 'nesting-violation')
+    expect(nestingErrors).toHaveLength(0)
   })
 
   it('allows basic components nested inside layout containers', () => {
@@ -316,9 +329,9 @@ describe('validateSchema', () => {
         type: 'card',
         children: [
           {
-            type: 'tree-layout',
-            field: 'tree',
-            label: 'Tree',
+            type: 'user-management',
+            field: 'users',
+            label: 'Users',
             children: [
               { type: 'input', field: 'desc', label: 'Desc' },
             ],

@@ -112,9 +112,9 @@ function getTypeZh(type: string): string {
     'checkbox': '多选', 'date': '日期',
     'textarea': '多行文本', 'richtext': '富文本',
     'button-list': '按钮', 'toolbar-buttons': '工具栏按钮', 'upload': '上传',
-    'table': '表格', 'file-list': '文件列表',
+    'table': '表格', 'file-list': '附件面板',
     'transfer': '穿梭框',
-    'banner': '横幅', 'tree-layout': '树形',
+    'banner': '横幅', 'tree-layout': '侧栏面板',
     'date-time-slot': '日期时段', 'dialog': '弹窗',
   }
   return map[type] ?? type

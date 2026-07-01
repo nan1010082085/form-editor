@@ -516,7 +516,7 @@ function updateBoardProperty(key: string, value: unknown) {
 </script>
 
 <template>
-  <div :class="styles.panel">
+  <div :class="[styles.panel, 'editor-ui']">
     <div :class="styles.header">属性配置</div>
 
     <!-- 未选中部件时：显示画布配置 -->

@@ -436,7 +436,7 @@ describe('Widget Default Schema', () => {
   it('tree-layout has children and props', () => {
     const schema = createDefaultSchema('tree-layout')
     expect(schema.type).toBe('tree-layout')
-    expect(schema.props!.title).toBe('树形布局')
+    expect(schema.props!.title).toBe('侧栏面板')
     expect(schema.props!.showSearch).toBe(true)
     expect(Array.isArray(schema.children)).toBe(true)
   })
@@ -455,7 +455,7 @@ describe('Widget Default Schema', () => {
     expect(schema.type).toBe('file-list')
     expect(schema.props!.title).toBe('附件')
     expect(schema.props!.allowDelete).toBe(true)
-    expect(schema.props!.allowPreview).toBe(true)
+    expect(schema.props!.allowPreview).toBe(false)
   })
 
   it('transfer has props with titles and filterable', () => {

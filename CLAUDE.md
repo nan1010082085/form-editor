@@ -45,6 +45,11 @@ src/
 ### 样式规则
 - **样式 100% Schema 驱动**：删除所有硬编码样式、固定宽高，所有组件样式由 Schema 配置驱动
 - **CSS Module 强制**：所有组件样式使用 `.module.scss`，禁止全局样式污染
+- **编辑器 UI 与 Widget 画布严格隔离**：
+  - 编辑器（属性面板、events/api/rules/variables 配置弹窗）使用 `src/styles/editor-ui-tokens.scss`，统一 32px 控件高度，标记 `editor-ui` 类
+  - Widget 画布（`.fg` / `SchemaNode`）尺寸由 `useWidgetControlSize` + 各 widget 的 `module.scss` 控制
+  - **禁止**在 `variables.scss` 全局写 `.el-input` / `.el-select` 高度，避免污染画布内 widget
+  - 两者仅通过属性配置 / 四大配置系统耦合（读写 widget 配置对象），样式层不得交叉
 
 ### 属性面板规则
 - 每个 Widget 必须有对应属性配置面板（config.ts 中 propertyPanel 声明）

@@ -365,10 +365,10 @@ export function registerAllWidgets() {
   })
 
   // Business widgets (业务组件)
-  registerWidget({ name: treeLayoutConfig.name, displayName: treeLayoutConfig.displayName, type: 'tree-layout', group: 'container', component: FgTreeLayout, create: createTreeLayoutWidget, config: treeLayoutConfig })
-  registerWidget({ name: fileListConfig.name, displayName: fileListConfig.displayName, type: 'file-list', group: 'business', component: FgFileList, create: createFileListWidget, config: fileListConfig })
-  registerWidget({ name: transferConfig.name, displayName: transferConfig.displayName, type: 'transfer', group: 'business', component: FgTransfer, create: createTransferWidget, config: transferConfig })
-  registerWidget({ name: descriptionsConfig.name, displayName: descriptionsConfig.displayName, type: 'descriptions', group: 'business', component: FgDescriptions, create: createDescriptionsWidget, config: descriptionsConfig })
+  registerWidget({ name: treeLayoutConfig.name, displayName: treeLayoutConfig.displayName, type: 'tree-layout', group: 'layout', component: FgTreeLayout, create: createTreeLayoutWidget, config: treeLayoutConfig })
+  registerWidget({ name: fileListConfig.name, displayName: fileListConfig.displayName, type: 'file-list', group: 'form', component: FgFileList, create: createFileListWidget, config: fileListConfig })
+  registerWidget({ name: transferConfig.name, displayName: transferConfig.displayName, type: 'transfer', group: 'form', component: FgTransfer, create: createTransferWidget, config: transferConfig })
+  registerWidget({ name: descriptionsConfig.name, displayName: descriptionsConfig.displayName, type: 'descriptions', group: 'static', component: FgDescriptions, create: createDescriptionsWidget, config: descriptionsConfig })
 
   // Flow approval widgets (审批专用)
   registerWidget({ name: approvalUserPickerConfig.name, displayName: approvalUserPickerConfig.displayName, type: 'approval-user-picker', group: 'business', component: FgApprovalUserPicker, create: createApprovalUserPickerWidget, config: approvalUserPickerConfig })
@@ -406,7 +406,7 @@ export function registerAllWidgets() {
     name: iframeConfig.name,
     displayName: iframeConfig.displayName,
     type: 'iframe',
-    group: 'business',
+    group: 'container',
     component: FgIframe,
     create: (id: string) => ({
       id,
@@ -423,7 +423,7 @@ export function registerAllWidgets() {
     name: microAppConfig.name,
     displayName: microAppConfig.displayName,
     type: 'micro-app',
-    group: 'business',
+    group: 'container',
     component: FgMicroApp,
     create: (id: string) => ({
       id,
@@ -436,7 +436,7 @@ export function registerAllWidgets() {
     config: microAppConfig,
   })
 
-  registerWidget({ name: permissionTreeConfig.name, displayName: permissionTreeConfig.displayName, type: 'permission-tree', group: 'business', component: FgPermissionTree, create: createPermissionTreeWidget, config: permissionTreeConfig })
+  registerWidget({ name: permissionTreeConfig.name, displayName: permissionTreeConfig.displayName, type: 'permission-tree', group: 'form', component: FgPermissionTree, create: createPermissionTreeWidget, config: permissionTreeConfig })
   registerWidget({ name: roleManagementConfig.name, displayName: roleManagementConfig.displayName, type: 'role-management', group: 'business', component: FgRoleManagement, create: createRoleManagementWidget, config: roleManagementConfig })
   registerWidget({ name: userManagementConfig.name, displayName: userManagementConfig.displayName, type: 'user-management', group: 'business', component: FgUserManagement, create: createUserManagementWidget, config: userManagementConfig })
   registerWidget({ name: userSelectorConfig.name, displayName: userSelectorConfig.displayName, type: 'user-selector', group: 'business', component: FgUserSelector, create: createUserSelectorWidget, config: userSelectorConfig })

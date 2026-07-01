@@ -3,7 +3,7 @@ import type { WidgetConfig } from '../base/types'
 export const transferConfig: WidgetConfig = {
   name: 'FgTransfer',
   displayName: '穿梭框',
-  description: '穿梭框组件，支持左右列表数据穿梭',
+  description: '双栏穿梭选择字段，数据源来自静态 options 或 API',
   author: 'yangdongnan',
   defaultStyle: { width: '700px', height: '300px' },
   defaultProps: {
@@ -14,9 +14,9 @@ export const transferConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'array', description: '已选值' },
   ],
-  configPanels: ['events', 'rules', 'variables'] as const,
+  configPanels: ['events', 'rules', 'variables', 'api'] as const,
   propertyPanel: {
-    basic: ['field', 'label'],
+    basic: ['field', 'label', 'options'],
     style: [],
     props: [
       { key: 'leftTitle', label: '左侧标题', type: 'text', default: '待选' },

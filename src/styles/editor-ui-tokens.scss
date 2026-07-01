@@ -1,0 +1,72 @@
+// ============================================================
+// 编辑器 UI 表单控件 Token
+//
+// 仅用于：属性面板、四大配置系统（events / api / rules / variables）弹窗。
+// 与画布 widget 样式严格隔离 — widget 尺寸由 useWidgetControlSize + module.scss 控制。
+// 禁止在 .fg 容器或 variables.scss 全局写 EP 控件高度。
+// ============================================================
+
+$editor-control-height: 32px !default;
+
+@mixin editor-unified-controls($height: $editor-control-height) {
+  :global(.el-input),
+  :global(.el-select),
+  :global(.el-input-number) {
+    --el-component-size: #{$height};
+    --el-component-size-small: #{$height};
+  }
+
+  :global(.el-input .el-input__wrapper),
+  :global(.el-input--small .el-input__wrapper) {
+    height: $height;
+    min-height: $height;
+  }
+
+  :global(.el-input .el-input__inner),
+  :global(.el-input--small .el-input__inner) {
+    height: $height;
+  }
+
+  :global(.el-select .el-select__wrapper),
+  :global(.el-select--small .el-select__wrapper) {
+    height: $height;
+    min-height: $height;
+  }
+
+  :global(.el-input-number) {
+    height: $height;
+
+    :global(.el-input__wrapper) {
+      height: $height;
+      min-height: $height;
+    }
+
+    :global(.el-input__inner) {
+      height: $height;
+      line-height: $height;
+    }
+  }
+
+  :global(.el-input-number--small) {
+    height: $height;
+
+    :global(.el-input__wrapper) {
+      height: $height;
+      min-height: $height;
+    }
+
+    :global(.el-input__inner) {
+      height: $height;
+      line-height: $height;
+    }
+  }
+
+  :global(.el-button:not(.is-text):not(.is-link)) {
+    height: $height;
+    min-height: $height;
+  }
+
+  :global(.el-textarea__inner) {
+    min-height: $height;
+  }
+}
