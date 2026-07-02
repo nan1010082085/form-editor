@@ -8,6 +8,7 @@ import { triggerWidgetEvent } from '../../engine/eventEngine'
 import { evaluateCondition } from '../../engine/eventEngine'
 import type { ListApiConfig } from '../../components/WidgetRenderer/types'
 import type { AdvancedTableColumn, ActionButton, AdvPaginationConfig, AdvSelectionConfig } from './config'
+import { getRowCellValue } from './tableRowValue'
 import {
   WIDGET_SURFACE_KEY,
   getTableRowsFromMock,
@@ -117,7 +118,7 @@ function onSelectionChange(rows: Record<string, unknown>[]) {
 // ---- Filter ----
 
 function defaultFilterMethod(prop: string) {
-  return (value: unknown, row: Record<string, unknown>) => row[prop] === value
+  return (value: unknown, row: Record<string, unknown>) => getRowCellValue(row, prop) === value
 }
 
 // ---- Page change ----
@@ -220,8 +221,12 @@ function isRowButtonVisible(btn: ActionButton, row: Record<string, unknown>): bo
 // ---- Tooltip content ----
 
 function getTooltipContent(col: AdvancedTableColumn, row: Record<string, unknown>): string {
-  if (col.tooltipField) return String(row[col.tooltipField] ?? '')
-  return String(row[col.prop] ?? '')
+  if (col.tooltipField) return String(getRowCellValue(row, col.tooltipField) ?? '')
+  return String(getRowCellValue(row, col.prop) ?? '')
+}
+
+function cellValue(row: Record<string, unknown>, prop: string): unknown {
+  return getRowCellValue(row, prop)
 }
 
 // ---- Auto-load ----
@@ -325,45 +330,45 @@ defineExpose({
         <template #default="{ row, $index }">
           <!-- text (default) -->
           <template v-if="!col.render || col.render === 'text'">
-            {{ row[col.prop] }}
+            {{ cellValue(row, col.prop) }}
           </template>
 
           <!-- tooltip -->
           <template v-else-if="col.render === 'tooltip'">
             <el-tooltip :content="getTooltipContent(col, row)" placement="top">
-              <span>{{ row[col.prop] }}</span>
+              <span>{{ cellValue(row, col.prop) }}</span>
             </el-tooltip>
           </template>
 
           <!-- link -->
           <template v-else-if="col.render === 'link'">
             <el-link type="primary" @click.stop="handleLinkClick(col, row, $index)">
-              {{ row[col.prop] }}
+              {{ cellValue(row, col.prop) }}
             </el-link>
           </template>
 
           <!-- tag -->
           <template v-else-if="col.render === 'tag'">
             <el-tag
-              :type="getTagType(col.colorMap, row[col.prop]) as any"
+              :type="getTagType(col.colorMap, cellValue(row, col.prop)) as any"
               size="small"
             >
-              {{ getOptionLabel(col.options as any, row[col.prop]) }}
+              {{ getOptionLabel(col.options as any, cellValue(row, col.prop)) }}
             </el-tag>
           </template>
 
           <!-- badge -->
           <template v-else-if="col.render === 'badge'">
             <el-badge
-              :type="getTagType(col.colorMap, row[col.prop]) as any"
-              :value="getOptionLabel(col.options as any, row[col.prop])"
+              :type="getTagType(col.colorMap, cellValue(row, col.prop)) as any"
+              :value="getOptionLabel(col.options as any, cellValue(row, col.prop))"
             />
           </template>
 
           <!-- image -->
           <template v-else-if="col.render === 'image'">
             <el-image
-              :src="row[col.prop]"
+              :src="cellValue(row, col.prop) as string"
               :style="{ width: (col.imageWidth || 40) + 'px', height: (col.imageWidth || 40) + 'px' }"
               fit="cover"
             />
@@ -388,7 +393,7 @@ defineExpose({
 
           <!-- custom -->
           <template v-else-if="col.render === 'custom'">
-            <span>{{ row[col.prop] }}</span>
+            <span>{{ cellValue(row, col.prop) }}</span>
           </template>
         </template>
       </el-table-column>
