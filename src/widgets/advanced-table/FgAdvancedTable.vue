@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject, computed, reactive, watch, onMounted } from 'vue'
 import { widgetDataKey } from '../base/types'
-import { EVENT_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
+import { EVENT_CONTEXT_KEY, FORM_GRID_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
 import { useListData } from '../../composables/useListData'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { triggerWidgetEvent } from '../../engine/eventEngine'
@@ -10,6 +10,7 @@ import type { ListApiConfig } from '../../components/WidgetRenderer/types'
 import type { AdvancedTableColumn, ActionButton, AdvPaginationConfig, AdvSelectionConfig } from './config'
 import { getRowCellValue } from './tableRowValue'
 import { resolveColumnFilters } from './columnFilters'
+import { resolveEffectiveColumn } from './columnOptions'
 import {
   WIDGET_SURFACE_KEY,
   getTableRowsFromMock,
@@ -19,6 +20,7 @@ import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
+const gridContext = inject(FORM_GRID_CONTEXT_KEY, null)
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
 
 // ---- Schema config ----
@@ -123,7 +125,12 @@ function defaultFilterMethod(prop: string) {
 }
 
 function columnFilters(col: AdvancedTableColumn) {
-  return resolveColumnFilters(col, tableData.value)
+  const effective = resolveEffectiveColumn(col, gridContext?.global?.dictMap)
+  return resolveColumnFilters(effective, tableData.value)
+}
+
+function effectiveColumn(col: AdvancedTableColumn): AdvancedTableColumn {
+  return resolveEffectiveColumn(col, gridContext?.global?.dictMap)
 }
 
 // ---- Page change ----
@@ -355,18 +362,18 @@ defineExpose({
           <!-- tag -->
           <template v-else-if="col.render === 'tag'">
             <el-tag
-              :type="getTagType(col.colorMap, cellValue(row, col.prop)) as any"
+              :type="getTagType(effectiveColumn(col).colorMap, cellValue(row, col.prop)) as any"
               size="small"
             >
-              {{ getOptionLabel(col.options as any, cellValue(row, col.prop)) }}
+              {{ getOptionLabel(effectiveColumn(col).options as any, cellValue(row, col.prop)) }}
             </el-tag>
           </template>
 
           <!-- badge -->
           <template v-else-if="col.render === 'badge'">
             <el-badge
-              :type="getTagType(col.colorMap, cellValue(row, col.prop)) as any"
-              :value="getOptionLabel(col.options as any, cellValue(row, col.prop))"
+              :type="getTagType(effectiveColumn(col).colorMap, cellValue(row, col.prop)) as any"
+              :value="getOptionLabel(effectiveColumn(col).options as any, cellValue(row, col.prop))"
             />
           </template>
 

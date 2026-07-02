@@ -74,6 +74,65 @@ export interface EventExecutionContext {
   exposed?: Record<string, Record<string, unknown>>
   /** 触发目标组件的指定事件 */
   triggerEvent?: (targetId: string, eventName: string) => void
+  /** 表格行上下文（高级表格行按钮/链接事件） */
+  row?: Record<string, unknown>
+  rowIndex?: number
+  selectedRows?: Record<string, unknown>[]
+  selectedCount?: number
+  tableData?: Record<string, unknown>[]
+}
+
+/**
+ * 从对象按点路径读取值
+ */
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  if (!path) return undefined
+  const parts = path.split('.')
+  let current: unknown = obj
+  for (const part of parts) {
+    if (current == null || typeof current !== 'object') return undefined
+    current = (current as Record<string, unknown>)[part]
+  }
+  return current
+}
+
+/**
+ * 解析事件参数中的上下文引用：formData.xxx、row.xxx、{{row.xxx}}
+ */
+function resolveContextString(text: string, ctx: EventExecutionContext): string {
+  const trimmed = text.trim()
+  const templateMatch = trimmed.match(/^\{\{(.+)\}\}$/)
+  if (templateMatch) {
+    const path = templateMatch[1].trim()
+    if (path.startsWith('row.') && ctx.row) {
+      return String(getNestedValue(ctx.row, path.slice(4)) ?? '')
+    }
+    if (path.startsWith('formData.')) {
+      return String(getNestedValue(ctx.getFormData(), path.slice(9)) ?? '')
+    }
+    if (ctx.variables && path in ctx.variables) {
+      return String(ctx.variables[path] ?? '')
+    }
+    return String(getNestedValue({ ...ctx.getFormData(), ...(ctx.variables ?? {}), row: ctx.row }, path) ?? '')
+  }
+  if (trimmed.startsWith('formData.')) {
+    return String(getNestedValue(ctx.getFormData(), trimmed.slice(9)) ?? '')
+  }
+  if (trimmed.startsWith('row.') && ctx.row) {
+    return String(getNestedValue(ctx.row, trimmed.slice(4)) ?? '')
+  }
+  return text
+}
+
+function resolveStringRecord(
+  record: Record<string, string>,
+  ctx: EventExecutionContext,
+): Record<string, string> {
+  const result: Record<string, string> = {}
+  for (const [key, value] of Object.entries(record)) {
+    result[key] = resolveContextString(value, ctx)
+  }
+  return result
 }
 
 /**
@@ -248,7 +307,7 @@ export async function executeEventAction(
         logger.event(`跳转: ${action.navigatePath}`)
         ctx.emit('navigate', {
           path: action.navigatePath,
-          query: action.navigateQuery,
+          query: action.navigateQuery ? resolveStringRecord(action.navigateQuery, ctx) : undefined,
         })
       }
       break
@@ -290,11 +349,9 @@ function resolveMessageData(
   ctx: EventExecutionContext,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {}
-  const formData = ctx.getFormData()
   for (const [key, value] of Object.entries(message)) {
-    if (typeof value === 'string' && value.startsWith('formData.')) {
-      const field = value.slice(9)
-      result[key] = formData[field]
+    if (typeof value === 'string') {
+      result[key] = resolveContextString(value, ctx)
     } else {
       result[key] = value
     }
@@ -303,15 +360,10 @@ function resolveMessageData(
 }
 
 /**
- * 解析文本中的 formData.xxx 引用
+ * 解析文本中的 formData.xxx / row.xxx 引用
  */
 function resolveTextValue(text: string, ctx: EventExecutionContext): string {
-  if (text.startsWith('formData.')) {
-    const field = text.slice(9)
-    const value = ctx.getFormData()[field]
-    return String(value ?? '')
-  }
-  return text
+  return resolveContextString(text, ctx)
 }
 
 /**
@@ -336,6 +388,9 @@ export async function triggerWidgetEvent(
   const context: Record<string, unknown> = {
     ...ctx.getFormData(),
     ...(ctx.variables ?? {}),
+    ...(ctx.row ? { row: ctx.row } : {}),
+    ...(ctx.rowIndex !== undefined ? { rowIndex: ctx.rowIndex } : {}),
+    ...(ctx.selectedCount !== undefined ? { selectedCount: ctx.selectedCount } : {}),
   }
 
   for (const event of widget.events) {

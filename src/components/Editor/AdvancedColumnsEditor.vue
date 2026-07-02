@@ -388,6 +388,10 @@ function toggleButtonEvents(key: string) {
       <!-- tag/badge render fields -->
       <template v-if="col.render === 'tag' || col.render === 'badge'">
         <div :class="styles['adv-columns-editor__field']">
+          <label :class="styles['adv-columns-editor__label']">字典编码</label>
+          <el-input :model-value="col.dictCode ?? ''" size="small" placeholder="leave_type" @update:model-value="(v: string) => updateColumn(idx, 'dictCode', v || undefined)" />
+        </div>
+        <div :class="styles['adv-columns-editor__field']">
           <label :class="styles['adv-columns-editor__label']">颜色映射 (JSON)</label>
           <el-input :model-value="colorMapToText(col.colorMap)" :rows="2" type="textarea" placeholder='{"启用":"success","停用":"danger"}' @update:model-value="(v: string) => updateColorMap(idx, v)" />
         </div>

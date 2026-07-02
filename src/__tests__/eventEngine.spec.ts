@@ -387,6 +387,36 @@ describe('executeEventAction', () => {
       executeEventAction({ type: 'navigate' }, ctx)
       expect(ctx.emit).not.toHaveBeenCalled()
     })
+
+    it('resolves row._id in navigateQuery', () => {
+      ctx = createMockContext({
+        row: { _id: 'LV20260001', status: 'submitted' },
+      })
+      executeEventAction({
+        type: 'navigate',
+        navigatePath: '/app/editor/view',
+        navigateQuery: { id: 'schema-1', recordId: 'row._id' },
+      }, ctx)
+      expect(ctx.emit).toHaveBeenCalledWith('navigate', {
+        path: '/app/editor/view',
+        query: { id: 'schema-1', recordId: 'LV20260001' },
+      })
+    })
+
+    it('resolves {{row._id}} template in navigateQuery', () => {
+      ctx = createMockContext({
+        row: { _id: 'rec-99' },
+      })
+      executeEventAction({
+        type: 'navigate',
+        navigatePath: '/detail',
+        navigateQuery: { recordId: '{{row._id}}' },
+      }, ctx)
+      expect(ctx.emit).toHaveBeenCalledWith('navigate', {
+        path: '/detail',
+        query: { recordId: 'rec-99' },
+      })
+    })
   })
 
   describe('startFlow', () => {

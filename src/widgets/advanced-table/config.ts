@@ -44,6 +44,7 @@ export interface AdvancedTableColumn {
   // tag/badge
   colorMap?: Record<string, string>
   options?: Array<{ label: string; value: string | number }>
+  dictCode?: string
   api?: SchemaApiConfig
   // image
   imageWidth?: number
