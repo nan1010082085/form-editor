@@ -19,7 +19,7 @@ import { computed, inject, provide, ref, onMounted, onUnmounted, type ComputedRe
 import { widgetDataKey, widgetStyleKey, widgetRenderStateKey, formContextKey, widgetBoundsKey, parentBoundsKey, type WidgetBounds } from '../../widgets/base/types'
 import type { Widget, SchemaType, LinkageState } from '../../widgets/base/types'
 import type { FormData, EventExecutionContext } from './types'
-import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY } from './types'
+import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY, FORM_GRID_FORM_KEY } from './types'
 import { getComponentMap } from '../../widgets/registry'
 import { useWidgetStore } from '../../stores/widget'
 import { useEditorStore } from '../../stores/editor'
@@ -191,8 +191,14 @@ onUnmounted(() => {
 /** 事件执行上下文（预览模式从 EditorCanvas/WidgetRenderer 注入） */
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
 
+/** 顶层 formData（absolute 布局联动/提交聚合） */
+const formGridData = inject(FORM_GRID_FORM_KEY, null)
+
 /** 预览模式统一事件触发 */
 async function handlePreviewEvent(trigger: string, _value?: unknown) {
+  if (trigger === 'change' && props.widget.field && formGridData) {
+    formGridData[props.widget.field] = props.widget.defaultValue as FormData[string]
+  }
   if (!eventCtx) return
   await triggerWidgetEvent(props.widget, trigger, eventCtx)
 }
@@ -411,10 +417,21 @@ const wrapperStyle = computed(() => {
         :is="resolvedComponent"
         :widget="widget"
         :editable="isEditMode"
-      />
-      <!-- 子部件层：绝对定位，相对于容器定位（自渲染容器跳过） -->
+      >
+        <!-- form 容器：子部件必须在 el-form 内才能参与校验 -->
+        <div
+          v-if="widget.type === 'form' && filteredChildren.length"
+          :class="styles.childrenLayer"
+        >
+          <SchemaRender
+            :widgets="filteredChildren"
+            :mode="mode"
+          />
+        </div>
+      </component>
+      <!-- 非 form 容器：子部件层绝对定位 -->
       <div
-        v-if="filteredChildren.length && !isSelfRendering"
+        v-if="filteredChildren.length && !isSelfRendering && widget.type !== 'form'"
         :class="styles.childrenLayer"
       >
         <SchemaRender

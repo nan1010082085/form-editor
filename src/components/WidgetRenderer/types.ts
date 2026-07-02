@@ -242,6 +242,16 @@ export const EVENT_CONTEXT_KEY: InjectionKey<EventExecutionContext> = Symbol('Ev
 export type DialogRegistry = Map<string, (visible: boolean) => void>
 export const DIALOG_REGISTRY_KEY: InjectionKey<DialogRegistry> = Symbol('DialogRegistry')
 
+/** 绝对布局下 FgForm 注册 API，供 WidgetRenderer 聚合 validate/submit */
+export interface RegisteredFormApi {
+  validate: () => Promise<boolean>
+  resetFields: () => void
+  syncFromWidgets: () => void
+}
+
+export type FormRegistry = Map<string, RegisteredFormApi>
+export const FORM_REGISTRY_KEY: InjectionKey<FormRegistry> = Symbol('FormRegistry')
+
 /**
  * 生命周期钩子配置
  * 支持函数或字符串表达式两种模式（与 linkage.condition 共享沙箱模式）

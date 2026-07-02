@@ -44,4 +44,5 @@ export {
   ACTION_EMIT_KEY,
   FORM_GRID_LINKAGE_KEY,
   FORM_GRID_T_KEY,
+  FORM_REGISTRY_KEY,
 } from './types'

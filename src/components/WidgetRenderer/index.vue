@@ -30,8 +30,9 @@ import {
   FORM_GRID_EDITABLE_FIELDS_KEY,
   EVENT_CONTEXT_KEY,
   DIALOG_REGISTRY_KEY,
+  FORM_REGISTRY_KEY,
 } from './types'
-import type { DialogRegistry } from './types'
+import type { DialogRegistry, FormRegistry } from './types'
 import type { EventExecutionContext } from './types'
 import { useLinkage } from '@/composables/useLinkage'
 import { useFormData } from '@/composables/useFormData'
@@ -41,6 +42,7 @@ import { useLogger } from '@/composables/useLogger'
 import { WIDGET_SURFACE_KEY } from '@/widgets/base/widgetMock'
 import { fetchRuntimeUrl } from '@/api/runtimeApi'
 import { triggerWidgetEvent } from '@/engine/eventEngine'
+import { collectSchemaFormData, applySchemaFormData, validateSchemaFields } from '@/utils/schemaFormData'
 import styles from './style.module.scss'
 
 const logger = useLogger('WidgetRenderer')
@@ -153,9 +155,9 @@ function handleDialogCancel() {
 // ---- 表单数据管理（抽取自 useFormData） ----
 const {
   formData,
-  getFormData,
-  setFormData,
-  resetFields,
+  getFormData: getFlowFormData,
+  setFormData: setFlowFormData,
+  resetFields: resetFlowFields,
   validate: baseValidate,
   initFormData,
 } = useFormData(formRef)
@@ -246,6 +248,10 @@ const dialogRegistry: DialogRegistry = new Map()
 const lastOpenedDialogId = ref<string | undefined>(undefined)
 provide(DIALOG_REGISTRY_KEY, dialogRegistry)
 
+// ---- 表单注册表（FgForm 注册 validate API，absolute 布局聚合 submit/validate） ----
+const formRegistry: FormRegistry = new Map()
+provide(FORM_REGISTRY_KEY, formRegistry)
+
 // 只读模式注入（使用 toRef 保持响应式）
 const readonlyRef = computed(() => props.readonly ?? false)
 provide(FORM_GRID_READONLY_KEY, readonlyRef)
@@ -306,7 +312,7 @@ const eventContext: EventExecutionContext = {
   submitForm: () => { submit() },
   validateForm: async () => validate(),
   resetForm: () => { resetFields() },
-  getFormData: () => formData,
+  getFormData: () => getFormData(),
   emit: (eventName: string, payload?: unknown) => {
     emit('action', { type: 'emit', eventName, eventPayload: payload } as SchemaAction)
   },
@@ -456,6 +462,9 @@ async function loadApiData(config: LoadApiConfig): Promise<void> {
 onMounted(async () => {
   // 1. 从 schema 初始化默认值
   initFormData(props.schema)
+  if (isAbsoluteLayout.value) {
+    Object.assign(formData, collectSchemaFormData(props.schema))
+  }
 
   // 2. loadApi 回填（覆盖 defaultValue）
   if (props.loadApi) {
@@ -463,12 +472,40 @@ onMounted(async () => {
   }
 })
 
-watch(() => props.schema, (val) => initFormData(val), { deep: true })
+watch(() => props.schema, (val) => {
+  initFormData(val)
+  if (isAbsoluteLayout.value) {
+    Object.assign(formData, collectSchemaFormData(val))
+  }
+}, { deep: true })
 
 // ---- 统一 API ----
 
+/** absolute 布局：聚合所有 FgForm 校验 + schema 字段规则 */
+async function validateAbsoluteForms(): Promise<boolean> {
+  for (const [, api] of formRegistry) {
+    api.syncFromWidgets()
+    await api.validate()
+  }
+  await validateSchemaFields(props.schema)
+  return true
+}
+
+/** absolute 布局：重置所有已注册表单 */
+function resetAbsoluteForms(): void {
+  for (const [, api] of formRegistry) {
+    api.resetFields()
+  }
+}
+
 /** 校验整个表单（带 validate-error 事件上报） */
 async function validate(): Promise<boolean> {
+  if (isAbsoluteLayout.value) {
+    return validateAbsoluteForms().catch((errors): never => {
+      emit('validate-error', errors as Record<string, unknown>)
+      throw errors
+    })
+  }
   return baseValidate().catch((errors): never => {
     emit('validate-error', errors as Record<string, unknown>)
     throw errors
@@ -496,6 +533,38 @@ function getFieldError(field: string): string | undefined {
 /** 滚动到指定字段 */
 function scrollToField(field: string) {
   formRef.value?.scrollToField(field)
+}
+
+/** 获取表单数据副本 */
+function getFormData(): FormData {
+  if (isAbsoluteLayout.value) {
+    return collectSchemaFormData(props.schema)
+  }
+  return getFlowFormData()
+}
+
+/** 合并设置表单数据 */
+function setFormData(data: FormData) {
+  if (isAbsoluteLayout.value) {
+    applySchemaFormData(props.schema, data)
+    for (const [, api] of formRegistry) {
+      api.syncFromWidgets()
+    }
+    Object.assign(formData, data)
+    return
+  }
+  setFlowFormData(data)
+}
+
+/** 重置表单字段 */
+function resetFields() {
+  if (isAbsoluteLayout.value) {
+    resetAbsoluteForms()
+    initFormData(props.schema)
+    Object.assign(formData, collectSchemaFormData(props.schema))
+    return
+  }
+  resetFlowFields()
 }
 
 /** 提交表单（校验 + 钩子 + 数据转换后触发 submit 事件） */

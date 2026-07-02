@@ -14,6 +14,7 @@ import { inject, ref, reactive, provide, watch, onMounted, onUnmounted } from 'v
 import type { FormInstance } from 'element-plus'
 import { widgetDataKey, formContextKey } from '../base/types'
 import type { Widget } from '../base/types'
+import { FORM_REGISTRY_KEY } from '@/components/WidgetRenderer/types'
 import { useWidgetLifecycle } from '@/composables/useWidgetLifecycle'
 import { useWorkerRequest } from '@/composables/useWorkerRequest'
 import { useLogger } from '@/composables/useLogger'
@@ -45,14 +46,17 @@ const formModel = reactive<Record<string, unknown>>({})
 function syncModel(widgets: Widget[]): void {
   for (const w of widgets) {
     if (w.field) {
-      if (!(w.field in formModel)) {
-        formModel[w.field] = w.defaultValue ?? null
-      }
+      formModel[w.field] = w.defaultValue ?? null
     }
     if (w.children?.length) {
       syncModel(w.children)
     }
   }
+}
+
+/** 校验前将 widget.defaultValue 同步到 el-form model */
+function syncFromWidgets() {
+  syncModel(widgetData.value.children ?? [])
 }
 
 /** 监听 children 变化，保持 formModel 与 widget 值同步 */
@@ -76,7 +80,9 @@ function updateField(field: string, value: unknown) {
 // ---- Provide 表单上下文 ----
 provide(formContextKey, { formRef, formModel, updateField })
 
-// ---- 生命周期集成 ----
+// ---- 注册到 WidgetRenderer 表单聚合表（absolute 布局） ----
+const formRegistry = inject(FORM_REGISTRY_KEY, null)
+
 const { trigger } = useWidgetLifecycle(widgetData, formModel)
 
 onMounted(() => {
@@ -84,10 +90,27 @@ onMounted(() => {
   if (widgetData.value.api) {
     loadRemoteData()
   }
+  if (formRegistry && widgetData.value.id) {
+    formRegistry.set(widgetData.value.id, {
+      validate: async () => {
+        syncFromWidgets()
+        if (!formRef.value) return true
+        await formRef.value.validate()
+        return true
+      },
+      resetFields: () => {
+        formRef.value?.resetFields()
+      },
+      syncFromWidgets,
+    })
+  }
 })
 
 onUnmounted(() => {
   trigger('onUnmount')
+  if (formRegistry && widgetData.value.id) {
+    formRegistry.delete(widgetData.value.id)
+  }
 })
 
 // ---- loadApi 远程数据加载 ----
@@ -113,7 +136,12 @@ async function loadRemoteData() {
 
 // ---- defineExpose ----
 defineExpose({
-  validate: () => formRef.value?.validate() ?? Promise.resolve(false),
+  validate: async () => {
+    syncFromWidgets()
+    if (!formRef.value) return false
+    await formRef.value.validate()
+    return true
+  },
   validateField: (field: string) => formRef.value?.validateField(field),
   clearValidate: (field?: string) => formRef.value?.clearValidate(field),
   resetFields: () => {
@@ -127,6 +155,7 @@ defineExpose({
   },
   submit: async () => {
     await trigger('onBeforeSubmit')
+    syncFromWidgets()
     const valid = await formRef.value?.validate()
     if (valid) {
       emit('submit', { ...formModel })
