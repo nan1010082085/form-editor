@@ -17,7 +17,7 @@ export const userSelectorConfig: WidgetConfig = {
     { key: 'value', type: 'string', description: '选中用户ID', example: '' },
     { key: 'label', type: 'string', description: '选中用户名', example: '' },
   ],
-  configPanels: ['events', 'rules', 'variables'],
+  configPanels: ['events', 'linkages', 'variables'],
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

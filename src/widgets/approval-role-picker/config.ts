@@ -17,7 +17,7 @@ export const approvalRolePickerConfig: WidgetConfig = {
     { key: 'value', type: 'string', description: '选中角色ID', example: '' },
     { key: 'label', type: 'string', description: '选中角色名', example: '' },
   ],
-  configPanels: ['events', 'rules', 'variables'],
+  configPanels: ['events', 'linkages', 'variables'],
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

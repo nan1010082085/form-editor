@@ -20,7 +20,7 @@ export const uploadConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'array', description: '已选文件列表', example: [] },
   ],
-  configPanels: ['events', 'rules', 'variables'] as const,
+  configPanels: ['events', 'linkages', 'variables'] as const,
   propertyPanel: {
     basic: ['field', 'label'],
     style: [],

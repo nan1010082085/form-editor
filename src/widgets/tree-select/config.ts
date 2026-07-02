@@ -22,7 +22,7 @@ export const treeSelectConfig: WidgetConfig = {
     { key: 'value', type: 'string', description: '选中值', example: '' },
     { key: 'label', type: 'string', description: '选中标签', example: '' },
   ],
-  configPanels: ['events', 'rules', 'api', 'variables'],
+  configPanels: ['events', 'linkages', 'api', 'variables'],
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue', 'options'],
     style: ['fontSize', 'color', 'backgroundColor'],

@@ -21,7 +21,7 @@ export const cascaderConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'array', description: '当前选中值（数组）', example: [] },
   ],
-  configPanels: ['events', 'rules', 'api', 'variables'] as const,
+  configPanels: ['events', 'linkages', 'api', 'variables'] as const,
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

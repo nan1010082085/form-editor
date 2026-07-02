@@ -21,7 +21,7 @@ export const switchConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'boolean', description: '当前开关状态', example: false },
   ],
-  configPanels: ['events', 'rules', 'variables'] as const,
+  configPanels: ['events', 'linkages', 'variables'] as const,
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

@@ -17,7 +17,7 @@ export const approvalCommentConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'string', description: '输入的审批意见', example: '' },
   ],
-  configPanels: ['events', 'rules', 'variables'],
+  configPanels: ['events', 'linkages', 'variables'],
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

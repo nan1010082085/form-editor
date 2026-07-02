@@ -16,7 +16,7 @@ export const autocompleteConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'string', description: '当前输入值', example: '' },
   ],
-  configPanels: ['events', 'rules', 'variables'] as const,
+  configPanels: ['events', 'linkages', 'variables'] as const,
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

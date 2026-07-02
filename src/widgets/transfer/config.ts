@@ -14,7 +14,7 @@ export const transferConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'array', description: '已选值' },
   ],
-  configPanels: ['events', 'rules', 'variables', 'api'] as const,
+  configPanels: ['events', 'linkages', 'variables', 'api'] as const,
   propertyPanel: {
     basic: ['field', 'label', 'options'],
     style: [],

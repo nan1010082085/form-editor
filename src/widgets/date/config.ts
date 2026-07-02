@@ -19,7 +19,7 @@ export const dateConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'string', description: '当前字段值', example: '' },
   ],
-  configPanels: ['events', 'rules', 'variables'],
+  configPanels: ['events', 'linkages', 'variables'],
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

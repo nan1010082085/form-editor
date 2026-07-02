@@ -18,7 +18,7 @@ export const colorPickerConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'string', description: '当前颜色值', example: '#409eff' },
   ],
-  configPanels: ['events', 'rules', 'variables'] as const,
+  configPanels: ['events', 'linkages', 'variables'] as const,
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

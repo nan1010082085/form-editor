@@ -18,7 +18,7 @@ export const iconPickerConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'string', description: '图标名称', example: 'Edit' },
   ],
-  configPanels: ['events', 'rules', 'variables'],
+  configPanels: ['events', 'linkages', 'variables'],
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

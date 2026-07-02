@@ -19,7 +19,7 @@ export const tagInputConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'array', description: '当前标签数组', example: [] },
   ],
-  configPanels: ['events', 'rules', 'variables'] as const,
+  configPanels: ['events', 'linkages', 'variables'] as const,
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

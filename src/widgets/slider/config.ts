@@ -22,7 +22,7 @@ export const sliderConfig: WidgetConfig = {
   exposedValues: [
     { key: 'value', type: 'number', description: '当前滑块值', example: 0 },
   ],
-  configPanels: ['events', 'rules', 'variables'] as const,
+  configPanels: ['events', 'linkages', 'variables'] as const,
   propertyPanel: {
     basic: ['field', 'label', 'defaultValue'],
     style: ['fontSize', 'color', 'backgroundColor'],

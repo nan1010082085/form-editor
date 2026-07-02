@@ -14,6 +14,7 @@ import { useBoardStore } from '../../stores/board'
 import { getWidget } from '../../widgets/registry'
 import { publicStylePanel } from '../../widgets/base/publicSchema'
 import type { Widget, WidgetEvent, SchemaApiConfig, ConfigPanelType, ArrayFieldSchema, WidgetConfig, CanvasUnit } from '../../widgets/base/types'
+import type { SchemaLinkage } from '../WidgetRenderer/types'
 import PropertyField from './PropertyField.vue'
 import BorderEditor from './BorderEditor.vue'
 import BorderRadiusEditor from './BorderRadiusEditor.vue'
@@ -29,7 +30,7 @@ import GenericArrayEditor from './GenericArrayEditor.vue'
 import OptionsEditor from './OptionsEditor.vue'
 import RulesEditor from './RulesEditor.vue'
 import EventConfigDialog from './EventConfigDialog.vue'
-import LinkageConfigDialog from './LinkageConfigDialog.vue'
+import LinkageSchemaDialog from './LinkageSchemaDialog.vue'
 import OptionsApiConfigDialog from './OptionsApiConfigDialog.vue'
 import VariableConfigDialog from './VariableConfigDialog.vue'
 import type { WidgetVariable } from '../../widgets/base/types'
@@ -360,14 +361,14 @@ const configHelpText = computed(() => {
       </ul>
     `)
   }
-  if (configPanels.value.includes('rules')) {
+  if (configPanels.value.includes('linkages') || configPanels.value.includes('rules')) {
     parts.push(`
-      <p><strong>联动规则</strong></p>
-      <p>监听其他字段值变化，自动控制当前组件状态：</p>
+      <p><strong>字段联动</strong></p>
+      <p>监听其他字段值变化，写入 <code>linkages</code>，运行时由 useLinkage 生效：</p>
       <ul>
-        <li>设置监听字段和触发条件表达式</li>
-        <li>条件为真时：自动显示/隐藏/禁用/必填/更新选项</li>
-        <li>条件为假时：恢复默认状态或指定回退值</li>
+        <li>可见 / 禁用 / 必填 / 选项 / 设置值 / 重置字段</li>
+        <li>设置监听字段和条件表达式</li>
+        <li>条件为假时可指定回退值</li>
       </ul>
     `)
   }
@@ -398,7 +399,7 @@ const configHelpText = computed(() => {
 // ---- 事件/规则/API/变量 弹框 ----
 
 const eventDialogVisible = ref(false)
-const ruleDialogVisible = ref(false)
+const linkageDialogVisible = ref(false)
 const apiDialogVisible = ref(false)
 const variableDialogVisible = ref(false)
 
@@ -406,8 +407,8 @@ function openEventDialog() {
   eventDialogVisible.value = true
 }
 
-function openRuleDialog() {
-  ruleDialogVisible.value = true
+function openLinkageDialog() {
+  linkageDialogVisible.value = true
 }
 
 function openApiDialog() {
@@ -418,7 +419,7 @@ function openApiDialog() {
 watch(() => editorStore.configDialogTrigger, (trigger) => {
   if (!trigger) return
   if (trigger.type === 'events') eventDialogVisible.value = true
-  else if (trigger.type === 'rules') ruleDialogVisible.value = true
+  else if (trigger.type === 'rules' || trigger.type === 'linkages') linkageDialogVisible.value = true
   else if (trigger.type === 'api') apiDialogVisible.value = true
   else if (trigger.type === 'variables') variableDialogVisible.value = true
   editorStore.clearConfigDialogTrigger()
@@ -429,9 +430,9 @@ function handleEventSave(events: WidgetEvent[]) {
   widgetStore.updateWidget(selectedWidget.value.id, { events })
 }
 
-function handleRuleSave(rules: WidgetEvent[]) {
+function handleLinkageSave(linkages: SchemaLinkage[]) {
   if (!selectedWidget.value) return
-  widgetStore.updateWidget(selectedWidget.value.id, { rules })
+  widgetStore.updateWidget(selectedWidget.value.id, { linkages })
 }
 
 function handleApiSave(api: SchemaApiConfig | undefined) {
@@ -598,10 +599,10 @@ function updateBoardProperty(key: string, value: unknown) {
                   {{ selectedWidget.events.length }}
                 </span>
               </el-button>
-              <el-button v-if="panel === 'rules'" plain @click="openRuleDialog">
-                规则配置
-                <span v-if="selectedWidget.rules?.length" :class="styles.badge">
-                  {{ selectedWidget.rules.length }}
+              <el-button v-if="panel === 'linkages' || panel === 'rules'" plain @click="openLinkageDialog">
+                字段联动
+                <span v-if="selectedWidget.linkages?.length" :class="styles.badge">
+                  {{ selectedWidget.linkages.length }}
                 </span>
               </el-button>
               <el-button v-if="panel === 'api'" plain @click="openApiDialog">
@@ -774,11 +775,11 @@ function updateBoardProperty(key: string, value: unknown) {
         @save="handleEventSave"
       />
 
-      <LinkageConfigDialog
-        :visible="ruleDialogVisible"
-        :events="selectedWidget.rules ?? []"
-        @update:visible="ruleDialogVisible = $event"
-        @save="handleRuleSave"
+      <LinkageSchemaDialog
+        :visible="linkageDialogVisible"
+        :linkages="selectedWidget.linkages ?? []"
+        @update:visible="linkageDialogVisible = $event"
+        @save="handleLinkageSave"
       />
 
       <OptionsApiConfigDialog

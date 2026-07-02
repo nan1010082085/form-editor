@@ -99,7 +99,7 @@ export const useEditorStore = defineStore('editor', () => {
   // 配置弹窗触发（右键菜单 → PropertyPanel 打开弹框）
   // ================================================================
 
-  type ConfigDialogType = 'events' | 'rules' | 'api' | 'variables'
+  type ConfigDialogType = 'events' | 'rules' | 'linkages' | 'api' | 'variables'
   const configDialogTrigger = ref<{ widget: Widget; type: ConfigDialogType } | null>(null)
 
   function openConfigDialog(widget: Widget, type: ConfigDialogType) {

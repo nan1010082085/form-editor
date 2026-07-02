@@ -133,6 +133,7 @@ export type EventActionType =
   | 'navigate'        // 路由跳转
   | 'startFlow'       // 发起流程
   | 'endFlow'         // 结束流程
+  | 'submitSubmission' // 校验并提交表单数据到 Submission API
 
 /** 事件动作 */
 export interface SchemaEventAction {
@@ -175,6 +176,9 @@ export interface SchemaEventAction {
   instanceId?: string
   /** 结束原因 */
   reason?: string
+  // ---- submitSubmission 专用 ----
+  /** 目标 Schema ID（sourceId 或 publishId） */
+  schemaId?: string
 }
 
 // ============================================================
@@ -341,7 +345,7 @@ export interface LinkageState {
 // ============================================================
 
 /** 配置面板类型（属性面板底部的弹框入口按钮） */
-export type ConfigPanelType = 'events' | 'rules' | 'api' | 'variables'
+export type ConfigPanelType = 'events' | 'rules' | 'linkages' | 'api' | 'variables'
 
 /** 属性面板声明中的基础属性快捷键 */
 export type BasicPropKey = 'field' | 'label' | 'defaultValue' | 'hidden' | 'options' | 'validationRules'
