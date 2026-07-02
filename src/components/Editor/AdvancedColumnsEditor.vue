@@ -6,6 +6,7 @@
  */
 import { ref } from 'vue'
 import type { AdvancedTableColumn, ActionButton } from '@/widgets/advanced-table/config'
+import { COLUMN_PRESETS } from '@/widgets/advanced-table/columnPresets'
 import type { SchemaApiConfig } from '@/components/WidgetRenderer/types'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import ActionListEditor from '@/components/Editor/ActionListEditor.vue'
@@ -19,6 +20,14 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:columns': [columns: AdvancedTableColumn[]]
 }>()
+
+const selectedPresetId = ref('')
+
+function applyColumnPreset() {
+  const preset = COLUMN_PRESETS.find((p) => p.id === selectedPresetId.value)
+  if (!preset) return
+  emit('update:columns', preset.columns.map((col) => ({ ...col })))
+}
 
 // ---- Options ----
 
@@ -243,6 +252,20 @@ function toggleButtonEvents(key: string) {
 
 <template>
   <div :class="styles['adv-columns-editor']">
+    <div :class="styles['adv-columns-editor__preset-bar']">
+      <span>E-35 列模板</span>
+      <el-select v-model="selectedPresetId" placeholder="选择模板" clearable size="small" style="width: 180px">
+        <el-option
+          v-for="preset in COLUMN_PRESETS"
+          :key="preset.id"
+          :label="preset.label"
+          :value="preset.id"
+        />
+      </el-select>
+      <el-button size="small" type="primary" :disabled="!selectedPresetId" @click="applyColumnPreset">
+        应用模板
+      </el-button>
+    </div>
     <div v-if="columns.length === 0" :class="styles['adv-columns-editor__empty']">
       未配置列。
     </div>

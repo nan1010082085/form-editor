@@ -21,7 +21,7 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
   'table', 'richtext', 'upload', 'banner', 'date-time-slot', 'time-picker',
   'file-list', 'transfer', 'cascader', 'rate', 'color-picker', 'permission-tree',
-  'tag-input', 'autocomplete', 'descriptions', 'advanced-table', 'statistic',
+  'tag-input', 'autocomplete', 'descriptions', 'advanced-table', 'crud-list-page', 'tree-table', 'statistic',
   // 布局
   'tree-layout',
   // 嵌入容器
@@ -65,7 +65,7 @@ const BASIC_CATEGORY_TYPES = new Set<string>([
   'table', 'richtext', 'banner', 'date-time-slot', 'time-picker',
   'upload', 'transfer', 'file-list', 'permission-tree',
   'cascader', 'rate', 'color-picker', 'tag-input', 'autocomplete',
-  'descriptions', 'advanced-table', 'statistic',
+  'descriptions', 'advanced-table', 'tree-table', 'statistic',
   'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
   'line-chart', 'area-chart',
   'pie-chart', 'donut-chart',

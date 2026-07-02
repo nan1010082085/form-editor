@@ -2,7 +2,7 @@
 /**
  * PublishView — 已发布 Schema 渲染器
  *
- * 通过 route.query.id (publishId) 加载已发布 Schema 并渲染。
+ * 通过 path `/view/:schemaCode` 或 route.query.id (publishId) 加载已发布 Schema 并渲染。
  * 支持 postMessage API，可作为 iframe 嵌入宿主系统。
  *
  * 宿主通信协议（iframe 嵌入场景）：
@@ -20,8 +20,9 @@ import { useRoute } from 'vue-router'
 import { WidgetRenderer } from '@/components/WidgetRenderer'
 import type { FormData } from '@/components/WidgetRenderer'
 import type { PartialWidget } from '@/widgets/base/types'
+import type { PublishedSchemaItem } from '@/types/api'
 import { useAppStore } from '@/stores/app'
-import { fetchPublishedSchema, fetchPublishedByPublishId } from '@/utils/apiClient'
+import { fetchPublishedSchema, fetchPublishedByPublishId, fetchPublishedByCode } from '@/utils/apiClient'
 import { sendToHost } from '@/microapp/bridge'
 import { registerAllWidgets } from '@/widgets'
 import styles from './PublishView.module.scss'
@@ -39,6 +40,7 @@ const boardVariables = ref<Record<string, unknown>>({})
 const loading = ref(true)
 const error = ref('')
 const schemaName = ref('')
+const loadedPublishId = ref('')
 
 // ---- 表单模式状态（由宿主通过 fg:set-mode 设置） ----
 const formMode = ref<'edit' | 'view' | 'partial'>('edit')
@@ -48,7 +50,15 @@ const readonlyFields = ref<string[] | undefined>(undefined)
 /** 是否全局只读（view 模式） */
 const isReadonly = computed(() => formMode.value === 'view')
 
-const schemaId = computed(() => route.query.id as string ?? '')
+const schemaRouteKey = computed(() => {
+  const codeParam = route.params.schemaCode as string | undefined
+  if (codeParam) return `code:${codeParam}`
+  const id = route.query.id as string | undefined
+  if (id) return `id:${id}`
+  const codeQuery = route.query.schemaCode as string | undefined
+  if (codeQuery) return `code:${codeQuery}`
+  return ''
+})
 const context = computed(() => appStore.formGridContext)
 
 /** A-08 — 可选 AI 侧边栏（query.aiSidebar=1 或 board 变量 enableAiSidebar） */
@@ -101,6 +111,44 @@ function boardVariablesToMap(
   return map
 }
 
+async function loadSchemaByCode(code: string) {
+  loading.value = true
+  error.value = ''
+  schema.value = []
+  schemaName.value = ''
+  boardVariables.value = {}
+
+  try {
+    const publishedSchema = await fetchPublishedByCode(code)
+    if (!publishedSchema) {
+      error.value = `未找到 code 为 "${code}" 的已发布 Schema`
+      return
+    }
+    applyPublishedSchema(publishedSchema)
+  } catch (err: unknown) {
+    error.value = err instanceof Error ? err.message : `加载 Schema 失败`
+  } finally {
+    loading.value = false
+  }
+}
+
+function applyPublishedSchema(publishedSchema: PublishedSchemaItem) {
+  loadedPublishId.value = publishedSchema.publishId
+  const raw = publishedSchema.json
+  if (Array.isArray(raw)) {
+    schema.value = raw
+    boardVariables.value = buildQueryVariables(route.query as Record<string, unknown>)
+  } else {
+    schema.value = raw?.widgets ?? []
+    canvasConfig.value = raw?.board?.canvas ?? {}
+    boardVariables.value = {
+      ...boardVariablesToMap(raw?.board?.variables),
+      ...buildQueryVariables(route.query as Record<string, unknown>),
+    }
+  }
+  schemaName.value = publishedSchema.name
+}
+
 async function loadSchema(id: string) {
   loading.value = true
   error.value = ''
@@ -118,22 +166,7 @@ async function loadSchema(id: string) {
       error.value = `未找到 ID 为 "${id}" 的已发布 Schema`
       return
     }
-    // json 可能是 Widget[] 或 { widgets: Widget[], board: {...} }
-    const raw = publishedSchema.json
-    if (Array.isArray(raw)) {
-      schema.value = raw
-    } else {
-      schema.value = raw?.widgets ?? []
-      canvasConfig.value = raw?.board?.canvas ?? {}
-      boardVariables.value = {
-        ...boardVariablesToMap(raw?.board?.variables),
-        ...buildQueryVariables(route.query as Record<string, unknown>),
-      }
-    }
-    if (Array.isArray(raw)) {
-      boardVariables.value = buildQueryVariables(route.query as Record<string, unknown>)
-    }
-    schemaName.value = publishedSchema.name
+    applyPublishedSchema(publishedSchema)
   } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : `加载 Schema 失败`
   } finally {
@@ -141,7 +174,14 @@ async function loadSchema(id: string) {
   }
 }
 
-watch(schemaId, (id) => { if (id) loadSchema(id) }, { immediate: true })
+watch(schemaRouteKey, (key) => {
+  if (!key) return
+  if (key.startsWith('code:')) {
+    loadSchemaByCode(key.slice(5))
+  } else if (key.startsWith('id:')) {
+    loadSchema(key.slice(3))
+  }
+}, { immediate: true })
 
 watch(
   () => route.query,
@@ -160,7 +200,7 @@ watch(
 function sendResponse(type: string, payload: unknown, requestId?: string) {
   sendToHost({
     type,
-    id: schemaId.value,
+    id: loadedPublishId.value,
     requestId,
     ...(typeof payload === 'object' && payload !== null ? payload : { payload }),
   })
@@ -219,7 +259,7 @@ function handleMessage(event: MessageEvent) {
 function handleSubmit(data: FormData) {
   sendToHost({
     type: 'fg:submit',
-    id: schemaId.value,
+    id: loadedPublishId.value,
     data,
   })
 }

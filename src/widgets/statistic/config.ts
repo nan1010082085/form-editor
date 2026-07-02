@@ -50,6 +50,7 @@ export const statisticConfig: WidgetConfig = {
       { key: 'color', label: '数值颜色', type: 'color', default: '#409EFF' },
       { key: 'valueFontSize', label: '数值字号', type: 'input', default: '28px' },
       { key: 'titleFontSize', label: '标题字号', type: 'input', default: '14px' },
+      { key: 'refreshInterval', label: '自动刷新(秒)', type: 'number', default: 0, placeholder: '0=关闭' },
     ],
   },
 }

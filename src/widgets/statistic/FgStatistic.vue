@@ -3,6 +3,7 @@ import { inject, computed, ref, watch, type CSSProperties } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useApiRequest } from '../../composables/useApiRequest'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useWidgetAutoRefresh } from '../../composables/useWidgetAutoRefresh'
 import styles from './style.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 
@@ -19,6 +20,10 @@ const apiUrl = computed(() => props.value.apiUrl as string)
 const apiMethod = computed(() => (props.value.apiMethod as string) ?? 'get')
 const apiHeaders = computed(() => (props.value.apiHeaders as Record<string, string>) ?? {})
 const responseDataPath = computed(() => props.value.responseDataPath as string)
+const refreshInterval = computed(() => {
+  const n = Number(props.value.refreshInterval)
+  return Number.isFinite(n) && n > 0 ? n : 0
+})
 
 function resolveDataPath(data: unknown, path: string): unknown {
   if (!path) return data
@@ -51,6 +56,8 @@ watch(apiUrl, (url) => {
   if (url) loadData()
   else apiValue.value = null
 })
+
+useWidgetAutoRefresh(loadData, refreshInterval)
 
 // Current display value: API data takes priority when apiUrl is set
 const currentValue = computed(() => {
@@ -99,6 +106,7 @@ const titleStyle = computed<CSSProperties>(() => {
 useExposeWidget(() => ({
   get loading() { return loading.value },
   get currentValue() { return currentValue.value },
+  refresh: loadData,
 }))
 </script>
 

@@ -39,6 +39,7 @@ export type BasicType =
   | 'autocomplete'
   | 'descriptions'
   | 'advanced-table'
+  | 'tree-table'
   | 'bar-chart' | 'stacked-bar-chart' | 'horizontal-bar-chart'
   | 'line-chart' | 'area-chart'
   | 'pie-chart' | 'donut-chart'
@@ -134,6 +135,7 @@ export type EventActionType =
   | 'startFlow'       // 发起流程
   | 'endFlow'         // 结束流程
   | 'submitSubmission' // 校验并提交表单数据到 Submission API
+  | 'exportData'       // 导出文件下载（CSV/Excel 等）
 
 /** 事件动作 */
 export interface SchemaEventAction {
@@ -179,6 +181,8 @@ export interface SchemaEventAction {
   // ---- submitSubmission 专用 ----
   /** 目标 Schema ID（sourceId 或 publishId） */
   schemaId?: string
+  /** exportData 专用：下载文件名（不含扩展名时可从 Content-Disposition 推断） */
+  exportFileName?: string
 }
 
 // ============================================================
@@ -591,6 +595,7 @@ export type PartialWidget = Omit<Widget, 'id' | 'name' | 'position' | 'children'
 export const FULL_WIDTH_TYPES = [
   'table',
   'advanced-table',
+  'tree-table',
   'upload',
   'transfer',
   'banner',

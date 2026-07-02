@@ -12,7 +12,7 @@ import { useQiankunShell } from '@schema-platform/platform-shared/qiankun'
 
 const route = useRoute()
 const router = useRouter()
-const { isQiankunSubApp, goToShellHome } = useQiankunShell()
+const { isQiankunSubApp, shouldHideSubAppMenu, goToShellHome } = useQiankunShell()
 
 const navItems = [
   { path: '/instances', label: '实例管理', icon: 'odometer' },
@@ -26,9 +26,9 @@ const activeNav = computed(() => {
 </script>
 
 <template>
-  <div :class="styles.layout">
+  <div :class="[styles.layout, shouldHideSubAppMenu && styles.layoutEmbedded]">
     <!-- 侧边栏 -->
-    <aside :class="styles.sidebar">
+    <aside v-if="!shouldHideSubAppMenu" :class="styles.sidebar">
       <div :class="styles.logo" @click="router.push('/instances')">
         <span :class="styles.logoText">可视化编辑器</span>
       </div>
@@ -45,7 +45,7 @@ const activeNav = computed(() => {
         </router-link>
       </nav>
 
-      <div v-if="isQiankunSubApp" :class="styles.sidebarFooter">
+      <div v-if="isQiankunSubApp && !shouldHideSubAppMenu" :class="styles.sidebarFooter">
         <button
           type="button"
           :class="[styles.navItem, styles.footerItem]"

@@ -66,6 +66,7 @@ export const barChartConfig: WidgetConfig = {
       ]},
       { key: 'customColors', label: '自定义颜色', type: 'color-array' },
       { key: 'rawOption', label: '高级配置 (JSON)', type: 'json' },
+      { key: 'refreshInterval', label: '自动刷新(秒)', type: 'number', default: 0, placeholder: '0=关闭' },
     ],
   },
 }

@@ -11,8 +11,18 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { fetchTemplates, deleteTemplate } from '@/utils/apiClient'
 import type { TemplateItem as WidgetTemplateItem, TemplateCategory } from '@/utils/apiClient'
 import type { PaginatedResponse } from '@/types/api'
+import type { PartialWidget } from '@/widgets/base/types'
+import { WidgetRenderer } from '@/components/WidgetRenderer'
+import { registerAllWidgets } from '@/widgets'
+import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
 import styles from './TemplatePanel.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+
+registerAllWidgets()
+
+const emit = defineEmits<{
+  apply: [template: WidgetTemplateItem]
+}>()
 
 const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   form: '表单',
@@ -32,6 +42,9 @@ const items = ref<WidgetTemplateItem[]>([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(20)
+const previewVisible = ref(false)
+const previewTemplate = ref<WidgetTemplateItem | null>(null)
+const previewSchema = ref<PartialWidget[]>([])
 
 async function loadTemplates() {
   loading.value = true
@@ -96,6 +109,32 @@ async function handleDelete(template: WidgetTemplateItem) {
   } catch {
     // 用户取消
   }
+}
+
+function openPreview(template: WidgetTemplateItem) {
+  previewTemplate.value = template
+  previewSchema.value = template.widgets as unknown as PartialWidget[]
+  previewVisible.value = true
+}
+
+async function handleApply(template: WidgetTemplateItem): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(
+      `确认应用模板「${template.name}」？模板内容将添加到画布。`,
+      '应用模板',
+      { confirmButtonText: '应用', cancelButtonText: '取消' },
+    )
+  } catch {
+    return false
+  }
+  emit('apply', template)
+  return true
+}
+
+async function handleApplyFromPreview() {
+  if (!previewTemplate.value) return
+  const applied = await handleApply(previewTemplate.value)
+  if (applied) previewVisible.value = false
 }
 
 function handlePageChange(newPage: number) {
@@ -169,11 +208,26 @@ defineExpose({ loadTemplates })
 
           <!-- 操作按钮 -->
           <div :class="styles.actions">
-            <button
+            <el-tooltip content="预览" placement="top" :show-after="300">
+              <el-button size="small" text @click.stop="openPreview(template)">
+                <AppIcon name="view" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="使用模板" placement="top" :show-after="300">
+              <el-button size="small" text type="primary" @click.stop="handleApply(template)">
+                <AppIcon name="plus" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip
               v-if="!template.isBuiltin"
-              :class="[styles.actionBtn, styles['actionBtn--delete']]"
-              @click.stop="handleDelete(template)"
-            >删除</button>
+              content="删除"
+              placement="top"
+              :show-after="300"
+            >
+              <el-button size="small" text type="danger" @click.stop="handleDelete(template)">
+                <AppIcon name="delete" />
+              </el-button>
+            </el-tooltip>
           </div>
         </div>
       </div>
@@ -193,5 +247,31 @@ defineExpose({ loadTemplates })
         @current-change="handlePageChange"
       />
     </div>
+
+    <AppDialog
+      v-model="previewVisible"
+      :title="previewTemplate ? `预览：${previewTemplate.name}` : '模板预览'"
+      width="720px"
+      :show-fullscreen-btn="true"
+    >
+      <div v-if="previewTemplate" :class="styles.previewBody">
+        <p v-if="previewTemplate.description" :class="styles.previewDesc">
+          {{ previewTemplate.description }}
+        </p>
+        <div :class="styles.previewRender">
+          <WidgetRenderer :schema="previewSchema" />
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="previewVisible = false">关闭</el-button>
+        <el-button
+          v-if="previewTemplate"
+          type="primary"
+          @click="handleApplyFromPreview"
+        >
+          使用
+        </el-button>
+      </template>
+    </AppDialog>
   </div>
 </template>

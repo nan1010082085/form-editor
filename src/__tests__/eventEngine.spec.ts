@@ -16,7 +16,11 @@ vi.mock('@/composables/useLogger', () => ({
 const mockRequestUrl = vi.fn()
 const mockCreateSubmission = vi.fn()
 vi.mock('@/utils/apiClient', () => ({
-  apiClient: { requestUrl: (...args: unknown[]) => mockRequestUrl(...args) },
+  apiClient: {
+    requestUrl: (...args: unknown[]) => mockRequestUrl(...args),
+    getBaseUrl: () => '/api',
+    getTokenValue: () => 'test-token',
+  },
   createSubmission: (...args: unknown[]) => mockCreateSubmission(...args),
 }))
 
@@ -102,6 +106,15 @@ describe('executeEventAction', () => {
     vi.mocked(ctx.findWidget).mockReturnValue({ id: 'w1', defaultValue: 'old' } as any)
     executeEventAction({ type: 'set-value', target: 'w1', value: 'new' }, ctx)
     expect(ctx.updateWidget).toHaveBeenCalledWith('w1', { defaultValue: 'new' })
+  })
+
+  it('set-variable resolves {{row.*}} templates', () => {
+    const setVariable = vi.fn()
+    executeEventAction(
+      { type: 'set-variable', variable: 'recordId', value: '{{row._id}}' },
+      createMockContext({ row: { _id: 'sub-99' }, setVariable }),
+    )
+    expect(setVariable).toHaveBeenCalledWith('recordId', 'sub-99')
   })
 
   it('set-value does nothing if target not found', () => {
@@ -496,6 +509,65 @@ describe('executeEventAction', () => {
     it('does nothing if instanceId is missing', async () => {
       await executeEventAction({ type: 'endFlow' }, ctx)
       expect(mockRequestUrl).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('exportData (E-21)', () => {
+    const mockFetch = vi.fn()
+    const mockClick = vi.fn()
+    const mockRevoke = vi.fn()
+
+    beforeEach(() => {
+      vi.stubGlobal('fetch', mockFetch)
+      vi.stubGlobal('URL', {
+        createObjectURL: vi.fn(() => 'blob:test'),
+        revokeObjectURL: mockRevoke,
+      })
+      vi.spyOn(document, 'createElement').mockReturnValue({
+        click: mockClick,
+        download: '',
+        href: '',
+      } as unknown as HTMLAnchorElement)
+    })
+
+    it('downloads file from resolved apiUrl', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        blob: () => Promise.resolve(new Blob(['csv-data'])),
+        headers: { get: () => 'attachment; filename="report.csv"' },
+      })
+
+      await executeEventAction({
+        type: 'exportData',
+        apiUrl: '/submissions/record/{{variables.recordId}}/export',
+        apiMethod: 'get',
+      }, {
+        ...ctx,
+        variables: { recordId: 'abc123' },
+        getFormData: () => ({}),
+      })
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/submissions/record/abc123/export',
+        expect.objectContaining({ method: 'get', headers: { Authorization: 'Bearer test-token' } }),
+      )
+      expect(mockClick).toHaveBeenCalled()
+      expect(ctx.emit).toHaveBeenCalledWith('export-success', expect.objectContaining({ url: '/submissions/record/abc123/export' }))
+    })
+
+    it('emits export-error when fetch fails', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ error: { message: 'Not found' } }),
+      })
+
+      await executeEventAction({
+        type: 'exportData',
+        apiUrl: '/submissions/record/missing/export',
+      }, ctx)
+
+      expect(ctx.emit).toHaveBeenCalledWith('export-error', expect.objectContaining({ error: expect.stringContaining('Not found') }))
     })
   })
 })

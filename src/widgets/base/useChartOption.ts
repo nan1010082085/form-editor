@@ -1,6 +1,7 @@
 import { computed, ref, watch, type Ref } from 'vue'
 import type { Widget, SchemaApiConfig } from './types'
 import { useApiRequest } from '../../composables/useApiRequest'
+import { useWidgetAutoRefresh } from '../../composables/useWidgetAutoRefresh'
 
 export interface UseChartOptionOptions {
   widgetData: Ref<Widget>
@@ -91,6 +92,12 @@ export function useChartOption({ widgetData, buildOption }: UseChartOptionOption
     if (api) loadData()
     else chartData.value = []
   })
+
+  const refreshInterval = computed(() => {
+    const n = Number(props.value.refreshInterval)
+    return Number.isFinite(n) && n > 0 ? n : 0
+  })
+  useWidgetAutoRefresh(loadData, refreshInterval)
 
   return { chartOption, loading, chartData, loadData }
 }

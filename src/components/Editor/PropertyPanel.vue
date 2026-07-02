@@ -28,6 +28,8 @@ import type { ActionButton } from '../../widgets/advanced-table/config'
 import NumberArrayEditor from './NumberArrayEditor.vue'
 import GenericArrayEditor from './GenericArrayEditor.vue'
 import OptionsEditor from './OptionsEditor.vue'
+import SearchFieldsEditor from './SearchFieldsEditor.vue'
+import type { SearchFieldSchema } from '@/components/WidgetRenderer/types'
 import RulesEditor from './RulesEditor.vue'
 import EventConfigDialog from './EventConfigDialog.vue'
 import LinkageSchemaDialog from './LinkageSchemaDialog.vue'
@@ -654,6 +656,14 @@ function updateBoardProperty(key: string, value: unknown) {
                 <ActionButtonsEditor
                   :buttons="(item.value as ActionButton[]) ?? []"
                   @update:buttons="(v: ActionButton[]) => updateProperty(item.key, v)"
+                />
+              </div>
+              <!-- 搜索字段配置：SearchFieldsEditor (E-46) -->
+              <div v-else-if="item.type === 'search-fields'" :class="styles.columnsSection">
+                <div :class="styles.columnsLabel">{{ item.label }}</div>
+                <SearchFieldsEditor
+                  :search-fields="(item.value as SearchFieldSchema[]) ?? []"
+                  @update:search-fields="(v: SearchFieldSchema[]) => updateProperty(item.key, v)"
                 />
               </div>
               <!-- 数字数组编辑器：布局容器列宽 -->

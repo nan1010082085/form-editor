@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { inject, computed, reactive, watch, onMounted } from 'vue'
+import { TABLE_CLICK_INTERCEPT_KEY } from './clickIntercept'
+import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import { widgetDataKey } from '../base/types'
 import { EVENT_CONTEXT_KEY, FORM_GRID_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
 import { useListData } from '../../composables/useListData'
@@ -7,9 +9,10 @@ import { useExposeWidget } from '../../composables/useExposeWidget'
 import { triggerWidgetEvent } from '../../engine/eventEngine'
 import { evaluateCondition } from '../../engine/eventEngine'
 import type { ListApiConfig } from '../../components/WidgetRenderer/types'
-import type { AdvancedTableColumn, ActionButton, AdvPaginationConfig, AdvSelectionConfig } from './config'
+import type { AdvancedTableColumn, ActionButton, AdvPaginationConfig, AdvSelectionConfig, SearchBarConfig, SearchField } from './config'
 import { getRowCellValue } from './tableRowValue'
 import { resolveColumnFilters } from './columnFilters'
+import { buildServerFilterParams, shouldUseServerSideFilter } from './columnServerFilter'
 import { resolveEffectiveColumn } from './columnOptions'
 import {
   WIDGET_SURFACE_KEY,
@@ -20,6 +23,7 @@ import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
+const clickIntercept = inject(TABLE_CLICK_INTERCEPT_KEY, null)
 const gridContext = inject(FORM_GRID_CONTEXT_KEY, null)
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
 
@@ -42,9 +46,53 @@ const paginationConfig = computed<AdvPaginationConfig>(() =>
   (widgetData.value.props?.pagination as AdvPaginationConfig) ?? { enabled: true, pageSize: 20, pageSizes: [10, 20, 50, 100] },
 )
 
+const serverSideFilter = computed(() =>
+  shouldUseServerSideFilter(
+    widgetData.value.props as Record<string, unknown> | undefined,
+    !!listApiConfig.url,
+    columns.value,
+  ),
+)
+
 const selectionConfig = computed<AdvSelectionConfig>(() =>
   (widgetData.value.props?.selection as AdvSelectionConfig) ?? { enabled: false },
 )
+
+const searchBarConfig = computed<SearchBarConfig>(() =>
+  (widgetData.value.props?.searchBar as SearchBarConfig) ?? { enabled: false, fields: [] },
+)
+
+const searchFields = computed<SearchField[]>(() => searchBarConfig.value.fields ?? [])
+
+const searchEnabled = computed(() =>
+  searchBarConfig.value.enabled !== false && searchFields.value.length > 0,
+)
+
+const searchForm = reactive<Record<string, string>>({})
+
+watch(searchFields, (fields) => {
+  for (const field of fields) {
+    if (!(field.field in searchForm)) searchForm[field.field] = ''
+  }
+}, { immediate: true })
+
+function applySearch() {
+  const params: Record<string, unknown> = {}
+  for (const field of searchFields.value) {
+    const val = searchForm[field.field]
+    if (val !== undefined && val !== '') params[field.field] = val
+  }
+  setSearchParams(params)
+  fetchData()
+}
+
+function resetSearch() {
+  for (const field of searchFields.value) {
+    searchForm[field.field] = ''
+  }
+  setSearchParams({})
+  fetchData()
+}
 
 // ---- Build ListApiConfig ----
 
@@ -55,6 +103,8 @@ function buildListApiConfig(): ListApiConfig {
       url: api.url,
       method: api.method ?? 'post',
       dataPath: api.dataPath,
+      pageParam: (api as ListApiConfig).pageParam ?? 'page',
+      sizeParam: (api as ListApiConfig).sizeParam ?? 'pageSize',
       immediate: false,
     }
   }
@@ -79,6 +129,7 @@ const {
   selectedRows,
   setSearchParams,
   fetchData,
+  handleSearch,
   handlePageChange,
   handleSizeChange,
   handleSortChange,
@@ -102,6 +153,11 @@ useExposeWidget(() => ({
   get tableData() { return tableData.value },
   get selectedRows() { return selectedRows.value },
   get selectedCount() { return selectedRows.value.length },
+  refresh: () => { fetchData() },
+  'set-search-params': (params: Record<string, unknown> = {}) => {
+    setSearchParams(params)
+    handleSearch()
+  },
 }))
 
 // ---- Sort ----
@@ -121,7 +177,14 @@ function onSelectionChange(rows: Record<string, unknown>[]) {
 // ---- Filter ----
 
 function defaultFilterMethod(prop: string) {
+  if (serverSideFilter.value) return () => true
   return (value: unknown, row: Record<string, unknown>) => getRowCellValue(row, prop) === value
+}
+
+function onFilterChange(filters: Record<string, unknown>) {
+  if (!serverSideFilter.value) return
+  setSearchParams(buildServerFilterParams(filters, columns.value))
+  handleSearch()
 }
 
 function columnFilters(col: AdvancedTableColumn) {
@@ -161,6 +224,7 @@ function handleToolbarClick(btn: ActionButton) {
   }
   // Quick confirm shortcut
   if (btn.confirm && !window.confirm(btn.confirm)) return
+  if (clickIntercept?.onToolbarClick?.(btn, ctx)) return
   triggerWidgetEvent(widgetData.value, 'click', ctx, `toolbar-${btn.key}`)
 }
 
@@ -178,6 +242,7 @@ function handleRowButtonClick(btn: ActionButton, row: Record<string, unknown>, r
   }
   // Quick confirm shortcut
   if (btn.confirm && !window.confirm(btn.confirm)) return
+  if (clickIntercept?.onRowButtonClick?.(btn, row, rowIndex, ctx)) return
   triggerWidgetEvent(widgetData.value, 'click', ctx, `row-${btn.key}`)
 }
 
@@ -192,6 +257,7 @@ function handleLinkClick(col: AdvancedTableColumn, row: Record<string, unknown>,
     selectedRows: selectedRows.value,
     tableData: tableData.value,
   }
+  if (clickIntercept?.onLinkClick?.(col, row, rowIndex, ctx)) return
   triggerWidgetEvent(widgetData.value, 'click', ctx, `link-${col.prop}`)
 }
 
@@ -322,6 +388,46 @@ defineExpose({
 
 <template>
   <div :class="styles.container">
+    <!-- E-32 Search bar -->
+    <div v-if="searchEnabled" :class="styles.searchBar">
+      <div v-for="field in searchFields" :key="field.field" :class="styles.searchField">
+        <span :class="styles.searchLabel">{{ field.label }}</span>
+        <el-input
+          v-if="!field.type || field.type === 'input'"
+          v-model="searchForm[field.field]"
+          :placeholder="field.placeholder || `请输入${field.label}`"
+          clearable
+          size="default"
+          @keyup.enter="applySearch"
+        />
+        <el-select
+          v-else-if="field.type === 'select'"
+          v-model="searchForm[field.field]"
+          :placeholder="field.placeholder || `请选择${field.label}`"
+          clearable
+          size="default"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="opt in field.options ?? []"
+            :key="String(opt.value)"
+            :label="opt.label"
+            :value="String(opt.value)"
+          />
+        </el-select>
+      </div>
+      <div :class="styles.searchActions">
+        <el-button type="primary" @click="applySearch">
+          <AppIcon name="search" :class="styles.toolbarBtnIcon" />
+          查询
+        </el-button>
+        <el-button @click="resetSearch">
+          <AppIcon name="refresh-left" :class="styles.toolbarBtnIcon" />
+          重置
+        </el-button>
+      </div>
+    </div>
+
     <!-- Toolbar -->
     <div v-if="toolbar.length > 0" :class="styles.toolbar">
       <template v-for="btn in toolbar" :key="btn.key">
@@ -331,6 +437,7 @@ defineExpose({
           :size="btn.size || 'default'"
           @click="handleToolbarClick(btn)"
         >
+          <AppIcon v-if="btn.icon" :name="btn.icon" :class="styles.toolbarBtnIcon" />
           {{ btn.label }}
         </el-button>
       </template>
@@ -352,6 +459,7 @@ defineExpose({
       size="default"
       :class="styles.table"
       @sort-change="onSortChange"
+      @filter-change="onFilterChange"
       @selection-change="onSelectionChange"
       @row-click="onRowClick"
     >
@@ -456,6 +564,7 @@ defineExpose({
                   link
                   @click.stop="handleRowButtonClick(btn, row, $index)"
                 >
+                  <AppIcon v-if="btn.icon" :name="btn.icon" :class="styles.toolbarBtnIcon" />
                   {{ btn.label }}
                 </el-button>
               </template>

@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.detailBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 200px;
+}
+
+.timelineSection {
+  margin-top: 8px;
+}
+
+.timelineTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--el-text-color-primary);
+}
+
+.timelineLoading {
+  padding: 16px 0;
+  text-align: center;
+  color: var(--el-text-color-secondary);
+}
+
+.timelineEmpty {
+  padding: 8px 0;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}

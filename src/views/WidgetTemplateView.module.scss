@@ -282,9 +282,14 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 2px;
   padding: 8px 16px 12px;
   border-top: 1px solid var(--bg-color-page);
+
+  :global(.el-button) {
+    padding: 4px 6px;
+    font-size: 12px;
+  }
 }
 
 /* ---- Pagination ---- */

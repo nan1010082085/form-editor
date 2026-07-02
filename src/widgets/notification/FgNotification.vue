@@ -3,6 +3,7 @@ import { inject, computed, ref, onMounted } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { fetchPublishedNotices, type NoticeItem } from '@/api/noticesApi'
+import { fetchBusinessNotifications, type FlowNotificationItem } from '@/api/notificationsApi'
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import { notificationMock } from './mock'
 import styles from './style.module.scss'
@@ -10,13 +11,14 @@ import styles from './style.module.scss'
 const widgetData = inject(widgetDataKey)!
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 
-const items = ref<NoticeItem[]>([])
+const items = ref<Array<NoticeItem | FlowNotificationItem>>([])
 const loading = ref(false)
 
 useExposeWidget(() => ({ get items() { return items.value } }))
 
 const title = computed(() => (widgetData.value.props?.title as string) || '最新公告')
 const pageSize = computed(() => Number(widgetData.value.props?.pageSize ?? 5))
+const source = computed(() => (widgetData.value.props?.source as string) || 'notices')
 
 function formatTime(iso?: string): string {
   if (!iso) return ''
@@ -26,8 +28,13 @@ function formatTime(iso?: string): string {
 async function loadNotices() {
   loading.value = true
   try {
-    const res = await fetchPublishedNotices(1, pageSize.value)
-    items.value = res.items
+    if (source.value === 'flow') {
+      const res = await fetchBusinessNotifications(1, pageSize.value)
+      items.value = res.items
+    } else {
+      const res = await fetchPublishedNotices(1, pageSize.value)
+      items.value = res.items
+    }
   } catch (err) {
     console.error('[FgNotification] load failed:', err)
     if (surface === 'editor') {
@@ -50,7 +57,7 @@ onMounted(loadNotices)
     <ul v-else-if="items.length" :class="styles.list">
       <li v-for="item in items" :key="item.id" :class="styles.item">
         <div :class="styles.itemTitle">{{ item.title }}</div>
-        <div :class="styles.itemContent">{{ item.content }}</div>
+        <div v-if="item.content" :class="styles.itemContent">{{ item.content }}</div>
         <div :class="styles.itemTime">{{ formatTime(item.publishAt ?? item.createdAt) }}</div>
       </li>
     </ul>

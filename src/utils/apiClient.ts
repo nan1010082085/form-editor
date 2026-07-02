@@ -336,6 +336,20 @@ export async function publishSchema(id: string, version?: string): Promise<Publi
   )
 }
 
+export async function fetchPublishedByCode(code: string): Promise<PublishedSchemaItem | null> {
+  if (apiClient.isMockEnabled()) {
+    return null
+  }
+  try {
+    return await apiClient.get<PublishedSchemaItem>(
+      `/schemas/published/by-code/${encodeURIComponent(code)}`,
+    )
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null
+    throw err
+  }
+}
+
 export async function fetchPublishedByPublishId(publishId: string): Promise<PublishedSchemaItem | null> {
   if (apiClient.isMockEnabled()) {
     const { mockFetchPublishedByPublishId } = await import('./mockApi')

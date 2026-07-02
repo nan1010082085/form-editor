@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { inject, computed, ref, watch, onMounted } from 'vue'
-import { widgetDataKey } from '../base/types'
+import { widgetDataKey, formContextKey } from '../base/types'
+import type { FormFieldValue } from '../base/types'
+import { FORM_GRID_FORM_KEY } from '@/components/WidgetRenderer/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import type { DetailColumn } from './config'
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
@@ -8,6 +10,8 @@ import { dynamicDetailTableMock } from './mock'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const formGridData = inject(FORM_GRID_FORM_KEY, null)
+const formCtx = inject(formContextKey, null)
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 
 const rows = ref<Record<string, unknown>[]>([])
@@ -21,6 +25,23 @@ function sumAmountColumn(): number {
 function syncFieldValue() {
   widgetData.value.defaultValue = rows.value
   const total = sumAmountColumn()
+  const field = widgetData.value.field
+  const sumField = widgetData.value.props?.sumField as string | undefined
+
+  if (field) {
+    if (formGridData) {
+      formGridData[field] = rows.value as FormFieldValue
+    }
+    formCtx?.updateField(field, rows.value)
+  }
+
+  if (sumField) {
+    if (formGridData) {
+      formGridData[sumField] = total as FormFieldValue
+    }
+    formCtx?.updateField(sumField, total)
+  }
+
   if (total > 0 || rows.value.length > 0) {
     widgetData.value.props = {
       ...widgetData.value.props,
@@ -62,6 +83,7 @@ onMounted(() => {
   } else {
     addRow()
   }
+  syncFieldValue()
 })
 
 watch(rows, () => {

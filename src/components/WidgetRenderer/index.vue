@@ -333,11 +333,14 @@ const eventContext: EventExecutionContext = {
   getVariable: (name: string) => variablesContext.value[name],
   get exposed() { return exposedContext.value },
   triggerEvent: (targetId: string, eventName: string) => {
+    const handler = exposedContext.value[targetId]?.[eventName]
+    if (typeof handler === 'function') {
+      void (handler as () => void | Promise<void>)()
+    }
     const widget = findWidgetInSchema(props.schema, targetId)
     if (widget) {
       triggerWidgetEvent(widget, eventName, eventContext)
     }
-    // 同时 emit 给父组件处理
     emit('action', { type: 'trigger-event', target: targetId, event: eventName } as SchemaAction)
   },
 }
@@ -359,6 +362,65 @@ function collectDefaultValues(items: PartialWidget[]): Map<string, unknown> {
 }
 
 const defaultValuesMap = computed(() => collectDefaultValues(props.schema))
+
+function findWidgetByField(items: PartialWidget[], field: string): PartialWidget | undefined {
+  for (const item of items) {
+    if (item.field === field) return item
+    if (item.children?.length) {
+      const found = findWidgetByField(item.children, field)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
+function collectSetValueFields(items: PartialWidget[]): Set<string> {
+  const fields = new Set<string>()
+  function walk(list: PartialWidget[]) {
+    for (const item of list) {
+      if (item.field && item.linkages?.some((l) => l.type === 'set-value')) {
+        fields.add(item.field)
+      }
+      if (item.children?.length) walk(item.children)
+    }
+  }
+  walk(items)
+  return fields
+}
+
+const setValueLinkageFields = computed(() => collectSetValueFields(props.schema))
+
+// Apply set-value linkage targetValue → formData + widget.defaultValue (absolute layout)
+let setValuePending = false
+watch(
+  linkageStateMap,
+  (map) => {
+    if (setValuePending) return
+    const setValueFields = setValueLinkageFields.value
+    let hasUpdates = false
+    for (const [field, state] of map) {
+      if (!setValueFields.has(field)) continue
+      const valueToApply = state.targetValue !== undefined ? state.targetValue : state.elseValue
+      if (valueToApply === undefined) continue
+      if (formData[field] !== valueToApply) {
+        formData[field] = valueToApply as FormFieldValue
+        hasUpdates = true
+      }
+      if (isAbsoluteLayout.value) {
+        const widget = findWidgetByField(props.schema, field)
+        if (widget && widget.defaultValue !== valueToApply) {
+          widget.defaultValue = valueToApply as FormFieldValue
+          hasUpdates = true
+        }
+      }
+    }
+    if (hasUpdates) {
+      setValuePending = true
+      Promise.resolve().then(() => { setValuePending = false })
+    }
+  },
+  { deep: true },
+)
 
 // Apply reset-fields effects from linkage state (deferred to avoid render-cycle writes)
 let resetFieldsPending = false

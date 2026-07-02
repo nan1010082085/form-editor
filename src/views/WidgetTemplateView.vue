@@ -239,7 +239,7 @@ onMounted(() => {
           <!-- 卡片操作 -->
           <div :class="styles.cardActions">
             <el-tooltip content="预览" placement="top" :show-after="300">
-              <el-button size="small" text type="primary" @click="openPreview(tpl)">
+              <el-button size="small" text @click="openPreview(tpl)">
                 <AppIcon name="view" />
               </el-button>
             </el-tooltip>

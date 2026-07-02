@@ -70,6 +70,21 @@ export interface AdvSelectionConfig {
   enabled: boolean
 }
 
+/** E-32 列表搜索区字段 */
+export interface SearchField {
+  field: string
+  label: string
+  type?: 'input' | 'select'
+  placeholder?: string
+  options?: Array<{ label: string; value: string | number }>
+}
+
+/** 搜索区配置 */
+export interface SearchBarConfig {
+  enabled?: boolean
+  fields: SearchField[]
+}
+
 // ============================================================
 // Widget Config
 // ============================================================
@@ -116,6 +131,7 @@ export const advancedTableConfig: WidgetConfig = {
     border: true,
     height: 350,
     sortable: false,
+    serverSideFilter: true,
     pagination: {
       enabled: true,
       pageSize: 20,
@@ -124,6 +140,10 @@ export const advancedTableConfig: WidgetConfig = {
     selection: {
       enabled: true,
     } as AdvSelectionConfig,
+    searchBar: {
+      enabled: false,
+      fields: [],
+    } as SearchBarConfig,
   },
   exposedValues: [
     { key: 'loading', type: 'boolean', description: '加载状态' },
@@ -174,6 +194,8 @@ export const advancedTableConfig: WidgetConfig = {
     props: [
       { key: 'columns', label: '列配置', type: 'advanced-columns' },
       { key: 'toolbar', label: '工具栏按钮', type: 'action-buttons' },
+      { key: 'searchBar.enabled', label: '搜索区', type: 'switch' },
+      { key: 'searchBar.fields', label: '搜索字段', type: 'search-fields' },
       { key: 'selection.enabled', label: '行选择', type: 'switch' },
       { key: 'stripe', label: '斑马纹', type: 'switch' },
       { key: 'border', label: '边框', type: 'switch' },

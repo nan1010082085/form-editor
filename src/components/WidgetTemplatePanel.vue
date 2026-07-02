@@ -272,23 +272,16 @@ onMounted(() => {
             <span v-for="tag in tpl.tags" :key="tag" :class="styles['card-tag']">{{ tag }}</span>
           </div>
           <div :class="styles['card-actions']" @click.stop>
-            <el-button
-              type="primary"
-              size="small"
-              link
-              @click="handleApply(tpl.id, tpl.name)"
-            >
-              应用
-            </el-button>
-            <el-button
-              v-if="!tpl.isBuiltin"
-              type="danger"
-              size="small"
-              link
-              @click="handleDelete(tpl.id, tpl.name)"
-            >
-              <AppIcon name="delete" />
-            </el-button>
+            <el-tooltip content="使用模板" placement="top" :show-after="300">
+              <el-button size="small" text type="primary" @click="handleApply(tpl.id, tpl.name)">
+                <AppIcon name="plus" />
+              </el-button>
+            </el-tooltip>
+            <el-tooltip v-if="!tpl.isBuiltin" content="删除" placement="top" :show-after="300">
+              <el-button size="small" text type="danger" @click="handleDelete(tpl.id, tpl.name)">
+                <AppIcon name="delete" />
+              </el-button>
+            </el-tooltip>
           </div>
         </div>
       </div>

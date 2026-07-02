@@ -8,9 +8,8 @@ import type { Widget, SchemaEventAction, FormFieldValue } from '../widgets/base/
 import { getWidget } from '../widgets/registry'
 import { useLogger } from '@/composables/useLogger'
 import { checkSecurity } from '@/utils/expression'
-import { apiClient } from '@/utils/apiClient'
+import { apiClient, createSubmission } from '@/utils/apiClient'
 import { startFlow, terminateFlow } from '@/api/dataApi'
-import { createSubmission } from '@/utils/apiClient'
 
 const logger = useLogger('EventEngine')
 
@@ -97,23 +96,35 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 /**
- * 解析事件参数中的上下文引用：formData.xxx、row.xxx、{{row.xxx}}
+ * 解析单个 {{...}} 模板段
+ */
+function resolveTemplateSegment(path: string, ctx: EventExecutionContext): string {
+  if (path.startsWith('row.') && ctx.row) {
+    return String(getNestedValue(ctx.row, path.slice(4)) ?? '')
+  }
+  if (path.startsWith('formData.')) {
+    return String(getNestedValue(ctx.getFormData(), path.slice(9)) ?? '')
+  }
+  if (path.startsWith('variables.') && ctx.variables) {
+    return String(getNestedValue(ctx.variables, path.slice(10)) ?? '')
+  }
+  if (ctx.variables && path in ctx.variables) {
+    return String(ctx.variables[path] ?? '')
+  }
+  return String(getNestedValue({ ...ctx.getFormData(), ...(ctx.variables ?? {}), row: ctx.row }, path) ?? '')
+}
+
+/**
+ * 解析事件参数中的上下文引用：formData.xxx、row.xxx、{{row.xxx}}、URL 内联 {{variables.xxx}}
  */
 function resolveContextString(text: string, ctx: EventExecutionContext): string {
   const trimmed = text.trim()
+  if (trimmed.includes('{{')) {
+    return trimmed.replace(/\{\{(.+?)\}\}/g, (_, inner: string) => resolveTemplateSegment(inner.trim(), ctx))
+  }
   const templateMatch = trimmed.match(/^\{\{(.+)\}\}$/)
   if (templateMatch) {
-    const path = templateMatch[1].trim()
-    if (path.startsWith('row.') && ctx.row) {
-      return String(getNestedValue(ctx.row, path.slice(4)) ?? '')
-    }
-    if (path.startsWith('formData.')) {
-      return String(getNestedValue(ctx.getFormData(), path.slice(9)) ?? '')
-    }
-    if (ctx.variables && path in ctx.variables) {
-      return String(ctx.variables[path] ?? '')
-    }
-    return String(getNestedValue({ ...ctx.getFormData(), ...(ctx.variables ?? {}), row: ctx.row }, path) ?? '')
+    return resolveTemplateSegment(templateMatch[1].trim(), ctx)
   }
   if (trimmed.startsWith('formData.')) {
     return String(getNestedValue(ctx.getFormData(), trimmed.slice(9)) ?? '')
@@ -210,8 +221,12 @@ export async function executeEventAction(
     }
     case 'set-variable': {
       if (action.variable && ctx.setVariable) {
-        ctx.setVariable(action.variable, action.value)
-        logger.event(`设置变量: ${action.variable} = ${action.value}`)
+        const resolved =
+          typeof action.value === 'string'
+            ? resolveContextString(action.value, ctx)
+            : action.value
+        ctx.setVariable(action.variable, resolved)
+        logger.event(`设置变量: ${action.variable} = ${resolved}`)
       }
       break
     }
@@ -338,6 +353,24 @@ export async function executeEventAction(
       }
       break
     }
+    case 'exportData': {
+      if (!action.apiUrl) {
+        logger.warn('exportData: 缺少 apiUrl')
+        break
+      }
+      const url = resolveContextString(action.apiUrl, ctx)
+      const method = action.apiMethod ?? 'get'
+      logger.api(`导出: ${method} ${url}`)
+      try {
+        await triggerFileDownload(url, method, action.exportFileName)
+        logger.api(`导出成功: ${url}`)
+        ctx.emit('export-success', { url })
+      } catch (err) {
+        logger.warn(`导出失败: ${url}`, err)
+        ctx.emit('export-error', { url, error: String(err) })
+      }
+      break
+    }
   }
 }
 
@@ -364,6 +397,39 @@ function resolveMessageData(
  */
 function resolveTextValue(text: string, ctx: EventExecutionContext): string {
   return resolveContextString(text, ctx)
+}
+
+function parseContentDispositionFilename(header: string | null): string | undefined {
+  if (!header) return undefined
+  const utf8Match = header.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8Match) return decodeURIComponent(utf8Match[1])
+  const plainMatch = header.match(/filename="?([^";]+)"?/i)
+  return plainMatch?.[1]
+}
+
+async function triggerFileDownload(url: string, method: 'get' | 'post', fileName?: string): Promise<void> {
+  const baseUrl = apiClient.getBaseUrl()
+  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`
+  const headers: Record<string, string> = {}
+  const token = apiClient.getTokenValue()
+  if (token) headers.Authorization = `Bearer ${token}`
+
+  const response = await fetch(fullUrl, { method, headers })
+  if (!response.ok) {
+    const json = await response.json().catch(() => null)
+    throw new Error(json?.error?.message ?? `Export failed (${response.status})`)
+  }
+
+  const blob = await response.blob()
+  const downloadName = fileName
+    ?? parseContentDispositionFilename(response.headers.get('Content-Disposition'))
+    ?? 'export.csv'
+  const objectUrl = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = objectUrl
+  anchor.download = downloadName
+  anchor.click()
+  URL.revokeObjectURL(objectUrl)
 }
 
 /**

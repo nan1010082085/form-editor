@@ -63,7 +63,7 @@ function buildOption(data: Record<string, unknown>[], props: Record<string, unkn
   }
 }
 
-const { chartOption, loading, chartData } = useChartOption({
+const { chartOption, loading, chartData, loadData } = useChartOption({
   widgetData,
   buildOption,
 })
@@ -71,6 +71,7 @@ const { chartOption, loading, chartData } = useChartOption({
 useExposeWidget(() => ({
   get loading() { return loading.value },
   get chartData() { return chartData.value },
+  refresh: loadData,
 }))
 
 const chartRef = ref<HTMLDivElement>()

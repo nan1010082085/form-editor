@@ -1,4 +1,13 @@
 .adv-columns-editor {
+  &__preset-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #606266;
+  }
+
   &__empty {
     text-align: center;
     color: #909399;

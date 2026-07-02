@@ -94,6 +94,11 @@ const routes = [
     component: () => import('@/views/PreviewRenderView.vue'),
   },
   {
+    path: '/view/:schemaCode',
+    name: 'publish-view-by-code',
+    component: () => import('@/views/PublishView.vue'),
+  },
+  {
     path: '/view',
     name: 'publish-view',
     component: () => import('@/views/PublishView.vue'),

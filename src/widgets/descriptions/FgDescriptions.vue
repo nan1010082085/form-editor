@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, computed, ref, onMounted, type ComputedRef } from 'vue'
+import { inject, computed, ref, onMounted, watch, type ComputedRef } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { fetchWidgetDataSource } from '@/api/widgetApi'
@@ -48,9 +48,12 @@ async function loadData() {
   }
 }
 
+const apiConfig = computed(
+  () => widgetData.value.props?.dataSource as { type?: string; url?: string } | undefined,
+)
+
 onMounted(() => {
-  const api = widgetData.value.props?.dataSource as { type?: string; url?: string } | undefined
-  if (api?.type === 'api' && api.url) {
+  if (apiConfig.value?.type === 'api' && apiConfig.value.url) {
     loadData()
     return
   }
@@ -59,6 +62,17 @@ onMounted(() => {
     data.value = staticData
   }
 })
+
+/** 弹窗/详情页变量变化后重新拉取（如 recordId） */
+watch(
+  () => [apiConfig.value?.url, variablesContext.value] as const,
+  () => {
+    if (apiConfig.value?.type === 'api' && apiConfig.value.url) {
+      loadData()
+    }
+  },
+  { deep: true },
+)
 
 /** 取字段值 */
 function getFieldValue(field: string): unknown {

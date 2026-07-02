@@ -214,8 +214,8 @@ describe('WidgetTemplateView', () => {
 
   it('opens preview drawer on preview button click', async () => {
     const { wrapper } = mountView()
-    // 预览按钮是 cardActions 里带有 AppIcon(name="view") 的 el-button
-    const actionButtons = wrapper.findAll('.el-button--primary.is-text')
+    // 预览按钮是 cardActions 里带有 view 图标的 text 按钮
+    const actionButtons = wrapper.findAll('.el-button.is-text')
     expect(actionButtons.length).toBeGreaterThan(0)
     await actionButtons[0].trigger('click')
     await nextTick()

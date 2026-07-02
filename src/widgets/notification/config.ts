@@ -12,6 +12,7 @@ export const notificationConfig: WidgetConfig = {
   defaultProps: {
     title: '最新公告',
     pageSize: 5,
+    source: 'notices',
     staticData: notificationMock.staticData.items,
   },
   propertyPanel: {
@@ -19,6 +20,10 @@ export const notificationConfig: WidgetConfig = {
     style: ['margin', 'padding'],
     props: [
       { key: 'title', label: '标题', type: 'input', default: '最新公告' },
+      { key: 'source', label: '数据源', type: 'select', default: 'notices', options: [
+        { label: '公告', value: 'notices' },
+        { label: '流程消息', value: 'flow' },
+      ] },
       { key: 'pageSize', label: '条数', type: 'number', default: 5 },
     ],
   },

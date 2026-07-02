@@ -93,7 +93,7 @@ const FALLBACK_BASIC_TYPES = new Set<SchemaType>([
   'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
   'table', 'richtext', 'upload', 'banner', 'date-time-slot', 'time-picker',
   'file-list', 'transfer', 'cascader', 'rate', 'color-picker', 'tag-input', 'autocomplete',
-  'descriptions', 'advanced-table', 'statistic', 'permission-tree',
+  'descriptions', 'advanced-table', 'tree-table', 'statistic', 'permission-tree',
   'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
   'line-chart', 'area-chart',
   'pie-chart', 'donut-chart',

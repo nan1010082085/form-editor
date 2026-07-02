@@ -17,6 +17,8 @@ import { notificationMock } from '../notification/mock'
 import { dynamicDetailTableMock } from '../dynamic-detail-table/mock'
 import { complianceChecklistMock } from '../compliance-checklist/mock'
 import { qrScannerMock } from '../qr-scanner/mock'
+import { treeTableMock } from '../tree-table/mock'
+import { kanbanMock } from '../kanban/mock'
 
 /** 渲染表面：editor=设计器画布，runtime=PublishView/正式运行时 */
 export type WidgetSurface = 'editor' | 'runtime'
@@ -57,6 +59,7 @@ export type WidgetMockBundle =
 /** 需要 mock.ts 的复杂部件类型（新增时在此登记） */
 export const COMPLEX_WIDGET_MOCK_TYPES = [
   'advanced-table',
+  'crud-list-page',
   'table',
   'bar-chart',
   'stacked-bar-chart',
@@ -86,12 +89,15 @@ export const COMPLEX_WIDGET_MOCK_TYPES = [
   'dynamic-detail-table',
   'compliance-checklist',
   'qr-scanner',
+  'tree-table',
+  'kanban',
 ] as const
 
 export type ComplexWidgetMockType = (typeof COMPLEX_WIDGET_MOCK_TYPES)[number]
 
 const MOCK_REGISTRY: Partial<Record<string, WidgetMockBundle>> = {
   'advanced-table': advancedTableMock,
+  'crud-list-page': advancedTableMock,
   'bar-chart': barChartMock,
   'stacked-bar-chart': barChartMock,
   'horizontal-bar-chart': barChartMock,
@@ -107,6 +113,8 @@ const MOCK_REGISTRY: Partial<Record<string, WidgetMockBundle>> = {
   'dynamic-detail-table': dynamicDetailTableMock,
   'compliance-checklist': complianceChecklistMock,
   'qr-scanner': qrScannerMock,
+  'tree-table': treeTableMock,
+  kanban: kanbanMock,
 }
 
 export function getWidgetMock(type: string): WidgetMockBundle | undefined {

@@ -34,6 +34,7 @@ import { FgSwitch, createSwitchWidget, switchConfig } from './switch'
 import { FgSlider, createSliderWidget, sliderConfig } from './slider'
 import { FgRate, createRateWidget, rateConfig } from './rate'
 import { FgAdvancedTable, createAdvancedTableWidget, advancedTableConfig } from './advanced-table'
+import { FgTreeTable, createTreeTableWidget, treeTableConfig } from './tree-table'
 import { FgBarChart, createBarChartWidget, barChartConfig } from './bar-chart'
 import { FgLineChart, createLineChartWidget, lineChartConfig } from './line-chart'
 import { FgPieChart, createPieChartWidget, pieChartConfig } from './pie-chart'
@@ -67,14 +68,18 @@ import { FgPermissionTree, createPermissionTreeWidget, permissionTreeConfig } fr
 import { FgRoleManagement, createRoleManagementWidget, roleManagementConfig } from './role-management'
 import { FgTreeSelect, createTreeSelectWidget, treeSelectConfig } from './tree-select'
 import { FgUserManagement, createUserManagementWidget, userManagementConfig } from './user-management'
+import { FgCrudListPage, createCrudListPageWidget, crudListPageConfig } from './crud-list-page'
 import { FgUserSelector, createUserSelectorWidget, userSelectorConfig } from './user-selector'
 import { FgFlowTimeline, createFlowTimelineWidget, flowTimelineConfig } from './flow-timeline'
 import { FgFlowTaskActions, createFlowTaskActionsWidget, flowTaskActionsConfig } from './flow-task-actions'
 import { FgCalendar, createCalendarWidget, calendarConfig } from './calendar'
+import { FgKanban, createKanbanWidget, kanbanConfig } from './kanban'
+import { FgAdhocQuery, createAdhocQueryWidget, adhocQueryConfig } from './adhoc-query'
 import { FgNotification, createNotificationWidget, notificationConfig } from './notification'
 import { FgDynamicDetailTable, createDynamicDetailTableWidget, dynamicDetailTableConfig } from './dynamic-detail-table'
 import { FgComplianceChecklist, createComplianceChecklistWidget, complianceChecklistConfig } from './compliance-checklist'
 import { FgQrScanner, createQrScannerWidget, qrScannerConfig } from './qr-scanner'
+import { FgAutoRefresh, createAutoRefreshWidget, autoRefreshConfig } from './auto-refresh'
 
 export function registerAllWidgets() {
   // Layout widgets (结构布局)
@@ -385,6 +390,8 @@ export function registerAllWidgets() {
   // Table widgets (表格)
   registerWidget({ name: tableConfig.name, displayName: tableConfig.displayName, type: 'table', group: 'table', component: FgTable, create: createTableWidget, config: tableConfig })
   registerWidget({ name: advancedTableConfig.name, displayName: advancedTableConfig.displayName, type: 'advanced-table', group: 'table', component: FgAdvancedTable, create: createAdvancedTableWidget, config: advancedTableConfig })
+  registerWidget({ name: crudListPageConfig.name, displayName: crudListPageConfig.displayName, type: 'crud-list-page', group: 'business', component: FgCrudListPage, create: createCrudListPageWidget, config: crudListPageConfig })
+  registerWidget({ name: treeTableConfig.name, displayName: treeTableConfig.displayName, type: 'tree-table', group: 'table', component: FgTreeTable, create: createTreeTableWidget, config: treeTableConfig })
 
   // Chart widgets (图表)
   registerWidget({ name: barChartConfig.name, displayName: barChartConfig.displayName, type: 'bar-chart', group: 'chart', component: FgBarChart, create: createBarChartWidget, config: barChartConfig })
@@ -449,7 +456,10 @@ export function registerAllWidgets() {
   registerWidget({ name: flowTimelineConfig.name, displayName: flowTimelineConfig.displayName, type: 'flow-timeline', group: 'business', component: FgFlowTimeline, create: createFlowTimelineWidget, config: flowTimelineConfig })
   registerWidget({ name: flowTaskActionsConfig.name, displayName: flowTaskActionsConfig.displayName, type: 'flow-task-actions', group: 'business', component: FgFlowTaskActions, create: createFlowTaskActionsWidget, config: flowTaskActionsConfig })
   registerWidget({ name: calendarConfig.name, displayName: calendarConfig.displayName, type: 'calendar', group: 'business', component: FgCalendar, create: createCalendarWidget, config: calendarConfig })
+  registerWidget({ name: kanbanConfig.name, displayName: kanbanConfig.displayName, type: 'kanban', group: 'business', component: FgKanban, create: createKanbanWidget, config: kanbanConfig })
+  registerWidget({ name: adhocQueryConfig.name, displayName: adhocQueryConfig.displayName, type: 'adhoc-query', group: 'business', component: FgAdhocQuery, create: createAdhocQueryWidget, config: adhocQueryConfig })
   registerWidget({ name: notificationConfig.name, displayName: notificationConfig.displayName, type: 'notification', group: 'business', component: FgNotification, create: createNotificationWidget, config: notificationConfig })
+  registerWidget({ name: autoRefreshConfig.name, displayName: autoRefreshConfig.displayName, type: 'auto-refresh', group: 'business', component: FgAutoRefresh, create: createAutoRefreshWidget, config: autoRefreshConfig })
   registerWidget({ name: dynamicDetailTableConfig.name, displayName: dynamicDetailTableConfig.displayName, type: 'dynamic-detail-table', group: 'form', component: FgDynamicDetailTable, create: createDynamicDetailTableWidget, config: dynamicDetailTableConfig })
   registerWidget({ name: complianceChecklistConfig.name, displayName: complianceChecklistConfig.displayName, type: 'compliance-checklist', group: 'business', component: FgComplianceChecklist, create: createComplianceChecklistWidget, config: complianceChecklistConfig })
   registerWidget({ name: qrScannerConfig.name, displayName: qrScannerConfig.displayName, type: 'qr-scanner', group: 'form', component: FgQrScanner, create: createQrScannerWidget, config: qrScannerConfig })
