@@ -12,6 +12,8 @@ import { useApiStore } from '@/stores/api'
 import { downloadSchemaJson, parseImportFile } from '@/utils/schemaExport'
 import { importSchema, updateSchema } from '@/utils/apiClient'
 import type { SchemaTypeValue } from '@/types/api'
+import type { BoardLayoutMode, FlexPageTemplate, FreeLayoutPreset } from '@/widgets/base/types'
+import { createBoardFromTemplate } from '@/utils/boardTemplates'
 import VersionHistoryDialog from '@/components/Editor/VersionHistoryDialog.vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
 import FilterTabs from '@schema-platform/platform-shared/components/common/FilterTabs.vue'
@@ -74,11 +76,56 @@ const schemaTypeOptions: { label: string; value: SchemaTypeValue }[] = [
 const createDialogVisible = ref(false)
 const createName = ref('')
 const createType = ref<SchemaTypeValue>('form')
+const createLayoutMode = ref<BoardLayoutMode>('flex')
+const createFlexTemplate = ref<FlexPageTemplate>('form')
+const createFreePreset = ref<FreeLayoutPreset>('list-standard')
+
+const layoutModeOptions: { label: string; value: BoardLayoutMode; desc: string }[] = [
+  { label: 'Flex 页面布局', value: 'flex', desc: '流式排列，适合表单、CRUD 列表，自适应容器' },
+  { label: '自由布局', value: 'free', desc: '绝对定位画布，适合大屏、门户、复杂可视化' },
+]
+
+const flexTemplateOptions: { label: string; value: FlexPageTemplate }[] = [
+  { label: '表单页', value: 'form' },
+  { label: '列表页（CRUD）', value: 'list' },
+  { label: '详情/审批页', value: 'detail' },
+  { label: '空白 Flex 页', value: 'blank' },
+]
+
+const freePresetOptions: { label: string; value: FreeLayoutPreset }[] = [
+  { label: '全宽画布', value: 'full' },
+  { label: '居中窄版（表单 960px）', value: 'form-narrow' },
+  { label: '居中标准（列表 1200px）', value: 'list-standard' },
+  { label: '居中宽版（1440px）', value: 'list-wide' },
+]
+
+const selectedLayoutDesc = computed(
+  () => layoutModeOptions.find((o) => o.value === createLayoutMode.value)?.desc ?? '',
+)
 
 function openCreateDialog() {
   createName.value = ''
   createType.value = 'form'
+  createLayoutMode.value = 'flex'
+  createFlexTemplate.value = 'form'
+  createFreePreset.value = 'list-standard'
   createDialogVisible.value = true
+}
+
+function onLayoutModeChange(mode: BoardLayoutMode) {
+  createLayoutMode.value = mode
+  if (mode === 'flex') {
+    if (createFlexTemplate.value === 'form') createType.value = 'form'
+    else if (createFlexTemplate.value === 'list') createType.value = 'search-list'
+    else if (createFlexTemplate.value === 'detail') createType.value = 'business'
+  }
+}
+
+function onFlexTemplateChange(template: FlexPageTemplate) {
+  createFlexTemplate.value = template
+  if (template === 'form') createType.value = 'form'
+  else if (template === 'list') createType.value = 'search-list'
+  else if (template === 'detail') createType.value = 'business'
 }
 
 async function confirmCreate() {
@@ -87,7 +134,23 @@ async function confirmCreate() {
     ElMessage.warning('请输入实例名称')
     return
   }
-  const result = await store.createSchema({ name, type: createType.value, json: [] })
+  const seed = createBoardFromTemplate({
+    layoutMode: createLayoutMode.value,
+    flexTemplate: createFlexTemplate.value,
+    freePreset: createFreePreset.value,
+  })
+  const result = await store.createSchema({
+    name,
+    type: createType.value,
+    json: {
+      widgets: seed.widgets,
+      board: {
+        canvas: seed.canvas,
+        variables: [],
+        events: [],
+      },
+    },
+  })
   if (result) {
     createDialogVisible.value = false
     ElMessage.success('创建成功')
@@ -559,15 +622,40 @@ function handleVersionPublished() {
     </div>
 
     <!-- Create Dialog -->
-    <AppDialog v-model="createDialogVisible" title="新建实例" width="440px">
-      <el-form label-width="80px" @submit.prevent="confirmCreate">
+    <AppDialog v-model="createDialogVisible" title="新建实例" width="520px">
+      <el-form label-width="96px" @submit.prevent="confirmCreate">
         <el-form-item label="实例名称">
           <el-input v-model="createName" placeholder="请输入实例名称" maxlength="100" show-word-limit @keyup.enter="confirmCreate" />
         </el-form-item>
-        <el-form-item label="类型">
+        <el-form-item label="布局模式">
+          <div :class="styles.createLayoutMode">
+            <el-radio-group v-model="createLayoutMode" :class="styles.createLayoutRadios" @change="onLayoutModeChange">
+              <el-radio
+                v-for="opt in layoutModeOptions"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </el-radio>
+            </el-radio-group>
+            <p v-if="selectedLayoutDesc" :class="styles.createLayoutDesc">{{ selectedLayoutDesc }}</p>
+          </div>
+        </el-form-item>
+        <el-form-item v-if="createLayoutMode === 'flex'" label="页面模板">
+          <el-select v-model="createFlexTemplate" style="width:100%" @change="onFlexTemplateChange">
+            <el-option v-for="opt in flexTemplateOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-else label="留白预设">
+          <el-select v-model="createFreePreset" style="width:100%">
+            <el-option v-for="opt in freePresetOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分类标签">
           <el-select v-model="createType" style="width:100%">
             <el-option v-for="opt in schemaTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
+          <div :class="styles.createFieldHint">仅用于实例列表筛选，不影响布局行为</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -608,7 +696,7 @@ function handleVersionPublished() {
         <el-form-item label="实例名称">
           <el-input v-model="editName" placeholder="请输入实例名称" maxlength="100" show-word-limit @keyup.enter="confirmEdit" />
         </el-form-item>
-        <el-form-item label="类型">
+        <el-form-item label="分类标签">
           <el-select v-model="editType" style="width:100%">
             <el-option v-for="opt in schemaTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>

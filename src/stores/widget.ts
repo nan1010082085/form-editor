@@ -15,8 +15,11 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Widget, ContainerType } from '../widgets/base/types'
+import type { Widget, ContainerType, BoardLayoutMode } from '../widgets/base/types'
 import { getAllContainerTypes } from '../composables/useConstant'
+import { adaptWidgetToBoardLayout, adaptWidgetsToBoardLayout } from '../utils/widgetLayoutAdapter'
+import { getWidget } from '../widgets/registry'
+import { useBoardStore } from './board'
 
 /** 获取容器组件类型集合（动态） */
 function getContainerTypes(): Set<string> {
@@ -263,6 +266,53 @@ export const useWidgetStore = defineStore('widget', () => {
     return widgets.value.some((w) => w.id === id)
   }
 
+  function isDescendantOf(ancestorId: string, descendantId: string): boolean {
+    const ancestor = findWidget(ancestorId)
+    if (!ancestor?.children?.length) return false
+    const walk = (list: Widget[]): boolean => {
+      for (const w of list) {
+        if (w.id === descendantId) return true
+        if (w.children?.length && walk(w.children as Widget[])) return true
+      }
+      return false
+    }
+    return walk(ancestor.children as Widget[])
+  }
+
+  function extractWidgetFromTree(id: string): Widget | null {
+    const rootIdx = widgets.value.findIndex((w) => w.id === id)
+    if (rootIdx >= 0) {
+      const list = [...widgets.value]
+      const [item] = list.splice(rootIdx, 1)
+      widgets.value = list
+      return item
+    }
+    const parent = findParent(id)
+    if (!parent?.children) return null
+    const idx = parent.children.findIndex((c) => c.id === id)
+    if (idx < 0) return null
+    return parent.children.splice(idx, 1)[0] as Widget
+  }
+
+  /** 将部件放入容器前设置 tabKey / 列索引等元数据，返回 false 表示无法放入 */
+  function prepareContainerChild(widget: Widget, container: Widget): boolean {
+    if (getContainerTypes().has(widget.type)) return false
+
+    if (container.type === 'tabs' && !widget.tabKey) {
+      const tabs = container.props?.tabs as Array<{ key: string }> | undefined
+      const activeKey = container.props?.activeKey as string | undefined
+      widget.tabKey = activeKey || tabs?.[0]?.key || 'tab1'
+    }
+
+    const colContainerColumns = getColContainerColumns(container.type)
+    if (colContainerColumns > 0) {
+      if (checkAndAssignColIndex(widget, container, colContainerColumns)) return false
+      calculateColPosition(widget, container, colContainerColumns)
+    }
+
+    return true
+  }
+
   /**
    * 从指定列表中按 ID 移除 Widget（递归）。
    * 返回是否成功移除。
@@ -298,16 +348,25 @@ export const useWidgetStore = defineStore('widget', () => {
   // CRUD
   // ================================================================
 
+  function getBoardLayoutMode(): BoardLayoutMode {
+    return useBoardStore().canvas.layoutMode ?? 'free'
+  }
+
   function addWidget(widget: Widget): void {
-    // 补全 position（模板或拖入的 widget 可能缺失）
+    const toAdd = prepareWidgetForAdd(widget)
+    widgets.value = [...widgets.value, ...toAdd]
+  }
+
+  function prepareWidgetForAdd(widget: Widget): Widget[] {
     if (!widget.position || typeof widget.position !== 'object') {
       const config = getWidget(widget.type)
       widget.position = { ...DEFAULT_POSITION, ...(config?.defaultPosition ?? {}) }
     }
+    const layoutMode = getBoardLayoutMode()
+    adaptWidgetToBoardLayout(widget, layoutMode)
     const toAdd: Widget[] = [widget]
     let nextZ = getMaxZIndex() + 1
     widget.position.zIndex = nextZ++
-    // 容器禁止嵌套：将被添加容器的子容器提升到根级
     if (widget.children?.length) {
       const promoted: Widget[] = []
       const kept: Widget[] = []
@@ -328,7 +387,93 @@ export const useWidgetStore = defineStore('widget', () => {
       }
     }
     syncStyleDimensions(widget)
-    widgets.value = [...widgets.value, ...toAdd]
+    return toAdd
+  }
+
+  function insertRootWidgetAt(widget: Widget, index: number): void {
+    insertWidgetAt(null, widget, index)
+  }
+
+  function insertWidgetAt(parentId: string | null, widget: Widget, index: number, meta?: Partial<Widget>): void {
+    if (meta) Object.assign(widget, meta)
+    const prepared = prepareWidgetForAdd(widget)
+    const [primary, ...promoted] = prepared
+
+    if (parentId !== null && getContainerTypes().has(primary.type)) {
+      insertWidgetAt(null, primary, widgets.value.length)
+      if (promoted.length) widgets.value = [...widgets.value, ...promoted]
+      return
+    }
+
+    if (parentId === null) {
+      const list = [...widgets.value]
+      const clamped = Math.max(0, Math.min(index, list.length))
+      list.splice(clamped, 0, primary)
+      if (promoted.length) list.push(...promoted)
+      widgets.value = list
+      return
+    }
+
+    const container = findWidget(parentId)
+    if (!container || !prepareContainerChild(primary, container)) {
+      widgets.value = [...widgets.value, primary, ...promoted]
+      return
+    }
+
+    if (!container.children) container.children = []
+    const clamped = Math.max(0, Math.min(index, container.children.length))
+    container.children.splice(clamped, 0, primary)
+    if (promoted.length) widgets.value = [...widgets.value, ...promoted]
+  }
+
+  function moveRootWidgetToIndex(id: string, toIndex: number): void {
+    moveWidgetToIndex(id, null, toIndex)
+  }
+
+  function moveWidgetToIndex(id: string, parentId: string | null, toIndex: number, meta?: Partial<Widget>): void {
+    if (parentId === id) return
+    if (parentId && isDescendantOf(id, parentId)) return
+
+    const widget = findWidget(id)
+    if (!widget) return
+    if (parentId !== null && getContainerTypes().has(widget.type)) return
+
+    const currentParent = findParent(id)
+    const currentParentId = currentParent?.id ?? null
+    const isSameParent = currentParentId === parentId
+
+    let fromIdx = -1
+    if (isRootWidget(id)) {
+      fromIdx = widgets.value.findIndex((w) => w.id === id)
+    } else {
+      fromIdx = currentParent?.children?.findIndex((c) => c.id === id) ?? -1
+    }
+    if (fromIdx < 0) return
+
+    const extracted = extractWidgetFromTree(id)
+    if (!extracted) return
+    if (meta) Object.assign(extracted, meta)
+
+    let target = toIndex
+    if (isSameParent && fromIdx < target) target -= 1
+
+    if (parentId === null) {
+      const list = [...widgets.value]
+      target = Math.max(0, Math.min(target, list.length))
+      list.splice(target, 0, extracted)
+      widgets.value = list
+      return
+    }
+
+    const container = findWidget(parentId)
+    if (!container || !prepareContainerChild(extracted, container)) {
+      widgets.value = [...widgets.value, extracted]
+      return
+    }
+
+    if (!container.children) container.children = []
+    target = Math.max(0, Math.min(target, container.children.length))
+    container.children.splice(target, 0, extracted)
   }
 
   function removeWidget(id: string): void {
@@ -577,12 +722,19 @@ export const useWidgetStore = defineStore('widget', () => {
   /**
    * 批量替换所有 Widget（从 API 加载时使用）。
    */
-  function loadWidgets(data: Widget[]): void {
+  function loadWidgets(data: Widget[], layoutMode?: BoardLayoutMode): void {
     // 过滤掉 undefined 和 null 元素，确保数据干净
     const validWidgets = (data || []).filter((w): w is Widget => w != null && typeof w === 'object' && 'id' in w)
     // 补全 position 字段（旧数据可能缺失）
     const normalized = normalizePosition(validWidgets)
+    const mode = layoutMode ?? getBoardLayoutMode()
+    adaptWidgetsToBoardLayout(normalized, mode)
     widgets.value = sanitizeContainerNesting(normalized)
+  }
+
+  /** Board 布局模式切换后，同步 Widget 骨架样式 */
+  function adaptAllToLayoutMode(layoutMode: BoardLayoutMode): void {
+    adaptWidgetsToBoardLayout(widgets.value, layoutMode)
   }
 
   /**
@@ -605,6 +757,10 @@ export const useWidgetStore = defineStore('widget', () => {
     isRootWidget,
     // CRUD
     addWidget,
+    insertRootWidgetAt,
+    insertWidgetAt,
+    moveRootWidgetToIndex,
+    moveWidgetToIndex,
     removeWidget,
     updateWidget,
     // 位置操作
@@ -626,6 +782,7 @@ export const useWidgetStore = defineStore('widget', () => {
     setColIndex,
     // 批量操作
     loadWidgets,
+    adaptAllToLayoutMode,
     clearWidgets,
   }
 })

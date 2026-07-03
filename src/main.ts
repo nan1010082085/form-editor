@@ -7,6 +7,7 @@ import { createApp, type App } from 'vue'
 import { createPinia } from 'pinia'
 import { renderWithQiankun, qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import { setupElementPlus } from '@schema-platform/platform-shared/config/element'
+import { setupAppAuth } from '@schema-platform/platform-shared/utils/authSession'
 import { initQiankunProps, initQiankunShellProps } from '@schema-platform/platform-shared/qiankun'
 import { editorLog } from '@schema-platform/platform-shared/utils/logger'
 import AppRoot from './App.vue'
@@ -29,12 +30,14 @@ function render() {
 
   router = createEditorRouter(currentRouteBase)
   app = createApp(AppRoot)
-  app.use(createPinia())
+  const pinia = createPinia()
+  app.use(pinia)
   app.use(router)
   app.config.errorHandler = (err, _instance, info) => {
     console.error('[GlobalError]', err, info)
   }
   app.directive('permission', permissionDirective)
+  setupAppAuth()
   setupElementPlus(app)
   configureApiClient({
     baseUrl: import.meta.env.VITE_API_BASE_URL as string | undefined,

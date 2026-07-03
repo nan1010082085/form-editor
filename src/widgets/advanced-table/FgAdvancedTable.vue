@@ -2,6 +2,7 @@
 import { inject, computed, reactive, watch, onMounted } from 'vue'
 import { TABLE_CLICK_INTERCEPT_KEY } from './clickIntercept'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import FgSearchForm from '../../components/SearchForm/FgSearchForm.vue'
 import { widgetDataKey } from '../base/types'
 import { EVENT_CONTEXT_KEY, FORM_GRID_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
 import { useListData } from '../../composables/useListData'
@@ -68,28 +69,12 @@ const searchEnabled = computed(() =>
   searchBarConfig.value.enabled !== false && searchFields.value.length > 0,
 )
 
-const searchForm = reactive<Record<string, string>>({})
-
-watch(searchFields, (fields) => {
-  for (const field of fields) {
-    if (!(field.field in searchForm)) searchForm[field.field] = ''
-  }
-}, { immediate: true })
-
-function applySearch() {
-  const params: Record<string, unknown> = {}
-  for (const field of searchFields.value) {
-    const val = searchForm[field.field]
-    if (val !== undefined && val !== '') params[field.field] = val
-  }
+function onSearch(params: Record<string, unknown>) {
   setSearchParams(params)
   fetchData()
 }
 
-function resetSearch() {
-  for (const field of searchFields.value) {
-    searchForm[field.field] = ''
-  }
+function onSearchReset() {
   setSearchParams({})
   fetchData()
 }
@@ -389,44 +374,12 @@ defineExpose({
 <template>
   <div :class="styles.container">
     <!-- E-32 Search bar -->
-    <div v-if="searchEnabled" :class="styles.searchBar">
-      <div v-for="field in searchFields" :key="field.field" :class="styles.searchField">
-        <span :class="styles.searchLabel">{{ field.label }}</span>
-        <el-input
-          v-if="!field.type || field.type === 'input'"
-          v-model="searchForm[field.field]"
-          :placeholder="field.placeholder || `请输入${field.label}`"
-          clearable
-          size="default"
-          @keyup.enter="applySearch"
-        />
-        <el-select
-          v-else-if="field.type === 'select'"
-          v-model="searchForm[field.field]"
-          :placeholder="field.placeholder || `请选择${field.label}`"
-          clearable
-          size="default"
-          style="width: 100%"
-        >
-          <el-option
-            v-for="opt in field.options ?? []"
-            :key="String(opt.value)"
-            :label="opt.label"
-            :value="String(opt.value)"
-          />
-        </el-select>
-      </div>
-      <div :class="styles.searchActions">
-        <el-button type="primary" @click="applySearch">
-          <AppIcon name="search" :class="styles.toolbarBtnIcon" />
-          查询
-        </el-button>
-        <el-button @click="resetSearch">
-          <AppIcon name="refresh-left" :class="styles.toolbarBtnIcon" />
-          重置
-        </el-button>
-      </div>
-    </div>
+    <FgSearchForm
+      v-if="searchEnabled"
+      :fields="searchFields"
+      @search="onSearch"
+      @reset="onSearchReset"
+    />
 
     <!-- Toolbar -->
     <div v-if="toolbar.length > 0" :class="styles.toolbar">

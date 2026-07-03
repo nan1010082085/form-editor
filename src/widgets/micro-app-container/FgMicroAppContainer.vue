@@ -7,11 +7,14 @@
  */
 import { inject, computed, ref, watch, onUnmounted } from 'vue'
 import { widgetDataKey } from '../base/types'
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import { loadMicroApp } from 'qiankun'
 import type { MicroApp } from 'qiankun'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
+const isEditorSurface = computed(() => surface === 'editor')
 
 const appName = computed(() => widgetData.value.props?.microappName as string ?? '')
 const appEntry = computed(() => widgetData.value.props?.microappEntry as string ?? '')
@@ -46,6 +49,7 @@ function getSandboxConfig() {
 }
 
 async function loadApp() {
+  if (isEditorSurface.value) return
   if (!appName.value || !appEntry.value || !containerRef.value) return
 
   loading.value = true
@@ -106,33 +110,18 @@ onUnmounted(() => {
 
 <template>
   <div :class="styles.container" :style="{ height }">
-    <div v-if="!appName || !appEntry" :class="$style.placeholder">
+    <div v-if="isEditorSurface" :class="styles.preview">
+      <span v-if="appName">{{ appName }}</span>
+      <span v-else>微应用容器</span>
+      <span v-if="appEntry" :class="styles.entry">{{ appEntry }}</span>
+      <span :class="styles.hint">设计器预览 · 不加载子应用</span>
+    </div>
+    <div v-else-if="!appName || !appEntry" :class="styles.placeholder">
       请配置子应用名称和入口地址
     </div>
-    <div v-else-if="error" :class="$style.error">
+    <div v-else-if="error" :class="styles.error">
       {{ error }}
     </div>
     <div v-else ref="containerRef" style="height: 100%;" />
   </div>
 </template>
-
-<style module>
-.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--el-text-color-secondary);
-  background: var(--el-fill-color-lighter);
-  border: 1px dashed var(--el-border-color);
-}
-.error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--el-color-danger);
-  background: var(--el-color-danger-light-9);
-  border: 1px dashed var(--el-color-danger-light-5);
-}
-</style>

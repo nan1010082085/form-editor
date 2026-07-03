@@ -14,11 +14,16 @@ import {
   type UserItem,
   type CreateUserPayload,
 } from '../../api/userApi'
+import {
+  WIDGET_SURFACE_KEY,
+  getTableRowsFromMock,
+} from '../base/widgetMock'
 import styles from './style.module.scss'
 
 // ---- Inject ----
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
 const { isDisabled } = useWidgetRenderState()
 
 // ---- State ----
@@ -100,6 +105,15 @@ const resetPwdRules = {
 }
 
 // ---- API ----
+function applyEditorMock(): boolean {
+  if (surface !== 'editor') return false
+  const mock = getTableRowsFromMock('user-management')
+  if (!mock) return false
+  tableData.value = mock.rows as UserItem[]
+  total.value = mock.total
+  return true
+}
+
 async function loadData() {
   loading.value = true
   try {
@@ -111,6 +125,7 @@ async function loadData() {
     tableData.value = res.data.items
     total.value = res.data.total
   } catch (err) {
+    if (applyEditorMock()) return
     ElMessage.error('加载用户列表失败')
   } finally {
     loading.value = false

@@ -4,6 +4,42 @@
   overflow: auto;
 }
 
+.canvasFlex {
+  margin: 0;
+  overflow: auto;
+}
+
+.contentFrame {
+  min-height: 100%;
+}
+
+.contentFrameDrop {
+  outline: 2px dashed var(--el-color-primary);
+  outline-offset: -4px;
+  background: rgb(64 158 255 / 4%);
+}
+
+.flexEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 280px;
+  margin: 24px;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 8px;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.flexEmptyTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--el-text-color-regular);
+}
+
 .canvasEdit {
   margin: 24px;
 }

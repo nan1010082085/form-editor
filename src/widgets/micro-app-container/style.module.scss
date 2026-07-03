@@ -4,3 +4,46 @@
   position: relative;
   overflow: hidden;
 }
+
+.placeholder,
+.preview,
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 12px;
+  text-align: center;
+  word-break: break-all;
+}
+
+.placeholder,
+.preview {
+  color: var(--el-text-color-secondary);
+  background: var(--el-fill-color-lighter);
+  border: 1px dashed var(--el-border-color);
+}
+
+.preview {
+  font-weight: 500;
+  color: var(--el-text-color-regular);
+}
+
+.entry {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--el-text-color-secondary);
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--el-color-primary);
+}
+
+.error {
+  color: var(--el-color-danger);
+  background: var(--el-color-danger-light-9);
+  border: 1px dashed var(--el-color-danger-light-5);
+}

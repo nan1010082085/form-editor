@@ -2,19 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { useEditorStore } from '@/stores/editor'
 import { useAuthStore } from '@schema-platform/platform-shared/utils/stores/authStore'
+import { guardAuthenticatedRoute } from '@schema-platform/platform-shared/utils/authSession'
 
 // qiankun 模式下使用 memory history，避免子应用路由篡改宿主 URL
 const isQiankunSubApp = () => !!window.__POWERED_BY_QIANKUN__
-
-/** 统一 token 解析 */
-const TOKEN_KEY = 'sfp_access_token'
-function resolveToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY)
-  } catch {
-    return null
-  }
-}
 
 const routes = [
   // ---- 共享登录页（独立模式） ----
@@ -149,28 +140,18 @@ export function createEditorRouter(routeBase?: string) {
   })
 
   // 路由守卫：独立访问时检查登录状态
-  router.beforeEach((to) => {
+  router.beforeEach(async (to) => {
     if (to.name === 'forbidden' || to.name === 'not-found' || to.name === 'auth-callback' || to.name === 'login') {
       if (to.name === 'login' && !isQiankunSubApp()) {
         const authStore = useAuthStore()
         if (authStore.accessToken && authStore.user) {
           return { path: (to.query.redirect as string) || '/' }
         }
-        if (authStore.accessToken && !authStore.user) {
-          authStore.reset()
-        }
       }
       return true
     }
 
-    // 微前端模式下跳过检查（宿主已处理鉴权）
-    if (!isQiankunSubApp() && !resolveToken()) {
-      // 跳转到统一登录页，带上当前路径作为 redirect 参数
-      return {
-        name: 'login',
-        query: { redirect: to.fullPath },
-      }
-    }
+    return guardAuthenticatedRoute(to)
   })
 
   // 路由守卫：编辑器未保存时拦截离开

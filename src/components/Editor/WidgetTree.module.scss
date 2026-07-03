@@ -89,3 +89,21 @@
   min-width: 0;
   flex: 1;
 }
+
+.tabKey {
+  font-size: 10px;
+  color: var(--color-primary);
+  padding: 0 4px;
+  border-radius: 2px;
+  background: var(--color-primary-lighter);
+  flex-shrink: 0;
+}
+
+.colIndex {
+  font-size: 10px;
+  color: var(--text-color-secondary);
+  padding: 0 4px;
+  border-radius: 2px;
+  background: var(--el-fill-color);
+  flex-shrink: 0;
+}

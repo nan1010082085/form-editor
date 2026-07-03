@@ -22,13 +22,19 @@ import { EVENT_CONTEXT_KEY, FORM_GRID_LINKAGE_KEY, DIALOG_REGISTRY_KEY } from '.
 import { getComponentMap } from '../../widgets/registry'
 import { getAllContainerTypes } from '../../composables/useConstant'
 import { triggerWidgetEvent } from '../../engine/eventEngine'
+import { useEditorStore } from '../../stores/editor'
+import { EDITOR_CONTEXTMENU_KEY } from '../Editor/editorContextKeys'
+import { useFlexDropZone } from '../../composables/useFlexDropZone'
 import SchemaRender from './SchemaRender.vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
+import styles from './WidgetNode.module.scss'
 
 const props = defineProps<{
   widget: PartialWidget
   formData?: FormData
   readonly?: boolean
+  /** Flex 编辑模式：点击选中部件，禁用内部交互 */
+  editorSelectable?: boolean
 }>()
 
 const compMap = getComponentMap()
@@ -56,7 +62,40 @@ const CLICKABLE_TYPES: ReadonlySet<string> = new Set([
 ])
 
 const isContainer = computed(() => getContainerTypes().has(props.widget.type))
+const COL_CONTAINER_TYPES = new Set(['single-col', 'double-col', 'triple-col', 'quad-col'])
+const isColContainer = computed(() => COL_CONTAINER_TYPES.has(props.widget.type))
 const resolvedComponent = computed(() => compMap[props.widget.type])
+const editorStore = useEditorStore()
+
+const isSelected = computed(() =>
+  props.editorSelectable && props.widget.id != null && editorStore.selectedId === props.widget.id,
+)
+
+function handleEditorSelect(event: MouseEvent) {
+  if (!props.editorSelectable || !props.widget.id) return
+  event.stopPropagation()
+  editorStore.select(props.widget.id)
+}
+
+const openContextMenu = inject(EDITOR_CONTEXTMENU_KEY, null)
+
+function handleEditorContextMenu(event: MouseEvent) {
+  if (!props.editorSelectable || !props.widget.id) return
+  event.preventDefault()
+  event.stopPropagation()
+  editorStore.select(props.widget.id)
+  openContextMenu?.(event, props.widget as Widget)
+}
+
+function handleEditorDragStart(event: DragEvent) {
+  if (!props.editorSelectable || !props.widget.id) return
+  event.stopPropagation()
+  event.dataTransfer?.setData(
+    'application/schema-drag',
+    JSON.stringify({ source: 'canvas', id: props.widget.id }),
+  )
+  event.dataTransfer!.effectAllowed = 'move'
+}
 
 // ---- Provide widget data to children ----
 const widgetData = computed(() => props.widget)
@@ -138,90 +177,187 @@ async function handleDialogCancel() {
   }
   dialogVisible.value = false
 }
+const shellClass = computed(() => {
+  if (!props.editorSelectable) return styles.passiveShell
+  return [
+    styles.editorShell,
+    styles.editorShellDraggable,
+    isSelected.value ? styles.editorShellSelected : '',
+  ]
+})
+
+const innerClass = computed(() => {
+  if (!props.editorSelectable) return styles.passiveShell
+  return styles.editorShellInner
+})
+
+const containerDropRef = ref<HTMLElement | null>(null)
+const containerDropEnabled = computed(() =>
+  Boolean(props.editorSelectable && isContainer.value && props.widget.id),
+)
+
+const tabsActiveKey = computed(() => {
+  if (props.widget.type !== 'tabs') return null
+  const tabList = props.widget.props?.tabs as Array<{ key: string }> | undefined
+  return (props.widget.props?.activeKey as string) || tabList?.[0]?.key || 'tab1'
+})
+
+const flexContainerChildren = computed(() => {
+  const children = (props.widget.children ?? []) as Widget[]
+  if (props.editorSelectable && props.widget.type === 'tabs' && tabsActiveKey.value) {
+    const ak = tabsActiveKey.value
+    return children.filter((c) => (c.tabKey ?? ak) === ak)
+  }
+  return children
+})
+
+const {
+  isDragOver: isContainerDragOver,
+  handleDragOver: handleContainerDragOver,
+  handleDragLeave: handleContainerDragLeave,
+  handleDrop: handleContainerDrop,
+} = useFlexDropZone(
+  containerDropRef,
+  () => props.widget.id ?? null,
+  () => flexContainerChildren.value,
+  () => containerDropEnabled.value,
+)
+
+const containerDropClass = computed(() => [
+  styles.flexDropZone,
+  isContainerDragOver.value ? styles.flexDropZoneActive : '',
+])
 </script>
 
 <template>
-  <!-- 联动 + hidden 控制可见性 -->
-  <template v-if="renderState.visible">
+  <div
+    v-if="renderState.visible"
+    :data-widget-id="editorSelectable ? widget.id : undefined"
+    :class="shellClass"
+    :draggable="editorSelectable ? true : undefined"
+    @click="editorSelectable ? handleEditorSelect($event) : undefined"
+    @contextmenu="editorSelectable ? handleEditorContextMenu($event) : undefined"
+    @dragstart="editorSelectable ? handleEditorDragStart($event) : undefined"
+  >
+    <div :class="innerClass">
+      <AppDialog
+        v-if="widget.type === 'dialog'"
+        v-model="dialogVisible"
+        :title="(widget.props?.title as string) || widget.label || '弹窗'"
+        :width="(widget.props?.width as string) || '600px'"
+        :draggable="widget.props?.draggable !== false"
+        :show-fullscreen-btn="widget.props?.showFullscreenBtn !== false"
+        :destroy-on-close="widget.props?.destroyOnClose !== false"
+        :close-on-click-modal="widget.props?.closeOnClickModal === true"
+      >
+        <div
+          v-if="editorSelectable"
+          ref="containerDropRef"
+          :class="containerDropClass"
+          @dragover="handleContainerDragOver"
+          @dragleave="handleContainerDragLeave"
+          @drop="handleContainerDrop"
+        >
+          <SchemaRender
+            v-for="(child, ci) in flexContainerChildren"
+            :key="ci"
+            :schema="child"
+            :form-data="formData"
+            :readonly="readonly"
+            :editor-selectable="editorSelectable"
+          />
+          <div v-if="!flexContainerChildren.length" :class="styles.flexDropEmpty">
+            {{ widget.type === 'tabs' ? '拖入部件到当前页签' : '拖入部件' }}
+          </div>
+        </div>
+        <template v-else-if="widget.children?.length">
+          <SchemaRender
+            v-for="(child, ci) in widget.children"
+            :key="ci"
+            :schema="child"
+            :form-data="formData"
+            :readonly="readonly"
+            :editor-selectable="editorSelectable"
+          />
+        </template>
+        <template v-if="widget.props?.showFooter !== false" #footer>
+          <el-button @click="handleDialogCancel">
+            {{ (widget.props?.cancelText as string) || '取消' }}
+          </el-button>
+          <el-button type="primary" @click="handleDialogConfirm">
+            {{ (widget.props?.confirmText as string) || '确定' }}
+          </el-button>
+        </template>
+      </AppDialog>
 
-    <!-- Dialog container: render as EnhancedDialog (default open) -->
-    <AppDialog
-      v-if="widget.type === 'dialog'"
-      v-model="dialogVisible"
-      :title="(widget.props?.title as string) || widget.label || '弹窗'"
-      :width="(widget.props?.width as string) || '600px'"
-      :draggable="widget.props?.draggable !== false"
-      :show-fullscreen-btn="widget.props?.showFullscreenBtn !== false"
-      :destroy-on-close="widget.props?.destroyOnClose !== false"
-      :close-on-click-modal="widget.props?.closeOnClickModal === true"
-    >
-      <template v-if="widget.children?.length">
-        <SchemaRender
-          v-for="(child, ci) in widget.children"
-          :key="ci"
-          :schema="child"
-          :form-data="formData"
-          :readonly="readonly"
-        />
-      </template>
-      <template v-if="widget.props?.showFooter !== false" #footer>
-        <el-button @click="handleDialogCancel">
-          {{ (widget.props?.cancelText as string) || '取消' }}
-        </el-button>
-        <el-button type="primary" @click="handleDialogConfirm">
-          {{ (widget.props?.confirmText as string) || '确定' }}
-        </el-button>
-      </template>
-    </AppDialog>
-
-    <!-- Container (non-dialog): component + recursive children -->
-    <component
-      v-else-if="isContainer && resolvedComponent"
-      :ref="(el: ComponentPublicInstance | null) => { containerRef = el }"
-      :is="resolvedComponent"
-      :widget="widget"
-      :editable="false"
-    >
-      <template v-if="widget.children?.length">
-        <SchemaRender
-          v-for="(child, ci) in widget.children"
-          :key="ci"
-          :schema="child"
-          :form-data="formData"
-          :readonly="readonly"
-        />
-      </template>
-    </component>
-
-    <!-- Non-container with event interception + form-item wrapping -->
-    <el-form-item
-      v-else-if="needsFormItem"
-      :label="widget.label"
-      :prop="widget.field"
-      @change="FORM_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('change', $event)"
-      @focus="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('focus')"
-      @blur="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('blur')"
-      @click="CLICKABLE_TYPES.has(widget.type) && handleWidgetEvent('click')"
-    >
       <component
-        v-if="resolvedComponent"
+        v-else-if="isContainer && resolvedComponent"
+        :ref="(el: ComponentPublicInstance | null) => { containerRef = el }"
         :is="resolvedComponent"
         :widget="widget"
-      />
-    </el-form-item>
+        :editable="false"
+        :editor-selectable="editorSelectable"
+      >
+        <div
+          v-if="editorSelectable && !isColContainer"
+          ref="containerDropRef"
+          :class="containerDropClass"
+          @dragover="handleContainerDragOver"
+          @dragleave="handleContainerDragLeave"
+          @drop="handleContainerDrop"
+        >
+          <SchemaRender
+            v-for="(child, ci) in flexContainerChildren"
+            :key="ci"
+            :schema="child"
+            :form-data="formData"
+            :readonly="readonly"
+            :editor-selectable="editorSelectable"
+          />
+          <div v-if="!flexContainerChildren.length" :class="styles.flexDropEmpty">
+            {{ widget.type === 'tabs' ? '拖入部件到当前页签' : '拖入部件' }}
+          </div>
+        </div>
+        <template v-else-if="widget.children?.length">
+          <SchemaRender
+            v-for="(child, ci) in widget.children"
+            :key="ci"
+            :schema="child"
+            :form-data="formData"
+            :readonly="readonly"
+            :editor-selectable="editorSelectable"
+          />
+        </template>
+      </component>
 
-    <!-- Non-container basic component with event interception -->
-    <div
-      v-else-if="resolvedComponent"
-      @change="FORM_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('change', $event)"
-      @focus.capture="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('focus')"
-      @blur.capture="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('blur')"
-      @click="CLICKABLE_TYPES.has(widget.type) && handleWidgetEvent('click')"
-    >
-      <component
-        :is="resolvedComponent"
-        :widget="widget"
-      />
+      <el-form-item
+        v-else-if="needsFormItem"
+        :label="widget.label"
+        :prop="widget.field"
+        @change="FORM_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('change', $event)"
+        @focus="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('focus')"
+        @blur="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('blur')"
+        @click="CLICKABLE_TYPES.has(widget.type) && handleWidgetEvent('click')"
+      >
+        <component
+          v-if="resolvedComponent"
+          :is="resolvedComponent"
+          :widget="widget"
+        />
+      </el-form-item>
+
+      <div
+        v-else-if="resolvedComponent"
+        @change="FORM_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('change', $event)"
+        @focus.capture="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('focus')"
+        @blur.capture="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('blur')"
+        @click="CLICKABLE_TYPES.has(widget.type) && handleWidgetEvent('click')"
+      >
+        <component
+          :is="resolvedComponent"
+          :widget="widget"
+        />
+      </div>
     </div>
-  </template>
+  </div>
 </template>

@@ -19,6 +19,10 @@ import { complianceChecklistMock } from '../compliance-checklist/mock'
 import { qrScannerMock } from '../qr-scanner/mock'
 import { treeTableMock } from '../tree-table/mock'
 import { kanbanMock } from '../kanban/mock'
+import { userManagementMock } from '../user-management/mock'
+import { roleManagementMock } from '../role-management/mock'
+import { tableMock } from '../table/mock'
+import { flowTaskActionsMock } from '../flow-task-actions/mock'
 
 /** 渲染表面：editor=设计器画布，runtime=PublishView/正式运行时 */
 export type WidgetSurface = 'editor' | 'runtime'
@@ -105,6 +109,16 @@ const MOCK_REGISTRY: Partial<Record<string, WidgetMockBundle>> = {
   'area-chart': lineChartMock,
   'pie-chart': pieChartMock,
   'donut-chart': pieChartMock,
+  'scatter-chart': barChartMock,
+  'bubble-chart': barChartMock,
+  radar: pieChartMock,
+  'filled-radar': pieChartMock,
+  gauge: pieChartMock,
+  'multi-gauge': pieChartMock,
+  heatmap: barChartMock,
+  funnel: barChartMock,
+  'compare-funnel': barChartMock,
+  candlestick: lineChartMock,
   statistic: statisticMock,
   descriptions: descriptionsMock,
   'flow-timeline': flowTimelineMock,
@@ -115,6 +129,10 @@ const MOCK_REGISTRY: Partial<Record<string, WidgetMockBundle>> = {
   'qr-scanner': qrScannerMock,
   'tree-table': treeTableMock,
   kanban: kanbanMock,
+  'user-management': userManagementMock,
+  'role-management': roleManagementMock,
+  table: tableMock,
+  'flow-task-actions': flowTaskActionsMock,
 }
 
 export function getWidgetMock(type: string): WidgetMockBundle | undefined {

@@ -4,6 +4,7 @@ import {
   getChartStaticDataFromMock,
   getTableRowsFromMock,
   shouldUseWidgetMock,
+  COMPLEX_WIDGET_MOCK_TYPES,
 } from '@/widgets/base/widgetMock'
 
 describe('widgetMock', () => {
@@ -20,6 +21,33 @@ describe('widgetMock', () => {
     expect(result!.rows.length).toBeGreaterThan(0)
     expect(result!.total).toBeGreaterThan(0)
     expect(result!.rows[0]).toHaveProperty('applicantName')
+  })
+
+  it('getTableRowsFromMock returns table and user-management rows', () => {
+    const table = getTableRowsFromMock('table')
+    expect(table?.rows[0]).toHaveProperty('name')
+    const users = getTableRowsFromMock('user-management')
+    expect(users?.rows[0]).toHaveProperty('username')
+  })
+
+  it('getWidgetMock resolves flow-task-actions record mock', () => {
+    expect(getWidgetMock('flow-task-actions')?.kind).toBe('record')
+  })
+
+  it('getWidgetMock resolves remaining chart aliases', () => {
+    const aliases = [
+      'scatter-chart', 'bubble-chart', 'radar', 'filled-radar',
+      'gauge', 'multi-gauge', 'heatmap', 'funnel', 'compare-funnel', 'candlestick',
+    ]
+    for (const type of aliases) {
+      expect(getWidgetMock(type)?.kind, type).toBe('chart')
+    }
+  })
+
+  it('every complex widget type has mock registered', () => {
+    for (const type of COMPLEX_WIDGET_MOCK_TYPES) {
+      expect(getWidgetMock(type), type).toBeDefined()
+    }
   })
 
   it('getChartStaticDataFromMock returns chart staticData', () => {

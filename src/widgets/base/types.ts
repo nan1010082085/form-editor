@@ -53,9 +53,32 @@ export type BasicType =
   | 'approval-user-picker'
   | 'approval-role-picker'
   | 'approval-comment'
+  | 'icon-picker'
+  | 'tree-select'
+  | 'permission-tree'
+  | 'dynamic-detail-table'
+  | 'qr-scanner'
+
+/** 嵌入类组件 */
+export type EmbedType = 'iframe' | 'micro-app'
+
+/** 业务场景组件 */
+export type BusinessType =
+  | 'crud-list-page'
+  | 'user-management'
+  | 'role-management'
+  | 'user-selector'
+  | 'flow-timeline'
+  | 'flow-task-actions'
+  | 'calendar'
+  | 'kanban'
+  | 'adhoc-query'
+  | 'notification'
+  | 'auto-refresh'
+  | 'compliance-checklist'
 
 /** 所有组件类型 */
-export type SchemaType = ContainerType | BasicType
+export type SchemaType = ContainerType | BasicType | EmbedType | BusinessType
 
 // ============================================================
 // 表单字段值类型
@@ -628,6 +651,25 @@ export function isFullWidthType(type: SchemaType): boolean {
 
 export type CanvasUnit = 'px' | '%'
 
+/** 画布布局模式：free=绝对定位自由画布，flex=流式页面布局 */
+export type BoardLayoutMode = 'free' | 'flex'
+
+/** 自由布局留白预设 */
+export type FreeLayoutPreset = 'full' | 'form-narrow' | 'list-standard' | 'list-wide'
+
+/** Flex 页面模板 */
+export type FlexPageTemplate = 'form' | 'list' | 'detail' | 'blank'
+
+/** 自由布局内容区留白 */
+export interface FreeLayoutOptions {
+  /** 内容最大宽度（px），超出则居中留白 */
+  maxContentWidth?: number
+  /** 水平对齐 */
+  contentAlign?: 'left' | 'center'
+  /** 左右内边距，如 "24px" */
+  marginX?: string
+}
+
 export interface CanvasConfig {
   width: number
   height: number
@@ -637,6 +679,12 @@ export interface CanvasConfig {
   padding: string
   /** 缩放比例 100-150 */
   zoom: number
+  /** 布局模式，默认 free（兼容旧 Schema） */
+  layoutMode?: BoardLayoutMode
+  /** 自由布局留白（layoutMode=free 时生效） */
+  freeLayout?: FreeLayoutOptions
+  /** Flex 页面模板标识（layoutMode=flex 时记录创建模板） */
+  flexTemplate?: FlexPageTemplate
 }
 
 export interface BoardVariable {

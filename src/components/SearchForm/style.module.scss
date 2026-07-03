@@ -1,0 +1,29 @@
+.searchForm {
+  padding: 12px 0 8px;
+  flex-shrink: 0;
+}
+
+.searchRow {
+  width: 100%;
+}
+
+.searchField {
+  margin-bottom: 8px;
+}
+
+.searchLabel {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #606266;
+}
+
+.searchActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.toolbarBtnIcon {
+  margin-right: 4px;
+}

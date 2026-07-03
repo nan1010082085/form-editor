@@ -22,6 +22,7 @@ defineProps<{
   isDragging?: boolean
   readonly?: boolean
   path?: number[]
+  editorSelectable?: boolean
 }>()
 </script>
 
@@ -37,5 +38,6 @@ defineProps<{
     :widget="schema"
     :form-data="formData"
     :readonly="readonly"
+    :editor-selectable="editorSelectable"
   />
 </template>

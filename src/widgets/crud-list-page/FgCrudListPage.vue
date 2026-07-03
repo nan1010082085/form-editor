@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { inject, computed, provide, ref, watch, type ComputedRef } from 'vue'
+import { inject, computed, provide, ref, reactive, watch, type ComputedRef } from 'vue'
+import { ElMessage } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
 import { widgetDataKey } from '../base/types'
 import { EVENT_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
 import FgAdvancedTable from '../advanced-table/FgAdvancedTable.vue'
@@ -9,16 +11,23 @@ import { executeEventAction, type EventExecutionContext } from '../../engine/eve
 import { fetchWidgetDataSource } from '@/api/widgetApi'
 import { fetchApprovalLogs, type ApprovalLogItem } from '@/api/flowApi'
 import { resolveWidgetUrl } from '@/utils/resolveWidgetUrl'
-import type { CrudDetailDialogConfig, CrudPageActions } from './config'
+import { apiClient } from '@/utils/apiClient'
+import type { CrudDetailDialogConfig, CrudFormDialogConfig, CrudPageActions } from './config'
 import type { DescriptionItemConfig } from '../descriptions/config'
+import CrudFormField from './CrudFormField.vue'
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
+const isEditorSurface = computed(() => surface === 'editor')
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
 const variablesContext = inject<ComputedRef<Record<string, unknown>>>(
   'variablesContext',
   computed(() => ({})),
 )
+
+const tableRef = ref<InstanceType<typeof FgAdvancedTable> | null>(null)
 
 const tableWidgetData = computed(() => ({
   ...widgetData.value,
@@ -37,6 +46,14 @@ const detailDialogConfig = computed<CrudDetailDialogConfig | null>(() => {
   return raw
 })
 
+const formDialogConfig = computed<CrudFormDialogConfig | null>(() => {
+  const raw = widgetData.value.props?.formDialog as CrudFormDialogConfig | undefined
+  if (!raw?.fields?.length) return null
+  if (isEditorSurface.value) return raw
+  if (!raw.createApiUrl && !raw.updateApiUrl) return null
+  return raw
+})
+
 const detailVisible = ref(false)
 const detailLoading = ref(false)
 const detailData = ref<Record<string, unknown>>({})
@@ -44,9 +61,43 @@ const detailRow = ref<Record<string, unknown>>({})
 const timelineLogs = ref<ApprovalLogItem[]>([])
 const timelineLoading = ref(false)
 
+const formVisible = ref(false)
+const formMode = ref<'add' | 'edit'>('add')
+const formSubmitting = ref(false)
+const formRef = ref<FormInstance>()
+const formData = reactive<Record<string, unknown>>({})
+const editingRecordId = ref('')
+
 const descriptionItems = computed<DescriptionItemConfig[]>(() =>
   detailDialogConfig.value?.descriptionItems ?? [],
 )
+
+const visibleFormFields = computed(() => {
+  const fields = formDialogConfig.value?.fields ?? []
+  return fields.filter((field) => {
+    if (formMode.value === 'add' && field.hiddenOnCreate) return false
+    if (formMode.value === 'edit' && field.hiddenOnEdit) return false
+    return true
+  })
+})
+
+const formDialogTitle = computed(() => {
+  const cfg = formDialogConfig.value
+  if (!cfg) return ''
+  if (formMode.value === 'add') return cfg.createTitle ?? cfg.title ?? '新增'
+  return cfg.editTitle ?? cfg.title ?? '编辑'
+})
+
+const formRules = computed<FormRules>(() => {
+  const rules: FormRules = {}
+  for (const field of visibleFormFields.value) {
+    if (!field.required) continue
+    rules[field.field] = [
+      { required: true, message: `请填写${field.label}`, trigger: field.type === 'select' ? 'change' : 'blur' },
+    ]
+  }
+  return rules
+})
 
 function buildEventContext(row?: Record<string, unknown>): EventExecutionContext | null {
   if (!eventCtx) return null
@@ -54,6 +105,97 @@ function buildEventContext(row?: Record<string, unknown>): EventExecutionContext
     ...eventCtx,
     row,
     rowIndex: row ? 0 : undefined,
+  }
+}
+
+function initFormValues(row?: Record<string, unknown>) {
+  const fields = formDialogConfig.value?.fields ?? []
+  for (const key of Object.keys(formData)) {
+    if (!fields.some((f) => f.field === key)) delete formData[key]
+  }
+  for (const field of fields) {
+    const fromRow = row?.[field.field]
+    if (fromRow !== undefined && fromRow !== null) {
+      formData[field.field] = fromRow
+    } else if (field.defaultValue !== undefined) {
+      formData[field.field] = field.defaultValue
+    } else if (field.type === 'switch') {
+      formData[field.field] = false
+    } else {
+      formData[field.field] = ''
+    }
+  }
+}
+
+function openFormDialog(mode: 'add' | 'edit', row?: Record<string, unknown>) {
+  formMode.value = mode
+  editingRecordId.value = mode === 'edit'
+    ? String(row?.[formDialogConfig.value?.recordIdField ?? '_id'] ?? '')
+    : ''
+  initFormValues(row)
+  formVisible.value = true
+}
+
+function resolveUpdateUrl(template: string, id: string): string {
+  if (template.includes('${id}')) {
+    return resolveWidgetUrl(template.replace('${id}', id), {
+      ...variablesContext.value,
+      id,
+      recordId: id,
+    })
+  }
+  const base = resolveWidgetUrl(template, variablesContext.value)
+  return base.endsWith('/') ? `${base}${id}` : `${base}/${id}`
+}
+
+async function submitFormDialog() {
+  const cfg = formDialogConfig.value
+  if (!cfg) return
+
+  try {
+    await formRef.value?.validate()
+  } catch {
+    return
+  }
+
+  formSubmitting.value = true
+  try {
+    if (isEditorSurface.value) {
+      ElMessage.success(formMode.value === 'add' ? '（预览）新增成功' : '（预览）保存成功')
+      formVisible.value = false
+      return
+    }
+
+    const payload = { ...formData }
+    if (formMode.value === 'add') {
+      if (!cfg.createApiUrl) {
+        ElMessage.warning('未配置新增 API')
+        return
+      }
+      const url = resolveWidgetUrl(cfg.createApiUrl, variablesContext.value)
+      await apiClient.post(url, payload)
+      ElMessage.success('新增成功')
+    } else {
+      if (!cfg.updateApiUrl) {
+        ElMessage.warning('未配置更新 API')
+        return
+      }
+      const id = editingRecordId.value
+      if (!id) {
+        ElMessage.error('缺少记录 ID')
+        return
+      }
+      const url = resolveUpdateUrl(cfg.updateApiUrl, id)
+      await apiClient.put(url, payload)
+      ElMessage.success('保存成功')
+    }
+    formVisible.value = false
+    tableRef.value?.refresh()
+  } catch (err) {
+    console.error('[FgCrudListPage] form submit failed:', err)
+    ElMessage.error(formMode.value === 'add' ? '新增失败' : '保存失败')
+  } finally {
+    formSubmitting.value = false
   }
 }
 
@@ -168,6 +310,13 @@ provide(TABLE_CLICK_INTERCEPT_KEY, {
     const ctx = buildEventContext()
     if (!ctx) return false
 
+    if (btn.key === 'add' && formDialogConfig.value) {
+      if (isEditorSurface.value || formDialogConfig.value.createApiUrl) {
+        openFormDialog('add')
+        return true
+      }
+    }
+
     const actions = pageActions.value
     if (btn.key === 'add' && actions.applyNavigatePath) {
       ctx.emit('navigate', { path: actions.applyNavigatePath })
@@ -190,6 +339,13 @@ provide(TABLE_CLICK_INTERCEPT_KEY, {
   onRowButtonClick(btn: ActionButton, row: Record<string, unknown>) {
     const ctx = buildEventContext(row)
     if (!ctx) return false
+
+    if (btn.key === 'edit' && formDialogConfig.value) {
+      if (isEditorSurface.value || formDialogConfig.value.updateApiUrl) {
+        openFormDialog('edit', row)
+        return true
+      }
+    }
 
     if (detailDialogConfig.value && shouldOpenDetail(btn.key)) {
       openDetailDialog(row)
@@ -235,11 +391,57 @@ watch(detailVisible, (visible) => {
     timelineLogs.value = []
   }
 })
+
+watch(formVisible, (visible) => {
+  if (!visible) {
+    editingRecordId.value = ''
+    formRef.value?.resetFields()
+  }
+})
 </script>
 
 <template>
   <div :class="styles.container">
-    <FgAdvancedTable />
+    <FgAdvancedTable ref="tableRef" />
+
+    <el-dialog
+      v-if="formDialogConfig"
+      v-model="formVisible"
+      :title="formDialogTitle"
+      :width="formDialogConfig.width || '640px'"
+      destroy-on-close
+      append-to-body
+    >
+      <el-form
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="96px"
+        :class="styles.formBody"
+      >
+        <el-row :gutter="16">
+          <el-col
+            v-for="field in visibleFormFields"
+            :key="field.field"
+            :span="field.span ?? 24"
+          >
+            <el-form-item :label="field.label" :prop="field.field">
+              <CrudFormField
+                :field="field"
+                :model-value="formData[field.field]"
+                @update:model-value="(v) => (formData[field.field] = v)"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <template #footer>
+        <el-button @click="formVisible = false">取消</el-button>
+        <el-button type="primary" :loading="formSubmitting" @click="submitFormDialog">
+          确定
+        </el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog
       v-if="detailDialogConfig"

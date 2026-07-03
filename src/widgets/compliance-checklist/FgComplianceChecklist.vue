@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
+import { inject, computed, ref, onMounted } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { WIDGET_SURFACE_KEY, getWidgetMock, type WidgetSurface } from '../base/widgetMock'
 import styles from './style.module.scss'
 
 interface CheckItem {
@@ -10,6 +11,7 @@ interface CheckItem {
 }
 
 const widgetData = inject(widgetDataKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 const checked = ref<Record<string, boolean>>({})
 const remark = ref('')
 
@@ -26,6 +28,19 @@ const items = computed<CheckItem[]>(() =>
 function toggle(key: string, val: boolean) {
   checked.value = { ...checked.value, [key]: val }
 }
+
+onMounted(() => {
+  if (items.value.length > 0 || surface !== 'editor') return
+  const mock = getWidgetMock('compliance-checklist')
+  if (mock?.kind !== 'statistic') return
+  const mockItems = mock.defaultProps.items as CheckItem[] | undefined
+  if (!mockItems?.length) return
+  widgetData.value.props = {
+    ...widgetData.value.props,
+    items: mockItems,
+    title: mock.defaultProps.title ?? widgetData.value.props?.title,
+  }
+})
 </script>
 
 <template>

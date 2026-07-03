@@ -6,9 +6,11 @@
  */
 import { inject, computed, ref } from 'vue'
 import { widgetDataKey } from '../base/types'
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 
 const src = computed(() => widgetData.value.props?.src as string ?? '')
 const width = computed(() => (widgetData.value.props?.width as string) || '100%')
@@ -60,8 +62,9 @@ const iframeClasses = computed(() => {
   return cls
 })
 
-// Placeholder for editor canvas — don't actually load external URLs in editor mode
-const isEditorMode = computed(() => !src.value)
+// 设计器画布不加载外部 URL，仅展示占位预览
+const isEditorSurface = computed(() => surface === 'editor')
+const isEditorMode = computed(() => isEditorSurface.value || !src.value)
 </script>
 
 <template>
@@ -112,7 +115,9 @@ const isEditorMode = computed(() => !src.value)
   <div v-else :class="wrapperClasses" :style="wrapperStyle">
     <!-- Editor canvas placeholder -->
     <div v-if="isEditorMode" :class="styles.placeholder">
-      请配置 iframe URL
+      <span v-if="src">{{ src }}</span>
+      <span v-else>请配置 iframe URL</span>
+      <span v-if="isEditorSurface" :class="styles.editorHint">设计器预览 · 不加载外部页面</span>
     </div>
     <template v-else>
       <div v-if="loading" :class="styles.loadingOverlay">

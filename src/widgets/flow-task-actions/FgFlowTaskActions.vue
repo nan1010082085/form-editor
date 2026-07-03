@@ -15,7 +15,7 @@ import {
   type ApprovalSuggestion,
   type FlowTaskData,
 } from '@/api/flowApi'
-import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
+import { WIDGET_SURFACE_KEY, getWidgetMock, type WidgetSurface } from '../base/widgetMock'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
@@ -68,7 +68,21 @@ function resolveInstanceId(): string {
 }
 
 async function loadTask() {
-  if (surface === 'editor') return
+  if (surface === 'editor') {
+    const mock = getWidgetMock('flow-task-actions')
+    if (mock?.kind === 'record') {
+      task.value = {
+        id: String(mock.staticData.taskId ?? 'mock-task-001'),
+        instanceId: 'mock-instance-001',
+        nodeId: 'node-approve',
+        nodeName: String(mock.staticData.nodeName ?? '部门经理审批'),
+        status: String(mock.staticData.status ?? 'pending'),
+      }
+      rejectTargets.value = [{ nodeId: 'start', nodeName: '发起人' }]
+      rejectTarget.value = 'start'
+    }
+    return
+  }
 
   const taskId = resolveTaskId()
   const instanceId = resolveInstanceId()
@@ -104,6 +118,10 @@ async function loadTask() {
 
 async function handleApprove() {
   if (!task.value) return
+  if (surface === 'editor') {
+    ElMessage.info('设计器预览：已通过')
+    return
+  }
   acting.value = true
   try {
     await completeFlowTask(task.value.id, {
@@ -122,6 +140,11 @@ async function handleApprove() {
 
 async function handleReject() {
   if (!task.value || !rejectTarget.value) return
+  if (surface === 'editor') {
+    ElMessage.info('设计器预览：已驳回')
+    showReject.value = false
+    return
+  }
   acting.value = true
   try {
     await rejectFlowTaskToNode(task.value.id, {
@@ -140,6 +163,10 @@ async function handleReject() {
 
 async function handleClaim() {
   if (!task.value) return
+  if (surface === 'editor') {
+    ElMessage.info('设计器预览：已认领')
+    return
+  }
   acting.value = true
   try {
     await claimFlowTask(task.value.id)
@@ -154,6 +181,12 @@ async function handleClaim() {
 
 async function handleDelegate() {
   if (!task.value || !delegateUserId.value.trim()) return
+  if (surface === 'editor') {
+    ElMessage.info('设计器预览：已委派')
+    showDelegate.value = false
+    delegateUserId.value = ''
+    return
+  }
   acting.value = true
   try {
     await delegateFlowTask(task.value.id, {
@@ -189,14 +222,11 @@ watch(variablesContext, loadTask, { deep: true })
   <div :class="styles.wrapper">
     <h4 v-if="title" :class="styles.title">{{ title }}</h4>
 
-    <div v-if="surface === 'editor'" :class="styles.preview">
-      运行时根据 taskId / flowInstanceId 加载待办并展示操作按钮
-    </div>
+    <div v-if="surface === 'editor'" :class="styles.editorBadge">设计器预览</div>
 
+    <div v-if="loading" :class="styles.loading">加载任务...</div>
+    <div v-else-if="!task" :class="styles.empty">当前无待办任务</div>
     <template v-else>
-      <div v-if="loading" :class="styles.loading">加载任务...</div>
-      <div v-else-if="!task" :class="styles.empty">当前无待办任务</div>
-      <template v-else>
         <div v-if="aiSuggestion" :class="styles.suggestion">
           <el-alert
             :title="aiSuggestion.suggestion"
@@ -216,7 +246,6 @@ watch(variablesContext, loadTask, { deep: true })
         </div>
         <div v-else :class="styles.done">任务已处理或无操作权限</div>
       </template>
-    </template>
 
     <el-dialog v-model="showReject" title="驳回" width="420px">
       <el-form label-width="80px">

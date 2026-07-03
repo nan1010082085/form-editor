@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
+import { inject, computed, ref, onMounted } from 'vue'
 import { widgetDataKey } from '../base/types'
 import './style.module.scss'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { apiClient } from '../../utils/apiClient'
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
 
 const widgetData = inject(widgetDataKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 const { isDisabled } = useWidgetRenderState()
 const { controlStyle: dynamicStyle } = useWidgetControlSize(40)
 
@@ -20,6 +22,18 @@ interface UserItem {
 
 const options = ref<UserItem[]>([])
 const loading = ref(false)
+
+const EDITOR_MOCK_USERS: UserItem[] = [
+  { _id: 'mock-u1', username: 'zhangsan', displayName: '张三' },
+  { _id: 'mock-u2', username: 'lisi', displayName: '李四' },
+  { _id: 'mock-u3', username: 'wangwu', displayName: '王五' },
+]
+
+onMounted(() => {
+  if (surface === 'editor') {
+    options.value = EDITOR_MOCK_USERS
+  }
+})
 
 useExposeWidget((wd) => ({
   get value() { return wd.value.defaultValue },
@@ -38,6 +52,18 @@ function forwardNativeChange() {
 }
 
 async function remoteSearch(query: string) {
+  if (surface === 'editor') {
+    const q = query.trim().toLowerCase()
+    options.value = q
+      ? EDITOR_MOCK_USERS.filter(
+          (u) =>
+            u.displayName.toLowerCase().includes(q) ||
+            u.username.toLowerCase().includes(q),
+        )
+      : EDITOR_MOCK_USERS
+    return
+  }
+
   if (!query) {
     options.value = []
     return

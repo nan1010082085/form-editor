@@ -18,6 +18,7 @@ import { useBoardStore } from '../../stores/board'
 import { useDrag } from '../../composables/useDrag'
 import { useResize } from '../../composables/useResize'
 import { useClipboard } from '../../composables/useClipboard'
+import { useDuplicateWidget } from '../../composables/useDuplicateWidget'
 import { useSnapshot } from '../../composables/useSnapshot'
 import { applyTemplate } from '../../utils/apiClient'
 import { viewportToCanvas, constrainToCanvasBounds } from '../../utils/coordinate'
@@ -87,6 +88,7 @@ const widgetStore = useWidgetStore()
 const editorStore = useEditorStore()
 const dragStore = useDragStore()
 const boardStore = useBoardStore()
+const { duplicateFromWidget } = useDuplicateWidget()
 
 const { startDragFromPanel, startDragOnCanvas, updateDrag, endDrag, cancelDrag } = useDrag()
 const { copy } = useClipboard()
@@ -131,14 +133,7 @@ function showContextMenu(e: MouseEvent, widget: Widget) {
 }
 
 function handleCopyWidget(widget: Widget) {
-  const copy = JSON.parse(JSON.stringify(widget)) as Widget
-  copy.id = `${widget.type}_${Date.now()}`
-  copy.name = `${widget.name}_copy`
-  if (copy.position) {
-    copy.position.x += 20
-    copy.position.y += 20
-  }
-  widgetStore.addWidget(copy)
+  duplicateFromWidget(widget)
 }
 
 function handleDeleteWidget(widget: Widget) {

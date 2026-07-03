@@ -45,7 +45,7 @@ export const adhocQueryConfig: WidgetConfig = {
     style: ['width'],
     props: [
       { key: 'targetTableId', label: '目标表格 ID', type: 'input' },
-      { key: 'fields', label: '可选字段', type: 'json' },
+      { key: 'fields', label: '可选字段', type: 'adhoc-fields' },
     ],
   },
 }

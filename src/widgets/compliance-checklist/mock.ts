@@ -1,4 +1,7 @@
-export const complianceChecklistMock = {
+import type { StatisticWidgetMock } from '../base/widgetMock'
+
+export const complianceChecklistMock: StatisticWidgetMock = {
+  kind: 'statistic',
   defaultProps: {
     title: '合规检查',
     items: [

@@ -24,6 +24,15 @@ import { triggerWidgetEvent } from '../../engine'
 import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY } from '../WidgetRenderer/types'
 import { WIDGET_SURFACE_KEY } from '../../widgets/base/widgetMock'
 import { useLinkage } from '../../composables/useLinkage'
+import { useBoardLayout } from '../../composables/useBoardLayout'
+import { WidgetRenderer } from '../WidgetRenderer'
+import { useAppStore } from '../../stores/app'
+import WidgetContextMenu from './WidgetContextMenu.vue'
+import { useClipboard } from '../../composables/useClipboard'
+import { useSnapshot } from '../../composables/useSnapshot'
+import { EDITOR_CONTEXTMENU_KEY } from './editorContextKeys'
+import { useFlexCanvasDropEnabled } from '../../composables/useFlexCanvasDrop'
+import { useDuplicateWidget } from '../../composables/useDuplicateWidget'
 import styles from './EditorCanvas.module.scss'
 import rendererStyles from '../WidgetRenderer/style.module.scss'
 
@@ -36,13 +45,28 @@ const emit = defineEmits<{
 }>()
 
 const canvasRef = ref<HTMLElement>()
+const contentFrameRef = ref<HTMLElement>()
 defineExpose({ canvasRef })
 
 const boardStore = useBoardStore()
 const editorStore = useEditorStore()
 const widgetStore = useWidgetStore()
+const appStore = useAppStore()
 
+const { isFlexLayout, rendererLayout, contentFrameStyle } = useBoardLayout(() => boardStore.canvas)
 const isPreview = computed(() => editorStore.mode === 'preview')
+
+const flexDropEnabled = computed(() => isFlexLayout.value && !isPreview.value)
+const showFlexEmpty = computed(() =>
+  flexDropEnabled.value && widgetStore.widgets.length === 0,
+)
+const {
+  isDragOver: isFlexDragOver,
+  handleFlexDragOver,
+  handleFlexDragLeave,
+  handleFlexDrop,
+} = useFlexCanvasDropEnabled(contentFrameRef, flexDropEnabled)
+const { duplicateFromWidget } = useDuplicateWidget()
 
 // ---- 百分比模式：监听父容器尺寸 ----
 
@@ -68,6 +92,19 @@ onUnmounted(() => {
 /** 画布容器样式：尺寸、背景、内边距、缩放 */
 const canvasStyle = computed(() => {
   const c = boardStore.canvas
+
+  if (isFlexLayout.value) {
+    return {
+      width: '100%',
+      height: '100%',
+      minHeight: '100%',
+      backgroundColor: c.backgroundColor,
+      padding: c.padding,
+      position: 'relative' as const,
+      boxSizing: 'border-box' as const,
+    }
+  }
+
   const wUnit = c.widthUnit ?? 'px'
   const hUnit = c.heightUnit ?? 'px'
 
@@ -218,8 +255,48 @@ provide(FORM_GRID_LINKAGE_KEY, linkageStateMap)
 
 provide(WIDGET_SURFACE_KEY, 'editor')
 
-const isPercentWidth = computed(() => (boardStore.canvas.widthUnit ?? 'px') === '%')
-const isPercentHeight = computed(() => (boardStore.canvas.heightUnit ?? 'px') === '%')
+const isPercentWidth = computed(() => !isFlexLayout.value && (boardStore.canvas.widthUnit ?? 'px') === '%')
+const isPercentHeight = computed(() => !isFlexLayout.value && (boardStore.canvas.heightUnit ?? 'px') === '%')
+
+const formGridContext = computed(() => appStore.formGridContext)
+const { copy: copyToClipboard } = useClipboard()
+const { captureElement } = useSnapshot()
+
+const contextMenu = ref({ visible: false, x: 0, y: 0, widget: null as Widget | null })
+
+function showContextMenu(event: MouseEvent, widget: Widget) {
+  contextMenu.value = { visible: true, x: event.clientX, y: event.clientY, widget }
+}
+
+provide(EDITOR_CONTEXTMENU_KEY, showContextMenu)
+
+function handleCopyWidget(widget: Widget) {
+  duplicateFromWidget(widget)
+}
+
+function handleDeleteWidget(widget: Widget) {
+  widgetStore.removeWidget(widget.id)
+  editorStore.select(null)
+  editorStore.pushHistory([...widgetStore.widgets])
+}
+
+function handleCopyId(id: string) {
+  void copyToClipboard(id, '已复制部件 ID')
+}
+
+async function handleSavePreview(widget: Widget) {
+  const el = document.querySelector(`[data-widget-id="${widget.id}"]`) as HTMLElement | null
+  if (!el) return
+  const dataUrl = await captureElement(el)
+  if (dataUrl) emit('savePreview', dataUrl)
+}
+
+function handleCanvasClick() {
+  if (isFlexLayout.value && !isPreview.value) {
+    editorStore.clearSelection()
+    contextMenu.value.visible = false
+  }
+}
 </script>
 
 <template>
@@ -229,24 +306,72 @@ const isPercentHeight = computed(() => (boardStore.canvas.heightUnit ?? 'px') ==
       styles.canvas,
       rendererStyles.fg,
       {
-        [styles.canvasGrid]: !isPreview,
-        [styles.canvasEdit]: !isPreview,
+        [styles.canvasGrid]: !isPreview && !isFlexLayout,
+        [styles.canvasEdit]: !isPreview && !isFlexLayout,
+        [styles.canvasFlex]: isFlexLayout,
         [styles.canvasPercentWidth]: !isPreview && isPercentWidth,
         [styles.canvasPercentHeight]: !isPreview && isPercentHeight,
       },
     ]"
     :style="canvasStyle"
   >
-    <!-- 预览模式：纯净渲染，无编辑交互层 -->
-    <SchemaRender v-if="isPreview" :widgets="widgetStore.widgets" />
-    <!-- 编辑模式：带选中、拖拽、缩放的交互层 -->
-    <EditorOverlay
-      v-else
+    <div
+      ref="contentFrameRef"
+      :class="[styles.contentFrame, { [styles.contentFrameDrop]: flexDropEnabled && isFlexDragOver }]"
+      :style="contentFrameStyle"
+      @click="handleCanvasClick"
+      @dragover="flexDropEnabled ? handleFlexDragOver($event) : undefined"
+      @dragleave="flexDropEnabled ? handleFlexDragLeave($event) : undefined"
+      @drop="flexDropEnabled ? handleFlexDrop($event) : undefined"
+    >
+      <!-- Flex 布局：流式渲染，编辑/预览共用 -->
+      <div
+        v-if="showFlexEmpty"
+        :class="styles.flexEmpty"
+      >
+        <span :class="styles.flexEmptyTitle">Flex 页面画布为空</span>
+        <span>从左侧组件面板拖入部件，或切换「页面模板」快速创建</span>
+      </div>
+      <WidgetRenderer
+        v-if="isFlexLayout"
+        :schema="widgetStore.widgets"
+        :layout="rendererLayout"
+        :canvas-config="boardStore.canvas"
+        :user="formGridContext.user"
+        :request="formGridContext.request"
+        :global="formGridContext.global"
+        :editor-selectable="!isPreview"
+      />
+
+      <!-- 自由布局：绝对定位 + 编辑交互层 -->
+      <template v-else>
+        <SchemaRender v-if="isPreview" :widgets="widgetStore.widgets" />
+        <EditorOverlay
+          v-else
+          @open-event="emit('openEvent', $event)"
+          @open-rule="emit('openRule', $event)"
+          @open-api="emit('openApi', $event)"
+          @open-variables="emit('openVariables', $event)"
+          @save-preview="emit('savePreview', $event)"
+        />
+      </template>
+    </div>
+
+    <WidgetContextMenu
+      v-if="isFlexLayout && !isPreview"
+      :visible="contextMenu.visible"
+      :x="contextMenu.x"
+      :y="contextMenu.y"
+      :widget="contextMenu.widget"
+      @close="contextMenu.visible = false"
+      @copy="handleCopyWidget"
+      @copy-id="handleCopyId"
+      @delete="handleDeleteWidget"
       @open-event="emit('openEvent', $event)"
       @open-rule="emit('openRule', $event)"
       @open-api="emit('openApi', $event)"
       @open-variables="emit('openVariables', $event)"
-      @save-preview="emit('savePreview', $event)"
+      @save-preview="handleSavePreview"
     />
   </div>
 </template>

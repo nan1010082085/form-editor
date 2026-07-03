@@ -38,6 +38,8 @@ export const useBoardStore = defineStore('board', () => {
     backgroundColor: 'var(--bg-color-gray)',
     padding: '0px',
     zoom: 100,
+    layoutMode: 'free',
+    freeLayout: { contentAlign: 'left', marginX: '0' },
   })
 
   /** 画布实际像素尺寸（百分比模式需基于父容器计算） */

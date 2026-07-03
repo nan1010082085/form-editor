@@ -70,7 +70,7 @@ function handleAction(action: string) {
       <template v-if="configPanels.length">
         <div :class="styles.divider" />
         <div v-if="configPanels.includes('events')" :class="styles.item" @click="handleAction('event')">事件配置</div>
-        <div v-if="configPanels.includes('rules')" :class="styles.item" @click="handleAction('rule')">规则配置</div>
+        <div v-if="configPanels.includes('rules')" :class="styles.item" @click="handleAction('rule')">字段联动</div>
         <div v-if="configPanels.includes('api')" :class="styles.item" @click="handleAction('api')">数据源</div>
         <div v-if="configPanels.includes('variables')" :class="styles.item" @click="handleAction('variables')">变量配置</div>
       </template>

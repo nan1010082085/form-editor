@@ -13,7 +13,7 @@ import { useWidgetStore } from '../../stores/widget'
 import { useBoardStore } from '../../stores/board'
 import { getWidget } from '../../widgets/registry'
 import { publicStylePanel } from '../../widgets/base/publicSchema'
-import type { Widget, WidgetEvent, SchemaApiConfig, ConfigPanelType, ArrayFieldSchema, WidgetConfig, CanvasUnit } from '../../widgets/base/types'
+import type { Widget, WidgetEvent, SchemaApiConfig, ConfigPanelType, ArrayFieldSchema, WidgetConfig, CanvasUnit, BoardLayoutMode } from '../../widgets/base/types'
 import type { SchemaLinkage } from '../WidgetRenderer/types'
 import PropertyField from './PropertyField.vue'
 import BorderEditor from './BorderEditor.vue'
@@ -29,7 +29,13 @@ import NumberArrayEditor from './NumberArrayEditor.vue'
 import GenericArrayEditor from './GenericArrayEditor.vue'
 import OptionsEditor from './OptionsEditor.vue'
 import SearchFieldsEditor from './SearchFieldsEditor.vue'
+import CrudFormFieldsEditor from './CrudFormFieldsEditor.vue'
+import AdhocFieldsEditor from './AdhocFieldsEditor.vue'
+import KanbanColumnsEditor from './KanbanColumnsEditor.vue'
 import type { SearchFieldSchema } from '@/components/WidgetRenderer/types'
+import type { CrudFormFieldSchema } from '@/widgets/crud-list-page/config'
+import type { AdhocQueryField } from '@/widgets/adhoc-query/config'
+import type { KanbanColumn } from '@/widgets/kanban/config'
 import RulesEditor from './RulesEditor.vue'
 import EventConfigDialog from './EventConfigDialog.vue'
 import LinkageSchemaDialog from './LinkageSchemaDialog.vue'
@@ -160,18 +166,20 @@ const propertySections = computed<PropertySection[]>(() => {
     sections.push({ key: 'basic', label: '基础属性', items: basicItems })
   }
 
-  // 2. 位置属性
-  sections.push({
-    key: 'position',
-    label: '位置',
-    items: [
-      { key: 'position.x', label: 'X', type: 'number', value: widget.position?.x ?? 0, desc: '水平位置', unit: widget.position?.xUnit ?? 'px', unitKey: 'position.xUnit' },
-      { key: 'position.y', label: 'Y', type: 'number', value: widget.position?.y ?? 0, desc: '垂直位置', unit: widget.position?.yUnit ?? 'px', unitKey: 'position.yUnit' },
-      { key: 'position.w', label: '宽度', type: 'number', value: widget.position?.w ?? 240, desc: '组件宽度', unit: widget.position?.wUnit ?? 'px', unitKey: 'position.wUnit' },
-      { key: 'position.h', label: '高度', type: 'number', value: widget.position?.h ?? 40, desc: '组件高度', unit: widget.position?.hUnit ?? 'px', unitKey: 'position.hUnit' },
-      { key: 'position.zIndex', label: '层级', type: 'number', value: widget.position?.zIndex ?? 0, desc: 'Z轴层级' },
-    ],
-  })
+  // 2. 位置属性（Flex 流式布局无绝对坐标）
+  if ((boardStore.canvas.layoutMode ?? 'free') !== 'flex') {
+    sections.push({
+      key: 'position',
+      label: '位置',
+      items: [
+        { key: 'position.x', label: 'X', type: 'number', value: widget.position?.x ?? 0, desc: '水平位置', unit: widget.position?.xUnit ?? 'px', unitKey: 'position.xUnit' },
+        { key: 'position.y', label: 'Y', type: 'number', value: widget.position?.y ?? 0, desc: '垂直位置', unit: widget.position?.yUnit ?? 'px', unitKey: 'position.yUnit' },
+        { key: 'position.w', label: '宽度', type: 'number', value: widget.position?.w ?? 240, desc: '组件宽度', unit: widget.position?.wUnit ?? 'px', unitKey: 'position.wUnit' },
+        { key: 'position.h', label: '高度', type: 'number', value: widget.position?.h ?? 40, desc: '组件高度', unit: widget.position?.hUnit ?? 'px', unitKey: 'position.hUnit' },
+        { key: 'position.zIndex', label: '层级', type: 'number', value: widget.position?.zIndex ?? 0, desc: 'Z轴层级' },
+      ],
+    })
+  }
 
   // 3. 样式属性
   const styleProps = [...publicStylePanel, ...(panel.style ?? [])]
@@ -472,17 +480,73 @@ const unitOptions = [
   { label: '% (百分比)', value: '%' },
 ]
 
-const boardPropertyItems = computed<BoardPropertyItem[]>(() => [
-  { key: 'width', label: '宽度', type: 'number', value: boardStore.canvas.width, desc: '画布宽度' },
-  { key: 'widthUnit', label: '宽度单位', type: 'select', value: boardStore.canvas.widthUnit ?? 'px', desc: '宽度单位', options: unitOptions },
-  { key: 'height', label: '高度', type: 'number', value: boardStore.canvas.height, desc: '画布高度' },
-  { key: 'heightUnit', label: '高度单位', type: 'select', value: boardStore.canvas.heightUnit ?? 'px', desc: '高度单位', options: unitOptions },
-  { key: 'backgroundColor', label: '背景色', type: 'color', value: boardStore.canvas.backgroundColor, desc: '画布背景色' },
-  { key: 'padding', label: '内边距', type: 'text', value: boardStore.canvas.padding, desc: '画布内边距' },
-  { key: 'zoom', label: '缩放', type: 'number', value: boardStore.canvas.zoom, desc: '缩放比例 (100-150)' },
-])
+const layoutModeOptions = [
+  { label: '自由布局', value: 'free' as BoardLayoutMode },
+  { label: 'Flex 页面布局', value: 'flex' as BoardLayoutMode },
+]
+
+const boardPropertyItems = computed<BoardPropertyItem[]>(() => {
+  const c = boardStore.canvas
+  const isFree = (c.layoutMode ?? 'free') === 'free'
+  const items: BoardPropertyItem[] = [
+    { key: 'layoutMode', label: '布局模式', type: 'select', value: c.layoutMode ?? 'free', desc: 'free=绝对定位，flex=流式页面', options: layoutModeOptions },
+  ]
+  if (isFree) {
+    items.push(
+      { key: 'freeLayout.maxContentWidth', label: '内容最大宽度', type: 'number', value: c.freeLayout?.maxContentWidth ?? '', desc: 'px，留空为全宽' },
+      { key: 'freeLayout.contentAlign', label: '水平对齐', type: 'select', value: c.freeLayout?.contentAlign ?? 'left', options: [
+        { label: '左对齐', value: 'left' },
+        { label: '居中', value: 'center' },
+      ] },
+      { key: 'freeLayout.marginX', label: '左右留白', type: 'text', value: c.freeLayout?.marginX ?? '0', desc: '如 24px' },
+    )
+  }
+  items.push(
+    { key: 'width', label: '宽度', type: 'number', value: c.width, desc: isFree ? '画布宽度' : 'Flex 模式下通常为 100%' },
+    { key: 'widthUnit', label: '宽度单位', type: 'select', value: c.widthUnit ?? 'px', desc: '宽度单位', options: unitOptions },
+    { key: 'height', label: '高度', type: 'number', value: c.height, desc: isFree ? '画布高度' : 'Flex 模式下通常为 100%' },
+    { key: 'heightUnit', label: '高度单位', type: 'select', value: c.heightUnit ?? 'px', desc: '高度单位', options: unitOptions },
+    { key: 'backgroundColor', label: '背景色', type: 'color', value: c.backgroundColor, desc: '画布背景色' },
+    { key: 'padding', label: '内边距', type: 'text', value: c.padding, desc: '画布内边距' },
+  )
+  if (!isFree) {
+    items.push({ key: 'zoom', label: '缩放', type: 'number', value: c.zoom, desc: '缩放比例 (100-150)' })
+  }
+  return items
+})
 
 function updateBoardProperty(key: string, value: unknown) {
+  if (key === 'layoutMode') {
+    const mode = value as BoardLayoutMode
+    if (mode === 'flex') {
+      boardStore.updateCanvas({
+        layoutMode: 'flex',
+        width: 100,
+        height: 100,
+        widthUnit: '%',
+        heightUnit: '%',
+        padding: '20px',
+      })
+    } else {
+      boardStore.updateCanvas({
+        layoutMode: 'free',
+        width: 1440,
+        height: 900,
+        widthUnit: 'px',
+        heightUnit: 'px',
+      })
+    }
+    widgetStore.adaptAllToLayoutMode(mode)
+    return
+  }
+
+  if (key.startsWith('freeLayout.')) {
+    const subKey = key.slice('freeLayout.'.length) as keyof NonNullable<typeof boardStore.canvas.freeLayout>
+    const fl = { ...(boardStore.canvas.freeLayout ?? {}), [subKey]: value === '' ? undefined : value }
+    boardStore.updateCanvas({ freeLayout: fl })
+    return
+  }
+
   // 切换单位时自动转换数值
   if (key === 'widthUnit') {
     const newUnit = value as CanvasUnit
@@ -664,6 +728,30 @@ function updateBoardProperty(key: string, value: unknown) {
                 <SearchFieldsEditor
                   :search-fields="(item.value as SearchFieldSchema[]) ?? []"
                   @update:search-fields="(v: SearchFieldSchema[]) => updateProperty(item.key, v)"
+                />
+              </div>
+              <!-- CRUD 表单字段：CrudFormFieldsEditor -->
+              <div v-else-if="item.type === 'crud-form-fields'" :class="styles.columnsSection">
+                <div :class="styles.columnsLabel">{{ item.label }}</div>
+                <CrudFormFieldsEditor
+                  :fields="(item.value as CrudFormFieldSchema[]) ?? []"
+                  @update:fields="(v: CrudFormFieldSchema[]) => updateProperty(item.key, v)"
+                />
+              </div>
+              <!-- Adhoc 查询字段 -->
+              <div v-else-if="item.type === 'adhoc-fields'" :class="styles.columnsSection">
+                <div :class="styles.columnsLabel">{{ item.label }}</div>
+                <AdhocFieldsEditor
+                  :fields="(item.value as AdhocQueryField[]) ?? []"
+                  @update:fields="(v: AdhocQueryField[]) => updateProperty(item.key, v)"
+                />
+              </div>
+              <!-- Kanban 列配置 -->
+              <div v-else-if="item.type === 'kanban-columns'" :class="styles.columnsSection">
+                <div :class="styles.columnsLabel">{{ item.label }}</div>
+                <KanbanColumnsEditor
+                  :columns="(item.value as KanbanColumn[]) ?? []"
+                  @update:columns="(v: KanbanColumn[]) => updateProperty(item.key, v)"
                 />
               </div>
               <!-- 数字数组编辑器：布局容器列宽 -->

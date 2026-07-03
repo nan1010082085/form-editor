@@ -1,0 +1,56 @@
+.editorShell {
+  position: relative;
+  box-sizing: border-box;
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-radius: 4px;
+  transition: outline-color 0.15s ease;
+
+  &:hover {
+    outline-color: rgb(64 158 255 / 45%);
+  }
+}
+
+.editorShellDraggable {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.editorShellSelected {
+  outline-color: #409eff;
+}
+
+.editorShellInner {
+  pointer-events: none;
+}
+
+.passiveShell {
+  display: contents;
+}
+
+.flexDropZone {
+  min-height: 48px;
+  pointer-events: auto;
+  border-radius: 4px;
+  transition: background-color 0.15s ease, outline-color 0.15s ease;
+}
+
+.flexDropZoneActive {
+  background-color: rgb(64 158 255 / 8%);
+  outline: 1px dashed rgb(64 158 255 / 55%);
+  outline-offset: -1px;
+}
+
+.flexDropEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  color: #909399;
+  font-size: 12px;
+  pointer-events: none;
+}

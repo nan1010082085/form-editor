@@ -1,5 +1,5 @@
 import type { WidgetConfig, SchemaEventAction, EventTargetConfig, Widget } from '../base/types'
-import type { SchemaApiConfig } from '@/components/WidgetRenderer/types'
+import type { SchemaApiConfig, SearchFieldSchema } from '@/components/WidgetRenderer/types'
 
 // ============================================================
 // 高级表格类型定义
@@ -70,14 +70,8 @@ export interface AdvSelectionConfig {
   enabled: boolean
 }
 
-/** E-32 列表搜索区字段 */
-export interface SearchField {
-  field: string
-  label: string
-  type?: 'input' | 'select'
-  placeholder?: string
-  options?: Array<{ label: string; value: string | number }>
-}
+/** E-32 列表搜索区字段（与 SearchFieldSchema 对齐） */
+export type SearchField = SearchFieldSchema
 
 /** 搜索区配置 */
 export interface SearchBarConfig {

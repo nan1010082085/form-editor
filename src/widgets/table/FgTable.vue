@@ -5,9 +5,15 @@ import { useListData } from '../../composables/useListData'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import type { ListApiConfig } from '../../components/WidgetRenderer/types'
 import type { TableColumn, PaginationConfig, SelectionConfig } from './config'
+import {
+  WIDGET_SURFACE_KEY,
+  getTableRowsFromMock,
+  shouldUseWidgetMock,
+} from '../base/widgetMock'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
 
 // ---- Schema config ----
 
@@ -110,9 +116,20 @@ function defaultFilterMethod(prop: string) {
 
 // ---- Auto-load on mount ----
 
+function applyEditorMockIfNeeded() {
+  const hasApi = !!listApiConfig.url
+  if (!shouldUseWidgetMock(surface, hasApi)) return
+  const mock = getTableRowsFromMock('table')
+  if (!mock) return
+  tableData.value = mock.rows
+  total.value = mock.total
+}
+
 onMounted(() => {
   if (listApiConfig.url) {
     fetchData()
+  } else {
+    applyEditorMockIfNeeded()
   }
 })
 
@@ -122,7 +139,11 @@ watch(
   () => listApiConfig.url,
   (url) => {
     if (url) fetchData()
-    else tableData.value = []
+    else {
+      tableData.value = []
+      total.value = 0
+      applyEditorMockIfNeeded()
+    }
   },
 )
 

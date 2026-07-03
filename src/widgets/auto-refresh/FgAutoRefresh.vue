@@ -4,9 +4,11 @@ import { inject, computed, ref, onMounted, onUnmounted, type Ref } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { EVENT_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
 const exposedContext = inject<Ref<Record<string, Record<string, unknown>>> | null>('exposedContext', null)
 
@@ -54,6 +56,11 @@ function startTimer() {
 }
 
 onMounted(() => {
+  if (surface === 'editor') {
+    lastRefreshAt.value = '设计器预览'
+    countdown.value = intervalSeconds.value
+    return
+  }
   refreshTargets()
   startTimer()
 })
@@ -72,7 +79,8 @@ useExposeWidget(() => ({
 <template>
   <div v-if="showStatus" :class="styles.container">
     <span :class="styles.dot" />
-    <span>自动刷新 {{ countdown }}s</span>
+    <span v-if="surface === 'editor'">自动刷新 · 预览（{{ intervalSeconds }}s 间隔）</span>
+    <span v-else>自动刷新 {{ countdown }}s</span>
     <span v-if="lastRefreshAt">· {{ lastRefreshAt }}</span>
   </div>
 </template>

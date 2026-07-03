@@ -494,13 +494,13 @@ describe('PropertyPanel', () => {
 
     const wrapper = mountPanel()
     expect(wrapper.text()).toContain('事件配置')
-    expect(wrapper.text()).toContain('规则配置')
+    expect(wrapper.text()).toContain('字段联动')
   })
 
   it('does not show event/rule buttons when nothing is selected', () => {
     const wrapper = mountPanel()
     expect(wrapper.text()).not.toContain('事件配置')
-    expect(wrapper.text()).not.toContain('规则配置')
+    expect(wrapper.text()).not.toContain('字段联动')
   })
 
   // ---------- Container widget ----------

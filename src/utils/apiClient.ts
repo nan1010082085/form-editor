@@ -19,6 +19,7 @@ import type {
   SchemaUpdatePayload,
 } from '@/types/api'
 import { executeWithRetry, type RetryOptions } from './retryRequest'
+import { redirectToLogin } from '@schema-platform/platform-shared/utils/authPaths'
 
 // ---- 拦截器类型 ----
 
@@ -100,8 +101,9 @@ export class ApiClient {
         )
       }
 
-      // 401: 直接抛出错误，不再自动跳转登录页
+      // 401: 清除登录态并跳转
       if (response.status === 401) {
+        redirectToLogin()
         throw new ApiError(
           json.error?.message ?? 'Unauthorized',
           401,

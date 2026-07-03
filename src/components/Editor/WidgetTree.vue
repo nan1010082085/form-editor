@@ -7,11 +7,13 @@
  * - 点击节点选中对应画布部件
  * - 双向同步选中状态
  */
-import { computed, ref } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { useWidgetStore } from '../../stores/widget'
 import { useEditorStore } from '../../stores/editor'
 import type { Widget } from '../../widgets/base/types'
 import { getWidget } from '../../widgets/registry'
+import { getAllContainerTypes } from '../../composables/useConstant'
+import { scrollToWidget, scrollTreeNodeIntoView } from '../../utils/editorScroll'
 import styles from './WidgetTree.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 
@@ -24,6 +26,8 @@ interface TreeNode {
   id: string
   label: string
   type: string
+  tabKey?: string
+  colIndex?: number
   isContainer: boolean
   children: TreeNode[]
   widget: Widget
@@ -32,11 +36,14 @@ interface TreeNode {
 // ---- 构建树 ----
 
 function buildTree(widgets: Widget[]): TreeNode[] {
+  const containerTypes = getAllContainerTypes()
   return widgets.map(w => ({
     id: w.id,
     label: w.label || getWidget(w.type)?.displayName || w.type,
     type: w.type,
-    isContainer: ['form', 'card', 'tabs', 'dialog', 'single-col', 'double-col', 'triple-col', 'quad-col'].includes(w.type),
+    tabKey: w.tabKey,
+    colIndex: w.colIndex,
+    isContainer: containerTypes.has(w.type),
     children: w.children?.length ? buildTree(w.children) : [],
     widget: w,
   }))
@@ -54,7 +61,16 @@ const selectedId = computed(() => editorStore.selectedId || '')
 
 function handleNodeClick(node: TreeNode) {
   editorStore.select(node.id)
+  nextTick(() => scrollToWidget(node.id))
 }
+
+watch(selectedId, (id) => {
+  if (!id) return
+  nextTick(() => {
+    treeRef.value?.setCurrentKey(id)
+    scrollTreeNodeIntoView(treeRef.value?.$el as HTMLElement | undefined, id)
+  })
+})
 
 // ---- 类型图标 ----
 
@@ -73,6 +89,17 @@ const TYPE_ICONS: Record<string, string> = {
   'funnel': 'sort', 'compare-funnel': 'sort',
   'heatmap': 'grid', 'radar': 'cpu', 'filled-radar': 'cpu',
   'candlestick': 'data-line',
+  'advanced-table': 'grid', 'crud-list-page': 'grid', 'tree-table': 'grid',
+  'user-management': 'user', 'role-management': 'user-filled',
+  'flow-timeline': 'clock', 'flow-task-actions': 'circle-check',
+  kanban: 'menu', calendar: 'calendar', notification: 'bell',
+  'compliance-checklist': 'list', 'qr-scanner': 'full-screen',
+  'adhoc-query': 'search', 'auto-refresh': 'refresh',
+  'user-selector': 'user', 'icon-picker': 'picture',
+  'tree-select': 'menu', 'permission-tree': 'menu',
+  'dynamic-detail-table': 'grid', iframe: 'link',
+  'micro-app': 'connection', 'micro-app-container': 'monitor',
+  statistic: 'data-analysis', descriptions: 'document',
 }
 
 function getIcon(type: string): string {
@@ -108,6 +135,12 @@ function getIcon(type: string): string {
 
           <!-- 字段名 -->
           <span v-if="data.widget.field" :class="styles.field">{{ data.widget.field }}</span>
+
+          <!-- 页签标识 -->
+          <span v-else-if="data.tabKey" :class="styles.tabKey">{{ data.tabKey }}</span>
+
+          <!-- 列索引 -->
+          <span v-else-if="data.colIndex != null" :class="styles.colIndex">列 {{ data.colIndex + 1 }}</span>
         </div>
       </template>
     </el-tree>

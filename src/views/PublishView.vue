@@ -19,12 +19,13 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { WidgetRenderer } from '@/components/WidgetRenderer'
 import type { FormData } from '@/components/WidgetRenderer'
-import type { PartialWidget } from '@/widgets/base/types'
+import type { PartialWidget, CanvasConfig } from '@/widgets/base/types'
 import type { PublishedSchemaItem } from '@/types/api'
 import { useAppStore } from '@/stores/app'
 import { fetchPublishedSchema, fetchPublishedByPublishId, fetchPublishedByCode } from '@/utils/apiClient'
 import { sendToHost } from '@/microapp/bridge'
 import { registerAllWidgets } from '@/widgets'
+import { buildContentFrameStyle, resolveRendererLayout } from '@/utils/boardTemplates'
 import styles from './PublishView.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 
@@ -35,7 +36,7 @@ const formRef = ref<InstanceType<typeof WidgetRenderer>>()
 const appStore = useAppStore()
 
 const schema = ref<PartialWidget[]>([])
-const canvasConfig = ref<{ width?: number; height?: number; widthUnit?: 'px' | '%'; heightUnit?: 'px' | '%'; backgroundColor?: string; padding?: string; zoom?: number }>({})
+const canvasConfig = ref<Partial<CanvasConfig>>({})
 const boardVariables = ref<Record<string, unknown>>({})
 const loading = ref(true)
 const error = ref('')
@@ -60,6 +61,10 @@ const schemaRouteKey = computed(() => {
   return ''
 })
 const context = computed(() => appStore.formGridContext)
+
+const rendererLayout = computed(() => resolveRendererLayout(canvasConfig.value))
+const contentFrameStyle = computed(() => buildContentFrameStyle(canvasConfig.value))
+const isFlexLayout = computed(() => canvasConfig.value.layoutMode === 'flex')
 
 /** A-08 — 可选 AI 侧边栏（query.aiSidebar=1 或 board 变量 enableAiSidebar） */
 const showAiSidebar = computed(() => {
@@ -280,21 +285,23 @@ onUnmounted(() => window.removeEventListener('message', handleMessage))
       <p>{{ error }}</p>
     </div>
 
-    <div v-else :class="[styles['fg-renderer'], showAiSidebar && styles['fg-renderer--with-sidebar']]">
-      <WidgetRenderer
-        ref="formRef"
-        :schema="schema"
-        layout="absolute"
-        :canvas-config="canvasConfig"
-        :board-variables="boardVariables"
-        :user="context.user"
-        :request="context.request"
-        :global="context.global"
-        :readonly="isReadonly"
-        :editable-fields="formMode === 'partial' ? editableFields : undefined"
-        :readonly-fields="formMode === 'partial' ? readonlyFields : undefined"
-        @submit="handleSubmit"
-      />
+    <div v-else :class="[styles['fg-renderer'], showAiSidebar && styles['fg-renderer--with-sidebar'], isFlexLayout && styles['fg-renderer--flex']]">
+      <div :class="styles['fg-renderer__content']" :style="contentFrameStyle">
+        <WidgetRenderer
+          ref="formRef"
+          :schema="schema"
+          :layout="rendererLayout"
+          :canvas-config="canvasConfig"
+          :board-variables="boardVariables"
+          :user="context.user"
+          :request="context.request"
+          :global="context.global"
+          :readonly="isReadonly"
+          :editable-fields="formMode === 'partial' ? editableFields : undefined"
+          :readonly-fields="formMode === 'partial' ? readonlyFields : undefined"
+          @submit="handleSubmit"
+        />
+      </div>
       <aside v-if="showAiSidebar" :class="styles['fg-renderer__ai-sidebar']">
         <iframe :src="aiSidebarUrl" title="AI 助手" :class="styles['fg-renderer__ai-iframe']" />
       </aside>

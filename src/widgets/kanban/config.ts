@@ -33,7 +33,7 @@ export const kanbanConfig: WidgetConfig = {
     basic: ['label'],
     style: ['width', 'height'],
     props: [
-      { key: 'columns', label: '列配置', type: 'json' },
+      { key: 'columns', label: '列配置', type: 'kanban-columns' },
       { key: 'cardTitleField', label: '标题字段', type: 'input' },
       { key: 'cardSubtitleField', label: '副标题字段', type: 'input' },
       { key: 'statusField', label: '状态字段', type: 'input' },

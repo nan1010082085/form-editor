@@ -11,7 +11,7 @@
  * - FgTabs 只渲染 tab 结构，不渲染子组件
  * - 子组件通过 SchemaNode 的 childrenLayer 以绝对坐标定位
  */
-import { inject, ref, computed } from 'vue'
+import { inject, ref, computed, watch } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import styles from './style.module.scss'
@@ -48,6 +48,12 @@ const tabPosition = computed(() => {
 const closable = computed(() => Boolean(widgetData.value.props?.closable))
 const addable = computed(() => Boolean(widgetData.value.props?.addable))
 const stretch = computed(() => Boolean(widgetData.value.props?.stretch))
+
+watch(activeKey, (key) => {
+  if (widgetData.value.props) {
+    widgetData.value.props.activeKey = key
+  }
+})
 
 defineExpose({ activeKey })
 </script>

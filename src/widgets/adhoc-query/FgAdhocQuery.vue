@@ -1,14 +1,17 @@
 <script setup lang="ts">
 /** E-20 — Adhoc 查询构建器 */
 import { inject, computed, ref, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 import { widgetDataKey } from '../base/types'
 import { EVENT_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import type { AdhocQueryField, AdhocCondition } from './config'
 import { buildAdhocFilterParams, emptyAdhocCondition } from './adhocQueryUtils'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
 
 const fields = computed<AdhocQueryField[]>(() =>
@@ -57,12 +60,20 @@ function applyToTarget(params: Record<string, unknown>) {
 function applyQuery() {
   const params = buildAdhocFilterParams(conditions.value)
   Object.assign(lastParams, params)
+  if (surface === 'editor') {
+    ElMessage.info(`设计器预览：查询参数 ${JSON.stringify(params)}`)
+    return
+  }
   applyToTarget(params)
 }
 
 function resetQuery() {
   conditions.value = [emptyAdhocCondition()]
   Object.keys(lastParams).forEach((k) => delete lastParams[k])
+  if (surface === 'editor') {
+    ElMessage.info('设计器预览：已重置条件')
+    return
+  }
   applyToTarget({})
 }
 </script>

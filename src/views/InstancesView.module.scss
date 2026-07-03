@@ -1,3 +1,27 @@
+.createLayoutMode {
+  width: 100%;
+}
+
+.createLayoutRadios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.createLayoutDesc {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--el-text-color-secondary);
+}
+
+.createFieldHint {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
 .fg-instances {
   height: 100%;
   background: var(--el-bg-color-page);

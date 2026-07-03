@@ -38,6 +38,10 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   // 业务组件
   'approval-user-picker', 'approval-role-picker', 'approval-comment',
   'user-management', 'role-management', 'user-selector',
+  'flow-timeline', 'flow-task-actions', 'calendar', 'kanban',
+  'adhoc-query', 'notification', 'auto-refresh', 'compliance-checklist',
+  // 扩展表单
+  'icon-picker', 'tree-select', 'dynamic-detail-table', 'qr-scanner',
 ])
 
 /** Valid SchemaType values — lazily generated from widget registry */

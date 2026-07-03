@@ -15,11 +15,16 @@ import {
   type PermissionItem,
   type CreateRolePayload,
 } from '../../api/roleApi'
+import {
+  WIDGET_SURFACE_KEY,
+  getTableRowsFromMock,
+} from '../base/widgetMock'
 import styles from './style.module.scss'
 
 // ---- Inject ----
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey)!
+const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
 const { isDisabled } = useWidgetRenderState()
 
 // ---- State ----
@@ -135,6 +140,14 @@ async function loadData() {
     tableData.value = res.data.items
     total.value = res.data.total
   } catch (err) {
+    if (surface === 'editor') {
+      const mock = getTableRowsFromMock('role-management')
+      if (mock) {
+        tableData.value = mock.rows as RoleItem[]
+        total.value = mock.total
+        return
+      }
+    }
     ElMessage.error('加载角色列表失败')
   } finally {
     loading.value = false

@@ -64,9 +64,17 @@ const props = defineProps<FormGridProps & {
   readonlyFields?: string[]
   /** partial 模式下可编辑的字段列表（与 readonlyFields 二选一） */
   editableFields?: string[]
+  /** Flex 编辑模式：点击选中部件 */
+  editorSelectable?: boolean
 }>()
 
 const isAbsoluteLayout = computed(() => props.layout === 'absolute')
+
+const flowContainerStyle = computed(() => ({
+  width: '100%',
+  minHeight: '100%',
+  boxSizing: 'border-box' as const,
+}))
 
 /** 绝对定位模式下，计算容器样式（画布尺寸 + 背景 + 包围盒） */
 const absoluteContainerStyle = computed(() => {
@@ -675,7 +683,7 @@ defineExpose({
 
 <template>
   <el-config-provider :locale="epLocale">
-    <div v-loading="loading" :class="styles.fg" :style="absoluteContainerStyle">
+    <div v-loading="loading" :class="styles.fg" :style="isAbsoluteLayout ? absoluteContainerStyle : flowContainerStyle">
       <!-- 绝对定位模式：与编辑器画布一致，保留 position 坐标 -->
       <template v-if="isAbsoluteLayout">
         <SchemaRender :widgets="(schema as Widget[])" mode="preview" />
@@ -696,6 +704,7 @@ defineExpose({
               :editable="editable"
               :is-dragging="isDragging"
               :readonly="readonly"
+              :editor-selectable="editorSelectable"
               :path="[idx]"
               @container-drop="emit('container-drop', $event)"
             />

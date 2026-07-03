@@ -27,6 +27,7 @@ import { parseSchemaJson } from '@/utils/parseSchemaJson'
 import { useEditorStore } from '@/stores/editor'
 import { useApiStore } from '@/stores/api'
 import { registerAllWidgets } from '@/widgets'
+import { useDuplicateWidget } from '@/composables/useDuplicateWidget'
 import EditorCanvas from '@/components/Editor/EditorCanvas.vue'
 import ZoomIndicator from '@/components/Editor/ZoomIndicator.vue'
 import EventLogPanel from '@/components/Editor/EventLogPanel.vue'
@@ -41,6 +42,7 @@ import EditorViewToolbar from './EditorViewToolbar.vue'
 import EditorViewLeftPanel from './EditorViewLeftPanel.vue'
 import EditorViewRightPanel from './EditorViewRightPanel.vue'
 import EditorRuler from '@/components/Editor/EditorRuler.vue'
+import { APP_CONFIGS } from '@schema-platform/platform-shared/qiankun/config'
 import styles from './EditorView.module.scss'
 
 // Register all widgets on first mount
@@ -51,6 +53,7 @@ const router = useRouter()
 const boardStore = useBoardStore()
 const widgetStore = useWidgetStore()
 const editorStore = useEditorStore()
+const { duplicateFromClipboard } = useDuplicateWidget()
 const apiStore = useApiStore()
 const schemaVersionStore = useSchemaVersionStore()
 const { captureElement } = useSnapshot()
@@ -88,9 +91,10 @@ const zoomRightOffset = computed(() => {
   if (showAiDrawer.value) offset += 400
   return offset
 })
+
 const aiBaseUrl = import.meta.env.DEV
-  ? 'http://localhost:5300/index-sidebar.html'
-  : `${window.location.origin}/schema-platform/micro/ai/index-sidebar.html`
+  ? `http://localhost:${APP_CONFIGS.ai.devPort}/index-sidebar.html`
+  : `${window.location.origin}${APP_CONFIGS.ai.basePath}index-sidebar.html`
 
 // ================================================================
 // Mode
@@ -160,7 +164,8 @@ onMounted(async () => {
         variables: boardConfig.variables as any[],
         events: boardConfig.events as any[],
       })
-      widgetStore.loadWidgets(widgets)
+      const layoutMode = (boardConfig.canvas as { layoutMode?: 'free' | 'flex' } | undefined)?.layoutMode ?? 'free'
+      widgetStore.loadWidgets(widgets, layoutMode)
       currentEditId.value = editId
       currentVersion.value = version
     }
@@ -190,7 +195,8 @@ onMounted(async () => {
         variables: boardConfig.variables as any[],
         events: boardConfig.events as any[],
       })
-      widgetStore.loadWidgets(widgets)
+      const layoutMode = (boardConfig.canvas as { layoutMode?: 'free' | 'flex' } | undefined)?.layoutMode ?? 'free'
+      widgetStore.loadWidgets(widgets, layoutMode)
       currentEditId.value = detail.editId
       currentVersion.value = detail.version
     }
@@ -205,7 +211,7 @@ onMounted(async () => {
   editorStore.setMode('edit')
 
   // Socket: 监听 AI 推送事件
-  connectSocket({ path: import.meta.env.PROD ? '/schema-platform/ws' : '/ws' })
+  connectSocket()
   onAiApply(async (data: AiApplyEvent) => {
     if (data.type === 'schema' && Array.isArray(data.payload)) {
       const { widgets } = parseSchemaJson(data.payload)
@@ -358,12 +364,8 @@ function handleCopyWidget() { editorStore.performCopyWidget() }
 
 function handlePasteWidget() {
   const pasted = editorStore.paste()
-  if (pasted) {
-    pasted.position.x += 20
-    pasted.position.y += 20
-    widgetStore.addWidget(pasted)
-    editorStore.pushHistory([...widgetStore.widgets])
-  }
+  if (!pasted) return
+  duplicateFromClipboard(pasted)
 }
 
 function handleDeleteWidget() { editorStore.performDeleteWidget() }

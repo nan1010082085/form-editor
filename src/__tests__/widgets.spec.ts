@@ -680,6 +680,65 @@ describe('Widget Store CRUD', () => {
     expect(store.widgets).toHaveLength(3)
   })
 
+  it('insertRootWidgetAt inserts at the given index', () => {
+    store.addWidget(makeWidget('w1'))
+    store.addWidget(makeWidget('w2'))
+    store.insertRootWidgetAt(makeWidget('w-mid'), 1)
+    expect(store.widgets.map((w) => w.id)).toEqual(['w1', 'w-mid', 'w2'])
+  })
+
+  it('moveRootWidgetToIndex reorders root widgets', () => {
+    store.addWidget(makeWidget('w1'))
+    store.addWidget(makeWidget('w2'))
+    store.addWidget(makeWidget('w3'))
+    store.moveRootWidgetToIndex('w3', 0)
+    expect(store.widgets.map((w) => w.id)).toEqual(['w3', 'w1', 'w2'])
+    store.moveRootWidgetToIndex('w1', 3)
+    expect(store.widgets.map((w) => w.id)).toEqual(['w3', 'w2', 'w1'])
+  })
+
+  it('insertWidgetAt adds child into container', () => {
+    const card = makeWidget('c1', 'card')
+    store.addWidget(card)
+    store.insertWidgetAt('c1', makeWidget('w1', 'input'), 0)
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['w1'])
+  })
+
+  it('moveWidgetToIndex moves widget from root into container', () => {
+    const card = makeWidget('c1', 'card')
+    store.addWidget(card)
+    store.addWidget(makeWidget('w1', 'input'))
+    store.moveWidgetToIndex('w1', 'c1', 0)
+    expect(store.widgets.map((w) => w.id)).toEqual(['c1'])
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['w1'])
+  })
+
+  it('insertWidgetAt assigns colIndex when inserting into double-col', () => {
+    const cols = makeWidget('c1', 'double-col')
+    store.addWidget(cols)
+    store.insertWidgetAt('c1', makeWidget('w1', 'input'), 0, { colIndex: 1 })
+    expect(store.widgets[0].children?.[0].colIndex).toBe(1)
+  })
+
+  it('insertWidgetAt assigns tabKey when inserting into tabs container', () => {
+    const tabs = makeWidget('t1', 'tabs')
+    tabs.props = {
+      tabs: [{ key: 'tab1', label: 'Tab1' }, { key: 'tab2', label: 'Tab2' }],
+      activeKey: 'tab2',
+    }
+    store.addWidget(tabs)
+    store.insertWidgetAt('t1', makeWidget('w1', 'input'), 0)
+    expect(store.widgets[0].children?.[0].tabKey).toBe('tab2')
+  })
+
+  it('moveWidgetToIndex reorders siblings inside container', () => {
+    const card = makeWidget('c1', 'card')
+    card.children = [makeWidget('w1', 'input'), makeWidget('w2', 'input')]
+    store.addWidget(card)
+    store.moveWidgetToIndex('w2', 'c1', 0)
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['w2', 'w1'])
+  })
+
   // --- findWidget ---
 
   it('findWidget returns the correct widget by id', () => {
