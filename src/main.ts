@@ -56,6 +56,7 @@ renderWithQiankun({
   },
   mount(props) {
     editorLog.lifecycle('mount start')
+    mounted = true
 
     document.getElementById('loading')?.remove()
 
@@ -86,6 +87,19 @@ renderWithQiankun({
   },
 })
 
+// Standalone mode detection:
+// vite-plugin-qiankun's useDevMode sets __POWERED_BY_QIANKUN__=true in dev,
+// even when running standalone. Use a 500ms fallback — if qiankun doesn't
+// call mount() within 500ms, treat as standalone and render directly.
+let mounted = false
 if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
   render()
+  mounted = true
+} else {
+  setTimeout(() => {
+    if (!mounted) {
+      editorLog.lifecycle('standalone fallback: qiankun mount() not called within 500ms')
+      render()
+    }
+  }, 500)
 }

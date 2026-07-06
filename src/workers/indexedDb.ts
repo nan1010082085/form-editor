@@ -2,10 +2,10 @@
  * IndexedDB wrapper for persistent L2 cache
  *
  * Runs inside the Web Worker context.
- * DB: schema-form-cache / Store: responses
+ * DB: schema-cache / Store: responses
  */
 
-const DB_NAME = 'schema-form-cache'
+const DB_NAME = 'schema-cache'
 const STORE_NAME = 'responses'
 const DB_VERSION = 1
 
