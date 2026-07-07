@@ -1,113 +1,166 @@
-# 组件架构
+# Editor 架构文档
 
-## 分层结构
+> `@editor` — Vue 3 可视化表单设计器
+
+**文档版本**：v2 (2026-07-06) — 对齐当前代码，新增设计/运行时文档
+
+---
+
+## 一、项目结构
 
 ```
-src/
-├── api/             # API 聚合层（schemaApi/authApi/dataApi/widgetApi）
-├── views/           # 页面视图（EditorView 拆分为 4 个子组件）
-├── components/      # 通用组件
-│   ├── Editor/      # 编辑器子模块（39 个）
-│   └── WidgetRenderer/  # Schema 渲染引擎
-├── widgets/         # Widget 定义（49 个组件）
-│   ├── base/        # 类型定义、公共 schema
-│   ├── layout/      # 布局组件
-│   ├── container/   # 容器组件
-│   ├── form/        # 表单组件
-│   ├── table/       # 表格组件
-│   ├── action/      # 操作组件
-│   ├── static/      # 静态组件
-│   ├── business/    # 业务组件
-│   └── chart/       # 图表组件
-├── composables/     # 组合式 API（32 个）
-├── stores/          # Pinia Store（7 个，shallowRef 优化）
-├── engine/          # 事件引擎
-└── utils/           # 工具函数
+editor/
+├── src/
+│   ├── views/              # 路由页面（列表、设计器、发布）
+│   ├── components/
+│   │   ├── Editor/         # 设计器 UI（~70 文件）
+│   │   └── WidgetRenderer/ # 运行时渲染引擎
+│   ├── widgets/            # ~80 种 Widget 注册
+│   ├── stores/             # 11 个 Pinia Store
+│   ├── composables/        # 44 个组合式 API
+│   ├── engine/             # eventEngine 纯逻辑
+│   ├── api/                # 领域 API 聚合
+│   └── utils/              # apiClient、校验、解析
+└── docs/
 ```
 
-## EditorView 拆分
+| 包 | NPM | 端口 |
+|---|---|---|
+| `@editor` | `editor/package.json` | 5100 |
 
-EditorView.vue（原 1517 行）拆分为：
+**依赖**：`@schema-platform/platform-shared`
 
-| 组件 | 职责 |
-|---|---|
-| `EditorView.vue`（607 行） | 组装组件，协调子组件 |
-| `EditorViewToolbar.vue`（510 行） | 工具栏：保存/发布/撤销/重做/缩放 |
-| `EditorViewLeftPanel.vue`（27 行） | 左侧面板包装器 |
-| `EditorViewRightPanel.vue`（20 行） | 右侧属性面板包装器 |
-| `EditorView.module.scss`（575 行） | 独立样式文件 |
+---
 
-## Widget 系统
+## 二、分层架构
 
-Widget 是核心抽象。每个 Widget 由 `widgets/` 下的目录定义，通过 `registry.ts` 注册。
+```mermaid
+flowchart TB
+  subgraph views [视图层]
+    Inst["InstancesView"]
+    Ed["EditorView"]
+    Pub["PublishView"]
+  end
 
-### Widget 接口
+  subgraph designer [设计器层]
+    Canvas["EditorCanvas"]
+    Panel["PropertyPanel"]
+    Overlay["EditorOverlay"]
+  end
 
-```ts
-interface Widget {
-  id: string          // {type}_{5位随机hash}
-  name: string        // 组件名（如 'FgInput'）
-  type: SchemaType    // 类型（49 种）
-  label?: string      // 标签
-  field?: string      // 表单字段名
-  position: { x, y, w, h, zIndex? }  // 绝对定位
-  style: Record<string, unknown>      // 样式
-  props: Record<string, unknown>      // 属性
-  options: DictItem[]                 // 选项
-  children: Widget[]                  // 子组件
-  events: WidgetEvent[]               // 事件配置
-  variables: Variable[]               // 变量
-  rules: Rule[]                       // 联动规则
-  validationRules: ValidationRule[]   // 校验规则
+  subgraph render [渲染层]
+    SR["SchemaRender (设计)"]
+    WR["WidgetRenderer (运行)"]
+    Registry["widgets/registry"]
+  end
+
+  subgraph data [数据层]
+    WS["widgetStore"]
+    BS["boardStore"]
+    AS["apiStore"]
+  end
+
+  subgraph engine [引擎层]
+    EE["eventEngine"]
+    Val["schemaValidate"]
+  end
+
+  Ed --> Canvas --> SR --> Registry
+  Pub --> WR --> Registry
+  Ed --> WS
+  Ed --> BS
+  WR --> EE
+  Inst --> AS
+```
+
+---
+
+## 三、Widget 系统
+
+每个 Widget 目录通常包含：
+
+| 文件 | 职责 |
+|------|------|
+| `config.ts` | 元数据、propertyPanel、事件/联动配置 |
+| `schema.ts` | `createXxxWidget(id)` 工厂 |
+| `FgXxx.vue` | 运行时组件 |
+| `mock.ts` | 设计器示例数据（可选） |
+
+注册：`widgets/index.ts` → `registerWidget()` → `getComponentMap()`
+
+分组：layout、form、container、table、action、static、business、chart
+
+---
+
+## 四、Schema JSON
+
+```typescript
+{
+  widgets: Widget[],
+  board: {
+    canvas: { width, height, layoutMode: 'free'|'flex', zoom },
+    variables: BoardVariable[],
+    events: BoardEvent[],
+  }
 }
 ```
 
-### Widget ID 格式
+解析：`utils/parseSchemaJson.ts`（兼容旧数组格式）
 
-`{type}_{5位随机hash}`，如 `input_a3b2c`、`table_x9y8z`。
+---
 
-### 注册表
+## 五、三运行表面
 
-`widgets/registry.ts`：`Map<SchemaType, WidgetRegistryItem>`
+| 表面 | 路由 | 渲染 | 数据 API |
+|------|------|------|----------|
+| 设计器 | `/editor` | SchemaRender + Overlay | 草稿 |
+| 草稿预览 | `/preview` | WidgetRenderer | 草稿 |
+| 已发布 | `/view/:code` | WidgetRenderer | 已发布 |
 
-```ts
-registerWidget(type, config, create)  // 注册
-getWidget(type)                       // 获取
-createWidget(type, id)                // 创建实例
-generateWidgetId(type)                // 生成 ID
-getComponentMap()                     // 获取组件映射（渲染用）
-```
+---
 
-## 渲染引擎
+## 六、Pinia Store（11 个）
 
-`components/WidgetRenderer/` — Schema 驱动的动态渲染。
+| Store | 职责 |
+|-------|------|
+| `widgetStore` | Widget 树 CRUD（数据真源） |
+| `editorStore` | 选中、undo/redo、dirty、模式 |
+| `boardStore` | 实例元数据、画布、变量、事件 |
+| `dragStore` | 拖拽、吸附 |
+| `apiStore` | Schema CRUD、保存、发布 |
+| `schemaVersionStore` | 版本列表、对比 |
+| `templateStore` | 部件模板库 |
+| `appStore` | 用户/请求上下文 |
+| `requestStore` | 请求缓存 |
+| `tenantStore` / `credentialStore` | 管理 |
 
-- `SchemaRender.vue` — 顶层入口，遍历 Widget 数组
-- `SchemaNode.vue` — 单个 Widget 渲染，递归处理 children
-- `WidgetNode.vue` — Widget 组件包装器，处理定位和事件
+> 旧文档「7 Store」已过时，以本表为准。
 
-渲染流程：
-```
-Schema[] → SchemaRender → SchemaNode* → WidgetNode* → 实际组件
-```
+---
 
-## 事件引擎
+## 七、集成
 
-`engine/eventEngine.ts` — 14 种事件动作类型：
+| 消费方 | 方式 |
+|--------|------|
+| Shell | qiankun 子应用 `editor` |
+| Flow | iframe PublishView + postMessage |
+| AI | WebSocket `onAiApply` |
 
-| 动作 | 说明 |
-|------|------|
-| `set-value` | 设置字段值 |
-| `show-message` | 显示消息 |
-| `navigate` | 路由跳转 |
-| `request` | 发起请求 |
-| `open-dialog` | 打开弹窗 |
-| `close-dialog` | 关闭弹窗 |
-| `set-visible` | 控制显隐 |
-| `set-disabled` | 控制禁用 |
-| `validate` | 触发校验 |
-| `reset` | 重置表单 |
-| `refresh` | 刷新数据 |
-| `custom` | 自定义脚本 |
-| `linkage` | 联动赋值 |
-| `emit` | 发送事件 |
+---
+
+## 八、文档索引
+
+### 架构与开发
+
+- [Widget 开发](./widget-development.md)
+- [属性面板](./property-panel.md)
+- [Schema 校验](./schema-validation-testing.md)
+- [qiankun 集成](./qiankun-integration.md)
+
+### 设计与运行时（含线框图、Mermaid 图）
+
+- [设计文档索引](./design/README.md)
+- [信息架构](./design/overview.md)
+- [设计器交互](./design/designer.md)
+- [实例与发布](./design/instances-publish.md)
+- [**运行时架构**](./design/runtime.md)

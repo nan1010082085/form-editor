@@ -7,7 +7,7 @@ import { createApp, type App } from 'vue'
 import { createPinia } from 'pinia'
 import { renderWithQiankun, qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import { setupElementPlus } from '@schema-platform/platform-shared/config/element'
-import { setupAppAuth } from '@schema-platform/platform-shared/utils/authSession'
+import { initCapabilityPlatformAuth, resolveAuthToken } from '@schema-platform/platform-shared/utils/authSession'
 import { initQiankunProps, initQiankunShellProps } from '@schema-platform/platform-shared/qiankun'
 import { editorLog } from '@schema-platform/platform-shared/utils/logger'
 import AppRoot from './App.vue'
@@ -37,11 +37,11 @@ function render() {
     console.error('[GlobalError]', err, info)
   }
   app.directive('permission', permissionDirective)
-  setupAppAuth()
+  initCapabilityPlatformAuth()
   setupElementPlus(app)
   configureApiClient({
     baseUrl: import.meta.env.VITE_API_BASE_URL as string | undefined,
-    getToken: () => localStorage.getItem('sfp_access_token') || '',
+    getToken: () => resolveAuthToken() ?? '',
     useMock: import.meta.env.VITE_USE_MOCK === 'true',
   })
 
