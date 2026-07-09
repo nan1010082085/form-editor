@@ -180,6 +180,87 @@ function filterEmptyParams(params: Record<string, unknown>): Record<string, unkn
   return result
 }
 
+// ---- Key 使用审计 ----
+
+export interface KeyUsageLogItem {
+  id: string
+  tenantId: string
+  keyId: string
+  keyName: string
+  workflowId: string | null
+  workflowName: string | null
+  endpoint: string
+  method: string
+  statusCode: number
+  duration: number
+  ip: string
+  userAgent: string
+  createdAt: string
+}
+
+export interface KeyUsageStatsByKey {
+  keyId: string
+  keyName: string
+  totalRequests: number
+  successRequests: number
+  failedRequests: number
+  avgDuration: number
+  lastUsedAt: string | null
+}
+
+export interface KeyUsageStatsByWorkflow {
+  workflowId: string
+  workflowName: string
+  keyId: string
+  keyName: string
+  totalRequests: number
+  successRequests: number
+  failedRequests: number
+  avgDuration: number
+  lastUsedAt: string | null
+}
+
+export async function fetchKeyUsageLogs(params?: {
+  keyId?: string
+  workflowId?: string
+  startDate?: string
+  endDate?: string
+  page?: number
+  pageSize?: number
+}): Promise<PaginatedResponse<KeyUsageLogItem>> {
+  const queryParams: Record<string, string> = {
+    page: String(params?.page ?? 1),
+    pageSize: String(params?.pageSize ?? 20),
+  }
+  if (params?.keyId) queryParams.keyId = params.keyId
+  if (params?.workflowId) queryParams.workflowId = params.workflowId
+  if (params?.startDate) queryParams.startDate = params.startDate
+  if (params?.endDate) queryParams.endDate = params.endDate
+  return apiClient.get<PaginatedResponse<KeyUsageLogItem>>('/key-usage', queryParams)
+}
+
+export async function fetchKeyUsageStatsByKey(params?: {
+  startDate?: string
+  endDate?: string
+}): Promise<KeyUsageStatsByKey[]> {
+  const queryParams: Record<string, string> = {}
+  if (params?.startDate) queryParams.startDate = params.startDate
+  if (params?.endDate) queryParams.endDate = params.endDate
+  return apiClient.get<KeyUsageStatsByKey[]>('/key-usage/stats/by-key', queryParams)
+}
+
+export async function fetchKeyUsageStatsByWorkflow(params?: {
+  keyId?: string
+  startDate?: string
+  endDate?: string
+}): Promise<KeyUsageStatsByWorkflow[]> {
+  const queryParams: Record<string, string> = {}
+  if (params?.keyId) queryParams.keyId = params.keyId
+  if (params?.startDate) queryParams.startDate = params.startDate
+  if (params?.endDate) queryParams.endDate = params.endDate
+  return apiClient.get<KeyUsageStatsByWorkflow[]>('/key-usage/stats/by-workflow', queryParams)
+}
+
 // ---- 流程操作 ----
 
 /**

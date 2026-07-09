@@ -61,6 +61,11 @@ const routes = [
         component: () => import('@/views/TenantListView.vue'),
       },
       {
+        path: 'key-usage',
+        name: 'key-usage',
+        component: () => import('@/views/KeyUsageAuditView.vue'),
+      },
+      {
         path: 'submissions',
         name: 'submissions',
         component: () => import('@/views/SubmissionListView.vue'),
