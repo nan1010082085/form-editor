@@ -490,7 +490,7 @@ function handleVersionPublished() {
             <el-input v-model="searchInput" placeholder="搜索名称..." clearable :class="styles['fg-instances__search']" @input="handleSearch" @clear="handleSearch('')">
               <template #prefix><AppIcon name="search" :size="14" /></template>
             </el-input>
-            <el-dropdown @command="(cmd: string) => sortBy = cmd as any">
+            <el-dropdown @command="(cmd: string) => sortBy = cmd as 'newest' | 'oldest' | 'name'">
               <el-button size="small">
                 <AppIcon name="sort" class="el-icon--left" />
                 {{ sortOptions.find(s => s.value === sortBy)?.label }}

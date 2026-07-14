@@ -136,7 +136,7 @@ async function handleLoadSchema(item: SchemaListItem) {
   const detail = await apiStore.fetchSchemaById(item.id)
   if (detail) {
     if (!detail.json) { ElMessage.error('Schema 数据为空'); return }
-    const json = Array.isArray(detail.json) ? detail.json : (detail.json as any).widgets ?? []
+    const json = Array.isArray(detail.json) ? detail.json : (detail.json as Record<string, unknown>).widgets as unknown[] ?? []
     emit('load-schema', json)
     showLoadDialog.value = false
     ElMessage.success(`Schema "${item.name}" 已加载`)

@@ -21,7 +21,7 @@ const emit = defineEmits<{
 }>()
 
 function getDisplayLabel(item: PartialWidget): string {
-  return (item as any).label || item.type || '组件'
+  return item.label || item.type || '组件'
 }
 </script>
 

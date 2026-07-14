@@ -10,6 +10,11 @@ export const tabsConfig: WidgetConfig = {
     { key: 'activeKey', type: 'string', description: '当前激活标签' },
   ],
   configPanels: ['events', 'variables'],
+  eventTargets: [
+    { id: 'tab-change', label: '标签切换', description: '切换标签页时触发' },
+    { id: 'tab-close', label: '标签关闭', description: '关闭标签页时触发' },
+    { id: 'tab-add', label: '标签新增', description: '新增标签页时触发' },
+  ],
   defaultProps: {
     tabs: [
       { key: 'tab1', label: '标签一' },

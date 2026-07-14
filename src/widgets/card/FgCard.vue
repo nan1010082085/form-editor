@@ -7,19 +7,28 @@
  * - 渲染标题和子组件
  */
 import { inject, computed } from 'vue'
-import { widgetDataKey } from '../base/types'
+import { widgetDataKey, widgetStyleKey } from '../base/types'
 import styles from './style.module.scss'
 
 const props = defineProps<{ editable?: boolean }>()
 
 const widgetData = inject(widgetDataKey)!
+const widgetStyle = inject(widgetStyleKey)!
 
 const hasChildren = computed(() => (widgetData.value.children?.length ?? 0) > 0)
+
+const dynamicStyle = computed(() => ({
+  margin: widgetStyle.value?.margin as string,
+  padding: widgetStyle.value?.padding as string,
+  backgroundColor: widgetStyle.value?.backgroundColor as string,
+  borderRadius: widgetStyle.value?.borderRadius as string,
+}))
 </script>
 
 <template>
   <el-card
     :class="styles.cardContainer"
+    :style="dynamicStyle"
     :shadow="(widgetData.props?.shadow as 'always' | 'hover' | 'never') || 'hover'"
     :header="widgetData.props?.showHeader !== false ? ((widgetData.props?.title as string) || '卡片标题') : undefined"
   >

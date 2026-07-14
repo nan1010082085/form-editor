@@ -15,6 +15,9 @@ export const transferConfig: WidgetConfig = {
     { key: 'value', type: 'array', description: '已选值' },
   ],
   configPanels: ['events', 'linkages', 'variables', 'api'] as const,
+  eventTargets: [
+    { id: 'change', label: '值变更', description: '穿梭选择变更时触发' },
+  ],
   propertyPanel: {
     basic: ['field', 'label', 'options'],
     style: [],

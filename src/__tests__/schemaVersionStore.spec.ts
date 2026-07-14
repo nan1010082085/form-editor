@@ -82,7 +82,7 @@ describe('useSchemaVersionStore', () => {
     expect(store.currentVersion).toBe('')
     expect(store.editId).toBe('')
     expect(store.loading).toBe(false)
-    expect(store.error).toBe('')
+    expect(store.error).toBeNull()
     expect(store.compareLeft).toBe('')
     expect(store.compareRight).toBe('')
     expect(store.diffResult).toBeNull()
@@ -349,7 +349,7 @@ describe('useSchemaVersionStore', () => {
     expect(store.compareLeft).toBe('')
     expect(store.compareRight).toBe('')
     expect(store.diffResult).toBeNull()
-    expect(store.error).toBe('')
+    expect(store.error).toBeNull()
   })
 
   // ------------------------------------------------------------------

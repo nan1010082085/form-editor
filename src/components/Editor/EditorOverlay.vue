@@ -229,9 +229,9 @@ function getStyleSizeDelta(widget: Widget): { mx: number; my: number; bw: number
   const mb = getStyleNum(s, 'marginBottom') || getStyleNum(s, 'margin')
   const ml = getStyleNum(s, 'marginLeft') || getStyleNum(s, 'margin')
 
-  // margin 偏移（左上角位移）
-  const mx = ml - mr
-  const my = mt - mb
+  // margin 偏移（hitArea 左上角对齐 widget margin box 左上角）
+  const mx = -ml
+  const my = -mt
 
   // margin 增量（总宽度 = 左margin + 右margin）
   const marginW = ml + mr

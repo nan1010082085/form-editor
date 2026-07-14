@@ -56,6 +56,12 @@ export const tableConfig: WidgetConfig = {
     { key: 'selectedRows', type: 'array', description: '当前选中的行数据' },
   ],
   configPanels: ['api', 'variables'],
+  eventTargets: [
+    { id: 'row-click', label: '行点击', description: '点击表格行时触发' },
+    { id: 'selection-change', label: '选择变更', description: '勾选/取消勾选行时触发' },
+    { id: 'sort-change', label: '排序变更', description: '点击排序时触发' },
+    { id: 'page-change', label: '翻页', description: '切换分页时触发' },
+  ],
   receivableEvents: [
     { name: 'refresh', description: '重新加载表格数据' },
     { name: 'set-data', description: '设置表格数据', params: { data: '数据数组' } },

@@ -16,7 +16,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { VersionEntry, SchemaDetail } from '@/types/api'
 import type { DiffResult } from '@/utils/schemaDiff'
-import { ApiError } from '@/utils/apiClient'
+import { useDataLoading } from '@schema-platform/platform-shared/utils/useDataLoading'
 import {
   fetchVersions as apiFetchVersions,
   fetchVersion as apiFetchVersion,
@@ -30,6 +30,9 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
   // 状态
   // ================================================================
 
+  /** 统一 loading/error 状态管理 */
+  const { loading, error, hasError, withLoading, reset: resetLoading } = useDataLoading({ timeout: 15000 })
+
   /** 版本列表 */
   const versions = ref<VersionEntry[]>([])
 
@@ -38,12 +41,6 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
 
   /** editId — 版本查询主键 */
   const editId = ref('')
-
-  /** 加载中标志 */
-  const loading = ref(false)
-
-  /** 最近一次错误信息 */
-  const error = ref('')
 
   /** 分页 */
   const page = ref(1)
@@ -72,8 +69,6 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
 
   const isEmpty = computed(() => !loading.value && versions.value.length === 0)
 
-  const hasError = computed(() => error.value !== '')
-
   /** 是否已选中两个版本 */
   const canCompare = computed(() => !!compareLeft.value && !!compareRight.value)
 
@@ -89,38 +84,6 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
     const { added, removed, modified, moved } = diffResult.value
     return added.length > 0 || removed.length > 0 || modified.length > 0 || moved.length > 0
   })
-
-  // ================================================================
-  // 内部工具
-  // ================================================================
-
-  function setError(message: string): void {
-    error.value = message
-    loading.value = false
-  }
-
-  function clearError(): void {
-    error.value = ''
-  }
-
-  async function withLoading<T>(fn: () => Promise<T>): Promise<T | null> {
-    loading.value = true
-    clearError()
-    try {
-      return await fn()
-    } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message)
-      } else if (e instanceof Error) {
-        setError(e.message)
-      } else {
-        setError('An unexpected error occurred')
-      }
-      return null
-    } finally {
-      loading.value = false
-    }
-  }
 
   // ================================================================
   // 版本列表操作
@@ -198,7 +161,7 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
     if (!editId.value) return false
 
     compareLoading.value = true
-    clearError()
+    error.value = null
 
     try {
       const [left, right] = await Promise.all([
@@ -215,13 +178,7 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
       diffResult.value = diffSchema(leftWidgets, rightWidgets)
       return true
     } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message)
-      } else if (e instanceof Error) {
-        setError(e.message)
-      } else {
-        setError('对比失败')
-      }
+      error.value = e instanceof Error ? e.message : '对比失败'
       return false
     } finally {
       compareLoading.value = false
@@ -260,9 +217,7 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
   async function removeVersion(version: string): Promise<boolean> {
     if (!editId.value) return false
 
-    loading.value = true
-    clearError()
-    try {
+    const result = await withLoading(async () => {
       await apiDeleteVersion(editId.value, version)
 
       // 从列表中移除
@@ -272,19 +227,9 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
       // 如果删的是对比中的版本，清除对比状态
       if (compareLeft.value === version) compareLeft.value = ''
       if (compareRight.value === version) compareRight.value = ''
+    })
 
-      loading.value = false
-      return true
-    } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message)
-      } else if (e instanceof Error) {
-        setError(e.message)
-      } else {
-        setError('An unexpected error occurred')
-      }
-      return false
-    }
+    return result !== null
   }
 
   // ================================================================
@@ -298,17 +243,10 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
   async function exportVersion(version: string): Promise<string | null> {
     if (!editId.value) return null
 
-    try {
+    return withLoading(async () => {
       const detail = await apiFetchVersion(editId.value, version)
       return JSON.stringify(detail.json, null, 2)
-    } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message)
-      } else if (e instanceof Error) {
-        setError(e.message)
-      }
-      return null
-    }
+    })
   }
 
   // ================================================================
@@ -327,8 +265,7 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
     rightDetail.value = null
     diffResult.value = null
     compareLoading.value = false
-    loading.value = false
-    error.value = ''
+    resetLoading()
   }
 
   return {
@@ -365,6 +302,6 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
     removeVersion,
     exportVersion,
     reset,
-    clearError,
+    resetLoading,
   }
 })

@@ -391,6 +391,9 @@ export type PropertyPanelItem =
       fields?: ArrayFieldSchema[]
       itemLabel?: string
       visibleOn?: string
+      remoteUrl?: string
+      labelField?: string
+      valueField?: string
     }
 
 /** 属性面板声明 */

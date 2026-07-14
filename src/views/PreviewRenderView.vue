@@ -28,7 +28,7 @@ async function loadSchema(id: string) {
   error.value = ''
   try {
     const result = await fetchSchemaById(id)
-    schema.value = Array.isArray(result.json) ? result.json : (result.json as any)?.widgets ?? []
+    schema.value = Array.isArray(result.json) ? result.json : (result.json as Record<string, unknown>)?.widgets as unknown[] ?? []
     schemaName.value = result.name
   } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : `Schema "${id}" 未找到`

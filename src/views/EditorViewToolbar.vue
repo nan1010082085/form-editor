@@ -16,6 +16,7 @@ import { useSchemaValidation } from '@/composables/useSchemaValidation'
 import { fetchVersions, fetchVersion, deleteVersion } from '@/api/schemaApi'
 import { parseSchemaJson } from '@/utils/parseSchemaJson'
 import type { VersionEntry } from '@/types/api'
+import type { BoardVariable, BoardEvent } from '@/widgets/base/types'
 import styles from './EditorView.module.scss'
 
 const props = defineProps<{
@@ -123,8 +124,8 @@ async function handleLoadVersion(entry: VersionEntry) {
       name: detail.name,
       status: (detail.status as 'draft' | 'published') || 'draft',
       canvas: boardConfig.canvas,
-      variables: boardConfig.variables as any[],
-      events: boardConfig.events as any[],
+      variables: boardConfig.variables as BoardVariable[],
+      events: boardConfig.events as BoardEvent[],
     })
     widgetStore.loadWidgets(widgets)
     editorStore.markClean()

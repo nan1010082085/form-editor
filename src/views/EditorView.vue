@@ -33,7 +33,7 @@ import ZoomIndicator from '@/components/Editor/ZoomIndicator.vue'
 import EventLogPanel from '@/components/Editor/EventLogPanel.vue'
 import { setLogCollector } from '@/composables/useLogger'
 import { useEventLog } from '@/composables/useEventLog'
-import type { Widget } from '@/widgets/base/types'
+import type { Widget, BoardVariable, BoardEvent } from '@/widgets/base/types'
 import { fetchVersion } from '@/api/schemaApi'
 import SchemaVersionCompare from '@/components/SchemaVersionCompare.vue'
 import { useSchemaVersionStore } from '@/stores/schemaVersion'
@@ -161,8 +161,8 @@ onMounted(async () => {
         name: detail.name,
         status: (detail.status as 'draft' | 'published') || 'draft',
         canvas: boardConfig.canvas,
-        variables: boardConfig.variables as any[],
-        events: boardConfig.events as any[],
+        variables: boardConfig.variables as BoardVariable[],
+        events: boardConfig.events as BoardEvent[],
       })
       const layoutMode = (boardConfig.canvas as { layoutMode?: 'free' | 'flex' } | undefined)?.layoutMode ?? 'free'
       widgetStore.loadWidgets(widgets, layoutMode)
@@ -192,8 +192,8 @@ onMounted(async () => {
         name: detail.name,
         status: (detail.status as 'draft' | 'published') || 'draft',
         canvas: boardConfig.canvas,
-        variables: boardConfig.variables as any[],
-        events: boardConfig.events as any[],
+        variables: boardConfig.variables as BoardVariable[],
+        events: boardConfig.events as BoardEvent[],
       })
       const layoutMode = (boardConfig.canvas as { layoutMode?: 'free' | 'flex' } | undefined)?.layoutMode ?? 'free'
       widgetStore.loadWidgets(widgets, layoutMode)

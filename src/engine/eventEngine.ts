@@ -248,15 +248,23 @@ export async function executeEventAction(
       break
     }
     case 'close-tab': {
-      window.close()
-      logger.event('关闭标签页')
+      try {
+        window.close()
+        logger.event('关闭标签页')
+      } catch {
+        logger.warn('关闭标签页失败（浏览器限制）')
+      }
       break
     }
     case 'copy': {
       if (action.text) {
         const text = resolveTextValue(action.text, ctx)
-        await navigator.clipboard.writeText(text)
-        logger.event(`复制到剪贴板: ${text}`)
+        try {
+          await navigator.clipboard.writeText(text)
+          logger.event(`复制到剪贴板: ${text}`)
+        } catch {
+          logger.warn('复制到剪贴板失败（权限被拒绝）')
+        }
       }
       break
     }
