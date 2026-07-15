@@ -8,7 +8,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { SSOClient } from '@schema-platform/platform-shared/utils/sso'
+import { SSOClient, resolveSsoRedirectUri } from '@schema-platform/platform-shared/utils/sso'
 import { persistSSOClientId, startTokenRefreshSchedule, bootstrapAuthSession } from '@schema-platform/platform-shared/utils/authSession'
 import { useAuthStore } from '@schema-platform/platform-shared/utils/stores/authStore'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
@@ -22,7 +22,7 @@ onMounted(async () => {
   persistSSOClientId(clientId)
   const client = new SSOClient({
     clientId,
-    redirectUri: `${origin}${import.meta.env.BASE_URL}auth/callback`,
+    redirectUri: resolveSsoRedirectUri(origin),
     ssoBaseUrl: origin,
   })
 
