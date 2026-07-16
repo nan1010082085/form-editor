@@ -29,7 +29,10 @@ export const lineChartConfig: WidgetConfig = {
     { key: 'loading', type: 'boolean', description: '加载状态' },
     { key: 'chartData', type: 'array', description: '图表数据' },
   ],
-  configPanels: ['api', 'variables'],
+  configPanels: ['api', 'variables', 'events'],
+  eventTargets: [
+    { id: 'chart-click', label: '图表点击', description: '点击图表数据项时触发' },
+  ],
   receivableEvents: [
     { name: 'refresh', description: '重新加载数据' },
     { name: 'set-data', description: '设置图表数据', params: { data: '数据数组' } },

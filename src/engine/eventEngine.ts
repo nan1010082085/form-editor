@@ -28,6 +28,7 @@ function formatTarget(targetId: string, ctx: EventExecutionContext): string {
 const TRIGGER_LABELS: Record<string, string> = {
   click: '点击',
   change: '值变化',
+  'chart-click': '图表点击',
   focus: '获得焦点',
   blur: '失去焦点',
   submit: '提交',
@@ -79,6 +80,14 @@ export interface EventExecutionContext {
   selectedRows?: Record<string, unknown>[]
   selectedCount?: number
   tableData?: Record<string, unknown>[]
+  /** 图表点击事件上下文 */
+  chartEvent?: {
+    dataIndex: number
+    name: string
+    value: unknown
+    seriesName: string
+    data: Record<string, unknown>
+  }
 }
 
 /**

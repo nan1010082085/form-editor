@@ -123,6 +123,19 @@ const { startResize, updateResize, endResize } = useResize()
 const overlayRef = ref<HTMLElement>()
 
 // ================================================================
+// 网格线层
+// ================================================================
+
+const gridOverlayVisible = computed(() =>
+  boardStore.canvas.layoutMode === 'free' && boardStore.canvas.freeLayout?.snapToGrid === true,
+)
+const gridSizePx = computed(() => {
+  const columns = boardStore.canvas.freeLayout?.gridColumns ?? 24
+  return boardStore.getCanvasWidthPx() / columns
+})
+const gridRowHeightPx = computed(() => boardStore.canvas.freeLayout?.gridRowHeight ?? 8)
+
+// ================================================================
 // 右键上下文菜单
 // ================================================================
 
@@ -568,6 +581,22 @@ async function handleTemplateDrop(templateId: string, clientX: number, clientY: 
     <div :class="styles.renderLayer">
       <SchemaRender :widgets="widgetStore.widgets" mode="edit" />
     </div>
+
+    <!-- 网格线层（自由布局 + snapToGrid 启用时显示） -->
+    <div
+      v-if="gridOverlayVisible"
+      :class="styles.gridOverlay"
+      :style="{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        zIndex: 1,
+        backgroundImage: `
+          repeating-linear-gradient(90deg, var(--grid-line-color, rgba(0,0,0,0.06)) 0, var(--grid-line-color, rgba(0,0,0,0.06)) 1px, transparent 1px, transparent ${gridSizePx}px),
+          repeating-linear-gradient(0deg, var(--grid-line-color, rgba(0,0,0,0.06)) 0, var(--grid-line-color, rgba(0,0,0,0.06)) 1px, transparent 1px, transparent ${gridRowHeightPx}px)
+        `,
+      }"
+    />
 
     <!-- 透明交互层：递归遍历所有 Widget（含容器子组件），捕获点击和拖拽 -->
     <div

@@ -104,8 +104,9 @@ function calculateColPosition(
   const colCount = colContainerColumns
   const colIdx = widget.colIndex ?? 0
 
-  const canvasWidth = 1920
-  const canvasHeight = 1080
+  const boardStore = useBoardStore()
+  const canvasWidth = boardStore.getCanvasWidthPx()
+  const canvasHeight = boardStore.getCanvasHeightPx()
   const containerWUnit = container.position?.wUnit ?? 'px'
   const containerHUnit = container.position?.hUnit ?? 'px'
   const containerW = containerWUnit === '%' ? (canvasWidth * container.position.w / 100) : container.position.w
@@ -198,6 +199,48 @@ export const useWidgetStore = defineStore('widget', () => {
   // ================================================================
 
   const widgets = ref<Widget[]>([])
+
+  // ================================================================
+  // 多页面 Widget 管理
+  // ================================================================
+
+  /** 页面 Widget 缓存（pageId → widgets） */
+  const pageWidgets = new Map<string, Widget[]>()
+
+  /** 将当前 widgets 保存到指定页面缓存 */
+  function savePageWidgets(pageId: string): void {
+    if (!pageId) return
+    pageWidgets.set(pageId, [...widgets.value])
+  }
+
+  /** 从页面缓存加载 widgets（返回加载的 widgets 数量） */
+  function loadPageWidgets(pageId: string): number {
+    const cached = pageWidgets.get(pageId)
+    if (cached) {
+      widgets.value = cached
+      return cached.length
+    }
+    return 0
+  }
+
+  /** 切换页面：保存当前页 → 加载目标页 */
+  function switchPage(fromPageId: string, toPageId: string, toPageWidgets?: Widget[]): void {
+    savePageWidgets(fromPageId)
+    const cached = pageWidgets.get(toPageId)
+    if (cached) {
+      widgets.value = cached
+    } else if (toPageWidgets) {
+      loadWidgets(toPageWidgets)
+      pageWidgets.set(toPageId, [...widgets.value])
+    } else {
+      widgets.value = []
+    }
+  }
+
+  /** 清除页面缓存 */
+  function clearPageCache(): void {
+    pageWidgets.clear()
+  }
 
   // ================================================================
   // Widget 索引（O(1) 查找，避免递归 DFS）
@@ -784,5 +827,11 @@ export const useWidgetStore = defineStore('widget', () => {
     loadWidgets,
     adaptAllToLayoutMode,
     clearWidgets,
+    // 多页面
+    pageWidgets,
+    savePageWidgets,
+    loadPageWidgets,
+    switchPage,
+    clearPageCache,
   }
 })

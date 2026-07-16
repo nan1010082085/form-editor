@@ -1,4 +1,5 @@
 import type { InjectionKey, ComputedRef, Ref } from 'vue'
+import type { FormItemRule } from 'element-plus'
 
 // ============================================================
 // SchemaType — 组件类型枚举
@@ -18,6 +19,17 @@ export type BasicType =
   | 'textarea'
   | 'richtext'
   | 'button'
+  | 'filter-bar'
+  | 'sub-form'
+  | 'progress-bar'
+  | 'rank-list'
+  | 'comparison-card'
+  | 'realtime-clock'
+  | 'marquee-text'
+  | 'tab-container'
+  | 'form-steps'
+  | 'condition-builder'
+  | 'treemap'
   | 'upload'
   | 'switch'
   | 'slider'
@@ -111,18 +123,6 @@ export interface DictItem {
 // ============================================================
 
 export type SchemaRules = FormItemRule[]
-
-interface FormItemRule {
-  type?: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'date' | 'url' | 'email' | 'enum'
-  required?: boolean
-  message?: string
-  trigger?: string | string[]
-  min?: number
-  max?: number
-  len?: number
-  pattern?: RegExp
-  validator?: (rule: unknown, value: unknown, callback: (error?: Error) => void) => void
-}
 
 // ============================================================
 // Widget 变量
@@ -316,6 +316,8 @@ export interface SchemaApiConfig {
   cacheLevel?: 'memory' | 'indexeddb' | 'both'  // 缓存策略，默认 'memory'
   enableRetry?: boolean  // 开启重试，默认 false
   retryCount?: number    // 重试次数，默认 3，最高 5
+  /** 引用全局 DataSourceDefinition 的 ID — 设置后 url/method/params 等字段被忽略 */
+  dataSourceId?: string
 }
 
 // ============================================================
@@ -658,7 +660,7 @@ export type BoardLayoutMode = 'free' | 'flex'
 export type FreeLayoutPreset = 'full' | 'form-narrow' | 'list-standard' | 'list-wide'
 
 /** Flex 页面模板 */
-export type FlexPageTemplate = 'form' | 'list' | 'detail' | 'blank'
+export type FlexPageTemplate = 'form' | 'list' | 'detail' | 'page' | 'blank'
 
 /** 自由布局内容区留白 */
 export interface FreeLayoutOptions {
@@ -668,6 +670,12 @@ export interface FreeLayoutOptions {
   contentAlign?: 'left' | 'center'
   /** 左右内边距，如 "24px" */
   marginX?: string
+  /** 启用网格吸附 */
+  snapToGrid?: boolean
+  /** 网格列数（12 或 24），默认 24 */
+  gridColumns?: number
+  /** 网格行高（px），默认 8 */
+  gridRowHeight?: number
 }
 
 export interface CanvasConfig {
@@ -700,6 +708,22 @@ export interface BoardEvent {
   actions: SchemaEventAction[]
 }
 
+/** 画布页面 — 每个页面有独立的画布配置和 widget 集合 */
+export interface BoardPage {
+  /** 页面 ID */
+  id: string
+  /** 页面名称 */
+  name: string
+  /** 页面级画布配置（覆盖 Board.canvas） */
+  canvas?: Partial<CanvasConfig>
+  /** 页面级变量 */
+  variables?: BoardVariable[]
+  /** 页面级事件 */
+  events?: BoardEvent[]
+  /** 页面的 widget 集合 */
+  widgets: Widget[]
+}
+
 export interface Board {
   /** 画布实例 ID */
   id: string
@@ -710,6 +734,12 @@ export interface Board {
   variables: BoardVariable[]
   events: BoardEvent[]
   widgets: Widget[]
+  /** 多页面支持 — 存在时优先使用 pages[currentPageId] 的 widgets */
+  pages?: BoardPage[]
+  /** 当前活跃页面 ID */
+  currentPageId?: string
+  /** 集中管理的数据源定义 */
+  dataSources?: import('../types/dataSource').DataSourceDefinition[]
 }
 
 // ============================================================

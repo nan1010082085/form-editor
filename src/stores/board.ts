@@ -10,8 +10,8 @@
  * 变化频率低，与 Widget 数据解耦。
  */
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { CanvasConfig, CanvasUnit, BoardVariable, BoardEvent } from '../widgets/base/types'
+import { ref, computed } from 'vue'
+import type { CanvasConfig, CanvasUnit, BoardVariable, BoardEvent, BoardPage } from '../widgets/base/types'
 
 /** 统一缩放阈值，EditorViewToolbar 和 setZoom 共用 */
 export const MIN_ZOOM = 50
@@ -41,6 +41,9 @@ export const useBoardStore = defineStore('board', () => {
     layoutMode: 'free',
     freeLayout: { contentAlign: 'left', marginX: '0' },
   })
+
+  /** 当前布局模式（响应式） */
+  const layoutMode = computed(() => canvas.value.layoutMode ?? 'free')
 
   /** 画布实际像素尺寸（百分比模式需基于父容器计算） */
   const canvasPixelSize = ref({ width: 1920, height: 1080 })
@@ -124,6 +127,54 @@ export const useBoardStore = defineStore('board', () => {
   }
 
   // ================================================================
+  // 多页面支持
+  // ================================================================
+
+  const pages = ref<BoardPage[]>([])
+  const currentPageId = ref('')
+
+  /** 当前页面（无页面时返回 null） */
+  const currentPage = computed<BoardPage | null>(() => {
+    if (pages.value.length === 0) return null
+    return pages.value.find(p => p.id === currentPageId.value) ?? pages.value[0] ?? null
+  })
+
+  /** 是否处于多页面模式 */
+  const isMultiPage = computed(() => pages.value.length > 0)
+
+  function addPage(page: BoardPage): void {
+    pages.value.push(page)
+    currentPageId.value = page.id
+  }
+
+  function removePage(pageId: string): void {
+    const idx = pages.value.findIndex(p => p.id === pageId)
+    if (idx < 0) return
+    pages.value.splice(idx, 1)
+    if (currentPageId.value === pageId) {
+      currentPageId.value = pages.value[0]?.id ?? ''
+    }
+  }
+
+  function switchPage(pageId: string): void {
+    if (pages.value.some(p => p.id === pageId)) {
+      currentPageId.value = pageId
+    }
+  }
+
+  function renamePage(pageId: string, name: string): void {
+    const page = pages.value.find(p => p.id === pageId)
+    if (page) page.name = name
+  }
+
+  function updatePageCanvas(pageId: string, patch: Partial<CanvasConfig>): void {
+    const page = pages.value.find(p => p.id === pageId)
+    if (page) {
+      page.canvas = { ...page.canvas, ...patch }
+    }
+  }
+
+  // ================================================================
   // 批量初始化（从 API 加载时使用）
   // ================================================================
 
@@ -134,6 +185,8 @@ export const useBoardStore = defineStore('board', () => {
     canvas?: Partial<CanvasConfig>
     variables?: BoardVariable[]
     events?: BoardEvent[]
+    pages?: BoardPage[]
+    currentPageId?: string
   }): void {
     id.value = data.id
     name.value = data.name
@@ -146,6 +199,13 @@ export const useBoardStore = defineStore('board', () => {
     }
     if (data.events) {
       events.value = data.events
+    }
+    if (data.pages && data.pages.length > 0) {
+      pages.value = data.pages
+      currentPageId.value = data.currentPageId ?? data.pages[0].id
+    } else {
+      pages.value = []
+      currentPageId.value = ''
     }
   }
 
@@ -160,6 +220,7 @@ export const useBoardStore = defineStore('board', () => {
     status,
     // 画布配置
     canvas,
+    layoutMode,
     // 变量
     variables,
     // 事件
@@ -178,6 +239,16 @@ export const useBoardStore = defineStore('board', () => {
     addEvent,
     removeEvent,
     updateEvent,
+    // 多页面
+    pages,
+    currentPageId,
+    currentPage,
+    isMultiPage,
+    addPage,
+    removePage,
+    switchPage,
+    renamePage,
+    updatePageCanvas,
     // 批量初始化
     loadBoard,
   }

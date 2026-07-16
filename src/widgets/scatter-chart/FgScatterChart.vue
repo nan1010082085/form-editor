@@ -4,6 +4,7 @@ import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useChartOption } from '../base/useChartOption'
 import { useChartLazyInit } from '../base/useChartLazyInit'
+import { useChartEvents } from '../../composables/useChartEvents'
 import { echarts, type EChartsType } from '../base/echarts'
 import styles from './style.module.scss'
 
@@ -60,7 +61,9 @@ useExposeWidget(() => ({
 }))
 
 const chartRef = ref<HTMLDivElement>()
+const chartInstanceRef = ref<EChartsType | null>(null)
 let chartInstance: EChartsType | null = null
+useChartEvents(chartInstanceRef, widgetData, chartData)
 let resizeObserver: ResizeObserver | null = null
 
 const { isVisible } = useChartLazyInit(chartRef)
@@ -68,6 +71,7 @@ const { isVisible } = useChartLazyInit(chartRef)
 function initChart() {
   if (!chartRef.value) return
   chartInstance = echarts.init(chartRef.value)
+  chartInstanceRef.value = chartInstance
   if (chartOption.value && Object.keys(chartOption.value).length > 0) {
     chartInstance.setOption(chartOption.value)
   }

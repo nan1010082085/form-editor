@@ -152,6 +152,20 @@ function seedDetailFlex(): Widget[] {
   return [title, desc, timeline].map((w) => withFlowStyle(w))
 }
 
+function seedPageFlex(): Widget[] {
+  const title = mustCreate('title')
+  title.props = { ...title.props, text: '数据看板', level: 1 }
+  title.style = { width: '100%', marginBottom: '16px' }
+
+  const statRow = mustCreate('card')
+  statRow.style = { width: '100%', marginBottom: '16px' }
+
+  const chartCard = mustCreate('card')
+  chartCard.style = { width: '100%' }
+
+  return [title, statRow, chartCard].map((w) => withFlowStyle(w))
+}
+
 function seedFlexTemplate(template: FlexPageTemplate): BoardSeedResult {
   let widgets: Widget[] = []
   switch (template) {
@@ -163,6 +177,9 @@ function seedFlexTemplate(template: FlexPageTemplate): BoardSeedResult {
       break
     case 'detail':
       widgets = seedDetailFlex()
+      break
+    case 'page':
+      widgets = seedPageFlex()
       break
     case 'blank':
     default:

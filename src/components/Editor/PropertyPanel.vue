@@ -167,7 +167,7 @@ const propertySections = computed<PropertySection[]>(() => {
   }
 
   // 2. 位置属性（Flex 流式布局无绝对坐标）
-  if ((boardStore.canvas.layoutMode ?? 'free') !== 'flex') {
+  if (boardStore.layoutMode !== 'flex') {
     sections.push({
       key: 'position',
       label: '位置',
@@ -177,6 +177,18 @@ const propertySections = computed<PropertySection[]>(() => {
         { key: 'position.w', label: '宽度', type: 'number', value: widget.position?.w ?? 240, desc: '组件宽度', unit: widget.position?.wUnit ?? 'px', unitKey: 'position.wUnit' },
         { key: 'position.h', label: '高度', type: 'number', value: widget.position?.h ?? 40, desc: '组件高度', unit: widget.position?.hUnit ?? 'px', unitKey: 'position.hUnit' },
         { key: 'position.zIndex', label: '层级', type: 'number', value: widget.position?.zIndex ?? 0, desc: 'Z轴层级' },
+      ],
+    })
+  }
+
+  // 2b. Flex 布局属性（仅流式模式）
+  if (boardStore.layoutMode === 'flex') {
+    sections.push({
+      key: 'flex-layout',
+      label: 'Flex 布局',
+      items: [
+        { key: 'span', label: '栅格宽度', type: 'number', value: widget.span ?? 24, desc: '栅格列宽 (1-24)' },
+        { key: 'style.marginBottom', label: '下间距', type: 'text', value: widget.style?.marginBottom, desc: '如 12px' },
       ],
     })
   }
@@ -499,6 +511,12 @@ const boardPropertyItems = computed<BoardPropertyItem[]>(() => {
         { label: '居中', value: 'center' },
       ] },
       { key: 'freeLayout.marginX', label: '左右留白', type: 'text', value: c.freeLayout?.marginX ?? '0', desc: '如 24px' },
+      { key: 'freeLayout.snapToGrid', label: '网格吸附', type: 'switch', value: c.freeLayout?.snapToGrid ?? false, desc: '拖拽/缩放时吸附到网格' },
+      { key: 'freeLayout.gridColumns', label: '网格列数', type: 'select', value: c.freeLayout?.gridColumns ?? 24, desc: '12 或 24 列', options: [
+        { label: '12 列', value: 12 },
+        { label: '24 列', value: 24 },
+      ] },
+      { key: 'freeLayout.gridRowHeight', label: '网格行高', type: 'number', value: c.freeLayout?.gridRowHeight ?? 8, desc: 'px，默认 8' },
     )
   }
   items.push(

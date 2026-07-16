@@ -1,0 +1,30 @@
+.clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.time {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-color-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.date {
+  font-size: 14px;
+  color: var(--text-color-secondary);
+}
+
+.weekday {
+  font-size: 14px;
+  color: var(--text-color-secondary);
+}

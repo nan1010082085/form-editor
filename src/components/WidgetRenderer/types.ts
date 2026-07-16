@@ -20,29 +20,14 @@ export interface ResponsiveSpan {
   xxl?: number
 }
 
-/** 表单字段值类型 — 覆盖所有表单控件可能的值 */
-export type FormFieldValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | string[]
-  | number[]
-  | Record<string, unknown>
-  | Record<string, unknown>[]
+/** 表单字段值类型 — 统一从 base/types 导出 */
+export type { FormFieldValue } from '../../widgets/base/types'
 
 /** 表单数据对象 */
-export type FormData = Record<string, FormFieldValue>
+export type FormData = Record<string, import('../../widgets/base/types').FormFieldValue>
 
-/** 字典项 */
-export interface DictItem {
-  label: string
-  value: string | number | boolean
-  id?: string | number
-  /** 树形数据的子节点（childrenKey 消费后保留原始嵌套） */
-  children?: DictItem[]
-}
+/** 字典项 — 统一从 base/types 导出 */
+export type { DictItem } from '../../widgets/base/types'
 
 /** 用户上下文 */
 export interface UserContext {

@@ -4,6 +4,7 @@ import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useChartOption } from '../base/useChartOption'
 import { useChartLazyInit } from '../base/useChartLazyInit'
+import { useChartEvents } from '../../composables/useChartEvents'
 import { echarts, type EChartsType } from '../base/echarts'
 import styles from './style.module.scss'
 
@@ -75,7 +76,11 @@ useExposeWidget(() => ({
 }))
 
 const chartRef = ref<HTMLDivElement>()
+const chartInstanceRef = ref<EChartsType | null>(null)
 let chartInstance: EChartsType | null = null
+
+// 绑定图表点击事件到事件引擎
+useChartEvents(chartInstanceRef, widgetData, chartData)
 let resizeObserver: ResizeObserver | null = null
 
 // 懒加载：仅当容器进入视口后才初始化图表
@@ -84,6 +89,7 @@ const { isVisible } = useChartLazyInit(chartRef)
 function initChart() {
   if (!chartRef.value) return
   chartInstance = echarts.init(chartRef.value)
+  chartInstanceRef.value = chartInstance
   if (chartOption.value && Object.keys(chartOption.value).length > 0) {
     chartInstance.setOption(chartOption.value)
   }

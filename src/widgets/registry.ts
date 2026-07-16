@@ -17,6 +17,8 @@ export interface WidgetRegistryItem {
   create: (id: string) => Widget
   /** 组件配置 */
   config: WidgetConfig
+  /** 可用布局模式 — undefined 表示两种模式都可用 */
+  availableIn?: ('free' | 'flex')[]
 }
 
 /** Widget 注册表 */

@@ -1,0 +1,126 @@
+.subForm {
+  border: 1px solid var(--border-color-lighter);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-color-placeholder);
+  font-size: 13px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-color-page);
+  border-bottom: 1px solid var(--border-color-lighter);
+}
+
+.headerCell {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-color-regular);
+}
+
+.headerAction {
+  width: 48px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-color-regular);
+}
+
+.body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color-extra-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--bg-color-page);
+  }
+}
+
+.cell {
+  flex: 1;
+  padding-right: 8px;
+}
+
+.cellAction {
+  width: 48px;
+  display: flex;
+  justify-content: center;
+}
+
+.removeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover:not(:disabled) {
+    background: var(--color-danger-light-9);
+    color: var(--color-danger);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-color-lighter);
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light-9);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.rowCount {
+  font-size: 12px;
+  color: var(--text-color-placeholder);
+}

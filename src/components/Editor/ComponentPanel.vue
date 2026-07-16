@@ -12,6 +12,7 @@ import { pinyin } from 'pinyin-pro'
 import { Search } from '@element-plus/icons-vue'
 import { getWidgetsByGroup, type WidgetRegistryItem } from '@/widgets/registry'
 import type { SchemaType } from '@/widgets/base/types'
+import { useBoardStore } from '@/stores/board'
 import styles from './ComponentPanel.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 
@@ -54,10 +55,14 @@ interface ComponentGroup {
   items: WidgetRegistryItem[]
 }
 
+const boardStore = useBoardStore()
+
 const allGroups = computed<ComponentGroup[]>(() => {
+  const currentMode = boardStore.layoutMode
   const groups: ComponentGroup[] = []
   for (const [key, label] of Object.entries(GROUP_LABELS)) {
     const items = getWidgetsByGroup(key as WidgetRegistryItem['group'])
+      .filter(item => !item.availableIn || item.availableIn.includes(currentMode))
     if (items.length > 0) {
       groups.push({ label, key, items })
     }

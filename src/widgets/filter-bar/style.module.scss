@@ -1,0 +1,28 @@
+.filterBar {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-color);
+  border-radius: 4px;
+  border: 1px solid var(--border-color-lighter);
+}
+
+.filterItems {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filterItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  color: var(--text-color-regular);
+  white-space: nowrap;
+}

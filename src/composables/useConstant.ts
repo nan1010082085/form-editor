@@ -56,6 +56,10 @@ export const INTERACTION_MODES = ['edit', 'preview', 'publish-interactive', 'pub
 
 export type InteractionMode = (typeof INTERACTION_MODES)[number]
 
+/** 布局编辑模式 — 控制画布渲染和 widget 面板行为 */
+export const LAYOUT_EDIT_MODES = ['free', 'flex'] as const
+export type LayoutEditMode = (typeof LAYOUT_EDIT_MODES)[number]
+
 /**
  * 判断组件类型是否为可嵌套容器（动态）
  */

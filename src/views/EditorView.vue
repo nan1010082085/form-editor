@@ -29,6 +29,7 @@ import { useApiStore } from '@/stores/api'
 import { registerAllWidgets } from '@/widgets'
 import { useDuplicateWidget } from '@/composables/useDuplicateWidget'
 import EditorCanvas from '@/components/Editor/EditorCanvas.vue'
+import PageTabBar from '@/components/Editor/PageTabBar.vue'
 import ZoomIndicator from '@/components/Editor/ZoomIndicator.vue'
 import EventLogPanel from '@/components/Editor/EventLogPanel.vue'
 import { setLogCollector } from '@/composables/useLogger'
@@ -543,12 +544,13 @@ function handleVersionLoadedFromToolbar(version: string) {
         v-if="mode === 'edit'"
         :visible="leftPanelVisible"
         :schema-status="boardStore.status"
-        :schema-type="'form'"
+        :schema-type="boardStore.layoutMode === 'flex' ? 'page' : 'form'"
         :schema-id="boardStore.id || null"
       />
 
       <!-- Center: canvas + debug panels -->
       <div :class="styles.center">
+        <PageTabBar v-if="mode === 'edit'" />
         <EditorRuler v-if="mode === 'edit'" :scroll-container="canvasScrollRef" />
         <div ref="canvasScrollRef" :class="styles.canvasScroll">
           <EditorCanvas

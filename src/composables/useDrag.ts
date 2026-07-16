@@ -3,6 +3,7 @@ import { useWidgetStore } from '../stores/widget'
 import { useEditorStore } from '../stores/editor'
 import { useBoardStore } from '../stores/board'
 import { viewportToCanvas, constrainToCanvasBounds } from '../utils/coordinate'
+import { getGridParams, snapToGrid } from '../utils/gridSnap'
 import { detectContainerCollision, getRootContainers, collectAllContainers, detectNestedContainerCollision } from '../utils/collision'
 import { calculateGuideLines, calculateContainerGuides, collectSiblingTargets } from '../utils/guidelines'
 import { createWidget, generateWidgetId } from '../widgets/registry'
@@ -296,6 +297,14 @@ export function useDrag() {
     if (dragStore.dragSource === 'canvas' && dragStore.dragWidgetId) {
       canvasX = dragStore.initialWidgetX + (canvasPos.x - dragStore.initialCursorX)
       canvasY = dragStore.initialWidgetY + (canvasPos.y - dragStore.initialCursorY)
+
+      // 网格吸附（自由布局模式）
+      const grid = getGridParams(boardStore.canvas.freeLayout, boardStore.getCanvasWidthPx())
+      if (grid.enabled) {
+        canvasX = snapToGrid(canvasX, grid.gridW, true)
+        canvasY = snapToGrid(canvasY, grid.gridH, true)
+      }
+
       // 子组件的 position 是容器本地坐标，需要减去父容器偏移
       const parentOffset = findParentOffset(dragStore.dragWidgetId)
       const localX = canvasX - (parentOffset?.x ?? 0)

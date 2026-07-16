@@ -3,6 +3,7 @@ import { useWidgetStore } from '../stores/widget'
 import { useEditorStore } from '../stores/editor'
 import { useBoardStore } from '../stores/board'
 import { scaleDelta } from '../utils/coordinate'
+import { getGridParams, snapToGrid } from '../utils/gridSnap'
 
 /** 缩放手柄方向 */
 export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
@@ -127,6 +128,15 @@ export function useResize() {
     } else {
       newPxW = Math.max(20, newPxW)
       newPxH = Math.max(20, newPxH)
+    }
+
+    // 网格吸附（仅像素单位模式）
+    if (startWUnit.value !== '%') {
+      const grid = getGridParams(boardStore.canvas.freeLayout, canvasW)
+      if (grid.enabled) {
+        newPxW = snapToGrid(newPxW, grid.gridW, true)
+        newPxH = snapToGrid(newPxH, grid.gridH, true)
+      }
     }
 
     widgetStore.resizeWidget(resizeWidgetId.value, newPxW, newPxH)

@@ -16,6 +16,17 @@ import { FgDivider, createDividerWidget, dividerConfig } from './divider'
 import { FgSpacer, createSpacerWidget, spacerConfig } from './spacer'
 import { FgToolbarButtons, createToolbarButtonsWidget, toolbarButtonsConfig } from './toolbar-buttons'
 import { FgButton, createButtonWidget, buttonConfig } from './button'
+import { FgFilterBar, filterBarConfig, createFilterBarWidget } from './filter-bar'
+import { FgSubForm, subFormConfig, createSubFormWidget } from './sub-form'
+import { FgProgressBar, progressBarConfig, createProgressBarWidget } from './progress-bar'
+import { FgRankList, rankListConfig, createRankListWidget } from './rank-list'
+import { FgComparisonCard, comparisonCardConfig, createComparisonCardWidget } from './comparison-card'
+import { FgRealtimeClock, realtimeClockConfig, createRealtimeClockWidget } from './realtime-clock'
+import { FgMarqueeText, marqueeTextConfig, createMarqueeTextWidget } from './marquee-text'
+import { FgTabContainer, tabContainerConfig, createTabContainerWidget } from './tab-container'
+import { FgFormSteps, formStepsConfig, createFormStepsWidget } from './form-steps'
+import { FgConditionBuilder, conditionBuilderConfig, createConditionBuilderWidget } from './condition-builder'
+import { FgTreemap, treemapConfig, createTreemapWidget } from './treemap'
 import { FgTable, createTableWidget, tableConfig } from './table'
 import { FgRichtext, createRichtextWidget, richtextConfig } from './richtext'
 import { FgUpload, createUploadWidget, uploadConfig } from './upload'
@@ -374,6 +385,116 @@ export function registerAllWidgets() {
     component: FgButton,
     create: createButtonWidget,
     config: buttonConfig,
+  })
+
+  registerWidget({
+    name: filterBarConfig.name,
+    displayName: filterBarConfig.displayName,
+    type: 'filter-bar',
+    group: 'action',
+    component: FgFilterBar,
+    create: createFilterBarWidget,
+    config: filterBarConfig,
+  })
+
+  registerWidget({
+    name: subFormConfig.name,
+    displayName: subFormConfig.displayName,
+    type: 'sub-form',
+    group: 'form',
+    component: FgSubForm,
+    create: createSubFormWidget,
+    config: subFormConfig,
+  })
+
+  registerWidget({
+    name: progressBarConfig.name,
+    displayName: progressBarConfig.displayName,
+    type: 'progress-bar',
+    group: 'chart',
+    component: FgProgressBar,
+    create: createProgressBarWidget,
+    config: progressBarConfig,
+  })
+
+  registerWidget({
+    name: rankListConfig.name,
+    displayName: rankListConfig.displayName,
+    type: 'rank-list',
+    group: 'static',
+    component: FgRankList,
+    create: createRankListWidget,
+    config: rankListConfig,
+  })
+
+  registerWidget({
+    name: comparisonCardConfig.name,
+    displayName: comparisonCardConfig.displayName,
+    type: 'comparison-card',
+    group: 'static',
+    component: FgComparisonCard,
+    create: createComparisonCardWidget,
+    config: comparisonCardConfig,
+  })
+
+  registerWidget({
+    name: realtimeClockConfig.name,
+    displayName: realtimeClockConfig.displayName,
+    type: 'realtime-clock',
+    group: 'static',
+    component: FgRealtimeClock,
+    create: createRealtimeClockWidget,
+    config: realtimeClockConfig,
+  })
+
+  registerWidget({
+    name: marqueeTextConfig.name,
+    displayName: marqueeTextConfig.displayName,
+    type: 'marquee-text',
+    group: 'static',
+    component: FgMarqueeText,
+    create: createMarqueeTextWidget,
+    config: marqueeTextConfig,
+  })
+
+  registerWidget({
+    name: tabContainerConfig.name,
+    displayName: tabContainerConfig.displayName,
+    type: 'tab-container',
+    group: 'layout',
+    component: FgTabContainer,
+    create: createTabContainerWidget,
+    config: tabContainerConfig,
+  })
+
+  registerWidget({
+    name: formStepsConfig.name,
+    displayName: formStepsConfig.displayName,
+    type: 'form-steps',
+    group: 'layout',
+    component: FgFormSteps,
+    create: createFormStepsWidget,
+    config: formStepsConfig,
+  })
+
+  registerWidget({
+    name: conditionBuilderConfig.name,
+    displayName: conditionBuilderConfig.displayName,
+    type: 'condition-builder',
+    group: 'form',
+    component: FgConditionBuilder,
+    create: createConditionBuilderWidget,
+    config: conditionBuilderConfig,
+  })
+
+  registerWidget({
+    name: treemapConfig.name,
+    displayName: treemapConfig.displayName,
+    type: 'treemap',
+    group: 'chart',
+    component: FgTreemap,
+    create: createTreemapWidget,
+    config: treemapConfig,
   })
 
   // Business widgets (业务组件)

@@ -79,6 +79,22 @@ function handleCanvasSizeChange(preset: string) {
 }
 
 // ================================================================
+// Layout mode switcher
+// ================================================================
+
+function handleLayoutModeChange(mode: 'free' | 'flex') {
+  if (mode === boardStore.layoutMode) return
+  boardStore.updateCanvas({
+    layoutMode: mode,
+    ...(mode === 'flex'
+      ? { width: 100, height: 100, widthUnit: '%' as const, heightUnit: '%' as const, padding: '20px' }
+      : { width: 1440, height: 900, widthUnit: 'px' as const, heightUnit: 'px' as const }
+    ),
+  })
+  widgetStore.adaptAllToLayoutMode(mode)
+}
+
+// ================================================================
 // Version management (toolbar-local state)
 // ================================================================
 
@@ -264,6 +280,23 @@ function handleClearCanvas() {
           <span :class="styles.aiLabel">AI</span>
         </button>
       </el-tooltip>
+      <div :class="styles.divider" />
+      <el-dropdown trigger="click" @command="handleLayoutModeChange">
+        <button :class="styles.iconBtn" title="布局模式">
+          <AppIcon name="switch" :size="14" />
+          <span :class="styles.modeLabel">{{ boardStore.layoutMode === 'flex' ? 'Flex' : 'Free' }}</span>
+        </button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="free" :class="{ 'is-active': boardStore.layoutMode === 'free' }">
+              自由布局 (Free)
+            </el-dropdown-item>
+            <el-dropdown-item command="flex" :class="{ 'is-active': boardStore.layoutMode === 'flex' }">
+              流式布局 (Flex)
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
       <div :class="styles.divider" />
       <el-tooltip :content="editorStore.showZoomIndicator ? '隐藏缩放控制' : '显示缩放控制'" placement="bottom">
         <button
