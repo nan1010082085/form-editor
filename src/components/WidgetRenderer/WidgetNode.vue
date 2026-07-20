@@ -20,7 +20,7 @@ import type { FormData } from './types'
 import { widgetDataKey, widgetStyleKey, widgetRenderStateKey, formContextKey } from '../../widgets/base/types'
 import { EVENT_CONTEXT_KEY, FORM_GRID_LINKAGE_KEY, DIALOG_REGISTRY_KEY } from './types'
 import { getComponentMap } from '../../widgets/registry'
-import { getAllContainerTypes } from '../../composables/useConstant'
+import { useAllContainerTypes } from '../../composables/useConstant'
 import { triggerWidgetEvent } from '../../engine/eventEngine'
 import { useEditorStore } from '../../stores/editor'
 import { EDITOR_CONTEXTMENU_KEY } from '../Editor/editorContextKeys'
@@ -41,7 +41,7 @@ const compMap = getComponentMap()
 
 /** 动态获取容器类型集合（与 SchemaNode 保持一致） */
 function getContainerTypes(): Set<string> {
-  return getAllContainerTypes() as Set<string>
+  return useAllContainerTypes() as Set<string>
 }
 
 /** 表单类组件（支持 change 事件） */

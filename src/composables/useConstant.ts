@@ -75,9 +75,6 @@ export function useAllContainerTypes(): Set<SchemaType> {
   return getContainerTypesFromRegistry()
 }
 
-/** @deprecated 使用 useAllContainerTypes 替代 */
-export const getAllContainerTypes = useAllContainerTypes
-
 /** 布局/容器组件（layout + container 分组，动态） */
 export function useLayoutTypes(): ReadonlySet<SchemaType> {
   return computed(() => {
@@ -160,5 +157,3 @@ export function useTypesByGroup(group: WidgetRegistryItem['group']): Set<SchemaT
   return types
 }
 
-/** @deprecated 使用 useTypesByGroup 替代 */
-export const getTypesByGroup = useTypesByGroup

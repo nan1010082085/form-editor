@@ -21,7 +21,7 @@ import { useWidgetStore } from '../../stores/widget'
 import type { Widget } from '../../widgets/base/types'
 import type { PartialWidget, DialogRegistry, EventExecutionContext, FormFieldValue } from '../WidgetRenderer/types'
 import { triggerWidgetEvent } from '../../engine'
-import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY } from '../WidgetRenderer/types'
+import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY, FORM_GRID_READONLY_KEY } from '../WidgetRenderer/types'
 import { WIDGET_SURFACE_KEY } from '../../widgets/base/widgetMock'
 import { useLinkage } from '../../composables/useLinkage'
 import { useBoardLayout } from '../../composables/useBoardLayout'
@@ -54,7 +54,8 @@ const widgetStore = useWidgetStore()
 const appStore = useAppStore()
 
 const { isFlexLayout, rendererLayout, contentFrameStyle } = useBoardLayout(() => boardStore.canvas)
-const isPreview = computed(() => editorStore.mode === 'preview')
+const isPreview = computed(() => editorStore.mode !== 'edit')
+const isReadonly = computed(() => editorStore.mode === 'publish-readonly')
 
 const flexDropEnabled = computed(() => isFlexLayout.value && !isPreview.value)
 const showFlexEmpty = computed(() =>
@@ -252,6 +253,7 @@ const { stateMap: linkageStateMap } = useLinkage(
   exposedContext,
 )
 provide(FORM_GRID_LINKAGE_KEY, linkageStateMap)
+provide(FORM_GRID_READONLY_KEY, isReadonly)
 
 provide(WIDGET_SURFACE_KEY, 'editor')
 

@@ -620,3 +620,48 @@ describe('Widget Store — 嵌套容器拖拽操作', () => {
     expect(store.findParent('w1')).toBeNull()
   })
 })
+
+// ================================================================
+// 6. 视口剔除性能
+// ================================================================
+
+import {
+  computeViewportRect,
+  isWidgetVisibleInViewport,
+} from '@/composables/useViewportCulling'
+
+describe('Viewport culling performance', () => {
+  function makePerfWidgets(count: number): Widget[] {
+    return Array.from({ length: count }, (_, i) => ({
+      id: `w_${i}`,
+      name: `w_${i}`,
+      type: 'input',
+      position: { x: (i % 10) * 220, y: Math.floor(i / 10) * 60, w: 200, h: 40 },
+      children: [],
+    })) as Widget[]
+  }
+
+  it('100 widgets viewport cull check < 5ms', () => {
+    const viewport = computeViewportRect(0, 0, 800, 600, 100)
+    const widgets = makePerfWidgets(100)
+    const start = performance.now()
+    let visible = 0
+    for (const w of widgets) {
+      const p = w.position!
+      if (isWidgetVisibleInViewport(p.x, p.y, p.w, p.h, viewport)) visible++
+    }
+    expect(visible).toBeGreaterThan(0)
+    expect(performance.now() - start).toBeLessThan(5)
+  })
+
+  it('500 widgets viewport cull check < 20ms', () => {
+    const viewport = computeViewportRect(0, 0, 1920, 1080, 100)
+    const widgets = makePerfWidgets(500)
+    const start = performance.now()
+    for (const w of widgets) {
+      const p = w.position!
+      isWidgetVisibleInViewport(p.x, p.y, p.w, p.h, viewport)
+    }
+    expect(performance.now() - start).toBeLessThan(20)
+  })
+})

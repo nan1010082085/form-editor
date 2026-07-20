@@ -13,6 +13,7 @@ import { useWidgetStore } from '../../stores/widget'
 import { useBoardStore } from '../../stores/board'
 import { getWidget } from '../../widgets/registry'
 import { publicStylePanel } from '../../widgets/base/publicSchema'
+import { BOARD_THEME_PRESETS } from '../../utils/boardThemes'
 import type { Widget, WidgetEvent, SchemaApiConfig, ConfigPanelType, ArrayFieldSchema, WidgetConfig, CanvasUnit, BoardLayoutMode } from '../../widgets/base/types'
 import type { SchemaLinkage } from '../WidgetRenderer/types'
 import PropertyField from './PropertyField.vue'
@@ -37,6 +38,8 @@ import type { CrudFormFieldSchema } from '@/widgets/crud-list-page/config'
 import type { AdhocQueryField } from '@/widgets/adhoc-query/config'
 import type { KanbanColumn } from '@/widgets/kanban/config'
 import RulesEditor from './RulesEditor.vue'
+import PropertyPanelConfigBar from './PropertyPanelConfigBar.vue'
+import PropertyPanelSections from './PropertyPanelSections.vue'
 import EventConfigDialog from './EventConfigDialog.vue'
 import LinkageSchemaDialog from './LinkageSchemaDialog.vue'
 import OptionsApiConfigDialog from './OptionsApiConfigDialog.vue'
@@ -502,6 +505,14 @@ const boardPropertyItems = computed<BoardPropertyItem[]>(() => {
   const isFree = (c.layoutMode ?? 'free') === 'free'
   const items: BoardPropertyItem[] = [
     { key: 'layoutMode', label: '布局模式', type: 'select', value: c.layoutMode ?? 'free', desc: 'free=绝对定位，flex=流式页面', options: layoutModeOptions },
+    {
+      key: 'themePreset',
+      label: '大屏主题',
+      type: 'select',
+      value: (c as { themePreset?: string }).themePreset ?? 'default-light',
+      desc: '深色/科技蓝等大屏预设',
+      options: BOARD_THEME_PRESETS.map(p => ({ label: p.label, value: p.id })),
+    },
   ]
   if (isFree) {
     items.push(
@@ -534,6 +545,19 @@ const boardPropertyItems = computed<BoardPropertyItem[]>(() => {
 })
 
 function updateBoardProperty(key: string, value: unknown) {
+  if (key === 'themePreset') {
+    const preset = BOARD_THEME_PRESETS.find(p => p.id === value)
+    if (preset) {
+      boardStore.updateCanvas({ ...preset.canvas, themePreset: preset.id } as typeof boardStore.canvas)
+      if (preset.cssVars) {
+        for (const [k, v] of Object.entries(preset.cssVars)) {
+          document.documentElement.style.setProperty(k, v)
+        }
+      }
+    }
+    return
+  }
+
   if (key === 'layoutMode') {
     const mode = value as BoardLayoutMode
     if (mode === 'flex') {
@@ -662,226 +686,26 @@ function updateBoardProperty(key: string, value: unknown) {
         </el-popover>
       </div>
 
-      <!-- 动态配置入口（由 widget config.configPanels 声明驱动）—— 顶部横向按钮 -->
-      <div v-if="configPanels.length" :class="styles.configActions">
-        <div style="overflow: auto;">
-          <div :class="styles.configButtons">
-            <el-popover placement="bottom-start" :width="280" trigger="click">
-              <template #default>
-                <div :class="styles.helpContent" v-html="configHelpText" />
-              </template>
-              <template #reference>
-                <div :class="styles.helpIconWrap">
-                  <AppIcon name="question-filled" :class="styles.helpIcon" />
-                </div>
-              </template>
-            </el-popover>
-            <template v-for="panel in configPanels" :key="panel">
-              <el-button v-if="panel === 'events'" plain @click="openEventDialog">
-                事件配置
-                <span v-if="selectedWidget.events?.length" :class="styles.badge">
-                  {{ selectedWidget.events.length }}
-                </span>
-              </el-button>
-              <el-button v-if="panel === 'linkages' || panel === 'rules'" plain @click="openLinkageDialog">
-                字段联动
-                <span v-if="selectedWidget.linkages?.length" :class="styles.badge">
-                  {{ selectedWidget.linkages.length }}
-                </span>
-              </el-button>
-              <el-button v-if="panel === 'api'" plain @click="openApiDialog">
-                数据源
-                <span v-if="selectedWidget.api" :class="styles.badge">1</span>
-              </el-button>
-              <el-button v-if="panel === 'variables'" plain @click="variableDialogVisible = true">
-                变量
-                <span v-if="selectedWidget.variables?.length" :class="styles.badge">
-                  {{ selectedWidget.variables.length }}
-                </span>
-              </el-button>
-            </template>
-          </div>
-        </div>
-      </div>
+      <!-- 动态配置入口 -->
+      <PropertyPanelConfigBar
+        v-if="configPanels.length"
+        :config-panels="configPanels"
+        :config-help-text="configHelpText"
+        :selected-widget="selectedWidget"
+        @open-event="openEventDialog"
+        @open-linkage="openLinkageDialog"
+        @open-api="openApiDialog"
+        @open-variables="variableDialogVisible = true"
+      />
 
-      <div :class="styles.scroll" style="overflow: auto; height: 100%;">
-        <!-- 手风琴分区 -->
-        <div v-for="section in visibleSections" :key="section.key" :class="styles.section">
-          <div :class="styles.sectionHeader" @click="toggleSection(section.key)">
-            <AppIcon v-if="expandedSections.has(section.key)" name="arrow-down" :size="12" :class="styles.arrow" />
-            <AppIcon v-else name="arrow-right" :size="12" :class="styles.arrow" />
-            <span :class="styles.sectionLabel">{{ section.label }}</span>
-            <span :class="styles.sectionCount">{{ section.items.length }}</span>
-          </div>
-
-          <div v-if="expandedSections.has(section.key)" :class="styles.sectionBody">
-            <template v-for="item in section.items" :key="item.key">
-              <!-- 列配置：直接渲染 TableColumnsEditor -->
-              <div v-if="item.type === 'columns'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <TableColumnsEditor
-                  :columns="(item.value as TableColumn[]) ?? []"
-                  @update:columns="(v: TableColumn[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- 高级列配置：AdvancedColumnsEditor -->
-              <div v-else-if="item.type === 'advanced-columns'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <AdvancedColumnsEditor
-                  :columns="(item.value as AdvancedTableColumn[]) ?? []"
-                  @update:columns="(v: AdvancedTableColumn[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- 操作按钮配置：ActionButtonsEditor -->
-              <div v-else-if="item.type === 'action-buttons'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <ActionButtonsEditor
-                  :buttons="(item.value as ActionButton[]) ?? []"
-                  @update:buttons="(v: ActionButton[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- 搜索字段配置：SearchFieldsEditor (E-46) -->
-              <div v-else-if="item.type === 'search-fields'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <SearchFieldsEditor
-                  :search-fields="(item.value as SearchFieldSchema[]) ?? []"
-                  @update:search-fields="(v: SearchFieldSchema[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- CRUD 表单字段：CrudFormFieldsEditor -->
-              <div v-else-if="item.type === 'crud-form-fields'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <CrudFormFieldsEditor
-                  :fields="(item.value as CrudFormFieldSchema[]) ?? []"
-                  @update:fields="(v: CrudFormFieldSchema[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- Adhoc 查询字段 -->
-              <div v-else-if="item.type === 'adhoc-fields'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <AdhocFieldsEditor
-                  :fields="(item.value as AdhocQueryField[]) ?? []"
-                  @update:fields="(v: AdhocQueryField[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- Kanban 列配置 -->
-              <div v-else-if="item.type === 'kanban-columns'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <KanbanColumnsEditor
-                  :columns="(item.value as KanbanColumn[]) ?? []"
-                  @update:columns="(v: KanbanColumn[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- 数字数组编辑器：布局容器列宽 -->
-              <div v-else-if="item.type === 'number-array'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <NumberArrayEditor
-                  :value="(item.value as number[]) ?? []"
-                  :min="0"
-                  :max="100"
-                  @update="(v: number[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- 通用数组编辑器 -->
-              <div v-else-if="item.type === 'array-editor'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <GenericArrayEditor
-                  :value="(item.value as unknown[]) ?? []"
-                  :fields="item.fields ?? []"
-                  :item-label="item.itemLabel"
-                  @update="(v: unknown[]) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- 选项编辑器（select/radio/checkbox 的选项配置） -->
-              <OptionsEditor
-                v-else-if="item.type === 'options'"
-                :label="item.label"
-                :value="item.value"
-                @update="(v: unknown) => updateProperty(item.key, v)"
-              />
-              <!-- 边框可视化编辑器 -->
-              <div v-else-if="item.type === 'border-editor'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <BorderEditor
-                  :value="(selectedWidget?.style as Record<string, string>) ?? {}"
-                  @update="updateStylePatch"
-                />
-              </div>
-              <!-- 圆角可视化编辑器 -->
-              <div v-else-if="item.type === 'border-radius-editor'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <BorderRadiusEditor
-                  :value="(selectedWidget?.style as Record<string, string>) ?? {}"
-                  @update="updateStylePatch"
-                />
-              </div>
-              <!-- 外边距可视化编辑器 -->
-              <div v-else-if="item.type === 'spacing-margin-editor'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <SpacingEditor
-                  mode="margin"
-                  :value="(selectedWidget?.style as Record<string, string>) ?? {}"
-                  @update="updateStylePatch"
-                />
-              </div>
-              <!-- 内边距可视化编辑器 -->
-              <div v-else-if="item.type === 'spacing-padding-editor'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <SpacingEditor
-                  mode="padding"
-                  :value="(selectedWidget?.style as Record<string, string>) ?? {}"
-                  @update="updateStylePatch"
-                />
-              </div>
-              <!-- 校验规则编辑器 -->
-              <div v-else-if="item.type === 'rules'" :class="styles.columnsSection">
-                <div :class="styles.columnsLabel">{{ item.label }}</div>
-                <RulesEditor
-                  :rules="(item.value as any[] | undefined)"
-                  @update:rules="(v: any[] | undefined) => updateProperty(item.key, v)"
-                />
-              </div>
-              <!-- 带单位的数字输入（宽高） -->
-              <div v-else-if="item.type === 'number' && item.unitKey" :class="styles.field">
-                <el-tooltip :content="item.desc || item.label" placement="top" :show-after="300">
-                  <label :class="styles.label">{{ item.label.length > 4 ? item.label.slice(0, 4) + '…' : item.label }}</label>
-                </el-tooltip>
-                <div :class="styles.control" style="display: flex; gap: 4px;">
-                  <el-input-number
-                    :model-value="(item.value as number) ?? 0"
-                    size="small"
-                    controls-position="right"
-                    style="flex: 1;"
-                    @update:model-value="(v: unknown) => updateProperty(item.key, v)"
-                  />
-                  <el-select
-                    :model-value="item.unit ?? 'px'"
-                    size="small"
-                    style="width: 56px;"
-                    @update:model-value="(v: unknown) => updateProperty(item.unitKey!, v)"
-                  >
-                    <el-option label="px" value="px" />
-                    <el-option label="%" value="%" />
-                  </el-select>
-                </div>
-              </div>
-              <PropertyField
-                v-else
-                :label="item.label"
-                :type="item.type"
-                :value="item.value"
-                :desc="item.desc"
-                :placeholder="item.placeholder"
-                :options="item.options"
-                :remote-url="item.remoteUrl"
-                :label-field="item.labelField"
-                :value-field="item.valueField"
-                @update="(v: unknown) => updateProperty(item.key, v)"
-              />
-            </template>
-          </div>
-        </div>
-      </div>
+      <PropertyPanelSections
+        :sections="visibleSections"
+        :expanded-sections="expandedSections"
+        :selected-widget="selectedWidget"
+        @toggle-section="toggleSection"
+        @update-property="updateProperty"
+        @update-style-patch="updateStylePatch"
+      />
 
       <EventConfigDialog
         :visible="eventDialogVisible"

@@ -15,8 +15,8 @@ editor/
 │   ├── components/
 │   │   ├── Editor/         # 设计器 UI（~70 文件）
 │   │   └── WidgetRenderer/ # 运行时渲染引擎
-│   ├── widgets/            # ~80 种 Widget 注册
-│   ├── stores/             # 11 个 Pinia Store
+│   ├── widgets/            # 85 种 Widget 注册
+│   ├── stores/             # 12 个 Pinia Store
 │   ├── composables/        # 44 个组合式 API
 │   ├── engine/             # eventEngine 纯逻辑
 │   ├── api/                # 领域 API 聚合

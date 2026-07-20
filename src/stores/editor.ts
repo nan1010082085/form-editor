@@ -3,69 +3,53 @@
  *
  * 职责：
  * - 选中状态（单选/多选）
- * - 编辑器模式（edit/preview）
- * - 撤销/重做历史（主画布 + 弹窗编辑器独立管理）
+ * - 编辑器模式（edit/preview/publish-interactive/publish-readonly）
+ * - 撤销/重做历史（immer patches，主画布 + 弹窗编辑器）
  * - 剪贴板
  * - 弹窗编辑器状态
- *
- * 不涉及 Widget 数据本身，数据由 useWidgetStore 管理。
- * undo/redo 返回快照，由调用方赋值给 widgetStore.widgets。
- *
- * 性能优化：统一深拷贝函数，集中管理快照序列化逻辑。
  */
 import { defineStore } from 'pinia'
 import { ref, computed, shallowRef } from 'vue'
+import { produce, enablePatches, applyPatches, type Patch } from 'immer'
 import type { Widget } from '../widgets/base/types'
+import type { InteractionMode } from '../composables/useConstant'
 import { useWidgetStore } from './widget'
 import { MAX_HISTORY_SIZE } from '../composables/useConstant'
 
+enablePatches()
+
 const MAX_HISTORY = MAX_HISTORY_SIZE
 
-/**
- * 高效深拷贝 — 使用 JSON 序列化。
- * structuredClone 无法处理 Vue reactive proxy 对象（DataCloneError），
- * 因此始终使用 JSON 方式，这也是 undo/redo 快照的标准做法。
- */
-function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj))
+interface HistoryEntry {
+  patches: Patch[]
+  inversePatches: Patch[]
+}
+
+function cloneWidgets(widgets: Widget[]): Widget[] {
+  return produce(widgets, () => {}) as Widget[]
 }
 
 export const useEditorStore = defineStore('editor', () => {
-  // ================================================================
-  // 选中状态
-  // ================================================================
-
   const selectedId = ref<string | null>(null)
   const selectedIds = ref<string[]>([])
 
-  // ================================================================
-  // 编辑器模式
-  // ================================================================
+  const mode = ref<InteractionMode>('edit')
 
-  const mode = ref<'edit' | 'preview'>('edit')
-
-  /** 缩放指示器可见性（编辑模式 HUD） */
   const showZoomIndicator = ref(true)
   function toggleZoomIndicator() {
     showZoomIndicator.value = !showZoomIndicator.value
   }
 
-  // ================================================================
-  // 撤销/重做（主画布）
-  // ================================================================
-
-  const history = shallowRef<Widget[][]>([])
+  const baseState = shallowRef<Widget[]>([])
+  const history = shallowRef<HistoryEntry[]>([])
   const historyIndex = ref(-1)
 
   const canUndo = computed(() => historyIndex.value > 0)
   const canRedo = computed(() => historyIndex.value < history.value.length - 1)
 
-  // ================================================================
-  // 弹窗编辑器（独立历史）
-  // ================================================================
-
   const editingDialogId = ref<string | null>(null)
-  const dialogHistory = shallowRef<Widget[][]>([])
+  const dialogBaseState = shallowRef<Widget[]>([])
+  const dialogHistory = shallowRef<HistoryEntry[]>([])
   const dialogHistoryIndex = ref(-1)
 
   const canUndoDialog = computed(() => dialogHistoryIndex.value > 0)
@@ -73,15 +57,7 @@ export const useEditorStore = defineStore('editor', () => {
     () => dialogHistoryIndex.value < dialogHistory.value.length - 1,
   )
 
-  // ================================================================
-  // 剪贴板
-  // ================================================================
-
   const clipboard = ref<Widget | null>(null)
-
-  // ================================================================
-  // 脏标记（未保存更改检测）
-  // ================================================================
 
   const isDirty = ref(false)
   const savedHistoryIndex = ref(-1)
@@ -95,10 +71,6 @@ export const useEditorStore = defineStore('editor', () => {
     savedHistoryIndex.value = historyIndex.value
   }
 
-  // ================================================================
-  // 配置弹窗触发（右键菜单 → PropertyPanel 打开弹框）
-  // ================================================================
-
   type ConfigDialogType = 'events' | 'rules' | 'linkages' | 'api' | 'variables'
   const configDialogTrigger = ref<{ widget: Widget; type: ConfigDialogType } | null>(null)
 
@@ -109,10 +81,6 @@ export const useEditorStore = defineStore('editor', () => {
   function clearConfigDialogTrigger() {
     configDialogTrigger.value = null
   }
-
-  // ================================================================
-  // 选择操作
-  // ================================================================
 
   function select(id: string | null): void {
     selectedId.value = id
@@ -135,23 +103,51 @@ export const useEditorStore = defineStore('editor', () => {
     selectedIds.value = []
   }
 
-  // ================================================================
-  // 撤销/重做（主画布）
-  // ================================================================
+  function getStateAt(index: number, entries: HistoryEntry[], base: Widget[]): Widget[] {
+    let state = base
+    for (let i = 1; i <= index; i++) {
+      state = applyPatches(state, entries[i].patches)
+    }
+    return state
+  }
 
-  /**
-   * 推入历史快照。
-   * 截断 redo 历史，超过 MAX_HISTORY 移除最旧快照。
-   * 返回深拷贝的快照数组，由调用方决定是否赋值。
-   */
+  function resetHistory(widgets: Widget[]): void {
+    baseState.value = cloneWidgets(widgets)
+    history.value = [{ patches: [], inversePatches: [] }]
+    historyIndex.value = 0
+    savedHistoryIndex.value = 0
+    isDirty.value = false
+  }
+
   function pushHistory(widgets: Widget[]): void {
-    const snapshot = deepClone(widgets)
+    if (historyIndex.value < 0) {
+      resetHistory(widgets)
+      markDirty()
+      return
+    }
+
+    const current = getStateAt(historyIndex.value, history.value, baseState.value)
+
+    let entry: HistoryEntry = { patches: [], inversePatches: [] }
+    produce(
+      current,
+      () => widgets,
+      (patches, inversePatches) => {
+        entry = { patches, inversePatches }
+      },
+    )
+
+    if (entry.patches.length === 0) return
+
     let newHistory = history.value.slice(0, historyIndex.value + 1)
-    newHistory.push(snapshot)
-    if (newHistory.length > MAX_HISTORY) {
-      newHistory = newHistory.slice(1)
+    newHistory.push(entry)
+    if (newHistory.length > MAX_HISTORY + 1) {
+      const removed = newHistory.length - (MAX_HISTORY + 1)
+      baseState.value = getStateAt(removed, newHistory, baseState.value)
+      newHistory = [{ patches: [], inversePatches: [] }, ...newHistory.slice(removed + 1)]
+      historyIndex.value -= removed
       if (savedHistoryIndex.value >= 0) {
-        savedHistoryIndex.value = Math.max(0, savedHistoryIndex.value - 1)
+        savedHistoryIndex.value = Math.max(0, savedHistoryIndex.value - removed)
       }
     }
     history.value = newHistory
@@ -159,104 +155,90 @@ export const useEditorStore = defineStore('editor', () => {
     markDirty()
   }
 
-  /**
-   * 撤销。返回快照数据，由调用方赋值给 widgetStore.widgets。
-   * 无法撤销时返回 null。
-   */
   function undo(): Widget[] | null {
     if (historyIndex.value <= 0) return null
+    const current = getStateAt(historyIndex.value, history.value, baseState.value)
+    const entry = history.value[historyIndex.value]
     historyIndex.value--
     isDirty.value = historyIndex.value !== savedHistoryIndex.value
-    return deepClone(history.value[historyIndex.value])
+    return applyPatches(current, entry.inversePatches)
   }
 
-  /**
-   * 重做。返回快照数据，由调用方赋值给 widgetStore.widgets。
-   * 无法重做时返回 null。
-   */
   function redo(): Widget[] | null {
     if (historyIndex.value >= history.value.length - 1) return null
     historyIndex.value++
     isDirty.value = historyIndex.value !== savedHistoryIndex.value
-    return deepClone(history.value[historyIndex.value])
+    return cloneWidgets(getStateAt(historyIndex.value, history.value, baseState.value))
   }
-
-  // ================================================================
-  // 剪贴板操作
-  // ================================================================
 
   function copy(widget: Widget): void {
-    clipboard.value = deepClone(widget)
+    clipboard.value = cloneWidgets([widget])[0]
   }
 
-  /**
-   * 粘贴。返回深拷贝的 Widget，调用方负责生成新 ID 和调整位置。
-   * 剪贴板为空时返回 null。
-   */
   function paste(): Widget | null {
     if (!clipboard.value) return null
-    return deepClone(clipboard.value)
+    return cloneWidgets([clipboard.value])[0]
   }
 
-  // ================================================================
-  // 编辑器模式
-  // ================================================================
-
-  function setMode(newMode: 'edit' | 'preview'): void {
+  function setMode(newMode: InteractionMode): void {
     mode.value = newMode
   }
 
-  // ================================================================
-  // 弹窗编辑器
-  // ================================================================
-
   function openDialogEditor(id: string): void {
     editingDialogId.value = id
+    dialogBaseState.value = []
     dialogHistory.value = []
     dialogHistoryIndex.value = -1
   }
 
   function closeDialogEditor(): void {
     editingDialogId.value = null
+    dialogBaseState.value = []
     dialogHistory.value = []
     dialogHistoryIndex.value = -1
   }
 
-  /**
-   * 推入弹窗编辑器历史快照。
-   */
   function pushDialogHistory(widgets: Widget[]): void {
-    const snapshot = deepClone(widgets)
-    let newHistory = dialogHistory.value.slice(0, dialogHistoryIndex.value + 1)
-    newHistory.push(snapshot)
-    if (newHistory.length > MAX_HISTORY) {
-      newHistory = newHistory.slice(1)
+    const current = dialogHistoryIndex.value < 0
+      ? widgets
+      : getStateAt(dialogHistoryIndex.value, dialogHistory.value, dialogBaseState.value)
+
+    let entry: HistoryEntry = { patches: [], inversePatches: [] }
+    produce(current, () => widgets, (patches, inversePatches) => {
+      entry = { patches, inversePatches }
+    })
+
+    if (dialogHistoryIndex.value < 0) {
+      dialogBaseState.value = cloneWidgets(current)
+      dialogHistory.value = [{ patches: [], inversePatches: [] }, entry]
+      dialogHistoryIndex.value = 1
+    } else {
+      let newHistory = dialogHistory.value.slice(0, dialogHistoryIndex.value + 1)
+      newHistory.push(entry)
+      if (newHistory.length > MAX_HISTORY + 1) {
+        const removed = newHistory.length - (MAX_HISTORY + 1)
+        dialogBaseState.value = getStateAt(removed, newHistory, dialogBaseState.value)
+        newHistory = [{ patches: [], inversePatches: [] }, ...newHistory.slice(removed + 1)]
+        dialogHistoryIndex.value -= removed
+      }
+      dialogHistory.value = newHistory
+      dialogHistoryIndex.value = newHistory.length - 1
     }
-    dialogHistory.value = newHistory
-    dialogHistoryIndex.value = newHistory.length - 1
   }
 
-  /**
-   * 弹窗编辑器撤销。
-   */
   function undoDialog(): Widget[] | null {
     if (dialogHistoryIndex.value <= 0) return null
+    const current = getStateAt(dialogHistoryIndex.value, dialogHistory.value, dialogBaseState.value)
+    const entry = dialogHistory.value[dialogHistoryIndex.value]
     dialogHistoryIndex.value--
-    return deepClone(dialogHistory.value[dialogHistoryIndex.value])
+    return applyPatches(current, entry.inversePatches)
   }
 
-  /**
-   * 弹窗编辑器重做。
-   */
   function redoDialog(): Widget[] | null {
     if (dialogHistoryIndex.value >= dialogHistory.value.length - 1) return null
     dialogHistoryIndex.value++
-    return deepClone(dialogHistory.value[dialogHistoryIndex.value])
+    return cloneWidgets(getStateAt(dialogHistoryIndex.value, dialogHistory.value, dialogBaseState.value))
   }
-
-  // ================================================================
-  // 组合操作（消除 EditorView / EditorViewToolbar 重复代码）
-  // ================================================================
 
   function performUndo(): void {
     const widgetStore = useWidgetStore()
@@ -284,59 +266,43 @@ export const useEditorStore = defineStore('editor', () => {
     pushHistory([...widgetStore.widgets])
   }
 
-  // ================================================================
-  // 导出
-  // ================================================================
-
   return {
-    // 选中状态
     selectedId,
     selectedIds,
-    // 编辑器模式
     mode,
     showZoomIndicator,
     toggleZoomIndicator,
-    // 撤销/重做（主画布）
     history,
     historyIndex,
     canUndo,
     canRedo,
-    // 弹窗编辑器
     editingDialogId,
     dialogHistory,
     dialogHistoryIndex,
     canUndoDialog,
     canRedoDialog,
-    // 剪贴板
     clipboard,
-    // 脏标记
     isDirty,
     markDirty,
     markClean,
-    // 配置弹窗触发
     configDialogTrigger,
     openConfigDialog,
     clearConfigDialogTrigger,
-    // 选择操作
     select,
     toggleSelect,
     clearSelection,
-    // 撤销/重做
+    resetHistory,
     pushHistory,
     undo,
     redo,
-    // 剪贴板操作
     copy,
     paste,
-    // 编辑器模式
     setMode,
-    // 弹窗编辑器
     openDialogEditor,
     closeDialogEditor,
     pushDialogHistory,
     undoDialog,
     redoDialog,
-    // 组合操作
     performUndo,
     performRedo,
     performCopyWidget,

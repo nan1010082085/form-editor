@@ -19,20 +19,20 @@ src/
 │   ├── WidgetRenderer/  # 渲染引擎（SchemaRender → SchemaNode → WidgetNode）
 │   ├── Credential/      # 凭证管理
 │   └── System/          # 系统级组件
-├── composables/         # 组合式 API（37 个，见下表）
+├── composables/         # 组合式 API（44 个，见下表）
 ├── engine/              # 事件引擎（eventEngine.ts，18 种动作类型）
 ├── locales/             # i18n
 ├── microapp/            # qiankun 微前端集成
 ├── router/              # Vue Router
-├── stores/              # Pinia Store（11 个：api/app/board/credential/drag/editor/request/schemaVersion/template/tenant/widget）
+├── stores/              # Pinia Store（12 个：api/app/board/credential/dataSource/drag/editor/request/schemaVersion/template/tenant/widget）
 ├── styles/              # 全局样式
 ├── types/               # TypeScript 类型定义
-├── utils/               # 工具函数（expression/schemaValidate/apiClient/unitResolver 等 20 个）
+├── utils/               # 工具函数
 ├── views/               # 页面级视图
-├── widgets/             # Widget 组件库（64 个目录，38+ 类型）
+├── widgets/             # Widget 组件库（85 个目录）
 │   ├── base/types.ts    # 核心类型定义（SchemaType/Widget/Board/EventAction 等）
 │   ├── registry.ts      # Widget 注册表
-│   └── index.ts         # 统一注册入口
+│   └── index.ts         # 统一注册入口（91 registerWidget）
 └── workers/             # Web Worker（cacheWorker/indexedDb — L1 内存 + L2 IndexedDB 缓存）
 ```
 

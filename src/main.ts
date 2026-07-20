@@ -7,6 +7,10 @@ import { createApp, type App } from 'vue'
 import { createPinia } from 'pinia'
 import { renderWithQiankun, qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import { setupElementPlus } from '@schema-platform/platform-shared/config/element'
+import { createI18n } from '@schema-platform/platform-shared'
+import { reportError } from '@schema-platform/platform-shared'
+import editorZhCN from '@/locales/editor-zh-CN'
+import editorEnUS from '@/locales/editor-en-US'
 import { initCapabilityPlatformAuth, resolveAuthToken } from '@schema-platform/platform-shared/utils/authSession'
 import { initQiankunProps, initQiankunShellProps } from '@schema-platform/platform-shared/qiankun'
 import { editorLog } from '@schema-platform/platform-shared/utils/logger'
@@ -32,9 +36,11 @@ function render() {
   app = createApp(AppRoot)
   const pinia = createPinia()
   app.use(pinia)
+  app.use(createI18n({ messages: { 'zh-CN': editorZhCN, 'en-US': editorEnUS } }))
   app.use(router)
   app.config.errorHandler = (err, _instance, info) => {
     console.error('[GlobalError]', err, info)
+    void reportError(err instanceof Error ? err : String(err), { info })
   }
   app.directive('permission', permissionDirective)
   initCapabilityPlatformAuth()

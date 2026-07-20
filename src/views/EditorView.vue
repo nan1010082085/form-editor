@@ -14,10 +14,11 @@
  * - EditorViewLeftPanel — 左侧面板
  * - EditorViewRightPanel — 右侧属性面板
  */
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { connect as connectSocket, onAiApply, onAiPublished } from '@schema-platform/platform-shared/socket'
+import { track, initTelemetry, reportError } from '@schema-platform/platform-shared'
 import type { AiApplyEvent, AiPublishedEvent } from '@schema-platform/platform-shared/socket'
 import { useSnapshot } from '@/composables/useSnapshot'
 import { useAutoSave } from '@/composables/useAutoSave'
@@ -43,6 +44,12 @@ import EditorViewToolbar from './EditorViewToolbar.vue'
 import EditorViewLeftPanel from './EditorViewLeftPanel.vue'
 import EditorViewRightPanel from './EditorViewRightPanel.vue'
 import EditorRuler from '@/components/Editor/EditorRuler.vue'
+import { useWidgetAlignment } from '@/composables/useWidgetAlignment'
+import {
+  VIEWPORT_CULLING_KEY,
+  computeViewportRect,
+  type ViewportRect,
+} from '@/composables/useViewportCulling'
 import { APP_CONFIGS } from '@schema-platform/platform-shared/qiankun/config'
 import styles from './EditorView.module.scss'
 
@@ -61,6 +68,43 @@ const { captureElement } = useSnapshot()
 const editorCanvasRef = ref<InstanceType<typeof EditorCanvas>>()
 const aiIframeRef = ref<HTMLIFrameElement>()
 const canvasScrollRef = ref<HTMLElement>()
+const viewportRect = ref<ViewportRect | null>(null)
+const { align, distribute, toggleLock, toggleHidden } = useWidgetAlignment()
+
+provide(VIEWPORT_CULLING_KEY, viewportRect)
+
+function updateViewportRect() {
+  const el = canvasScrollRef.value
+  if (!el) {
+    viewportRect.value = null
+    return
+  }
+  viewportRect.value = computeViewportRect(
+    el.scrollLeft,
+    el.scrollTop,
+    el.clientWidth,
+    el.clientHeight,
+    boardStore.canvas.zoom,
+  )
+}
+
+let viewportObserver: ResizeObserver | null = null
+
+function bindViewportListeners() {
+  const el = canvasScrollRef.value
+  if (!el) return
+  el.addEventListener('scroll', updateViewportRect, { passive: true })
+  viewportObserver = new ResizeObserver(updateViewportRect)
+  viewportObserver.observe(el)
+  updateViewportRect()
+}
+
+function unbindViewportListeners() {
+  const el = canvasScrollRef.value
+  if (el) el.removeEventListener('scroll', updateViewportRect)
+  viewportObserver?.disconnect()
+  viewportObserver = null
+}
 
 // 自动保存：脏数据 60 秒后自动触发保存（偏好持久化到 localStorage）
 const autoSaveEnabled = ref(localStorage.getItem('editor_auto_save') !== 'off')
@@ -167,6 +211,7 @@ onMounted(async () => {
       })
       const layoutMode = (boardConfig.canvas as { layoutMode?: 'free' | 'flex' } | undefined)?.layoutMode ?? 'free'
       widgetStore.loadWidgets(widgets, layoutMode)
+      editorStore.resetHistory(widgets)
       currentEditId.value = editId
       currentVersion.value = version
     }
@@ -198,6 +243,7 @@ onMounted(async () => {
       })
       const layoutMode = (boardConfig.canvas as { layoutMode?: 'free' | 'flex' } | undefined)?.layoutMode ?? 'free'
       widgetStore.loadWidgets(widgets, layoutMode)
+      editorStore.resetHistory(widgets)
       currentEditId.value = detail.editId
       currentVersion.value = detail.version
     }
@@ -232,7 +278,13 @@ onMounted(async () => {
       ElMessage.success('AI 已发布 Schema')
     }
   })
+
+  initTelemetry()
+  await nextTick()
+  bindViewportListeners()
 })
+
+watch(() => boardStore.canvas.zoom, () => updateViewportRect())
 
 // ================================================================
 // AI sidebar (iframe)
@@ -302,6 +354,7 @@ function handleBeforeUnload(e: BeforeUnloadEvent) {
 window.addEventListener('beforeunload', handleBeforeUnload)
 onUnmounted(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
+  unbindViewportListeners()
 })
 
 // ================================================================
@@ -318,13 +371,30 @@ function handleKeyDown(e: KeyboardEvent) {
 
   if (e.key === 'Delete' || e.key === 'Backspace') {
     if (editorStore.selectedId) {
+      track('widget.delete', { widgetId: editorStore.selectedId })
       handleDeleteWidget()
     }
+  }
+
+  if (e.altKey && e.shiftKey) {
+    const key = e.key.toLowerCase()
+    if (key === 'l') { e.preventDefault(); align('left') }
+    if (key === 'r') { e.preventDefault(); align('right') }
+    if (key === 'c') { e.preventDefault(); align('center') }
+    if (key === 'h') { e.preventDefault(); distribute('horizontal') }
+    if (key === 'v') { e.preventDefault(); distribute('vertical') }
+  }
+
+  if (e.ctrlKey && e.altKey) {
+    const key = e.key.toLowerCase()
+    if (key === 'l') { e.preventDefault(); toggleLock() }
+    if (key === 'h') { e.preventDefault(); toggleHidden() }
   }
 
   if (e.ctrlKey || e.metaKey) {
     if (e.key === 'z' && !e.shiftKey) {
       e.preventDefault()
+      track('editor.undo')
       handleUndo()
     }
     if (e.key === 'z' && e.shiftKey) {
@@ -411,6 +481,7 @@ async function handleSave() {
       currentEditId.value = result.editId
       currentVersion.value = result.version
       editorStore.markClean()
+      track('schema.save', { schemaId: result.id })
       ElMessage.success('已保存')
     } else {
       ElMessage.error(apiStore.error || '保存失败')
@@ -460,6 +531,7 @@ async function handlePublish() {
       const result = await apiStore.publishSchema(boardStore.id)
       if (result) {
         boardStore.status = 'published'
+        track('schema.publish', { schemaId: boardStore.id })
         ElMessage.success('发布成功')
       } else {
         ElMessage.error(apiStore.error || '发布失败')
@@ -567,10 +639,10 @@ function handleVersionLoadedFromToolbar(version: string) {
           v-if="mode === 'edit' && editorStore.showZoomIndicator"
           :right-offset="zoomRightOffset"
         />
-        <EventLogPanel v-if="mode === 'preview' && showLogPanel" />
+        <EventLogPanel v-if="mode !== 'edit' && showLogPanel" />
 
         <!-- Store 数据面板（全屏覆盖） -->
-        <div v-if="mode === 'preview' && showCodePanel" :class="styles.codeOverlay">
+        <div v-if="mode !== 'edit' && showCodePanel" :class="styles.codeOverlay">
           <div :class="styles.codeHeader">
             <span :class="styles.codeTitle">Store 数据</span>
             <el-button type="danger" text size="small" @click="showCodePanel = false">关闭</el-button>

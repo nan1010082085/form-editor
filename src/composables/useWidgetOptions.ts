@@ -8,7 +8,7 @@
 import { computed } from 'vue'
 import { useWidgetStore } from '@/stores/widget'
 import type { Widget } from '@/widgets/base/types'
-import { getAllContainerTypes, getTypesByGroup } from '@/composables/useConstant'
+import { useAllContainerTypes, useTypesByGroup } from '@/composables/useConstant'
 
 export interface WidgetOption {
   label: string
@@ -55,7 +55,7 @@ export function useWidgetOptions() {
 
   /** 可显示/隐藏的组件（非根级容器，动态获取容器类型） */
   const showHideOptions = computed(() => {
-    const containerTypes = getAllContainerTypes()
+    const containerTypes = useAllContainerTypes()
     const result: WidgetOption[] = []
     function collect(list: Widget[], isRoot: boolean) {
       for (const w of list) {
@@ -75,7 +75,7 @@ export function useWidgetOptions() {
 
   /** 可打开的弹窗组件（动态获取 dialog 类型） */
   const dialogOptions = computed(() => {
-    const dialogTypes = getTypesByGroup('container')
+    const dialogTypes = useTypesByGroup('container')
     const result: WidgetOption[] = []
     function collect(list: Widget[]) {
       for (const w of list) {
@@ -124,7 +124,7 @@ export function useWidgetOptions() {
 
   /** 可触发事件的组件（排除容器，动态获取容器类型） */
   const triggerEventOptions = computed(() => {
-    const containerTypes = getAllContainerTypes()
+    const containerTypes = useAllContainerTypes()
     const result: WidgetOption[] = []
     function collect(list: Widget[]) {
       for (const w of list) {

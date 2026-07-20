@@ -7,13 +7,13 @@ import { getGridParams, snapToGrid } from '../utils/gridSnap'
 import { detectContainerCollision, getRootContainers, collectAllContainers, detectNestedContainerCollision } from '../utils/collision'
 import { calculateGuideLines, calculateContainerGuides, collectSiblingTargets } from '../utils/guidelines'
 import { createWidget, generateWidgetId } from '../widgets/registry'
-import { getAllContainerTypes } from './useConstant'
+import { useAllContainerTypes } from './useConstant'
 import type { SchemaType, Widget } from '../widgets/base/types'
 import type { DropPreviewLine } from '../stores/drag'
 
 /** 获取容器组件类型集合（动态） */
 function getContainerTypeSet() {
-  return getAllContainerTypes()
+  return useAllContainerTypes()
 }
 
 /**

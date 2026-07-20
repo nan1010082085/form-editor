@@ -10,7 +10,7 @@ Schema 驱动的可视化自由布局表单设计器与运行时渲染引擎。
 
 - Vue 3.5 Composition API + `<script setup>` + TypeScript 5.7
 - Element Plus 2.9
-- Pinia 状态管理（7 个 Store，大量使用 shallowRef 优化性能）
+- Pinia 状态管理（12 个 Store，大量使用 shallowRef 优化性能）
 - Vue Router 4（支持 qiankun 微前端 + micro-app）
 - Vite 6 构建
 - ECharts 6.1（图表组件）
@@ -22,7 +22,7 @@ Schema 驱动的可视化自由布局表单设计器与运行时渲染引擎。
 
 三栏布局：左侧面板（部件库 + 结构树）+ 中间画布 + 右侧属性面板。工具栏居中放置面板抽屉控制、撤销/重做、复制/删除等操作按钮，右侧为缩放、模式切换、保存发布。
 
-### Widget 体系（49 个组件）
+### Widget 体系（85+ 个组件）
 
 8 个分组，覆盖表单、布局、展示、数据、图表等场景：
 

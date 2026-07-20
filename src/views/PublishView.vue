@@ -48,8 +48,28 @@ const formMode = ref<'edit' | 'view' | 'partial'>('edit')
 const editableFields = ref<string[] | undefined>(undefined)
 const readonlyFields = ref<string[] | undefined>(undefined)
 
-/** 是否全局只读（view 模式） */
+/** 是否全局只读（view 模式 / URL interaction=readonly） */
 const isReadonly = computed(() => formMode.value === 'view')
+
+/** URL ?interaction=readonly|interactive 切换发布态交互 */
+function applyInteractionFromQuery() {
+  const interaction = route.query.interaction as string | undefined
+  if (interaction === 'readonly' || interaction === 'publish-readonly') {
+    formMode.value = 'view'
+  } else if (interaction === 'interactive' || interaction === 'publish-interactive') {
+    formMode.value = 'edit'
+  }
+}
+
+watch(
+  () => route.query.interaction,
+  () => applyInteractionFromQuery(),
+  { immediate: true },
+)
+
+function togglePublishInteraction() {
+  formMode.value = formMode.value === 'view' ? 'edit' : 'view'
+}
 
 const schemaRouteKey = computed(() => {
   const codeParam = route.params.schemaCode as string | undefined
@@ -286,6 +306,15 @@ onUnmounted(() => window.removeEventListener('message', handleMessage))
     </div>
 
     <div v-else :class="[styles['fg-renderer'], showAiSidebar && styles['fg-renderer--with-sidebar'], isFlexLayout && styles['fg-renderer--flex']]">
+      <div
+        v-if="route.query.showModeToggle === '1' || route.query.showModeToggle === 'true'"
+        style="position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,0.55);padding:6px 12px;border-radius:6px;color:#fff;font-size:13px;"
+      >
+        <span>{{ isReadonly ? '只读模式' : '交互模式' }}</span>
+        <el-button size="small" @click="togglePublishInteraction">
+          {{ isReadonly ? '切换为交互' : '切换为只读' }}
+        </el-button>
+      </div>
       <div :class="styles['fg-renderer__content']" :style="contentFrameStyle">
         <WidgetRenderer
           ref="formRef"

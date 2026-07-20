@@ -97,6 +97,7 @@ const freePresetOptions: { label: string; value: FreeLayoutPreset }[] = [
   { label: '居中窄版（表单 960px）', value: 'form-narrow' },
   { label: '居中标准（列表 1200px）', value: 'list-standard' },
   { label: '居中宽版（1440px）', value: 'list-wide' },
+  { label: '运营大屏 Demo（E1 验收）', value: 'dashboard-demo' },
 ]
 
 const selectedLayoutDesc = computed(

@@ -71,3 +71,24 @@ export function generateWidgetId(type: SchemaType): string {
   const hash = Math.random().toString(36).substring(2, 7)
   return `${type}_${hash}`
 }
+
+/** 第三方 Widget 插件定义 */
+export interface WidgetPlugin {
+  widgets: WidgetRegistryItem[]
+}
+
+/**
+ * 注册第三方 Widget 插件包
+ * @example createWidgetPlugin({ widgets: [myWidgetItem] })
+ */
+export function createWidgetPlugin(plugin: WidgetPlugin): void {
+  for (const item of plugin.widgets) {
+    registerWidget(item)
+    _cachedComponentMap = null
+  }
+}
+
+/** 获取所有已注册类型（运行时清单） */
+export function getRegisteredTypes(): SchemaType[] {
+  return Array.from(registry.keys())
+}

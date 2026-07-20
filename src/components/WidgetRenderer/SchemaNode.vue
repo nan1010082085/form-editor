@@ -34,16 +34,18 @@ import styles from './SchemaNode.module.scss'
 const props = defineProps<{
   widget: Widget
   mode?: 'edit' | 'preview'
+  canvasOffsetX?: number
+  canvasOffsetY?: number
 }>()
 
 /** 组件映射表 — 缓存版本，避免每次 mount 创建新对象 */
 const compMap = getComponentMap()
 
-import { getAllContainerTypes } from '../../composables/useConstant'
+import { useAllContainerTypes } from '../../composables/useConstant'
 
 /** 获取容器组件类型集合（动态） */
 function getContainerTypes() {
-  return getAllContainerTypes()
+  return useAllContainerTypes()
 }
 
 /**
@@ -304,6 +306,14 @@ const CSS_STYLE_KEYS: ReadonlySet<string> = new Set([
   'fontSize', 'fontWeight', 'color', 'textAlign',
 ])
 
+const animationClass = computed(() => {
+  const anim = props.widget.style?.animation as string | undefined
+  if (anim === 'fade-in') return styles.animatedFadeIn
+  if (anim === 'slide-up') return styles.animatedSlideUp
+  if (anim === 'scale-in') return styles.animatedScaleIn
+  return undefined
+})
+
 const wrapperStyle = computed(() => {
   const pos = props.widget.position ?? { x: 0, y: 0, w: 240, h: 40 }
   const xUnit = pos.xUnit ?? 'px'
@@ -361,6 +371,8 @@ const wrapperStyle = computed(() => {
           <SchemaRender
             :widgets="filteredChildren"
             :mode="mode"
+            :canvas-offset-x="(canvasOffsetX ?? 0) + (widget.position?.x ?? 0)"
+            :canvas-offset-y="(canvasOffsetY ?? 0) + (widget.position?.y ?? 0)"
           />
         </div>
       </div>
@@ -426,6 +438,8 @@ const wrapperStyle = computed(() => {
           <SchemaRender
             :widgets="filteredChildren"
             :mode="mode"
+            :canvas-offset-x="(canvasOffsetX ?? 0) + (widget.position?.x ?? 0)"
+            :canvas-offset-y="(canvasOffsetY ?? 0) + (widget.position?.y ?? 0)"
           />
         </div>
       </component>
@@ -447,7 +461,7 @@ const wrapperStyle = computed(() => {
     <div
       v-else
       :data-widget-id="widget.id"
-      :class="[styles.nodeWrapper, styles.nodeWrapperBase, { [styles.nodeWrapperEdit]: isEditMode }]"
+      :class="[styles.nodeWrapper, styles.nodeWrapperBase, animationClass, { [styles.nodeWrapperEdit]: isEditMode }]"
       :style="wrapperStyle"
       @change="FORM_COMPONENT_TYPES.has(widget.type) && (isEditMode ? handleWidgetEvent('change', $event) : handlePreviewEvent('change', $event))"
       @focus="INPUT_COMPONENT_TYPES.has(widget.type) && (isEditMode ? handleWidgetEvent('focus') : handlePreviewEvent('focus'))"

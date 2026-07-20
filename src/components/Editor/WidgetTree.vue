@@ -12,7 +12,7 @@ import { useWidgetStore } from '../../stores/widget'
 import { useEditorStore } from '../../stores/editor'
 import type { Widget } from '../../widgets/base/types'
 import { getWidget } from '../../widgets/registry'
-import { getAllContainerTypes } from '../../composables/useConstant'
+import { useAllContainerTypes } from '../../composables/useConstant'
 import { scrollToWidget, scrollTreeNodeIntoView } from '../../utils/editorScroll'
 import styles from './WidgetTree.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
@@ -36,7 +36,7 @@ interface TreeNode {
 // ---- 构建树 ----
 
 function buildTree(widgets: Widget[]): TreeNode[] {
-  const containerTypes = getAllContainerTypes()
+  const containerTypes = useAllContainerTypes()
   return widgets.map(w => ({
     id: w.id,
     label: w.label || getWidget(w.type)?.displayName || w.type,

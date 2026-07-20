@@ -16,14 +16,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Widget, ContainerType, BoardLayoutMode } from '../widgets/base/types'
-import { getAllContainerTypes } from '../composables/useConstant'
+import { useAllContainerTypes } from '../composables/useConstant'
 import { adaptWidgetToBoardLayout, adaptWidgetsToBoardLayout } from '../utils/widgetLayoutAdapter'
 import { getWidget } from '../widgets/registry'
 import { useBoardStore } from './board'
 
 /** 获取容器组件类型集合（动态） */
 function getContainerTypes(): Set<string> {
-  return getAllContainerTypes() as Set<string>
+  return useAllContainerTypes() as Set<string>
 }
 
 /** 默认 position */

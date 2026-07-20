@@ -6,6 +6,7 @@
  * 直接访问全局 Store 读取状态，通过 emits 向父组件触发操作。
  */
 import { ref } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
@@ -16,10 +17,11 @@ import { useSchemaValidation } from '@/composables/useSchemaValidation'
 import { fetchVersions, fetchVersion, deleteVersion } from '@/api/schemaApi'
 import { parseSchemaJson } from '@/utils/parseSchemaJson'
 import type { VersionEntry } from '@/types/api'
+import type { InteractionMode } from '@/composables/useConstant'
 import styles from './EditorView.module.scss'
 
 const props = defineProps<{
-  mode: 'edit' | 'preview'
+  mode: InteractionMode
   currentVersion: string
   currentEditId: string
   autoSaveEnabled: boolean
@@ -51,6 +53,7 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+const { t } = useI18n()
 const boardStore = useBoardStore()
 const editorStore = useEditorStore()
 const widgetStore = useWidgetStore()
@@ -200,7 +203,7 @@ function handleClearCanvas() {
 </script>
 
 <template>
-  <div :class="[styles.toolbar, { [styles.toolbarPreview]: mode === 'preview' }]">
+  <div :class="[styles.toolbar, { [styles.toolbarPreview]: mode !== 'edit' }]">
     <!-- Left: back + name -->
     <div :class="styles.toolbarLeft">
       <button :class="styles.iconBtn" title="返回列表" @click="router.push('/instances')">
@@ -310,30 +313,42 @@ function handleClearCanvas() {
       <!-- 快捷键帮助 -->
       <el-popover placement="bottom" :width="300" trigger="click">
         <div :class="styles.shortcuts">
-          <div :class="styles.shortcutsTitle">快捷键</div>
+          <div :class="styles.shortcutsTitle">{{ t('editor.shortcuts.title') }}</div>
           <div :class="styles.shortcutRow">
-            <span :class="styles.shortcutLabel">撤销</span>
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.undo') }}</span>
             <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>Z</kbd></span>
           </div>
           <div :class="styles.shortcutRow">
-            <span :class="styles.shortcutLabel">重做</span>
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.redo') }}</span>
             <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></span>
           </div>
           <div :class="styles.shortcutRow">
-            <span :class="styles.shortcutLabel">复制部件</span>
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.copy') }}</span>
             <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>C</kbd></span>
           </div>
           <div :class="styles.shortcutRow">
-            <span :class="styles.shortcutLabel">粘贴部件</span>
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.paste') }}</span>
             <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>V</kbd></span>
           </div>
           <div :class="styles.shortcutRow">
-            <span :class="styles.shortcutLabel">删除部件</span>
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.delete') }}</span>
             <span :class="styles.shortcutKeys"><kbd>Delete</kbd></span>
           </div>
           <div :class="styles.shortcutRow">
-            <span :class="styles.shortcutLabel">保存</span>
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.save') }}</span>
             <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>S</kbd></span>
+          </div>
+          <div :class="styles.shortcutRow">
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.alignLeft') }}</span>
+            <span :class="styles.shortcutKeys"><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L/R/C</kbd></span>
+          </div>
+          <div :class="styles.shortcutRow">
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.distributeH') }}</span>
+            <span :class="styles.shortcutKeys"><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>H/V</kbd></span>
+          </div>
+          <div :class="styles.shortcutRow">
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.lock') }}</span>
+            <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L/H</kbd></span>
           </div>
         </div>
         <template #reference>
@@ -352,11 +367,31 @@ function handleClearCanvas() {
           <AppIcon name="view" :size="14" />
         </button>
       </el-tooltip>
+      <el-tooltip content="发布(交互)" placement="bottom">
+        <button
+          :class="styles.iconBtn"
+          title="发布(交互)"
+          @click="editorStore.setMode('publish-interactive')"
+        >
+          <AppIcon name="video-play" :size="14" />
+        </button>
+      </el-tooltip>
+      <el-tooltip content="发布(只读)" placement="bottom">
+        <button
+          :class="styles.iconBtn"
+          title="发布(只读)"
+          @click="editorStore.setMode('publish-readonly')"
+        >
+          <AppIcon name="lock" :size="14" />
+        </button>
+      </el-tooltip>
     </div>
 
-    <!-- Center: preview mode -->
-    <div v-if="mode === 'preview'" :class="styles.toolbarCenter">
-      <span :class="styles.previewLabel">预览模式</span>
+    <!-- Center: non-edit modes -->
+    <div v-if="mode !== 'edit'" :class="styles.toolbarCenter">
+      <span :class="styles.previewLabel">
+        {{ mode === 'preview' ? '预览模式' : mode === 'publish-interactive' ? '发布(交互)' : '发布(只读)' }}
+      </span>
     </div>
 
     <!-- Right: version + save + publish -->
@@ -494,7 +529,7 @@ function handleClearCanvas() {
           {{ publishing ? '发布中...' : '发布' }}
         </el-button>
       </template>
-      <template v-if="mode === 'preview'">
+      <template v-if="mode !== 'edit'">
         <!-- Mode switch back to edit -->
         <button
           :class="[styles.iconBtn, { [styles.iconBtnActive]: showLogPanel }]"

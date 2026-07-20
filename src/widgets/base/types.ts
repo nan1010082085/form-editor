@@ -89,8 +89,11 @@ export type BusinessType =
   | 'auto-refresh'
   | 'compliance-checklist'
 
-/** 所有组件类型 */
-export type SchemaType = ContainerType | BasicType | EmbedType | BusinessType
+/** 所有组件类型 — 运行时真源为 widgets/registry，新增类型仅需 registerWidget */
+export type SchemaType = string
+
+/** @internal 内置 Widget 类型字面量（文档与 fallback 用） */
+export type KnownSchemaType = ContainerType | BasicType | EmbedType | BusinessType
 
 // ============================================================
 // 表单字段值类型
@@ -536,6 +539,8 @@ export interface Widget {
   // === 静态属性 ===
   /** 设计时隐藏 */
   hidden?: boolean
+  /** 锁定位置与尺寸，禁止拖拽/缩放 */
+  locked?: boolean
 
   // === 布局属性（流式渲染器使用） ===
   /** 栅格列宽（1-24） */
@@ -657,7 +662,7 @@ export type CanvasUnit = 'px' | '%'
 export type BoardLayoutMode = 'free' | 'flex'
 
 /** 自由布局留白预设 */
-export type FreeLayoutPreset = 'full' | 'form-narrow' | 'list-standard' | 'list-wide'
+export type FreeLayoutPreset = 'full' | 'form-narrow' | 'list-standard' | 'list-wide' | 'dashboard-demo'
 
 /** Flex 页面模板 */
 export type FlexPageTemplate = 'form' | 'list' | 'detail' | 'page' | 'blank'
@@ -693,6 +698,8 @@ export interface CanvasConfig {
   freeLayout?: FreeLayoutOptions
   /** Flex 页面模板标识（layoutMode=flex 时记录创建模板） */
   flexTemplate?: FlexPageTemplate
+  /** 大屏主题预设 ID（boardThemes.ts） */
+  themePreset?: string
 }
 
 export interface BoardVariable {

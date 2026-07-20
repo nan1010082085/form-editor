@@ -13,6 +13,7 @@ import type {
 } from '@/widgets/base/types'
 import { createWidget, generateWidgetId } from '@/widgets/registry'
 import { adaptWidgetsToBoardLayout } from '@/utils/widgetLayoutAdapter'
+import { seedDashboardDemo } from '@/utils/dashboardDemo'
 
 export interface CreateBoardOptions {
   layoutMode: BoardLayoutMode
@@ -25,7 +26,7 @@ export interface BoardSeedResult {
   canvas: CanvasConfig
 }
 
-const FREE_LAYOUT_PRESETS: Record<FreeLayoutPreset, FreeLayoutOptions & { width: number; height: number }> = {
+const FREE_LAYOUT_PRESETS: Record<Exclude<FreeLayoutPreset, 'dashboard-demo'>, FreeLayoutOptions & { width: number; height: number }> = {
   full: { width: 1440, height: 900, maxContentWidth: undefined, contentAlign: 'left', marginX: '0' },
   'form-narrow': { width: 960, height: 1200, maxContentWidth: 960, contentAlign: 'center', marginX: '24px' },
   'list-standard': { width: 1200, height: 900, maxContentWidth: 1200, contentAlign: 'center', marginX: '24px' },
@@ -194,6 +195,10 @@ function seedFlexTemplate(template: FlexPageTemplate): BoardSeedResult {
 }
 
 function seedFreeTemplate(preset: FreeLayoutPreset): BoardSeedResult {
+  if (preset === 'dashboard-demo') {
+    return seedDashboardDemo()
+  }
+
   const presetConfig = FREE_LAYOUT_PRESETS[preset]
   const { width, height, ...freeLayout } = presetConfig
 

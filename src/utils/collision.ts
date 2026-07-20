@@ -1,5 +1,5 @@
 import type { Widget } from '../widgets/base/types'
-import { getAllContainerTypes } from '../composables/useConstant'
+import { useAllContainerTypes } from '../composables/useConstant'
 import { resolveWidgetSize } from './unitResolver'
 
 /**
@@ -9,7 +9,7 @@ import { resolveWidgetSize } from './unitResolver'
 
 /** 获取容器组件类型集合（动态） */
 function getContainerTypesSet() {
-  return getAllContainerTypes()
+  return useAllContainerTypes()
 }
 
 /** 计算两个矩形的重叠面积 */
