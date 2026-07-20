@@ -1,11 +1,11 @@
 # editor
 
-`@editor` — Schema 驱动的可视化自由布局表单设计器。
+`@editor` — Schema 驱动的可视化自由布局表单 / 页面 / 大屏编辑器。
 
 ## 技术栈
 
 - Vue 3.5 + `<script setup>` + TypeScript 5.7
-- Element Plus 2.9 + ECharts 6.1
+- Element Plus 2.9 + ECharts 6.1 + immer（撤销 patches）
 - CSS Module 样式隔离（全局强制，`.module.scss`）
 - Pinia 状态管理 + Vitest 测试
 
@@ -13,29 +13,30 @@
 
 ```
 src/
-├── api/                 # API 接口层（authApi/dataApi/schemaApi/roleApi/userApi/widgetApi/runtimeApi/requestApi）
+├── api/                 # API 接口层（11：auth/data/flow/schema/widget/runtime…）
 ├── components/
-│   ├── Editor/          # 编辑器 UI（85 个组件：Canvas/Overlay/PropertyPanel/LeftPanel/RightPanel/Toolbar 等）
-│   ├── WidgetRenderer/  # 渲染引擎（SchemaRender → SchemaNode → WidgetNode）
+│   ├── Editor/          # 编辑器 UI（Canvas/Overlay/PropertyPanel/LeftPanel/RightPanel/Toolbar 等）
+│   ├── WidgetRenderer/  # 渲染引擎（SchemaRender → SchemaNode → WidgetNode + 视口剔除）
 │   ├── Credential/      # 凭证管理
 │   └── System/          # 系统级组件
-├── composables/         # 组合式 API（44 个，见下表）
-├── engine/              # 事件引擎（eventEngine.ts，18 种动作类型）
-├── locales/             # i18n
+├── composables/         # 组合式 API（46 个）
+├── engine/              # 事件引擎（eventEngine.ts）
+├── locales/             # i18n（zh-CN/en-US + editor-*）
 ├── microapp/            # qiankun 微前端集成
 ├── router/              # Vue Router
-├── stores/              # Pinia Store（12 个：api/app/board/credential/dataSource/drag/editor/request/schemaVersion/template/tenant/widget）
+├── stores/              # Pinia Store（12：api/app/board/credential/dataSource/drag/editor/request/schemaVersion/template/tenant/widget）
 ├── styles/              # 全局样式
 ├── types/               # TypeScript 类型定义
-├── utils/               # 工具函数
+├── utils/               # boardTemplates/dashboardDemo/boardThemes/坐标/校验等
 ├── views/               # 页面级视图
-├── widgets/             # Widget 组件库（85 个目录）
-│   ├── base/types.ts    # 核心类型定义（SchemaType/Widget/Board/EventAction 等）
-│   ├── registry.ts      # Widget 注册表
-│   └── index.ts         # 统一注册入口（91 registerWidget）
-└── workers/             # Web Worker（cacheWorker/indexedDb — L1 内存 + L2 IndexedDB 缓存）
+├── widgets/             # Widget 组件库（85 目录 / 91 registerWidget）
+│   ├── base/types.ts    # SchemaType=string；KnownSchemaType 文档用
+│   ├── registry.ts      # 注册表 + createWidgetPlugin
+│   └── index.ts         # 统一注册入口
+└── workers/             # Web Worker（cacheWorker/indexedDb）
 ```
 
+文档入口：`README.md` · `docs/README.md` · `docs/capabilities.md` · `docs/architecture.md`
 ## 核心架构规则
 
 ### 组件嵌套规则
@@ -57,8 +58,9 @@ src/
 
 ### Widget 注册规则
 - Widget 目录：`src/widgets/<name>/`，包含组件 `.vue` + 配置 `config.ts`
-- 通过 `registry.ts` 注册，`base/types.ts` 定义 `SchemaType`
-- 新增 Widget 必须在 `src/widgets/index.ts` 中 import 并 registerWidget
+- 通过 `registry.ts` 注册；`SchemaType` 为 `string`（注册表为真源）
+- 新增 Widget：`registerWidget` 或 `createWidgetPlugin`，**无需**改类型联合字面量
+- 必须在 `src/widgets/index.ts` 中 import 并注册（内置包）
 
 ### Widget 位置单位
 - Widget position 支持 `xUnit/yUnit/wUnit/hUnit`（`'px' | '%'`），默认 `'px'`
@@ -94,78 +96,70 @@ src/
 - 通过 `EventExecutionContext` 注入运行时（findWidget/formData/globalVars/messageBus 等）
 - 18 种动作类型：show/hide, open-dialog/close-dialog, switch-tab, set-value, submit/reset, emit, set-variable, trigger-event, post-message, close-tab, copy, refresh, api, navigate, startFlow/endFlow
 
-## Widget 类型枚举
+## Widget 类型
 
-**容器类型（ContainerType）**：form, card, tabs, dialog, single-col, double-col, triple-col, quad-col, micro-app-container
+- **运行时**：`SchemaType = string`，以 `widgets/registry` 为准
+- **文档/fallback**：`KnownSchemaType`（ContainerType | BasicType | EmbedType | BusinessType）
+- 容器示例：form, card, tabs, dialog, *-col, micro-app-container
+- 图表：bar/line/pie/scatter/radar/gauge/heatmap/funnel/candlestick 及变体
+- 业务：crud-list-page, user-management, approval-*, auto-refresh 等
 
-**基础类型（BasicType）**：input, number, select, radio, checkbox, date, textarea, richtext, button, upload, switch, slider, rate, table, title, divider, spacer, toolbar-buttons, file-list, transfer, banner, tree-layout, date-time-slot, time-picker, cascader, color-picker, tag-input, autocomplete, descriptions, advanced-table, statistic, 以及所有图表变体（bar/line/pie/scatter/radar/gauge/heatmap/funnel/candlestick），审批组件（approval-user-picker/approval-role-picker/approval-comment）
+完整清单以 `registerWidget` 注册项为准（91）。
 
-## Composables 清单
+## Composables 清单（46）
 
 | 名称 | 职责 |
 |---|---|
 | useApiRequest | API 请求封装 |
 | useAutoSave | 自动保存 |
+| useBoardLayout | 画布 Free/Flex 布局派生 |
 | useBreakpoint | 响应式断点 |
 | useCache | LRU 缓存 |
+| useChartEvents | 图表事件桥接 |
 | useClipboard | 剪贴板操作 |
 | useConditionReferences | 条件引用解析 |
-| useConstant | 全局常量（MAX_HISTORY_SIZE=30, FALLBACK 类型列表） |
+| useConstant | 全局常量 / 容器类型 / InteractionMode |
+| useDataSource | 全局数据源消费 |
 | useDrag | 拖拽定位（支持 % 单位） |
 | useDragEditor | 编辑器拖拽交互 |
-| useDynamicOptions | 动态选项加载（防竞态，generation 计数器） |
+| useDuplicateWidget | 复制部件 |
+| useDynamicOptions | 动态选项加载 |
 | useEditorLayout | 编辑器布局 |
 | useEventLog | 事件日志 |
 | useExposeWidget | Widget 暴露值 |
+| useFlexCanvasDrop | Flex 画布拖放 |
+| useFlexDropZone | Flex 放置区 |
 | useFormData | 表单数据管理 |
-| useHistory | 撤销/重做（maxSize=30） |
+| useHistory | 通用快照历史（主画布以 editorStore 为准） |
 | useIdGenerate | ID 生成 |
-| useInteractionControl | 交互控制 |
+| useInteractionControl | 预览设备 / 只读 |
 | useLeftPanelManage | 左侧面板管理 |
-| useLifecycle | 生命周期（防定时器泄漏） |
-| useLinkage | 联动引擎（依赖图 + DFS 环检测） |
+| useLifecycle | 生命周期 |
+| useLinkage | 联动引擎 |
 | useListData | 列表数据 |
-| useLocale | 国际化 |
+| useLocale | Widget 运行时 i18n |
 | useLogger | 日志工具 |
-| useModeControl | 模式控制 |
+| useModeControl | 交互模式控制 |
 | usePermission | 权限控制 |
 | usePropertyAdapters | 属性适配器 |
 | useResize | 尺寸调整 |
 | useRightPanelConfig | 右侧面板配置 |
 | useSchemaValidation | Schema 校验 |
-| useSnapshot | 快照 |
+| useSnapshot | 画布快照 |
+| useViewportCulling | 画布视口剔除 |
+| useWidgetAlignment | 对齐 / 分布 / 锁定 / 隐藏 |
+| useWidgetAutoRefresh | 自动刷新 |
+| useWidgetControlSize | Widget 控件尺寸 |
 | useWidgetIndex | Widget 索引 |
 | useWidgetLifecycle | Widget 生命周期执行 |
 | useWidgetOptions | Widget 选项管理 |
 | useWidgetPanel | Widget 面板 |
-| useWidgetRenderState | Widget 渲染状态（visible/disabled/required） |
+| useWidgetRenderState | 渲染态 visible/disabled/required |
 | useWorkerRequest | Web Worker 请求 |
 
-## Utils 清单
+## Utils 要点
 
-| 名称 | 职责 |
-|---|---|
-| actionExecutor | 动作执行器 |
-| apiClient | 统一 HTTP 客户端（替代 genericFetchApi） |
-| collision | 碰撞检测 |
-| coordinate | 坐标转换 |
-| exportUtils | 导出工具 |
-| expression | 表达式编译沙箱（安全检查 + LRU 缓存） |
-| guidelines | 辅助线 |
-| jsonToSchema | JSON → Schema 转换 |
-| mockApi | Mock 数据 |
-| optionsCache | 选项缓存（L1 内存 + L2 IndexedDB） |
-| parseSchemaJson | Schema JSON 解析 |
-| requestQueue | 请求队列 |
-| responseNormalizer | 响应标准化 |
-| retryRequest | 重试请求 |
-| schemaDefaults | Schema 默认值 |
-| schemaDiff | Schema 差异对比 |
-| schemaExport | Schema 导出 |
-| schemaTransform | Schema 转换 |
-| schemaValidate | Schema 校验（FALLBACK_SCHEMA_TYPES 同步） |
-| unitResolver | 单位解析（px/% 转换） |
-
+含 `boardTemplates`（含 dashboard-demo）、`dashboardDemo`、`boardThemes`、`collision`、`coordinate`、`expression`、`schemaValidate`、`unitResolver`、`apiClient` 等。
 ## 路径别名
 
 - `@/` → `src/`
@@ -195,7 +189,7 @@ src/
 ## 常用命令
 
 ```bash
-pnpm dev          # vite dev server（端口 5173）
+pnpm dev          # vite dev server（端口 5100）
 pnpm build        # vite build
 pnpm build:check  # vue-tsc + vite build
 pnpm test         # vitest run

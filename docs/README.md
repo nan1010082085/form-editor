@@ -1,40 +1,82 @@
-# Editor 文档
+# Editor 文档索引
 
-`@editor` — Vue 3 + Vite + Element Plus 可视化表单设计器
+`@editor` — Schema 驱动的可视化表单 / 页面 / 大屏编辑器（Vue 3 + Vite + Element Plus）
 
-## 快速开始
+线上：https://pyflow.icu/schema-platform/editor/  
+本地：`cd editor && pnpm dev` → http://localhost:5100
 
-```bash
-pnpm dev:editor    # 启动开发服务器（端口 5100）
-pnpm --filter @editor build
-pnpm --filter @editor test
-```
+---
 
-## 外部集成
+## 快速导航
 
-参见 [平台集成指南](../../docs/integration-guide.md#一editor表单设计器)：
-- qiankun 微前端接入
-- REST API（Schema CRUD、发布）
-- PublishView postMessage 嵌入协议
-- Widget 渲染器独立使用
+| 我想… | 看这里 |
+|--------|--------|
+| 了解产品能做什么 | [能力总览](./capabilities.md) |
+| 理解架构与分层 | [架构文档](./architecture.md) |
+| 新做一个 Widget | [Widget 开发](./widget-development.md) · [第三方指南](./third-party-widget-guide.md) |
+| 配属性面板 | [属性面板](./property-panel.md) |
+| 接 qiankun / 嵌入发布页 | [qiankun](./qiankun-integration.md) · [实例与发布设计](./design/instances-publish.md) |
+| 看本轮产品结论 | [迭代进化（已收口）](./iteration-evolution.md) |
+| 改代码同步文档 | [../CONTRIBUTING.md](../CONTRIBUTING.md) |
+
+---
 
 ## 文档目录
 
+### 产品
+
+| 文档 | 说明 |
+|------|------|
+| [capabilities.md](./capabilities.md) | **产品能力矩阵、验收路径、已知缺口**（入口） |
+| [iteration-evolution.md](./iteration-evolution.md) | 本轮演进结论（E1 完成 / E2–E3 部分）与 Backlog |
+| [container-nesting-decision.md](./container-nesting-decision.md) | 容器嵌套：有限 2 层决策 |
+| [editor-review-and-roadmap.md](./editor-review-and-roadmap.md) | 历史技术评审与 roadmap（参考） |
+
 ### 架构与开发
 
-- [组件架构](./architecture.md) — Widget 系统、分层、Store
-- [Widget 开发](./widget-development.md) — 新 Widget 开发指南
-- [属性面板](./property-panel.md) — propertyPanel 配置机制
-- [Schema 校验](./schema-validation-testing.md) — 校验体系与测试
-- [qiankun 集成](./qiankun-integration.md) — 微前端接入
-- [微应用容器](./micro-app-container-design.md) — FgMicroAppContainer
+| 文档 | 说明 |
+|------|------|
+| [architecture.md](./architecture.md) | 分层、Store、渲染双路径、Schema |
+| [widget-development.md](./widget-development.md) | 内置 Widget 开发步骤 |
+| [third-party-widget-guide.md](./third-party-widget-guide.md) | `createWidgetPlugin` 扩展 |
+| [property-panel.md](./property-panel.md) | propertyPanel 声明与编辑器 |
+| [schema-validation-testing.md](./schema-validation-testing.md) | 校验与测试 |
+| [qiankun-integration.md](./qiankun-integration.md) | 微前端接入 |
+| [micro-app-container-design.md](./micro-app-container-design.md) | FgMicroAppContainer |
+| [store-design.md](./store-design.md) | 旧版 Store 设计（**以 architecture 为准**） |
 
-### 设计与运行时（线框 & Mermaid）
+### 设计与运行时（线框 / Mermaid）
 
-- [设计文档索引](./design/README.md)
-- [信息架构与布局](./design/overview.md) — 路由、qiankun、Store 关系
-- [设计器](./design/designer.md) — 三栏布局、拖拽、保存发布
-- [实例与发布](./design/instances-publish.md) — 列表、PublishView、postMessage
-- [运行时架构](./design/runtime.md) — WidgetRenderer、事件引擎、联动、校验
+| 文档 | 说明 |
+|------|------|
+| [design/README.md](./design/README.md) | 设计文档索引 |
+| [design/overview.md](./design/overview.md) | 信息架构、路由、Store |
+| [design/designer.md](./design/designer.md) | 三栏设计器、拖拽、保存发布 |
+| [design/instances-publish.md](./design/instances-publish.md) | 实例列表、PublishView、postMessage |
+| [design/runtime.md](./design/runtime.md) | WidgetRenderer、事件、联动、校验 |
 
-> 旧版 [Store 设计](./store-design.md) 仅列 7 个 Store，请以 architecture.md 与 runtime.md 中的 11 Store 为准。
+---
+
+## 统计基准（与代码同步 · 2026-07-20）
+
+| 指标 | 数量 |
+|------|------|
+| Pinia Store | 12 |
+| Composable | 46 |
+| Widget 目录 | 85 |
+| registerWidget | 91 |
+| Vitest `*.spec.ts` | 99 |
+| API 模块 | 11 |
+
+变更上述数字时，同步更新：根目录 [README.md](../README.md)、[CLAUDE.md](../CLAUDE.md)、[architecture.md](./architecture.md)、[CONTRIBUTING.md](../CONTRIBUTING.md)。
+
+---
+
+## 外部集成
+
+平台级集成说明见仓库文档（若存在）`docs/integration-guide.md`：
+
+- qiankun 子应用
+- Schema CRUD / 发布 REST API
+- PublishView `postMessage` 协议（`fg:set-mode` 等）
+- WidgetRenderer 独立嵌入

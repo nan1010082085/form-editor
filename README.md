@@ -1,186 +1,231 @@
-# @schema-form/editor-web
+# @editor
 
-Schema 驱动的可视化自由布局表单设计器与运行时渲染引擎。
+Schema 驱动的可视化编辑器：表单设计 + 页面/大屏搭建 + 发布运行时。
 
-## 项目定位
+| 项 | 值 |
+|---|---|
+| 包名 | `@editor` |
+| 版本 | `1.0.0-rc.1` |
+| 端口 | `5100` |
+| 线上 | https://pyflow.icu/schema-platform/editor/ |
+| 依赖 | `@schema-platform/platform-shared`（`file:` 同仓） |
 
-可视化低代码表单平台的核心编辑器，支持拖拽编排、属性配置、事件联动、图表集成，通过 Schema JSON 描述表单结构，实现设计态与运行态分离。
+---
+
+## 定位
+
+面向非开发人员的可视化搭建工具，用 Schema JSON 描述页面结构，实现设计态与运行态分离：
+
+- **表单**：审批单、CRUD 列表、详情页（Flex 流式布局）
+- **大屏 / 自由页**：图表运营看板（Free 绝对定位），含「运营大屏 Demo」一键种子
+- **发布**：`/view/:schemaCode` 嵌入宿主；支持交互 / 只读模式
+
+---
 
 ## 技术栈
 
-- Vue 3.5 Composition API + `<script setup>` + TypeScript 5.7
-- Element Plus 2.9
-- Pinia 状态管理（12 个 Store，大量使用 shallowRef 优化性能）
-- Vue Router 4（支持 qiankun 微前端 + micro-app）
-- Vite 6 构建
-- ECharts 6.1（图表组件）
-- CSS Module 样式隔离（所有组件 .module.scss）
+- Vue 3.5 `<script setup>` + TypeScript 5.7
+- Element Plus 2.9 + ECharts 6.1
+- Pinia（**12** Store，大量 `shallowRef`）
+- Vue Router 4（qiankun / micro-app）
+- Vite 5 + Vitest（**99** 规格文件）
+- immer（撤销/重做 patches）
+- CSS Module（`.module.scss`）强制隔离
 
-## 核心功能
+---
 
-### 可视化设计器
+## 能力一览（2026-07-20）
 
-三栏布局：左侧面板（部件库 + 结构树）+ 中间画布 + 右侧属性面板。工具栏居中放置面板抽屉控制、撤销/重做、复制/删除等操作按钮，右侧为缩放、模式切换、保存发布。
+| 能力 | 状态 | 说明 |
+|------|------|------|
+| Free / Flex 双布局 | ✅ | board.layoutMode |
+| 85 Widget / 91 注册项 | ✅ | 8 分组，registry 注册 |
+| 四大配置系统 | ✅ | 事件 / 联动 / API / 变量 |
+| 视口剔除（大屏编辑） | ✅ | `useViewportCulling` |
+| immer 撤销重做 | ✅ | `editorStore` patches |
+| 大屏 Demo 模板 | ✅ | 新建实例 → 自由布局 → 运营大屏 Demo |
+| 4 种交互模式 | ✅ | edit / preview / publish-interactive / publish-readonly |
+| 发布态 query 切换 | ✅ | `?interaction=readonly\|interactive` |
+| 埋点客户端 | 🟡 | track 已接入；server dashboard 未就绪 |
+| i18n | 🟡 | vue-i18n 框架 + 核心语言包；覆盖率未满 80% |
+| 第三方 Widget | 🟡 | `createWidgetPlugin` + 指南；无市场/脚手架 |
 
-### Widget 体系（85+ 个组件）
+---
 
-8 个分组，覆盖表单、布局、展示、数据、图表等场景：
+## 快速开始
 
-| 分组 | Widget |
-|---|---|
-| **layout** | form, single-col, double-col, triple-col, quad-col, card, tabs, dialog, divider, spacer, tree-layout, banner, toolbar-buttons |
-| **container** | search-list |
-| **form** | input, number, select, radio, checkbox, date, date-time-slot, textarea, richtext, transfer, upload, file-list, editable-table, switch, slider, rate, cascader, color-picker, tag-input, autocomplete, time-picker |
-| **table** | table |
-| **action** | button |
-| **static** | title |
-| **business** | entries |
-| **chart** | bar-chart, line-chart, pie-chart, scatter-chart, radar, gauge, heatmap, funnel, candlestick |
+```bash
+cd editor
+pnpm install
+pnpm dev          # http://localhost:5100
+pnpm test
+pnpm build
+pnpm build:widgets   # 独立打包 Widget 库
+```
 
-每个 Widget 包含：
-- 组件实现（`.vue`）
-- 属性配置面板（Schema 驱动）
-- Schema 默认值
-- 事件/暴露/联动/变量系统接入
+仓库根目录打包部署：
 
-### 事件引擎
+```bash
+bash deploy/pack.sh --target editor
+bash deploy/deploy.sh --target editor
+```
 
-`engine/eventEngine.ts` — 纯逻辑层，14 种事件动作类型：
+---
 
-show, hide, set-value, open-dialog, close-dialog, switch-tab, close-tab, navigate, reload, validate, reset, custom-js, emit-event, http-request, set-options, message, set-variable, trigger-event, post-message, copy, refresh, api, navigate
+## 核心概念
 
-### 联动系统
+### Schema
 
-6 种联动类型：visible / disabled / required / options / set-value / reset-fields。通过 watchFields 监听字段变化，条件表达式驱动 then/else 分支，支持 optionsApi 动态加载。
+```json
+{
+  "widgets": [ /* Widget 树 */ ],
+  "board": {
+    "canvas": { "width": 1920, "height": 1080, "layoutMode": "free", "themePreset": "dashboard-dark" },
+    "variables": [],
+    "events": []
+  }
+}
+```
 
-### 拖拽系统
+### 布局模式
 
-useDrag + useDragEditor 双层 composable 管理拖拽逻辑。dragStore 维护全局拖拽状态，支持从组件面板拖入画布、画布内排序、跨布局容器拖动，对齐辅助线和碰撞检测。
+| 模式 | 渲染 | 场景 |
+|------|------|------|
+| `free` | 绝对定位 + EditorOverlay | 大屏、自由画布 |
+| `flex` | WidgetRenderer 流式 | 表单、列表、详情页 |
 
-### 属性面板
+### 交互模式
 
-Schema 驱动的右侧属性配置面板，通过 useRightPanelConfig 动态渲染。包含 15+ 专用编辑器：BorderEditor、SpacingEditor、ConditionBuilder、OptionsEditor、TableColumnsEditor、EventConfigDialog、VariableConfigDialog 等。
+| 模式 | 行为 |
+|------|------|
+| `edit` | 设计态，可拖拽编辑 |
+| `preview` | 编辑器内预览 |
+| `publish-interactive` | 发布态可交互 |
+| `publish-readonly` | 发布态只读 |
 
-### 自由布局
+---
 
-Widget 携带 position（x, y, w, h, zIndex）实现绝对定位自由布局。EditorCanvas 处理画布缩放、拖拽定位，EditorOverlay 提供选中框和拖拽手柄。支持画布尺寸预设切换。
+## Widget 体系
 
-## 状态管理（Pinia）
+**85** 个目录，**91** 次 `registerWidget`，分组统计：
 
-| Store | 路径 | 说明 |
-|---|---|---|
-| `useWidgetStore` | `stores/widget.ts` | Widget 集合 CRUD、树结构遍历、位置/容器操作（shallowRef） |
-| `useEditorStore` | `stores/editor.ts` | 编辑器交互状态：选中、模式切换、撤销/重做、剪贴板（shallowRef history） |
-| `useSchemaStore` | `stores/api.ts` | Schema 后端 CRUD（列表、保存、发布） |
-| `useDragStore` | `stores/drag.ts` | 拖拽状态 |
-| `useBoardStore` | `stores/board.ts` | 画布视口状态（MIN_ZOOM/MAX_ZOOM 常量） |
-| `useAppStore` | `stores/app.ts` | 全局应用状态 |
-| `useRequestStore` | `stores/request.ts` | HTTP 请求状态（shallowRef Map） |
+| 分组 | 数量 | 代表 |
+|------|------|------|
+| form | 27 | input, select, date, upload, cascader… |
+| chart | 19 | bar/line/pie/scatter/radar/gauge/heatmap/funnel/candlestick… |
+| business | 15 | crud-list-page, user-management, approval-*… |
+| layout | 11 | form, card, tabs, dialog, *-col… |
+| static | 8 | title, banner, divider… |
+| container | 5 | search-list, tab-container… |
+| table | 3 | table, advanced-table, tree-table |
+| action | 3 | button, toolbar-buttons… |
 
-### 性能优化
+新增 Widget：**只需** `registerWidget` / `createWidgetPlugin`，无需改 `SchemaType` 联合类型（已为 `string`）。
 
-- `widgets`、`history`、`dialogHistory` 使用 `shallowRef` 避免深层响应式代理
-- `pendingRequests`、`requestCache` 使用 `shallowRef(new Map())` 避免 Map 变异陷阱
-- undo/redo/copy/delete 操作提取为 editorStore composite actions，消除组件间代码重复
-- zoom 阈值统一为 `MIN_ZOOM`/`MAX_ZOOM` 常量，store 和 UI 共享
+详见 [第三方 Widget 指南](./docs/third-party-widget-guide.md)、[Widget 开发](./docs/widget-development.md)。
 
-## Composables（32 个组合式函数）
+---
 
-覆盖拖拽、联动、历史、数据、选项、生命周期等：
+## 状态管理（12 Store）
 
-| 分类 | Composables |
-|---|---|
-| 拖拽 | useDrag, useDragEditor |
-| 联动 | useLinkage, useConditionReferences |
-| 生命周期 | useLifecycle, useWidgetLifecycle |
-| 数据 | useFormData, useListData, useDynamicOptions, useWidgetOptions |
-| 历史 | useHistory, useSnapshot, useClipboard |
-| 布局 | useEditorLayout, useResize, useLeftPanelManage, useWidgetPanel |
-| 交互 | useInteractionControl, useModeControl, useEventLog |
-| 配置 | useRightPanelConfig, usePropertyAdapters |
-| 暴露 | useExposeWidget |
-| 工具 | useIdGenerate, useLocale, useLogger, useConstant, useCache, useBreakpoint, useApiRequest, useWorkerRequest |
+| Store | 职责 |
+|-------|------|
+| `widget` | Widget 树 CRUD、reparent、布局适配 |
+| `editor` | 选中、模式、immer 历史、剪贴板 |
+| `board` | 画布尺寸/缩放/主题/变量/多页 |
+| `drag` | 拖拽态、辅助线、碰撞 |
+| `api` | Schema 列表/保存/发布 |
+| `dataSource` | 全局数据源中心 |
+| `app` | 运行时上下文（user/request/global） |
+| `request` | HTTP 请求缓存 |
+| `schemaVersion` | 版本对比 |
+| `template` | 模板 |
+| `credential` | 凭证 |
+| `tenant` | 租户 |
 
-## 编辑器组件（39 个）
+---
 
-| 分类 | 组件 |
-|---|---|
-| 画布 & 布局 | EditorCanvas, EditorOverlay, EditorLeftPanel, EditorRightPanel, EditorToolbar |
-| 属性编辑器 | PropertyPanel, PropertyField, PropertySection, BorderEditor, BorderRadiusEditor, SpacingEditor, ColumnsEditor, ButtonEditor, OptionsEditor |
-| 配置对话框 | EventConfigDialog, LinkageConfigDialog, OptionsApiConfigDialog, RequestConfigDialog, VariableConfigDialog, VersionDiffDialog, VersionHistoryDialog, SaveTemplateDialog |
-| 数据 & 列表 | TableColumnsEditor, SearchFieldsEditor, RowActionsEditor, ActionListEditor, GenericArrayEditor |
-| 规则 & 条件 | ConditionBuilder, RulesEditor, LinkageConfig |
-| 工具 & 面板 | ComponentPanel, WidgetTree, SchemaTree, WidgetContextMenu, JsonImporter, EventLogPanel, FlowPreview, ApiConfig, TemplatePanel |
+## 性能与编辑体验
 
-## 渲染引擎
+- **视口剔除**：编辑态仅渲染可视区 + buffer（`useViewportCulling`）
+- **撤销/重做**：immer patches，避免全量 JSON 深拷贝
+- **shallowRef**：widgets / history / request Map
+- **快捷键**：撤销重做、复制粘贴、对齐/分布、锁定/隐藏（见工具栏帮助）
 
-`components/WidgetRenderer/` — Schema 驱动，通过 `getComponentMap()` 动态渲染
-
-`components/FormGrid/` — 自由布局渲染：
-- 拖拽排序（vuedraggable）
-- 条件渲染（visible/disabled schema 属性）
-- 布局网格系统
-- 预览模式
+---
 
 ## 路由
 
-| 路径 | 页面 |
-|---|---|
-| `/` | Schema 列表 |
-| `/editor/:id` | 编辑器 |
-| `/preview/:id` | 预览 |
-| `/publish/:id` | 发布管理 |
-| `/instances` | 实例管理 |
-| `/login` | 登录 |
-| `/docs` | 组件文档 |
+| 路径 | 说明 |
+|------|------|
+| `/instances` | 实例列表（默认入口） |
+| `/editor` | 可视化设计器 |
+| `/preview` | 草稿预览 |
+| `/view/:schemaCode` | 已发布页面 |
+| `/templates` | 模板 |
+| `/credentials` | 凭证 |
+| `/tenants` | 租户 |
+| `/widget-docs` | Widget 文档 |
+| `/login` · `/auth/callback` | 认证 |
 
-## 微前端集成
+发布页模式：`/view/{code}?interaction=readonly` 或 `interactive`；`?showModeToggle=1` 显示切换按钮。
 
-支持 qiankun 子应用模式。路由自动切换 memory history，AI 协作通过 @schema-form/socket 实现实时同步。
-
-## 开发
-
-```bash
-pnpm dev:editor          # 启动开发服务器 (localhost:5173)
-pnpm build:editor        # 构建
-pnpm test                # 运行测试
-pnpm test:coverage       # 测试覆盖率
-```
-
-## API 层
-
-所有后端接口调用聚合到 `src/api/` 目录，组件/stores 禁止直接调用 apiClient：
-
-| 文件 | 说明 |
-|---|---|
-| `src/api/schemaApi.ts` | Schema CRUD、版本管理、导入导出 |
-| `src/api/authApi.ts` | 认证接口 |
-| `src/api/dataApi.ts` | 数据/实例/流程接口 |
-| `src/api/widgetApi.ts` | Widget 远程选项、字典接口 |
-
-底层 HTTP 客户端：`src/utils/apiClient.ts`
+---
 
 ## 项目结构
 
 ```
-packages/platform/editor/
+editor/
 ├── src/
-│   ├── api/                 // API 聚合层（4 个文件）
+│   ├── api/                 # 11 个领域 API
 │   ├── components/
-│   │   ├── Editor/          // 可视化设计器核心（39 子模块）
-│   │   ├── WidgetRenderer/  // Schema 驱动动态渲染引擎
-│   │   └── FormGrid/        // 表单栅格渲染 + 拖拽排序
-│   ├── widgets/             // 49 个 Widget 目录 + registry
-│   │   ├── registry.ts      // Widget 注册表 Map<SchemaType, WidgetRegistryItem>
-│   │   ├── base/types.ts    // 核心类型定义
-│   │   └── entries/         // 入口文件 + renderer
-│   ├── stores/              // Pinia 状态管理（7 Store，shallowRef 优化）
-│   ├── composables/         // 32 个组合式函数
-│   ├── engine/              // 事件执行引擎（纯逻辑层）
-│   ├── utils/               // 工具函数
-│   ├── views/               // 页面视图（EditorView 拆分为 4 个子组件）
-│   └── router/              // Vue Router + qiankun/micro-app 支持
-├── vite.config.ts           // 标准 SPA 构建
-├── vite.widget.config.ts    // Widget 库构建
-└── vite.microapp.config.ts  // Microapp 构建
+│   │   ├── Editor/          # 设计器 UI（Canvas / Overlay / PropertyPanel…）
+│   │   └── WidgetRenderer/  # SchemaRender → SchemaNode → WidgetNode
+│   ├── composables/         # 46 个组合式 API
+│   ├── engine/              # eventEngine
+│   ├── locales/             # zh-CN / en-US（含 editor-* 扩展包）
+│   ├── stores/              # 12 Pinia Store
+│   ├── utils/               # boardTemplates / dashboardDemo / boardThemes…
+│   ├── views/               # 页面
+│   ├── widgets/             # 85 目录 + registry（createWidgetPlugin）
+│   └── workers/             # IndexedDB / cache Worker
+├── docs/                    # 产品 / 架构 / 设计文档
+├── CONTRIBUTING.md          # 改代码必改文档
+└── package.json
 ```
+
+---
+
+## 文档
+
+完整索引见 **[docs/README.md](./docs/README.md)**。
+
+| 文档 | 内容 |
+|------|------|
+| [产品能力总览](./docs/capabilities.md) | 功能矩阵、验收路径、残留缺口 |
+| [产品迭代（已收口）](./docs/iteration-evolution.md) | E1–E3 结论与 Backlog |
+| [架构](./docs/architecture.md) | 分层、Store、渲染路径 |
+| [第三方 Widget](./docs/third-party-widget-guide.md) | Plugin API |
+| [贡献指南](./CONTRIBUTING.md) | 文档同步约束 |
+
+---
+
+## 开发约定（摘要）
+
+1. 全局状态 → Pinia；公共逻辑 → `useXxx`；API → `src/api/`（禁止组件直调 `fetch`）
+2. 图标统一 `AppIcon`（`platform-shared` iconRegistry）
+3. 样式：编辑器 UI tokens 与画布 Widget 样式隔离
+4. 改 Store / Widget / Composable 数量时同步更新 README、CLAUDE.md、architecture.md
+
+---
+
+## 统计基准（2026-07-20）
+
+| 指标 | 数量 |
+|------|------|
+| Pinia Store | 12 |
+| Composable | 46 |
+| Widget 目录 | 85 |
+| registerWidget | 91 |
+| Vitest 规格 | 99 |
+| API 模块 | 11 |

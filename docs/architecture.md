@@ -1,8 +1,7 @@
 # Editor 架构文档
 
-> `@editor` — Vue 3 可视化表单设计器
-
-**文档版本**：v2 (2026-07-06) — 对齐当前代码，新增设计/运行时文档
+> `@editor` — Vue 3 可视化表单 / 页面 / 大屏编辑器  
+> **文档版本**：v3（2026-07-20）— 对齐 E1 收口后代码（视口剔除、immer、注册式类型、大屏 Demo）
 
 ---
 
@@ -11,24 +10,25 @@
 ```
 editor/
 ├── src/
-│   ├── views/              # 路由页面（列表、设计器、发布）
+│   ├── views/               # 路由页面
 │   ├── components/
-│   │   ├── Editor/         # 设计器 UI（~70 文件）
-│   │   └── WidgetRenderer/ # 运行时渲染引擎
-│   ├── widgets/            # 85 种 Widget 注册
-│   ├── stores/             # 12 个 Pinia Store
-│   ├── composables/        # 44 个组合式 API
-│   ├── engine/             # eventEngine 纯逻辑
-│   ├── api/                # 领域 API 聚合
-│   └── utils/              # apiClient、校验、解析
-└── docs/
+│   │   ├── Editor/          # 设计器 UI
+│   │   └── WidgetRenderer/  # 运行时 / 画布渲染
+│   ├── widgets/             # 85 目录，91 registerWidget
+│   ├── stores/              # 12 Pinia Store
+│   ├── composables/         # 46 组合式 API
+│   ├── engine/              # eventEngine
+│   ├── api/                 # 11 领域 API
+│   ├── utils/               # 模板、主题、Demo、坐标…
+│   ├── locales/             # i18n 语言包
+│   └── workers/             # IndexedDB / cache
+├── docs/                    # 产品与架构文档
+└── package.json             # @editor · 端口 5100
 ```
 
-| 包 | NPM | 端口 |
+| 包 | 端口 | 依赖 |
 |---|---|---|
-| `@editor` | `editor/package.json` | 5100 |
-
-**依赖**：`@schema-platform/platform-shared`
+| `@editor` | 5100 | `@schema-platform/platform-shared` |
 
 ---
 
@@ -49,15 +49,18 @@ flowchart TB
   end
 
   subgraph render [渲染层]
-    SR["SchemaRender (设计)"]
-    WR["WidgetRenderer (运行)"]
+    SR["SchemaRender 设计态"]
+    WR["WidgetRenderer 运行态"]
+    Cull["useViewportCulling"]
     Registry["widgets/registry"]
   end
 
   subgraph data [数据层]
     WS["widgetStore"]
     BS["boardStore"]
+    ES["editorStore immer"]
     AS["apiStore"]
+    DS["dataSourceStore"]
   end
 
   subgraph engine [引擎层]
@@ -65,102 +68,151 @@ flowchart TB
     Val["schemaValidate"]
   end
 
-  Ed --> Canvas --> SR --> Registry
+  Ed --> Canvas
+  Canvas -->|free| Overlay --> SR
+  Canvas -->|flex| WR
+  SR --> Cull
+  SR --> Registry
   Pub --> WR --> Registry
-  Ed --> WS
-  Ed --> BS
   WR --> EE
+  Ed --> WS & BS & ES
   Inst --> AS
 ```
 
 ---
 
-## 三、Widget 系统
+## 三、双路径渲染
 
-每个 Widget 目录通常包含：
+| 路径 | 入口 | 布局 | 用途 |
+|------|------|------|------|
+| SchemaRender → SchemaNode | EditorCanvas（free） | 绝对定位 | 设计态画布 |
+| WidgetRenderer → WidgetNode | EditorCanvas（flex）/ PublishView | 流式 | 预览 / 发布 / Flex 页 |
 
-| 文件 | 职责 |
-|------|------|
-| `config.ts` | 元数据、propertyPanel、事件/联动配置 |
-| `schema.ts` | `createXxxWidget(id)` 工厂 |
-| `FgXxx.vue` | 运行时组件 |
-| `mock.ts` | 设计器示例数据（可选） |
+### 视口剔除（仅 free 编辑态）
 
-注册：`widgets/index.ts` → `registerWidget()` → `getComponentMap()`
-
-分组：layout、form、container、table、action、static、business、chart
+1. `EditorView` 根据画布滚动容器计算 `ViewportRect`，`provide(VIEWPORT_CULLING_KEY)`
+2. `SchemaRender` 对视口外 widget 渲染占位 div，视口内渲染 `SchemaNode`
+3. **EditorOverlay 命中仍基于全量 widget 数据**，不依赖 DOM 是否挂载
 
 ---
 
-## 四、Schema JSON
+## 四、Widget 系统
+
+| 文件 | 职责 |
+|------|------|
+| `config.ts` | 元数据、propertyPanel、configPanels |
+| `FgXxx.vue` | 运行时组件 |
+| `index` / 工厂 | `createXxxWidget(id)` |
+| `registry.ts` | `registerWidget` / `createWidgetPlugin` / `getComponentMap` |
+
+- **`SchemaType = string`**（运行时真源为 registry；`KnownSchemaType` 仅文档/fallback）
+- 分组：layout · form · container · table · action · static · business · chart
+- 扩展：见 [third-party-widget-guide.md](./third-party-widget-guide.md)
+
+---
+
+## 五、Schema JSON
 
 ```typescript
 {
-  widgets: Widget[],
+  widgets: Widget[]
   board: {
-    canvas: { width, height, layoutMode: 'free'|'flex', zoom },
-    variables: BoardVariable[],
-    events: BoardEvent[],
+    canvas: CanvasConfig  // layoutMode, themePreset, zoom, freeLayout…
+    variables: BoardVariable[]
+    events: BoardEvent[]
+    pages?: BoardPage[]   // 多页（可选）
   }
 }
 ```
 
-解析：`utils/parseSchemaJson.ts`（兼容旧数组格式）
+大屏种子：`utils/dashboardDemo.ts` → `createBoardFromTemplate({ layoutMode: 'free', freePreset: 'dashboard-demo' })`
 
 ---
 
-## 五、三运行表面
-
-| 表面 | 路由 | 渲染 | 数据 API |
-|------|------|------|----------|
-| 设计器 | `/editor` | SchemaRender + Overlay | 草稿 |
-| 草稿预览 | `/preview` | WidgetRenderer | 草稿 |
-| 已发布 | `/view/:code` | WidgetRenderer | 已发布 |
-
----
-
-## 六、Pinia Store（11 个）
+## 六、Pinia Store（12）
 
 | Store | 职责 |
 |-------|------|
-| `widgetStore` | Widget 树 CRUD（数据真源） |
-| `editorStore` | 选中、undo/redo、dirty、模式 |
-| `boardStore` | 实例元数据、画布、变量、事件 |
-| `dragStore` | 拖拽、吸附 |
-| `apiStore` | Schema CRUD、保存、发布 |
-| `schemaVersionStore` | 版本列表、对比 |
-| `templateStore` | 部件模板库 |
-| `appStore` | 用户/请求上下文 |
-| `requestStore` | 请求缓存 |
-| `tenantStore` / `credentialStore` | 管理 |
+| widget | Widget 树、reparent、布局适配 |
+| editor | 选中、InteractionMode、immer 历史、剪贴板 |
+| board | 画布、主题、变量、事件、多页 |
+| drag | 拖拽、辅助线、碰撞预览 |
+| api | Schema CRUD / 发布 |
+| dataSource | 全局数据源定义 |
+| app | 运行时 user/request/global |
+| request | HTTP 缓存 |
+| schemaVersion | 版本对比 |
+| template | 模板 |
+| credential | 凭证 |
+| tenant | 租户 |
 
-> 旧文档「7 Store」已过时，以本表为准。
+### 撤销重做
 
----
-
-## 七、集成
-
-| 消费方 | 方式 |
-|--------|------|
-| Shell | qiankun 子应用 `editor` |
-| Flow | iframe PublishView + postMessage |
-| AI | WebSocket `onAiApply` |
+`editorStore` 使用 immer `enablePatches`：历史栈存 `patches` / `inversePatches`，加载 Schema 时 `resetHistory()`。
 
 ---
 
-## 八、文档索引
+## 七、Composable 要点（46）
 
-### 架构与开发
+| 领域 | 代表 |
+|------|------|
+| 拖拽 / 缩放 | useDrag, useResize, useFlexCanvasDrop |
+| 视口 / 对齐 | useViewportCulling, useWidgetAlignment |
+| 联动 / 事件 | useLinkage, useChartEvents, useEventLog |
+| 数据 | useDataSource, useDynamicOptions, useFormData |
+| 布局 | useBoardLayout, useEditorLayout |
+| 模式 | useModeControl, useInteractionControl |
+| 历史 | useHistory（通用快照；主画布以 editorStore 为准） |
 
-- [Widget 开发](./widget-development.md)
-- [属性面板](./property-panel.md)
-- [Schema 校验](./schema-validation-testing.md)
-- [qiankun 集成](./qiankun-integration.md)
+---
 
-### 设计与运行时（含线框图、Mermaid 图）
+## 八、四大配置系统
 
-- [设计文档索引](./design/README.md)
-- [信息架构](./design/overview.md)
-- [设计器交互](./design/designer.md)
-- [实例与发布](./design/instances-publish.md)
-- [**运行时架构**](./design/runtime.md)
+| 系统 | 字段 | 说明 |
+|------|------|------|
+| 事件 | `events` | eventEngine 多动作 |
+| 联动 | `linkages` | visible/disabled/required/options/set-value/reset-fields |
+| API | `api` | 动态数据；可挂 dataSourceId |
+| 变量 | `variables` | Widget / Board 变量 |
+
+属性面板：`PropertyPanel` + `PropertyPanelSections` + `PropertyPanelConfigBar`。
+
+---
+
+## 九、交互模式
+
+`INTERACTION_MODES`：`edit` | `preview` | `publish-interactive` | `publish-readonly`
+
+- 设计器工具栏可切换
+- PublishView：`?interaction=readonly|interactive`；可选 `showModeToggle=1`
+
+---
+
+## 十、观测与 i18n
+
+| 模块 | 位置 | 说明 |
+|------|------|------|
+| telemetry | platform-shared | `track` / `reportError`；缺 server 时缓冲 localStorage |
+| i18n | platform-shared `createI18n` | editor `locales/editor-*.ts`；渐进接入 UI |
+
+---
+
+## 十一、统计基准（2026-07-20）
+
+| 指标 | 数量 |
+|------|------|
+| Store | 12 |
+| Composable | 46 |
+| Widget 目录 | 85 |
+| registerWidget | 91 |
+| Vitest 规格 | 99 |
+| API | 11 |
+
+---
+
+## 相关文档
+
+- [能力总览](./capabilities.md)
+- [文档索引](./README.md)
+- [产品收口](./iteration-evolution.md)
+- 根 [README](../README.md)
