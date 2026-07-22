@@ -24,6 +24,18 @@ vi.mock('@/composables/useLogger', () => ({
   }),
 }))
 
+// WidgetErrorBoundary（WidgetNode 包裹层）依赖 useI18n / reportError，测试环境 mock
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+  reportError: vi.fn(),
+}))
+vi.mock('@/api/telemetryApi', () => ({
+  reportTelemetryError: vi.fn(),
+  reportTelemetry: vi.fn(),
+  reportTelemetryBatch: vi.fn(),
+  fetchEditorTelemetrySummary: vi.fn(),
+}))
+
 function makeAbsoluteSchema(): PartialWidget[] {
   return [
     {
@@ -70,6 +82,9 @@ describe('WidgetRenderer absolute layout (E-25)', () => {
       },
       global: {
         plugins: [ElementPlus],
+        stubs: {
+          AppIcon: { template: '<span />', props: ['name', 'size'] },
+        },
       },
       attachTo: document.body,
     })

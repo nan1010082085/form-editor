@@ -14,7 +14,7 @@ import { getAllWidgets, type WidgetRegistryItem } from '@/widgets/registry'
  */
 export const LAYOUT_CONTAINER_TYPES: ReadonlySet<SchemaType> = new Set<SchemaType>([
   'form', 'card', 'tabs', 'dialog',
-  'single-col', 'double-col', 'triple-col', 'quad-col',
+  'single-col', 'double-col', 'triple-col', 'quad-col', 'row-container',
 ])
 
 /** 编辑历史最大快照数 */

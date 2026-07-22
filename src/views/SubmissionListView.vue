@@ -7,8 +7,8 @@
 import { onMounted, ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useDataLoading } from '@schema-platform/platform-shared/utils/useDataLoading'
+import { fetchSchemas } from '@/api/schemaApi'
 import {
-  fetchSchemas,
   fetchSubmissions,
   deleteSubmission,
   exportSubmissions,
@@ -16,7 +16,7 @@ import {
   batchUpdateSubmissionsStatus,
   type SubmissionItem,
   type ExportFormat,
-} from '@/utils/apiClient'
+} from '@/api/dataApi'
 import type { PaginatedResponse, SchemaListItem } from '@/types/api'
 import styles from './SubmissionListView.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'

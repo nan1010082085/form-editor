@@ -17,6 +17,22 @@ import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import PropertyPanel from '@/components/Editor/PropertyPanel.vue'
+import editorZhCN from '@/locales/editor-zh-CN'
+
+// PropertyPanel 使用 useI18n；测试环境不挂载完整 vue-i18n，用本地 locale 包构造 t
+// （按 dotted path 查找 editor.* key，与 vue-i18n 行为一致）
+const messages = editorZhCN as unknown as Record<string, unknown>
+function lookup(obj: Record<string, unknown>, path: string): string {
+  const parts = path.split('.')
+  let cur: unknown = obj
+  for (const p of parts) {
+    cur = (cur as Record<string, unknown>)?.[p]
+  }
+  return typeof cur === 'string' ? cur : path
+}
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => lookup(messages, key) }),
+}))
 import { useEditorStore } from '@/stores/editor'
 import { useWidgetStore } from '@/stores/widget'
 import { registerWidget } from '@/widgets/registry'
@@ -218,7 +234,7 @@ function registerTestWidgets() {
       name: 'FgInput',
       displayName: '输入框',
       description: '文本输入框组件',
-      configPanels: ['events', 'rules'],
+      configPanels: ['events', 'linkages'],
       propertyPanel: {
         basic: ['field', 'label', 'defaultValue', 'hidden'],
         style: ['width', 'height', 'fontSize', 'color', 'backgroundColor'],

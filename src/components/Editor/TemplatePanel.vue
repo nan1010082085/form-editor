@@ -8,8 +8,8 @@
  */
 import { ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { fetchTemplates, deleteTemplate } from '@/utils/apiClient'
-import type { TemplateItem as WidgetTemplateItem, TemplateCategory } from '@/utils/apiClient'
+import { fetchTemplates, deleteTemplate } from '@/api/schemaApi'
+import type { TemplateItem as WidgetTemplateItem, TemplateCategory } from '@/api/schemaApi'
 import type { PaginatedResponse } from '@/types/api'
 import type { PartialWidget } from '@/widgets/base/types'
 import { WidgetRenderer } from '@/components/WidgetRenderer'

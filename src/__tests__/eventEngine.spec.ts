@@ -307,11 +307,11 @@ describe('executeEventAction', () => {
       expect(mockRequestUrl).toHaveBeenCalledWith('post', '/api/users', undefined)
     })
 
-    it('sends formData wrapped as { data } when apiParams is "formData"', async () => {
+    it('sends formData as raw body when apiParams is "formData"', async () => {
       ctx = createMockContext({ getFormData: vi.fn().mockReturnValue({ name: 'test' }) })
       mockRequestUrl.mockResolvedValue({})
       await executeEventAction({ type: 'api', apiUrl: '/api/save', apiParams: 'formData' }, ctx)
-      expect(mockRequestUrl).toHaveBeenCalledWith('post', '/api/save', { data: { name: 'test' } })
+      expect(mockRequestUrl).toHaveBeenCalledWith('post', '/api/save', { name: 'test' })
     })
 
     it('emits api-error on request failure', async () => {

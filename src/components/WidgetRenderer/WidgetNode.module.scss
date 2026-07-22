@@ -24,6 +24,13 @@
   outline-color: #409eff;
 }
 
+/* 编辑态隐藏标识：hidden=true 时半透明 + 虚线，仍可选中取消隐藏 */
+.hiddenInEdit {
+  opacity: 0.45;
+  outline-style: dashed;
+  outline-color: var(--el-text-color-secondary, #909399);
+}
+
 .editorShellInner {
   pointer-events: none;
 }
@@ -53,4 +60,62 @@
   color: #909399;
   font-size: 12px;
   pointer-events: none;
+}
+
+/* ---- Flex 编辑模式 dialog 容器 shell ---- */
+.dialogEditShell {
+  width: 100%;
+  border: 1px solid var(--el-border-color-light, #dcdfe6);
+  border-radius: 6px;
+  background: var(--el-bg-color, #fff);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.dialogEditHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--el-border-color-lighter, #ebeef5);
+  background: var(--el-fill-color-light, #f5f7fa);
+  color: var(--el-color-primary, #409eff);
+}
+
+.dialogEditTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-primary, #303133);
+}
+
+/* ---- Flex 模式右边缘宽度 resize handle ---- */
+.flexResizeHandle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 5;
+  pointer-events: auto;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 2px;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 20px;
+    background: var(--el-color-primary, #409eff);
+    border-radius: 1px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  &:hover::after {
+    opacity: 0.8;
+  }
 }

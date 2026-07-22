@@ -23,6 +23,7 @@ import type {
 } from '@/types/api'
 import type { PartialWidget } from '@/components/WidgetRenderer/types'
 import { ApiError } from '@/utils/apiClient'
+import { reportTelemetry } from '@/api/telemetryApi'
 import {
   fetchSchemas as apiFetchSchemas,
   fetchSchemaById as apiFetchSchemaById,
@@ -93,6 +94,30 @@ export const useApiStore = defineStore('schema', () => {
     error.value = ''
   }
 
+  /** 将 ApiError 的 code / details 拼进可读文案 */
+  function formatApiError(e: ApiError): string {
+    const raw = e.details as
+      | { details?: Array<{ path?: string; message?: string }>; message?: string; code?: string }
+      | Array<{ path?: string; message?: string }>
+      | undefined
+    const issues = Array.isArray(raw) ? raw : raw?.details
+    const code = !Array.isArray(raw) && raw?.code ? `[${raw.code}] ` : ''
+    if (Array.isArray(issues) && issues.length > 0) {
+      const parts = issues
+        .map((item) => (item.path ? `${item.path}: ${item.message ?? ''}` : (item.message ?? '')))
+        .filter(Boolean)
+        .join('; ')
+      return parts ? `${code}${e.message} (${parts})` : `${code}${e.message}`
+    }
+    return `${code}${e.message}`
+  }
+
+  function resolveErrorMessage(e: unknown): string {
+    if (e instanceof ApiError) return formatApiError(e)
+    if (e instanceof Error) return e.message
+    return 'An unexpected error occurred'
+  }
+
   /**
    * 安全包装异步操作：统一管理 loading/error 状态。
    *
@@ -105,13 +130,7 @@ export const useApiStore = defineStore('schema', () => {
     try {
       return await fn()
     } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message)
-      } else if (e instanceof Error) {
-        setError(e.message)
-      } else {
-        setError('An unexpected error occurred')
-      }
+      setError(resolveErrorMessage(e))
       return null
     } finally {
       loading.value = false
@@ -127,13 +146,7 @@ export const useApiStore = defineStore('schema', () => {
     try {
       return await fn()
     } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message)
-      } else if (e instanceof Error) {
-        setError(e.message)
-      } else {
-        setError('An unexpected error occurred')
-      }
+      setError(resolveErrorMessage(e))
       return null
     }
   }
@@ -228,7 +241,7 @@ export const useApiStore = defineStore('schema', () => {
   }
 
   /**
-   * 创建新 Schema。
+   * 创建新 Schema（单次 POST，json 可为 Widget[] 或 { widgets, board }）。
    *
    * @returns 创建成功的 Schema，失败返回 null
    */
@@ -237,9 +250,9 @@ export const useApiStore = defineStore('schema', () => {
   ): Promise<SchemaListItem | null> {
     const result = await withLoading(() => apiCreateSchema(payload))
     if (result) {
-      // 创建成功后刷新列表
       await fetchSchemas()
       currentSchema.value = result
+      void reportTelemetry('create', { schemaId: result.id, props: { type: payload.type } })
     }
     return result
   }
@@ -290,6 +303,7 @@ export const useApiStore = defineStore('schema', () => {
       if (schemas.value.length === 0 && pagination.page > 1) {
         await goToPage(pagination.page - 1)
       }
+      void reportTelemetry('delete', { schemaId: id })
       return true
     }
     return false
@@ -318,9 +332,16 @@ export const useApiStore = defineStore('schema', () => {
       : schema
 
     if (schemaId) {
-      return updateSchema(schemaId, { name, json: jsonPayload, thumbnail })
+      const result = await updateSchema(schemaId, { name, json: jsonPayload, thumbnail })
+      if (result) void reportTelemetry('save', { schemaId, props: { widgetCount: schema.length } })
+      return result
     } else {
-      return createSchema({ name, type: 'form' as const, json: jsonPayload, thumbnail })
+      // 新建时按画布配置推断类型：Flex 列表模板 -> search_list，其余 -> form
+      const flexTemplate = boardConfig?.canvas?.flexTemplate as string | undefined
+      const type: SchemaCreatePayload['type'] = flexTemplate === 'list' ? 'search-list' : 'form'
+      const result = await createSchema({ name, type, json: jsonPayload, thumbnail })
+      if (result) void reportTelemetry('save', { schemaId: result.id, props: { widgetCount: schema.length, isNew: true } })
+      return result
     }
   }
 
@@ -345,7 +366,9 @@ export const useApiStore = defineStore('schema', () => {
    * @returns 发布后的 PublishedSchema，失败返回 null
    */
   async function publishSchema(id: string): Promise<PublishedSchemaItem | null> {
-    return withLoading(() => apiPublishSchema(id))
+    const result = await withLoading(() => apiPublishSchema(id))
+    if (result) void reportTelemetry('publish', { schemaId: id })
+    return result
   }
 
   /**

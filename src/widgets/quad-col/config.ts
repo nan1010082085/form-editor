@@ -25,4 +25,5 @@ export const quadColConfig: WidgetConfig = {
     style: ['margin', 'padding'],
     props: [],
   },
+  contexts: ['free'],
 }

@@ -11,7 +11,7 @@ import ElementPlus from 'element-plus'
 
 // Mock vue-router
 vi.mock('vue-router', () => ({
-  useRoute: () => ({ query: { id: 'test-publish-id' } }),
+  useRoute: () => ({ params: {}, query: { id: 'test-publish-id' } }),
   useRouter: () => ({ push: vi.fn() }),
 }))
 

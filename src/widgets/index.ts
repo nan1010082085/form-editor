@@ -69,6 +69,7 @@ import { FgSingleCol, createSingleColWidget, singleColConfig } from './single-co
 import { FgDoubleCol, createDoubleColWidget, doubleColConfig } from './double-col'
 import { FgTripleCol, createTripleColWidget, tripleColConfig } from './triple-col'
 import { FgQuadCol, createQuadColWidget, quadColConfig } from './quad-col'
+import { FgRowContainer, createRowContainerWidget, rowContainerConfig } from './row-container'
 import { FgApprovalUserPicker, createApprovalUserPickerWidget, approvalUserPickerConfig } from './approval-user-picker'
 import { FgApprovalRolePicker, createApprovalRolePickerWidget, approvalRolePickerConfig } from './approval-role-picker'
 import { FgApprovalComment, createApprovalCommentWidget, approvalCommentConfig } from './approval-comment'
@@ -152,6 +153,16 @@ export function registerAllWidgets() {
     component: FgQuadCol,
     create: createQuadColWidget,
     config: quadColConfig,
+  })
+
+  registerWidget({
+    name: rowContainerConfig.name,
+    displayName: rowContainerConfig.displayName,
+    type: 'row-container',
+    group: 'layout',
+    component: FgRowContainer,
+    create: createRowContainerWidget,
+    config: rowContainerConfig,
   })
 
   registerWidget({

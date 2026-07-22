@@ -10,7 +10,7 @@
  * - 加载历史版本到画布
  */
 import { ref, watch } from 'vue'
-import { fetchVersions, fetchVersion } from '@/utils/apiClient'
+import { fetchVersions, fetchVersion } from '@/api/schemaApi'
 import type { VersionEntry } from '@/types/api'
 import type { Widget } from '@/widgets/base/types'
 import { diffSchema } from '@/utils/schemaDiff'

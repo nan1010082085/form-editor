@@ -30,7 +30,7 @@ const GROUP_LABELS: Record<string, string> = {
 // 部件类型图标映射
 const TYPE_ICONS: Record<string, string> = {
   form: 'document', card: 'notebook', tabs: 'menu', dialog: 'chat-dot-round',
-  'single-col': 'grid', 'double-col': 'grid', 'triple-col': 'grid', 'quad-col': 'grid',
+  'single-col': 'grid', 'double-col': 'grid', 'triple-col': 'grid', 'quad-col': 'grid', 'row-container': 'grid',
   input: 'edit', select: 'arrow-down', number: 'sort', radio: 'circle-check', checkbox: 'check',
   date: 'calendar', textarea: 'edit-pen', title: 'document',
   divider: 'minus', spacer: 'rank', 'toolbar-buttons': 'set-up', table: 'grid', button: 'pointer',

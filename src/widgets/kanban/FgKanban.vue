@@ -6,6 +6,8 @@ import { useExposeWidget } from '../../composables/useExposeWidget'
 import { fetchWidgetDataSource } from '@/api/widgetApi'
 import { apiClient } from '@/utils/apiClient'
 import { resolveWidgetUrl } from '@/utils/resolveWidgetUrl'
+import { useWidgetData } from '@/composables/useWidgetData'
+import WidgetStateShell from '../../components/WidgetRenderer/WidgetStateShell.vue'
 import type { KanbanColumn } from './config'
 import { groupCardsByStatus } from './kanbanUtils'
 import { kanbanMockRows } from './mock'
@@ -15,28 +17,9 @@ import styles from './style.module.scss'
 const widgetData = inject(widgetDataKey)!
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
 
-const cards = ref<Record<string, unknown>[]>([])
-const loading = ref(false)
-const dragCard = ref<Record<string, unknown> | null>(null)
-const dragOverCol = ref<string | null>(null)
-
-const columns = computed<KanbanColumn[]>(() =>
-  (widgetData.value.props?.columns as KanbanColumn[]) ?? [],
-)
-const cardTitleField = computed(() => (widgetData.value.props?.cardTitleField as string) || 'title')
-const cardSubtitleField = computed(() => widgetData.value.props?.cardSubtitleField as string | undefined)
-const statusField = computed(() => (widgetData.value.props?.statusField as string) || 'status')
-const updateMethod = computed(() => (widgetData.value.props?.updateMethod as string) || 'put')
-
-const grouped = computed(() =>
-  groupCardsByStatus(cards.value, columns.value, statusField.value),
-)
-
-useExposeWidget(() => ({
-  get cards() { return cards.value },
-  get loading() { return loading.value },
-  refresh: loadCards,
-}))
+// ---- useWidgetData（重试/SWR/去重） ----
+const api = computed(() => widgetData.value.api)
+const apiUrl = computed(() => api.value?.url ? resolveWidgetUrl(`${api.value.url}?page=1&pageSize=100`, {}) : '')
 
 function normalizeList(raw: unknown): Record<string, unknown>[] {
   if (Array.isArray(raw)) return raw as Record<string, unknown>[]
@@ -47,26 +30,30 @@ function normalizeList(raw: unknown): Record<string, unknown>[] {
   return []
 }
 
-async function loadCards() {
-  const api = widgetData.value.api
-  if (shouldUseWidgetMock(surface, Boolean(api?.url))) {
-    cards.value = kanbanMockRows
+const { data: rawData, loading, error, reload: wReload } = useWidgetData<Record<string, unknown>[]>({
+  key: 'kanban:' + apiUrl.value,
+  fetcher: () => fetchWidgetDataSource<unknown>(apiUrl.value).then(normalizeList),
+  enabled: computed(() => !!apiUrl.value && !shouldUseWidgetMock(surface, Boolean(apiUrl.value))),
+  retry: 2,
+  swr: false,
+  cacheTtl: 0,
+  autoLoad: false,
+})
+
+const cards = computed(() => rawData.value ?? [])
+
+// ---- 加载（mock 或 API） ----
+function loadCards() {
+  const hasApi = Boolean(api.value?.url)
+  if (shouldUseWidgetMock(surface, hasApi)) {
+    // mock 场景：直接注入，不走 useWidgetData
+    rawData.value = kanbanMockRows
     return
   }
-  if (!api?.url) return
-
-  loading.value = true
-  try {
-    const url = resolveWidgetUrl(`${api.url}?page=1&pageSize=100`, {})
-    const resp = await fetchWidgetDataSource<unknown>(url)
-    cards.value = normalizeList(resp)
-  } catch (err) {
-    console.error('[FgKanban] load failed:', err)
-    cards.value = []
-  } finally {
-    loading.value = false
-  }
+  if (hasApi) void wReload()
 }
+
+onMounted(() => loadCards())
 
 function cardId(card: Record<string, unknown>): string {
   return String(card.id ?? card._id ?? '')
@@ -134,33 +121,41 @@ onMounted(() => { void loadCards() })
 </script>
 
 <template>
-  <div v-loading="loading" :class="styles.board">
-    <div
-      v-for="col in columns"
-      :key="col.key"
-      :class="[styles.column, dragOverCol === col.key && styles.dragOver]"
-      @dragover="onDragOver(col.key, $event)"
-      @dragleave="onDragLeave"
-      @drop="onDrop(col)"
-    >
-      <div :class="styles.columnHead">
-        <span>{{ col.title }}</span>
-        <span :class="styles.count">{{ grouped.get(col.key)?.length ?? 0 }}</span>
-      </div>
-      <div :class="styles.cardList">
-        <div
-          v-for="card in grouped.get(col.key) ?? []"
-          :key="cardId(card)"
-          :class="styles.card"
-          draggable="true"
-          @dragstart="onDragStart(card, $event)"
-        >
-          <div :class="styles.cardTitle">{{ card[cardTitleField] }}</div>
-          <div v-if="cardSubtitleField && card[cardSubtitleField]" :class="styles.cardSub">
-            {{ card[cardSubtitleField] }}
+  <WidgetStateShell
+    :loading="loading"
+    :error="error"
+    :empty="!loading && !error && cards.length === 0"
+    min-height="300px"
+    @retry="loadCards"
+  >
+    <div :class="styles.board">
+      <div
+        v-for="col in columns"
+        :key="col.key"
+        :class="[styles.column, dragOverCol === col.key && styles.dragOver]"
+        @dragover="onDragOver(col.key, $event)"
+        @dragleave="onDragLeave"
+        @drop="onDrop(col)"
+      >
+        <div :class="styles.columnHead">
+          <span>{{ col.title }}</span>
+          <span :class="styles.count">{{ grouped.get(col.key)?.length ?? 0 }}</span>
+        </div>
+        <div :class="styles.cardList">
+          <div
+            v-for="card in grouped.get(col.key) ?? []"
+            :key="cardId(card)"
+            :class="styles.card"
+            draggable="true"
+            @dragstart="onDragStart(card, $event)"
+          >
+            <div :class="styles.cardTitle">{{ card[cardTitleField] }}</div>
+            <div v-if="cardSubtitleField && card[cardSubtitleField]" :class="styles.cardSub">
+              {{ card[cardSubtitleField] }}
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </WidgetStateShell>
 </template>

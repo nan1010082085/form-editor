@@ -22,11 +22,12 @@
 | 能力域 | 能力项 | 状态 | 入口 / 证据 |
 |--------|--------|------|-------------|
 | 搭建 | Free 绝对定位画布 | ✅ | `layoutMode: 'free'` |
-| 搭建 | Flex 流式页面 | ✅ | `layoutMode: 'flex'` + 页面模板 |
+| 搭建 | Flex 流式页面 | 🟡 | 渲染 + 投放可用；容器嵌套仍单层 flatten，见 [container-nesting-decision.md](./container-nesting-decision.md) |
 | 搭建 | 85+ Widget | ✅ | `widgets/` + registry |
 | 搭建 | 大屏 Demo 一键创建 | ✅ | 实例新建 →「运营大屏 Demo」 |
 | 搭建 | 深色大屏主题 | ✅ | `boardThemes` / canvas.themePreset |
-| 交互 | 拖拽 / 缩放 / 辅助线 | ✅ | EditorOverlay + useDrag |
+| 交互 | 拖拽 / 缩放 / 辅助线 | ✅ | **Free**：EditorOverlay + useDrag；Flex 无 resize/辅助线 |
+| 交互 | Flex 部件拖入 | 🟡 | useFlexCanvasDrop / FlexColDropZone；缺插入指示线、嵌套 2 层未落地 |
 | 交互 | 撤销重做（immer） | ✅ | editorStore |
 | 交互 | 对齐 / 分布 / 锁定 / 隐藏 | ✅ | useWidgetAlignment + 快捷键 |
 | 性能 | 视口剔除 | ✅ | useViewportCulling（编辑态） |
@@ -95,8 +96,10 @@
 | P0 | server `/telemetry` + dashboard | 无法度量流失与卡顿 |
 | P1 | 真实 100+ widget FPS 体感验收 | 大屏上限仍偏「理论」 |
 | P1 | i18n 覆盖 ≥ 80% | 出海/开源受阻 |
+| P1 | Flex 插入指示线 / span / 模式切换 | Flex 编辑 chrome 弱于 free |
 | P2 | PropertyPanel 继续拆分；清理 WidgetRule | 维护成本 |
-| P2 | 嵌套 2 层决策落地代码 | 决策与实现不一致 |
+| P2 | 嵌套 2 层决策落地代码 | 决策与实现不一致（仍 flatten） |
+| P3 | Flex 专用交互设计稿 | designer.md 拖拽流几乎仅 free |
 | P3 | SDK 脚手架 + Widget 市场 | 生态未开 |
 
 ---

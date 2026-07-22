@@ -456,6 +456,18 @@
   user-select: none;
 }
 
+.modeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  height: 26px;
+  border-radius: 4px;
+  background: var(--fill-color-light, #f5f7fa);
+  color: var(--text-color-secondary, #909399);
+  cursor: default;
+  user-select: none;
+}
+
 .aiDrawer {
   width: 400px;
   border-left: 1px solid var(--border-color-light);

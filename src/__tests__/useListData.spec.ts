@@ -13,6 +13,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import { useListData } from '@/composables/useListData'
 import type { ListApiConfig } from '@/components/WidgetRenderer/types'
 
@@ -55,6 +56,7 @@ describe('useListData', () => {
   }
 
   beforeEach(() => {
+    setActivePinia(createPinia())
     vi.clearAllMocks()
   })
 

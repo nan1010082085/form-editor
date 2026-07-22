@@ -63,9 +63,9 @@ const showFlexEmpty = computed(() =>
 )
 const {
   isDragOver: isFlexDragOver,
-  handleFlexDragOver,
-  handleFlexDragLeave,
-  handleFlexDrop,
+  handleDragOver: handleFlexDragOver,
+  handleDragLeave: handleFlexDragLeave,
+  handleDrop: handleFlexDrop,
 } = useFlexCanvasDropEnabled(contentFrameRef, flexDropEnabled)
 const { duplicateFromWidget } = useDuplicateWidget()
 
@@ -95,6 +95,7 @@ const canvasStyle = computed(() => {
   const c = boardStore.canvas
 
   if (isFlexLayout.value) {
+    const zoom = c.zoom ?? 100
     return {
       width: '100%',
       height: '100%',
@@ -103,6 +104,8 @@ const canvasStyle = computed(() => {
       padding: c.padding,
       position: 'relative' as const,
       boxSizing: 'border-box' as const,
+      transform: zoom !== 100 ? `scale(${zoom / 100})` : undefined,
+      transformOrigin: 'top left' as const,
     }
   }
 
@@ -286,6 +289,31 @@ function handleCopyId(id: string) {
   void copyToClipboard(id, '已复制部件 ID')
 }
 
+function handleBringToFront(widget: Widget) {
+  const parent = widgetStore.findParent(widget.id)
+  const parentId = parent?.id ?? null
+  const siblings = parent?.children ?? widgetStore.widgets
+  widgetStore.moveWidgetToIndex(widget.id, parentId, siblings.length - 1)
+  editorStore.pushHistory([...widgetStore.widgets])
+}
+
+function handleSendToBack(widget: Widget) {
+  const parent = widgetStore.findParent(widget.id)
+  const parentId = parent?.id ?? null
+  widgetStore.moveWidgetToIndex(widget.id, parentId, 0)
+  editorStore.pushHistory([...widgetStore.widgets])
+}
+
+function handleToggleLock(widget: Widget) {
+  widgetStore.updateWidget(widget.id, { locked: !widget.locked })
+  editorStore.pushHistory([...widgetStore.widgets])
+}
+
+function handleToggleHidden(widget: Widget) {
+  widgetStore.updateWidget(widget.id, { hidden: !widget.hidden })
+  editorStore.pushHistory([...widgetStore.widgets])
+}
+
 async function handleSavePreview(widget: Widget) {
   const el = document.querySelector(`[data-widget-id="${widget.id}"]`) as HTMLElement | null
   if (!el) return
@@ -369,6 +397,10 @@ function handleCanvasClick() {
       @copy="handleCopyWidget"
       @copy-id="handleCopyId"
       @delete="handleDeleteWidget"
+      @bring-to-front="handleBringToFront"
+      @send-to-back="handleSendToBack"
+      @toggle-lock="handleToggleLock"
+      @toggle-hidden="handleToggleHidden"
       @open-event="emit('openEvent', $event)"
       @open-rule="emit('openRule', $event)"
       @open-api="emit('openApi', $event)"

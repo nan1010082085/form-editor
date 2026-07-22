@@ -6,7 +6,7 @@ import type { FormItemRule } from 'element-plus'
 // ============================================================
 
 /** 容器组件类型 */
-export type ContainerType = 'form' | 'card' | 'tabs' | 'dialog' | 'single-col' | 'double-col' | 'triple-col' | 'quad-col' | 'micro-app-container'
+export type ContainerType = 'form' | 'card' | 'tabs' | 'dialog' | 'single-col' | 'double-col' | 'triple-col' | 'quad-col' | 'micro-app-container' | 'row-container'
 
 /** 基础组件类型 */
 export type BasicType =
@@ -241,34 +241,6 @@ export interface EventTargetConfig {
 // Widget 规则
 // ============================================================
 
-/** 规则监听源 */
-export interface WidgetRuleWatch {
-  type: 'field' | 'action' | 'dialog-callback'
-  /** 字段名 / 动作名 / 弹窗ID */
-  source: string
-}
-
-/** 规则动作 */
-export interface WidgetRuleAction {
-  type: 'fetch-data' | 'set-value' | 'submit' | 'validate' | 'reset' | 'hide' | 'visible' | 'disabled'
-  /** 动作配置（API地址、目标字段、参数等） */
-  config: Record<string, unknown>
-  /** 成功回调 */
-  onSuccess?: SchemaEventAction[]
-  /** 失败回调 */
-  onError?: SchemaEventAction[]
-}
-
-/** @deprecated 使用 SchemaLinkage 替代 */
-export interface WidgetRule {
-  /** 监听源列表 */
-  watches: WidgetRuleWatch[]
-  /** 判断条件表达式 */
-  condition: string
-  /** 执行动作列表 */
-  actions: WidgetRuleAction[]
-}
-
 // ============================================================
 // 搜索字段配置
 // ============================================================
@@ -377,7 +349,7 @@ export interface LinkageState {
 // ============================================================
 
 /** 配置面板类型（属性面板底部的弹框入口按钮） */
-export type ConfigPanelType = 'events' | 'rules' | 'linkages' | 'api' | 'variables'
+export type ConfigPanelType = 'events' | 'linkages' | 'api' | 'variables'
 
 /** 属性面板声明中的基础属性快捷键 */
 export type BasicPropKey = 'field' | 'label' | 'defaultValue' | 'hidden' | 'options' | 'validationRules'
@@ -424,6 +396,8 @@ export interface WidgetConfig {
   exposedValues?: ExposedValueConfig[]
   /** 组件可接收的外部事件 — 由事件引擎 trigger-event 动作触发 */
   receivableEvents?: ReceivableEventConfig[]
+  /** 该 widget 可用的画布模式。未声明 = 两种模式都可用；声明则必须包含当前模式，否则组件面板隐藏 */
+  contexts?: BoardLayoutMode[]
 }
 
 /** 组件暴露值配置 */
@@ -507,10 +481,6 @@ export interface Widget {
   // === 事件 ===
   /** 组件事件列表 */
   events?: WidgetEvent[]
-
-  // === 规则 ===
-  /** 组件业务规则列表 */
-  rules?: WidgetRule[]
 
   // === 联动 ===
   /** 组件联动规则列表（SchemaLinkage） */

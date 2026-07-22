@@ -23,6 +23,18 @@ import { FORM_GRID_LINKAGE_KEY } from '@/components/WidgetRenderer/types'
 // Mock registry — provide stub components for all types SchemaNode resolves.
 // vi.mock is hoisted, so the factory must be self-contained.
 // ---------------------------------------------------------------------------
+// WidgetErrorBoundary（SchemaNode 包裹层）依赖 useI18n / reportError，测试环境 mock
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+  reportError: vi.fn(),
+}))
+vi.mock('@/api/telemetryApi', () => ({
+  reportTelemetryError: vi.fn(),
+  reportTelemetry: vi.fn(),
+  reportTelemetryBatch: vi.fn(),
+  fetchEditorTelemetrySummary: vi.fn(),
+}))
+
 vi.mock('@/widgets/registry', () => {
   function makeStub(className: string, isContainer = false): Component {
     return defineComponent({
@@ -152,6 +164,9 @@ function mountSchemaRender(widgets: Widget[], props: Record<string, unknown> = {
     },
     global: {
       plugins: [ElementPlus],
+      stubs: {
+        AppIcon: { template: '<span />', props: ['name', 'size'] },
+      },
       provide: {
         [FORM_GRID_LINKAGE_KEY]: linkage.stateMap,
       },

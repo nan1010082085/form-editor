@@ -15,7 +15,6 @@ export function publicSchema(id: string, type: SchemaType): Omit<Widget, 'name'>
     options: [],
     variables: [],
     events: [],
-    rules: [],
     validationRules: [],
   }
 }

@@ -12,7 +12,7 @@ import { WidgetRenderer } from '@/components/WidgetRenderer'
 import { registerAllWidgets } from '@/widgets'
 import FilterTabs from '@schema-platform/platform-shared/components/common/FilterTabs.vue'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import type { TemplateItem } from '@/utils/apiClient'
+import type { TemplateItem } from '@/api/schemaApi'
 import type { PartialWidget } from '@/widgets/base/types'
 import styles from './WidgetTemplateView.module.scss'
 

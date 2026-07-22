@@ -35,4 +35,5 @@ export const formConfig: WidgetConfig = {
     { key: 'formData', type: 'object', description: '表单数据模型' },
   ],
   configPanels: ['events', 'api', 'variables'],
+  contexts: ['free'],
 }

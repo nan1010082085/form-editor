@@ -23,10 +23,14 @@ import { getComponentMap } from '../../widgets/registry'
 import { useAllContainerTypes } from '../../composables/useConstant'
 import { triggerWidgetEvent } from '../../engine/eventEngine'
 import { useEditorStore } from '../../stores/editor'
+import { useWidgetStore } from '../../stores/widget'
+import { useBoardStore } from '../../stores/board'
 import { EDITOR_CONTEXTMENU_KEY } from '../Editor/editorContextKeys'
 import { useFlexDropZone } from '../../composables/useFlexDropZone'
 import SchemaRender from './SchemaRender.vue'
+import WidgetErrorBoundary from './WidgetErrorBoundary.vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
+import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import styles from './WidgetNode.module.scss'
 
 const props = defineProps<{
@@ -62,19 +66,63 @@ const CLICKABLE_TYPES: ReadonlySet<string> = new Set([
 ])
 
 const isContainer = computed(() => getContainerTypes().has(props.widget.type))
-const COL_CONTAINER_TYPES = new Set(['single-col', 'double-col', 'triple-col', 'quad-col'])
-const isColContainer = computed(() => COL_CONTAINER_TYPES.has(props.widget.type))
+const SELF_RENDERING_CONTAINER_TYPES = new Set(['single-col', 'double-col', 'triple-col', 'quad-col', 'row-container'])
+const isSelfRenderingContainer = computed(() => SELF_RENDERING_CONTAINER_TYPES.has(props.widget.type))
 const resolvedComponent = computed(() => compMap[props.widget.type])
 const editorStore = useEditorStore()
+const widgetStore = useWidgetStore()
+const boardStore = useBoardStore()
 
 const isSelected = computed(() =>
-  props.editorSelectable && props.widget.id != null && editorStore.selectedId === props.widget.id,
+  props.editorSelectable && props.widget.id != null && editorStore.selectedIds.includes(props.widget.id),
 )
+
+// ---- Flex 模式宽度 resize handle（右边缘拖拽改 style.width） ----
+const shellEl = ref<HTMLElement | null>(null)
+const isFlexResizeEnabled = computed(() =>
+  Boolean(props.editorSelectable && props.widget.id && !props.widget.locked && boardStore.layoutMode === 'flex'),
+)
+
+function parseWidthPx(): number {
+  const sw = props.widget.style?.width as string | undefined
+  if (sw && sw.endsWith('px')) return parseFloat(sw) || 0
+  // 百分比或 auto：用实际渲染宽度
+  return shellEl.value?.getBoundingClientRect().width ?? 0
+}
+
+function handleFlexResizeStart(event: MouseEvent) {
+  if (!isFlexResizeEnabled.value || !props.widget.id) return
+  event.preventDefault()
+  event.stopPropagation()
+  const startX = event.clientX
+  const startWidth = parseWidthPx()
+  const widgetId = props.widget.id
+
+  function onMove(e: MouseEvent) {
+    const delta = e.clientX - startX
+    const newWidth = Math.max(40, Math.round(startWidth + delta))
+    const w = widgetStore.findWidget(widgetId)
+    if (w) {
+      w.style = { ...(w.style ?? {}), width: `${newWidth}px` }
+    }
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onUp)
+    editorStore.pushHistory([...widgetStore.widgets])
+  }
+  document.addEventListener('mousemove', onMove)
+  document.addEventListener('mouseup', onUp)
+}
 
 function handleEditorSelect(event: MouseEvent) {
   if (!props.editorSelectable || !props.widget.id) return
   event.stopPropagation()
-  editorStore.select(props.widget.id)
+  if (event.shiftKey) {
+    editorStore.toggleSelect(props.widget.id)
+  } else {
+    editorStore.select(props.widget.id)
+  }
 }
 
 const openContextMenu = inject(EDITOR_CONTEXTMENU_KEY, null)
@@ -204,12 +252,17 @@ const tabsActiveKey = computed(() => {
 
 const flexContainerChildren = computed(() => {
   const children = (props.widget.children ?? []) as Widget[]
-  if (props.editorSelectable && props.widget.type === 'tabs' && tabsActiveKey.value) {
+  // tabs 容器：编辑态与预览态都按当前 activeKey 过滤，只渲染当前页签子节点
+  if (props.widget.type === 'tabs' && tabsActiveKey.value) {
     const ak = tabsActiveKey.value
     return children.filter((c) => (c.tabKey ?? ak) === ak)
   }
   return children
 })
+
+/** tabs 容器按 activeKey 过滤子节点，拖放索引需映射回全量 children */
+const allContainerChildren = computed(() => (props.widget.children ?? []) as Widget[])
+const isTabsContainer = computed(() => props.widget.type === 'tabs')
 
 const {
   isDragOver: isContainerDragOver,
@@ -221,6 +274,8 @@ const {
   () => props.widget.id ?? null,
   () => flexContainerChildren.value,
   () => containerDropEnabled.value,
+  undefined,
+  isTabsContainer.value ? () => allContainerChildren.value : undefined,
 )
 
 const containerDropClass = computed(() => [
@@ -231,104 +286,126 @@ const containerDropClass = computed(() => [
 
 <template>
   <div
-    v-if="renderState.visible"
+    v-if="renderState.visible || editorSelectable"
+    ref="shellEl"
     :data-widget-id="editorSelectable ? widget.id : undefined"
-    :class="shellClass"
-    :draggable="editorSelectable ? true : undefined"
+    :class="[shellClass, { [styles.hiddenInEdit]: editorSelectable && props.widget.hidden }]"
+    :draggable="editorSelectable && !props.widget.locked ? true : undefined"
     @click="editorSelectable ? handleEditorSelect($event) : undefined"
     @contextmenu="editorSelectable ? handleEditorContextMenu($event) : undefined"
-    @dragstart="editorSelectable ? handleEditorDragStart($event) : undefined"
+    @dragstart="editorSelectable && !props.widget.locked ? handleEditorDragStart($event) : undefined"
   >
+    <div
+      v-if="isFlexResizeEnabled"
+      :class="styles.flexResizeHandle"
+      @mousedown="handleFlexResizeStart"
+    />
     <div :class="innerClass">
-      <AppDialog
-        v-if="widget.type === 'dialog'"
-        v-model="dialogVisible"
-        :title="(widget.props?.title as string) || widget.label || '弹窗'"
-        :width="(widget.props?.width as string) || '600px'"
-        :draggable="widget.props?.draggable !== false"
-        :show-fullscreen-btn="widget.props?.showFullscreenBtn !== false"
-        :destroy-on-close="widget.props?.destroyOnClose !== false"
-        :close-on-click-modal="widget.props?.closeOnClickModal === true"
-      >
+      <template v-if="widget.type === 'dialog'">
+        <!-- Flex 编辑模式：可见容器 shell，可选中/拖入子节点。
+             AppDialog 默认 v-model=false 不可见，无法承载编辑交互，故编辑态用静态 shell 替代。 -->
         <div
           v-if="editorSelectable"
-          ref="containerDropRef"
-          :class="containerDropClass"
-          @dragover="handleContainerDragOver"
-          @dragleave="handleContainerDragLeave"
-          @drop="handleContainerDrop"
+          :class="styles.dialogEditShell"
         >
-          <SchemaRender
-            v-for="(child, ci) in flexContainerChildren"
-            :key="ci"
-            :schema="child"
-            :form-data="formData"
-            :readonly="readonly"
-            :editor-selectable="editorSelectable"
-          />
-          <div v-if="!flexContainerChildren.length" :class="styles.flexDropEmpty">
-            {{ widget.type === 'tabs' ? '拖入部件到当前页签' : '拖入部件' }}
+          <div :class="styles.dialogEditHeader">
+            <AppIcon name="chat-dot-round" :size="14" />
+            <span :class="styles.dialogEditTitle">{{ (widget.props?.title as string) || widget.label || '弹窗' }}</span>
+          </div>
+          <div
+            ref="containerDropRef"
+            :class="containerDropClass"
+            @dragover="handleContainerDragOver"
+            @dragleave="handleContainerDragLeave"
+            @drop="handleContainerDrop"
+          >
+            <SchemaRender
+              v-for="(child, ci) in flexContainerChildren"
+              :key="ci"
+              :schema="child"
+              :form-data="formData"
+              :readonly="readonly"
+              :editor-selectable="editorSelectable"
+            />
+            <div v-if="!flexContainerChildren.length" :class="styles.flexDropEmpty">
+              拖入部件到弹窗
+            </div>
           </div>
         </div>
-        <template v-else-if="widget.children?.length">
-          <SchemaRender
-            v-for="(child, ci) in widget.children"
-            :key="ci"
-            :schema="child"
-            :form-data="formData"
-            :readonly="readonly"
-            :editor-selectable="editorSelectable"
-          />
-        </template>
-        <template v-if="widget.props?.showFooter !== false" #footer>
-          <el-button @click="handleDialogCancel">
-            {{ (widget.props?.cancelText as string) || '取消' }}
-          </el-button>
-          <el-button type="primary" @click="handleDialogConfirm">
-            {{ (widget.props?.confirmText as string) || '确定' }}
-          </el-button>
-        </template>
-      </AppDialog>
+        <!-- 预览/运行时：AppDialog 默认隐藏，通过事件 openDialog 打开 -->
+        <AppDialog
+          v-else
+          v-model="dialogVisible"
+          :title="(widget.props?.title as string) || widget.label || '弹窗'"
+          :width="(widget.props?.width as string) || '600px'"
+          :draggable="widget.props?.draggable !== false"
+          :show-fullscreen-btn="widget.props?.showFullscreenBtn !== false"
+          :destroy-on-close="widget.props?.destroyOnClose !== false"
+          :close-on-click-modal="widget.props?.closeOnClickModal === true"
+        >
+          <template v-if="widget.children?.length">
+            <SchemaRender
+              v-for="(child, ci) in widget.children"
+              :key="ci"
+              :schema="child"
+              :form-data="formData"
+              :readonly="readonly"
+              :editor-selectable="editorSelectable"
+            />
+          </template>
+          <template v-if="widget.props?.showFooter !== false" #footer>
+            <el-button @click="handleDialogCancel">
+              {{ (widget.props?.cancelText as string) || '取消' }}
+            </el-button>
+            <el-button type="primary" @click="handleDialogConfirm">
+              {{ (widget.props?.confirmText as string) || '确定' }}
+            </el-button>
+          </template>
+        </AppDialog>
+      </template>
 
-      <component
-        v-else-if="isContainer && resolvedComponent"
-        :ref="(el: ComponentPublicInstance | null) => { containerRef = el }"
-        :is="resolvedComponent"
-        :widget="widget"
-        :editable="false"
-        :editor-selectable="editorSelectable"
-      >
-        <div
-          v-if="editorSelectable && !isColContainer"
-          ref="containerDropRef"
-          :class="containerDropClass"
-          @dragover="handleContainerDragOver"
-          @dragleave="handleContainerDragLeave"
-          @drop="handleContainerDrop"
+      <WidgetErrorBoundary v-else-if="isContainer && resolvedComponent" :widget-type="widget.type" :widget-id="widget.id">
+        <component
+          :ref="(el: ComponentPublicInstance | null) => { containerRef = el }"
+          :is="resolvedComponent"
+          :widget="widget"
+          :editable="false"
+          :editor-selectable="editorSelectable"
+          :render-children="widget.type === 'tabs'"
         >
-          <SchemaRender
-            v-for="(child, ci) in flexContainerChildren"
-            :key="ci"
-            :schema="child"
-            :form-data="formData"
-            :readonly="readonly"
-            :editor-selectable="editorSelectable"
-          />
-          <div v-if="!flexContainerChildren.length" :class="styles.flexDropEmpty">
-            {{ widget.type === 'tabs' ? '拖入部件到当前页签' : '拖入部件' }}
+          <div
+            v-if="editorSelectable && !isSelfRenderingContainer"
+            ref="containerDropRef"
+            :class="containerDropClass"
+            @dragover="handleContainerDragOver"
+            @dragleave="handleContainerDragLeave"
+            @drop="handleContainerDrop"
+          >
+            <SchemaRender
+              v-for="(child, ci) in flexContainerChildren"
+              :key="ci"
+              :schema="child"
+              :form-data="formData"
+              :readonly="readonly"
+              :editor-selectable="editorSelectable"
+            />
+            <div v-if="!flexContainerChildren.length" :class="styles.flexDropEmpty">
+              {{ widget.type === 'tabs' ? '拖入部件到当前页签' : '拖入部件' }}
+            </div>
           </div>
-        </div>
-        <template v-else-if="widget.children?.length">
-          <SchemaRender
-            v-for="(child, ci) in widget.children"
-            :key="ci"
-            :schema="child"
-            :form-data="formData"
-            :readonly="readonly"
-            :editor-selectable="editorSelectable"
-          />
-        </template>
-      </component>
+          <!-- 自渲染容器（col / row-container）：子节点由组件自身渲染，不向 slot 填充避免重复创建 -->
+          <template v-else-if="!isSelfRenderingContainer && flexContainerChildren.length">
+            <SchemaRender
+              v-for="(child, ci) in flexContainerChildren"
+              :key="ci"
+              :schema="child"
+              :form-data="formData"
+              :readonly="readonly"
+              :editor-selectable="editorSelectable"
+            />
+          </template>
+        </component>
+      </WidgetErrorBoundary>
 
       <el-form-item
         v-else-if="needsFormItem"
@@ -339,11 +416,12 @@ const containerDropClass = computed(() => [
         @blur="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('blur')"
         @click="CLICKABLE_TYPES.has(widget.type) && handleWidgetEvent('click')"
       >
-        <component
-          v-if="resolvedComponent"
-          :is="resolvedComponent"
-          :widget="widget"
-        />
+        <WidgetErrorBoundary v-if="resolvedComponent" :widget-type="widget.type" :widget-id="widget.id">
+          <component
+            :is="resolvedComponent"
+            :widget="widget"
+          />
+        </WidgetErrorBoundary>
       </el-form-item>
 
       <div
@@ -353,10 +431,12 @@ const containerDropClass = computed(() => [
         @blur.capture="INPUT_COMPONENT_TYPES.has(widget.type) && handleWidgetEvent('blur')"
         @click="CLICKABLE_TYPES.has(widget.type) && handleWidgetEvent('click')"
       >
-        <component
-          :is="resolvedComponent"
-          :widget="widget"
-        />
+        <WidgetErrorBoundary :widget-type="widget.type" :widget-id="widget.id">
+          <component
+            :is="resolvedComponent"
+            :widget="widget"
+          />
+        </WidgetErrorBoundary>
       </div>
     </div>
   </div>

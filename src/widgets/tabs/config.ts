@@ -83,4 +83,5 @@ export const tabsConfig: WidgetConfig = {
       },
     ],
   },
+  contexts: ['free'],
 }

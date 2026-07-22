@@ -39,6 +39,7 @@ export const formStepsConfig: WidgetConfig = {
       },
     ],
   },
+  contexts: ['free'],
 }
 
 export function createFormStepsWidget(id: string) {

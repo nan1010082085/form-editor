@@ -173,7 +173,9 @@ async function submitFormDialog() {
         return
       }
       const url = resolveWidgetUrl(cfg.createApiUrl, variablesContext.value)
-      await apiClient.post(url, payload)
+      const created = await apiClient.post<Record<string, unknown>>(url, payload)
+      // 乐观更新：立即插入返回行（无 id 时用 payload），失败 refresh 回滚
+      tableRef.value?.insertRow(created ?? payload)
       ElMessage.success('新增成功')
     } else {
       if (!cfg.updateApiUrl) {
@@ -187,13 +189,17 @@ async function submitFormDialog() {
       }
       const url = resolveUpdateUrl(cfg.updateApiUrl, id)
       await apiClient.put(url, payload)
+      // 乐观更新：立即合并 patch 到匹配行
+      const idField = (cfg.recordIdField as string) ?? 'id'
+      tableRef.value?.updateRow(idField, id, payload)
       ElMessage.success('保存成功')
     }
     formVisible.value = false
-    tableRef.value?.refresh()
   } catch (err) {
     console.error('[FgCrudListPage] form submit failed:', err)
     ElMessage.error(formMode.value === 'add' ? '新增失败' : '保存失败')
+    // 失败回滚：重新拉取服务端真实状态
+    tableRef.value?.refresh()
   } finally {
     formSubmitting.value = false
   }

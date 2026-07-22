@@ -126,6 +126,8 @@ export const advancedTableConfig: WidgetConfig = {
     height: 350,
     sortable: false,
     serverSideFilter: true,
+    /** 虚拟滚动：数据 >100 行时用 el-table-v2 渲染（复杂列特性降级） */
+    virtual: false,
     pagination: {
       enabled: true,
       pageSize: 20,
@@ -194,6 +196,7 @@ export const advancedTableConfig: WidgetConfig = {
       { key: 'stripe', label: '斑马纹', type: 'switch' },
       { key: 'border', label: '边框', type: 'switch' },
       { key: 'height', label: '表格高度', type: 'number' },
+      { key: 'virtual', label: '虚拟滚动', type: 'switch', desc: '数据 >100 行时启用，大幅提升大列表性能' },
       { key: 'sortable', label: '全局排序', type: 'switch' },
       { key: 'pagination.enabled', label: '分页', type: 'switch' },
       { key: 'pagination.pageSize', label: '每页条数', type: 'number' },

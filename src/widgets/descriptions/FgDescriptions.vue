@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { inject, computed, ref, onMounted, watch, type ComputedRef } from 'vue'
+import { inject, computed, onMounted, watch, type ComputedRef } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { fetchWidgetDataSource } from '@/api/widgetApi'
 import { resolveWidgetUrl } from '@/utils/resolveWidgetUrl'
+import { useWidgetData } from '@/composables/useWidgetData'
 import type { DescriptionItemConfig } from './config'
 import styles from './style.module.scss'
 
@@ -14,8 +15,39 @@ const variablesContext = inject<ComputedRef<Record<string, unknown>>>(
 )
 const setBoardVariable = inject<(name: string, value: unknown) => void>('setBoardVariable', () => {})
 
-const data = ref<Record<string, unknown>>({})
-const loading = ref(false)
+const apiConfig = computed(
+  () => widgetData.value.props?.dataSource as { type?: string; url?: string } | undefined,
+)
+const apiUrl = computed(() =>
+  apiConfig.value?.type === 'api' && apiConfig.value.url
+    ? resolveWidgetUrl(apiConfig.value.url, variablesContext.value)
+    : '',
+)
+
+// ---- useWidgetData（重试/SWR） ----
+const { data: apiData, loading, reload: wReload } = useWidgetData<Record<string, unknown>>({
+  key: 'descriptions:' + apiUrl.value,
+  fetcher: () => fetchWidgetDataSource<Record<string, unknown>>(apiUrl.value),
+  enabled: computed(() => !!apiUrl.value),
+  retry: 2,
+  swr: false,
+  cacheTtl: 0,
+  autoLoad: false,
+})
+
+// 主数据源：API 或静态数据
+const data = computed(() => {
+  if (apiData.value) return apiData.value
+  const staticData = widgetData.value.props?.staticData as Record<string, unknown> | undefined
+  return (staticData && typeof staticData === 'object') ? staticData : {}
+})
+
+// 从 API 返回值中同步 board 变量（flowInstanceId / taskId）
+watch(apiData, (val) => {
+  if (!val) return
+  if (val.flowInstanceId) setBoardVariable('flowInstanceId', val.flowInstanceId)
+  if (val.taskId) setBoardVariable('taskId', val.taskId)
+})
 
 useExposeWidget(() => ({
   get data() { return data.value },
@@ -30,49 +62,11 @@ const items = computed<DescriptionItemConfig[]>(() => {
   return Array.isArray(raw) ? raw : []
 })
 
-/** 从 API 加载数据 */
-async function loadData() {
-  const api = widgetData.value.props?.dataSource as { type?: string; url?: string } | undefined
-  if (!api?.url) return
+// 初始加载（useWidgetData autoLoad: false，手动触发）
+onMounted(() => { if (apiUrl.value) void wReload() })
 
-  loading.value = true
-  try {
-    const resolvedUrl = resolveWidgetUrl(api.url, variablesContext.value)
-    data.value = await fetchWidgetDataSource(resolvedUrl)
-    if (data.value.flowInstanceId) setBoardVariable('flowInstanceId', data.value.flowInstanceId)
-    if (data.value.taskId) setBoardVariable('taskId', data.value.taskId)
-  } catch (err) {
-    console.error('[FgDescriptions] Failed to load data:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-const apiConfig = computed(
-  () => widgetData.value.props?.dataSource as { type?: string; url?: string } | undefined,
-)
-
-onMounted(() => {
-  if (apiConfig.value?.type === 'api' && apiConfig.value.url) {
-    loadData()
-    return
-  }
-  const staticData = widgetData.value.props?.staticData as Record<string, unknown> | undefined
-  if (staticData && typeof staticData === 'object') {
-    data.value = staticData
-  }
-})
-
-/** 弹窗/详情页变量变化后重新拉取（如 recordId） */
-watch(
-  () => [apiConfig.value?.url, variablesContext.value] as const,
-  () => {
-    if (apiConfig.value?.type === 'api' && apiConfig.value.url) {
-      loadData()
-    }
-  },
-  { deep: true },
-)
+// 变量变化后重新拉取（弹窗/详情页 recordId 等）
+watch(apiUrl, (url) => { if (url) void wReload() })
 
 /** 取字段值 */
 function getFieldValue(field: string): unknown {

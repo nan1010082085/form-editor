@@ -16,6 +16,10 @@ const emit = defineEmits<{
   copy: [widget: Widget]
   copyId: [id: string]
   delete: [widget: Widget]
+  bringToFront: [widget: Widget]
+  sendToBack: [widget: Widget]
+  toggleLock: [widget: Widget]
+  toggleHidden: [widget: Widget]
   openEvent: [widget: Widget]
   openRule: [widget: Widget]
   openApi: [widget: Widget]
@@ -39,6 +43,10 @@ function handleAction(action: string) {
     case 'copy': emit('copy', props.widget); break
     case 'copyId': emit('copyId', props.widget.id); break
     case 'delete': emit('delete', props.widget); break
+    case 'bringToFront': emit('bringToFront', props.widget); break
+    case 'sendToBack': emit('sendToBack', props.widget); break
+    case 'toggleLock': emit('toggleLock', props.widget); break
+    case 'toggleHidden': emit('toggleHidden', props.widget); break
     case 'event': emit('openEvent', props.widget); break
     case 'rule': emit('openRule', props.widget); break
     case 'api': emit('openApi', props.widget); break
@@ -65,12 +73,16 @@ function handleAction(action: string) {
       <div :class="styles.header">{{ widgetConfig?.displayName ?? widget.name }}</div>
       <div :class="styles.item" @click="handleAction('copy')">复制部件</div>
       <div :class="styles.item" @click="handleAction('copyId')">复制 ID</div>
+      <div :class="styles.item" @click="handleAction('bringToFront')">置顶</div>
+      <div :class="styles.item" @click="handleAction('sendToBack')">置底</div>
+      <div :class="styles.item" @click="handleAction('toggleLock')">{{ widget.locked ? '解锁' : '锁定' }}</div>
+      <div :class="styles.item" @click="handleAction('toggleHidden')">{{ widget.hidden ? '显示' : '隐藏' }}</div>
       <div :class="styles.item" @click="handleAction('delete')">删除部件</div>
       <div :class="styles.item" @click="handleAction('savePreview')">保存预览图</div>
       <template v-if="configPanels.length">
         <div :class="styles.divider" />
         <div v-if="configPanels.includes('events')" :class="styles.item" @click="handleAction('event')">事件配置</div>
-        <div v-if="configPanels.includes('rules')" :class="styles.item" @click="handleAction('rule')">字段联动</div>
+        <div v-if="configPanels.includes('linkages')" :class="styles.item" @click="handleAction('rule')">字段联动</div>
         <div v-if="configPanels.includes('api')" :class="styles.item" @click="handleAction('api')">数据源</div>
         <div v-if="configPanels.includes('variables')" :class="styles.item" @click="handleAction('variables')">变量配置</div>
       </template>

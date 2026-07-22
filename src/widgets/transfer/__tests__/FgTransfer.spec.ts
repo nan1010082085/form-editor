@@ -109,7 +109,7 @@ describe('FgTransfer', () => {
 
   // Linkage / Rules
   describe('联动规则', () => {
-    it('支持 linkage 配置', () => {
+    it('支持 linkages 配置', () => {
       const widget = createWidget('transfer', 'test_widget')!
       widget.linkages = [{
         type: 'disabled',
@@ -119,25 +119,13 @@ describe('FgTransfer', () => {
       store.addWidget(widget)
       expect(store.findWidget('test_widget')!.linkages).toHaveLength(1)
     })
-
-    it('支持 rules 配置', () => {
-      const widget = createWidget('transfer', 'test_widget')!
-      widget.rules = [{
-        watches: [{ type: 'field', source: 'mode' }],
-        condition: 'mode === "view"',
-        actions: [{ type: 'disabled', config: {} }],
-      }]
-      store.addWidget(widget)
-      expect(store.findWidget('test_widget')!.rules).toHaveLength(1)
-      expect(store.findWidget('test_widget')!.rules![0].condition).toBe('mode === "view"')
-    })
   })
 
   // Config panels
   describe('配置面板声明', () => {
-    it('声明 events、rules 与 api 面板', () => {
+    it('声明 events、linkages 与 api 面板', () => {
       expect(transferConfig.configPanels).toContain('events')
-      expect(transferConfig.configPanels).toContain('rules')
+      expect(transferConfig.configPanels).toContain('linkages')
       expect(transferConfig.configPanels).toContain('api')
     })
   })

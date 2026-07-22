@@ -42,7 +42,7 @@ const emit = defineEmits<{
               {{ selectedWidget.events.length }}
             </span>
           </el-button>
-          <el-button v-if="panel === 'linkages' || panel === 'rules'" plain @click="emit('openLinkage')">
+          <el-button v-if="panel === 'linkages'" plain @click="emit('openLinkage')">
             字段联动
             <span v-if="selectedWidget.linkages?.length" :class="styles.badge">
               {{ selectedWidget.linkages.length }}

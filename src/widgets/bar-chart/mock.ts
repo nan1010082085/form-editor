@@ -9,6 +9,5 @@ export const barChartMock: ChartWidgetMock = {
     { category: '3月', value: 55 },
     { category: '4月', value: 48 },
     { category: '5月', value: 62 },
-    { category: '6月', value: 57 },
   ],
 }

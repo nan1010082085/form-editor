@@ -19,4 +19,5 @@ export const spacerConfig: WidgetConfig = {
       { key: 'height', label: '高度', type: 'number', default: 20 },
     ],
   },
+  contexts: ['free'],
 }

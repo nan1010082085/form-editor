@@ -150,3 +150,44 @@
 }
 
 // 组件覆盖已在 theme.scss 统一管理
+
+// ============================================================
+// Flex 画布拖放插入指示线
+// useFlexDropZone 在 dragover 时给目标 widget 元素挂标记 class，
+// 用 ::before / ::after 画一条蓝色横线指示插入位置。
+// ============================================================
+.flex-insert-before {
+  position: relative;
+}
+
+.flex-insert-before::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--el-color-primary, #409eff);
+  border-radius: 1px;
+  box-shadow: 0 0 4px rgb(64 158 255 / 60%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.flex-insert-after {
+  position: relative;
+}
+
+.flex-insert-after::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--el-color-primary, #409eff);
+  border-radius: 1px;
+  box-shadow: 0 0 4px rgb(64 158 255 / 60%);
+  z-index: 10;
+  pointer-events: none;
+}

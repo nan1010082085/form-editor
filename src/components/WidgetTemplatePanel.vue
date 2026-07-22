@@ -13,7 +13,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTemplateStore } from '@/stores/template'
-import type { TemplateCategory } from '@/utils/apiClient'
+import type { TemplateCategory } from '@/api/schemaApi'
 import type { Widget } from '@/widgets/base/types'
 import styles from './WidgetTemplatePanel.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'

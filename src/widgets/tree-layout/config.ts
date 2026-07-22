@@ -24,4 +24,5 @@ export const treeLayoutConfig: WidgetConfig = {
       { key: 'searchPlaceholder', label: '搜索占位', type: 'input', default: '搜索' },
     ],
   },
+  contexts: ['free'],
 }

@@ -33,6 +33,15 @@ export function useWidgetControlSize(defaultHeight = 32, defaultWidth = 240) {
     const color = widgetStyle.value?.color as string | undefined
     if (fontSize) style.fontSize = fontSize
     if (color) style.color = color
+    // Flex 模式（SchemaNode 未注入 bounds）：用 widgetStyle.width/height 控制控件尺寸，
+    // 让 PropertyPanel 的 style.width（如 50% / 240px）对表单控件生效。
+    // Free 模式有 bounds，控件 100% 撑满 wrapper（wrapper 由 position.w/h 定宽）。
+    if (!bounds) {
+      const sw = widgetStyle.value?.width as string | undefined
+      const sh = widgetStyle.value?.height as string | undefined
+      if (sw) style.width = sw
+      if (sh) style.height = sh
+    }
     return style
   })
 
@@ -45,14 +54,20 @@ export function useWidgetControlSize(defaultHeight = 32, defaultWidth = 240) {
  */
 export function useWidgetLayoutStyle(defaultHeight = 32, defaultWidth = 240) {
   const { widgetWidth, widgetHeight, controlStyle } = useWidgetControlSize(defaultHeight, defaultWidth)
-  const layoutStyle = computed(() => ({
-    width: '100%',
-    height: '100%',
-    minWidth: 0,
-    minHeight: 0,
-    boxSizing: 'border-box' as const,
-    fontSize: controlStyle.value.fontSize,
-    color: controlStyle.value.color,
-  }))
+  const layoutStyle = computed(() => {
+    const base: Record<string, string> = {
+      width: '100%',
+      height: '100%',
+      minWidth: '0',
+      minHeight: '0',
+      boxSizing: 'border-box',
+    }
+    if (controlStyle.value.fontSize) base.fontSize = controlStyle.value.fontSize
+    if (controlStyle.value.color) base.color = controlStyle.value.color
+    // Flex 模式：controlStyle 已用 widgetStyle.width/height 覆盖，这里同步
+    if (controlStyle.value.width !== '100%') base.width = controlStyle.value.width
+    if (controlStyle.value.height !== '100%') base.height = controlStyle.value.height
+    return base
+  })
   return { widgetWidth, widgetHeight, layoutStyle, controlStyle }
 }

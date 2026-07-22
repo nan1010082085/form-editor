@@ -28,6 +28,8 @@ const {
   () => siblings.value,
   () => Boolean(props.editorSelectable),
   () => ({ colIndex: props.colIndex }),
+  // col 容器按 colIndex 过滤，拖放索引需映射回全量 children
+  () => props.allChildren,
 )
 </script>
 

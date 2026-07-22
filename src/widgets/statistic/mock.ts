@@ -4,13 +4,13 @@ import type { StatisticWidgetMock } from '../base/widgetMock'
 export const statisticMock: StatisticWidgetMock = {
   kind: 'statistic',
   defaultProps: {
-    title: '待我审批',
-    value: 12,
+    title: '总用户数',
+    value: 12345,
     prefix: '',
     suffix: '件',
     precision: 0,
     trend: 'up',
-    trendValue: '较昨日 +3',
+    trendValue: '较昨日 +12.5%',
     color: '#409EFF',
   },
 }

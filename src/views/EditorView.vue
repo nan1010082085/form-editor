@@ -376,7 +376,8 @@ function handleKeyDown(e: KeyboardEvent) {
     }
   }
 
-  if (e.altKey && e.shiftKey) {
+  // 对齐/分布依赖绝对坐标，仅在自由布局下生效；Flex 流式布局无意义且会污染 position 数据
+  if (e.altKey && e.shiftKey && boardStore.layoutMode === 'free') {
     const key = e.key.toLowerCase()
     if (key === 'l') { e.preventDefault(); align('left') }
     if (key === 'r') { e.preventDefault(); align('right') }
@@ -412,6 +413,15 @@ function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 's') {
       e.preventDefault()
       handleSave()
+    }
+    // Ctrl+Up/Down: 同级内前移/后移（flex 流式重排为主，free 也可用）
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      editorStore.performMoveSelected('up')
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      editorStore.performMoveSelected('down')
     }
   }
 }
@@ -623,7 +633,7 @@ function handleVersionLoadedFromToolbar(version: string) {
       <!-- Center: canvas + debug panels -->
       <div :class="styles.center">
         <PageTabBar v-if="mode === 'edit'" />
-        <EditorRuler v-if="mode === 'edit'" :scroll-container="canvasScrollRef" />
+        <EditorRuler v-if="mode === 'edit' && boardStore.layoutMode === 'free'" :scroll-container="canvasScrollRef" />
         <div ref="canvasScrollRef" :class="styles.canvasScroll">
           <EditorCanvas
             ref="editorCanvasRef"

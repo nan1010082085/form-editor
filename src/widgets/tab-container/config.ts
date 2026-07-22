@@ -34,6 +34,7 @@ export const tabContainerConfig: WidgetConfig = {
       },
     ],
   },
+  contexts: ['free'],
 }
 
 export function createTabContainerWidget(id: string) {

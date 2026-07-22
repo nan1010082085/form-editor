@@ -144,6 +144,35 @@ function resolveContextString(text: string, ctx: EventExecutionContext): string 
   return text
 }
 
+/**
+ * 解析上下文引用并保留原值类型（供 post-message 等结构化消息使用）。
+ *
+ * 规则：
+ * - 整体形如 "formData.xxx" / "row.xxx" / "variables.xxx" / "{{xxx}}" -> 返回原始值（number/object/...）
+ * - 含内联 {{...}} 的文本 -> 按文本模板替换（输出 string）
+ * - 普通文本 -> 原样返回
+ */
+function resolveContextValue(text: string, ctx: EventExecutionContext): unknown {
+  const trimmed = text.trim()
+  if (trimmed.startsWith('formData.')) {
+    return getNestedValue(ctx.getFormData(), trimmed.slice(9))
+  }
+  if (trimmed.startsWith('row.') && ctx.row) {
+    return getNestedValue(ctx.row, trimmed.slice(4))
+  }
+  if (trimmed.startsWith('variables.') && ctx.variables) {
+    return getNestedValue(ctx.variables, trimmed.slice(10))
+  }
+  const templateMatch = trimmed.match(/^\{\{(.+)\}\}$/)
+  if (templateMatch) {
+    const inner = templateMatch[1].trim()
+    if (inner.startsWith('formData.')) return getNestedValue(ctx.getFormData(), inner.slice(9))
+    if (inner.startsWith('row.') && ctx.row) return getNestedValue(ctx.row, inner.slice(4))
+    if (inner.startsWith('variables.') && ctx.variables) return getNestedValue(ctx.variables, inner.slice(10))
+  }
+  return resolveContextString(text, ctx)
+}
+
 function resolveStringRecord(
   record: Record<string, string>,
   ctx: EventExecutionContext,
@@ -279,10 +308,10 @@ export async function executeEventAction(
     case 'api': {
       if (action.apiUrl) {
         const method = action.apiMethod ?? 'post'
-        let params: unknown = action.apiParams === 'formData' ? ctx.getFormData() : action.apiParams
-        if (action.apiParams === 'formData' && method !== 'get') {
-          params = { data: params }
-        }
+        // apiParams='formData' 时把整个表单数据作为请求体/查询参数；
+        // 与 actionExecutor、server 通用 data 路由（直接取 body）保持一致，
+        // 不再额外包 { data: ... }，否则下游收到 { data: { ... } } 与契约不符。
+        const params: unknown = action.apiParams === 'formData' ? ctx.getFormData() : action.apiParams
         logger.api(`请求: ${method} ${action.apiUrl}`)
         try {
           const response = await apiClient.requestUrl<unknown>(method, action.apiUrl, params)
@@ -384,7 +413,11 @@ export async function executeEventAction(
 }
 
 /**
- * 解析消息数据中的 formData.xxx 引用
+ * 解析消息数据中的 formData.xxx / row.xxx / variables.xxx 引用。
+ *
+ * 与 resolveContextString（文本模板，输出 string）不同，本函数保留原值类型：
+ * 字符串若整体是一个上下文引用（如 "formData.id"），解析后还原为原始值
+ * （number/boolean/object 等），否则按文本模板替换内联 {{...}} 段。
  */
 function resolveMessageData(
   message: Record<string, unknown>,
@@ -393,7 +426,7 @@ function resolveMessageData(
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(message)) {
     if (typeof value === 'string') {
-      result[key] = resolveContextString(value, ctx)
+      result[key] = resolveContextValue(value, ctx)
     } else {
       result[key] = value
     }

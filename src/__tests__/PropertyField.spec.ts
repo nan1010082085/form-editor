@@ -8,17 +8,32 @@
  * - json type emits null on empty input
  * - staticData array-editor renders correctly in PropertyPanel for chart widgets
  */
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import PropertyField from '@/components/Editor/PropertyField.vue'
 import PropertyPanel from '@/components/Editor/PropertyPanel.vue'
+import editorZhCN from '@/locales/editor-zh-CN'
 import { useEditorStore } from '@/stores/editor'
 import { useWidgetStore } from '@/stores/widget'
 import { registerWidget } from '@/widgets/registry'
 import type { Widget } from '@/widgets/base/types'
 import type { Component } from 'vue'
+
+// PropertyPanel 使用 useI18n；测试环境用本地 locale 包构造 t（见 PropertyPanel.spec.ts 同款 mock）
+const messages = editorZhCN as unknown as Record<string, unknown>
+function lookup(obj: Record<string, unknown>, path: string): string {
+  const parts = path.split('.')
+  let cur: unknown = obj
+  for (const p of parts) {
+    cur = (cur as Record<string, unknown>)?.[p]
+  }
+  return typeof cur === 'string' ? cur : path
+}
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => lookup(messages, key) }),
+}))
 
 // ---- Stub Element Plus components ----
 

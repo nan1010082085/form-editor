@@ -26,6 +26,9 @@ function getContainerTypes(): Set<string> {
   return useAllContainerTypes() as Set<string>
 }
 
+/** 容器嵌套深度上限：根级容器 -> 一级子容器，不允许多于 2 层（见 docs/container-nesting-decision.md） */
+const MAX_CONTAINER_DEPTH = 1
+
 /** 默认 position */
 const DEFAULT_POSITION = { x: 0, y: 0, w: 240, h: 40, xUnit: 'px' as const, yUnit: 'px' as const, wUnit: 'px' as const, hUnit: 'px' as const, zIndex: 1 }
 
@@ -156,41 +159,54 @@ function getColContainerColumns(type: string): number {
 }
 
 /**
- * 清理非法容器嵌套：将嵌套在其他容器内的容器提升到根级。
- * 容器之间不允许互相嵌套（只允许嵌套在布局组件内的普通部件）。
+ * 容器嵌套治理：容器之间允许互相嵌套（dialog 装表单、card 装 tabs、tabs 嵌套 tabs 等），
+ * 但限制最多 2 层（根级容器 -> 一级子容器，见 docs/container-nesting-decision.md）。
  *
- * 策略：遇到"容器内嵌套容器"时，将内层容器从原位置移除并追加到根级末尾。
+ * 加载时：
+ * 1. 递归去重 id（防御性）
+ * 2. 超过 MAX_CONTAINER_DEPTH 的容器子节点提升到最近的合法父级列表（扁平化），
+ *    保证旧 schema 不会因嵌套过深而无法编辑。
+ *
+ * 返回 { kept, promoted }：kept 为本层保留节点，promoted 为本层超限提升出来的节点，
+ * 由调用方决定提升到何处（根级或父级 children）。
  */
 function sanitizeContainerNesting(widgets: Widget[]): Widget[] {
-  const promoted: Widget[] = []
+  const seenIds = new Set<string>()
+  const containerTypes = getContainerTypes()
 
-  function walk(list: Widget[]): Widget[] {
-    return list.reduce<Widget[]>((acc, w) => {
+  function walk(list: Widget[], depth: number): { kept: Widget[]; promoted: Widget[] } {
+    const kept: Widget[] = []
+    const promoted: Widget[] = []
+    for (const w of list) {
+      if (seenIds.has(w.id)) continue
+      seenIds.add(w.id)
       if (w.children?.length) {
-        // 先递归清理子节点
-        w.children = walk(w.children)
-        // 再把子节点中的容器提升到根级
-        const kept: Widget[] = []
-        const containerTypes = getContainerTypes()
+        const childDepth = containerTypes.has(w.type) ? depth + 1 : depth
+        const childKept: Widget[] = []
+        const childPromoted: Widget[] = []
         for (const child of w.children) {
-          if (containerTypes.has(child.type)) {
-            // 容器禁止嵌套 — 提升到根级
-            delete child.colIndex
-            delete child.tabKey
-            promoted.push(child)
+          const isContainer = containerTypes.has(child.type)
+          // 容器子节点且已达深度上限：提升
+          if (isContainer && childDepth > MAX_CONTAINER_DEPTH) {
+            childPromoted.push(child)
           } else {
-            kept.push(child)
+            childKept.push(child)
           }
         }
-        w.children = kept
+        const sub = walk(childKept, childDepth)
+        w.children = sub.kept
+        kept.push(w)
+        // 子层提升的 + 本层超限提升的，交给上层处理
+        promoted.push(...sub.promoted, ...childPromoted)
+      } else {
+        kept.push(w)
       }
-      acc.push(w)
-      return acc
-    }, [])
+    }
+    return { kept, promoted }
   }
 
-  const cleaned = walk(widgets)
-  return [...cleaned, ...promoted]
+  const { kept, promoted } = walk(widgets, 0)
+  return promoted.length ? [...kept, ...promoted] : kept
 }
 
 export const useWidgetStore = defineStore('widget', () => {
@@ -337,9 +353,32 @@ export const useWidgetStore = defineStore('widget', () => {
     return parent.children.splice(idx, 1)[0] as Widget
   }
 
+  /**
+   * 计算容器在树中的嵌套深度（根级=0，根级容器的子容器=1，依此类推）。
+   * 用于实施「最多 2 层容器嵌套」决策（见 docs/container-nesting-decision.md）。
+   */
+  function getContainerDepth(widgetId: string): number {
+    let depth = 0
+    let parent = findParent(widgetId)
+    while (parent) {
+      if (getContainerTypes().has(parent.type)) depth += 1
+      parent = findParent(parent.id)
+    }
+    return depth
+  }
+
   /** 将部件放入容器前设置 tabKey / 列索引等元数据，返回 false 表示无法放入 */
   function prepareContainerChild(widget: Widget, container: Widget): boolean {
-    if (getContainerTypes().has(widget.type)) return false
+    // 容器允许嵌套（dialog 装表单、card 装 tabs、tabs 嵌套 tabs 等），
+    // 但限制最多 2 层（根级容器 -> 一级子容器）。目标容器已是子容器时，
+    // 拒绝再放入容器类型，由调用方 fallback 到根级，避免无限嵌套。
+    if (getContainerTypes().has(widget.type)) {
+      const containerDepth = getContainerDepth(container.id)
+      if (containerDepth >= MAX_CONTAINER_DEPTH) {
+        console.warn(`[widgetStore] 容器嵌套超过 ${MAX_CONTAINER_DEPTH + 1} 层，已提升到根级`)
+        return false
+      }
+    }
 
     if (container.type === 'tabs' && !widget.tabKey) {
       const tabs = container.props?.tabs as Array<{ key: string }> | undefined
@@ -351,6 +390,11 @@ export const useWidgetStore = defineStore('widget', () => {
     if (colContainerColumns > 0) {
       if (checkAndAssignColIndex(widget, container, colContainerColumns)) return false
       calculateColPosition(widget, container, colContainerColumns)
+    }
+
+    // row-container 子节点填满单元格（span 控制单元格宽度，控件本身 100% 撑满）
+    if (container.type === 'row-container') {
+      widget.style = { ...(widget.style ?? {}), width: '100%' }
     }
 
     return true
@@ -405,31 +449,28 @@ export const useWidgetStore = defineStore('widget', () => {
       const config = getWidget(widget.type)
       widget.position = { ...DEFAULT_POSITION, ...(config?.defaultPosition ?? {}) }
     }
+    // 先按 position 同步 style.width/height（free 模式默认值），
+    // 再用 Board 布局模式适配覆盖：flex 下 width 改为 100%/auto。
+    // 顺序不能反，否则 syncStyleDimensions 会把 flex 的 100% 覆盖回固定 px。
+    syncStyleDimensions(widget)
     const layoutMode = getBoardLayoutMode()
     adaptWidgetToBoardLayout(widget, layoutMode)
     const toAdd: Widget[] = [widget]
     let nextZ = getMaxZIndex() + 1
     widget.position.zIndex = nextZ++
     if (widget.children?.length) {
-      const promoted: Widget[] = []
-      const kept: Widget[] = []
-      const containerTypes = getContainerTypes()
-      for (const child of widget.children) {
-        if (containerTypes.has(child.type)) {
-          delete child.colIndex
-          delete child.tabKey
-          promoted.push(child)
-        } else {
-          kept.push(child)
-        }
-      }
-      widget.children = kept
-      for (const p of promoted) {
-        p.position.zIndex = nextZ++
-        toAdd.push(p)
-      }
+      // 容器允许嵌套，子节点（含容器）保留在父节点下，仅统一 zIndex 与布局适配
+      const walk = (list: Widget[]): Widget[] =>
+        list.map((child) => {
+          child.position.zIndex = nextZ++
+          adaptWidgetToBoardLayout(child, layoutMode)
+          if (child.children?.length) {
+            child.children = walk(child.children as Widget[])
+          }
+          return child
+        })
+      widget.children = walk(widget.children as Widget[])
     }
-    syncStyleDimensions(widget)
     return toAdd
   }
 
@@ -441,12 +482,6 @@ export const useWidgetStore = defineStore('widget', () => {
     if (meta) Object.assign(widget, meta)
     const prepared = prepareWidgetForAdd(widget)
     const [primary, ...promoted] = prepared
-
-    if (parentId !== null && getContainerTypes().has(primary.type)) {
-      insertWidgetAt(null, primary, widgets.value.length)
-      if (promoted.length) widgets.value = [...widgets.value, ...promoted]
-      return
-    }
 
     if (parentId === null) {
       const list = [...widgets.value]
@@ -479,7 +514,6 @@ export const useWidgetStore = defineStore('widget', () => {
 
     const widget = findWidget(id)
     if (!widget) return
-    if (parentId !== null && getContainerTypes().has(widget.type)) return
 
     const currentParent = findParent(id)
     const currentParentId = currentParent?.id ?? null
@@ -576,8 +610,6 @@ export const useWidgetStore = defineStore('widget', () => {
     const container = findWidget(containerId)
     if (!widget || !container) return
     if (widgetId === containerId) return
-    // 容器禁止嵌套到其他容器中
-    if (getContainerTypes().has(widget.type)) return
     // 已经是目标容器的直接子节点
     if (container.children?.some((c) => c.id === widgetId)) return
 
@@ -652,8 +684,6 @@ export const useWidgetStore = defineStore('widget', () => {
     const target = findWidget(targetId)
     if (!widget || !target) return
     if (id === targetId) return
-    // 容器禁止嵌套到其他容器中
-    if (getContainerTypes().has(widget.type)) return
     if (target.children?.some((c) => c.id === id)) return
 
     // tabs 容器：自动分配 tabKey

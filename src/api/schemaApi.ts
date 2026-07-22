@@ -13,6 +13,7 @@ export {
   publishSchema,
   fetchPublishedSchema,
   fetchPublishedByPublishId,
+  fetchPublishedByCode,
   fetchVersions,
   fetchVersion,
   deleteVersion,

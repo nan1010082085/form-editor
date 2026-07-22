@@ -16,7 +16,7 @@ export interface ApiResponse<T = unknown> {
   error?: ApiErrorDetail
 }
 
-/** API 错误详情 */
+/** API 错误详情（与 server 错误信封对齐：code + message + 可选 details） */
 export interface ApiErrorDetail {
   message: string
   code?: string

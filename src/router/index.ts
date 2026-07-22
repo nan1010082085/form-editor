@@ -90,6 +90,12 @@ const routes = [
     component: () => import('@/views/PreviewRenderView.vue'),
   },
   {
+    path: '/perf',
+    name: 'perf',
+    component: () => import('@/views/PerfView.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/view/:schemaCode',
     name: 'publish-view-by-code',
     component: () => import('@/views/PublishView.vue'),

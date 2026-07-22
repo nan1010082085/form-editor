@@ -15,6 +15,7 @@ const FLEX_FULL_WIDTH_TYPES = new Set<string>([
   'double-col',
   'triple-col',
   'quad-col',
+  'row-container',
   'tree-layout',
   'crud-list-page',
   'advanced-table',

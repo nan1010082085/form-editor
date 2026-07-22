@@ -28,6 +28,7 @@ import { resolveWidgetSize } from '../../utils/unitResolver'
 import { triggerWidgetEvent } from '../../engine/eventEngine'
 import { useLogger } from '../../composables/useLogger'
 import SchemaRender from './SchemaRender.vue'
+import WidgetErrorBoundary from './WidgetErrorBoundary.vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
 import styles from './SchemaNode.module.scss'
 
@@ -423,26 +424,27 @@ const wrapperStyle = computed(() => {
       @click.stop="INTERACTIVE_CONTAINER_TYPES.has(widget.type) && handleInteractiveContainerClick()"
     >
       <!-- 容器组件自身渲染（卡片标题、表单包裹等） -->
-      <component
-        v-if="resolvedComponent"
-        :ref="(el: ComponentPublicInstance | null) => { containerRef = el }"
-        :is="resolvedComponent"
-        :widget="widget"
-        :editable="isEditMode"
-      >
-        <!-- form 容器：子部件必须在 el-form 内才能参与校验 -->
-        <div
-          v-if="widget.type === 'form' && filteredChildren.length"
-          :class="styles.childrenLayer"
+      <WidgetErrorBoundary v-if="resolvedComponent" :widget-type="widget.type" :widget-id="widget.id">
+        <component
+          :ref="(el: ComponentPublicInstance | null) => { containerRef = el }"
+          :is="resolvedComponent"
+          :widget="widget"
+          :editable="isEditMode"
         >
-          <SchemaRender
-            :widgets="filteredChildren"
-            :mode="mode"
-            :canvas-offset-x="(canvasOffsetX ?? 0) + (widget.position?.x ?? 0)"
-            :canvas-offset-y="(canvasOffsetY ?? 0) + (widget.position?.y ?? 0)"
-          />
-        </div>
-      </component>
+          <!-- form 容器：子部件必须在 el-form 内才能参与校验 -->
+          <div
+            v-if="widget.type === 'form' && filteredChildren.length"
+            :class="styles.childrenLayer"
+          >
+            <SchemaRender
+              :widgets="filteredChildren"
+              :mode="mode"
+              :canvas-offset-x="(canvasOffsetX ?? 0) + (widget.position?.x ?? 0)"
+              :canvas-offset-y="(canvasOffsetY ?? 0) + (widget.position?.y ?? 0)"
+            />
+          </div>
+        </component>
+      </WidgetErrorBoundary>
       <!-- 非 form 容器：子部件层绝对定位 -->
       <div
         v-if="filteredChildren.length && !isSelfRendering && widget.type !== 'form'"
@@ -475,17 +477,19 @@ const wrapperStyle = computed(() => {
         :prop="widget.field"
         :rules="widget.validationRules"
       >
+        <WidgetErrorBoundary v-if="resolvedComponent" :widget-type="widget.type" :widget-id="widget.id">
+          <component
+            :is="resolvedComponent"
+            :widget="widget"
+          />
+        </WidgetErrorBoundary>
+      </el-form-item>
+      <WidgetErrorBoundary v-else-if="resolvedComponent" :widget-type="widget.type" :widget-id="widget.id">
         <component
-          v-if="resolvedComponent"
           :is="resolvedComponent"
           :widget="widget"
         />
-      </el-form-item>
-      <component
-        v-else-if="resolvedComponent"
-        :is="resolvedComponent"
-        :widget="widget"
-      />
+      </WidgetErrorBoundary>
     </div>
   </template>
 </template>

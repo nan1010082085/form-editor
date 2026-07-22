@@ -86,6 +86,7 @@ const {
   listApi: listApiConfig,
   pageSize: paginationConfig.value.pageSize,
   autoLoad: false,
+  enableRetry: true,
 })
 
 // Sync pageSize when pagination config changes

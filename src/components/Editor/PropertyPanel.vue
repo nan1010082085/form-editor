@@ -7,15 +7,13 @@
  * - 动态组件：每个属性由 PropertyField 根据 type 渲染不同输入
  * - 每行一个属性：label + value 水平排列
  */
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useEditorStore } from '../../stores/editor'
 import { useWidgetStore } from '../../stores/widget'
 import { useBoardStore } from '../../stores/board'
 import { getWidget } from '../../widgets/registry'
-import { publicStylePanel } from '../../widgets/base/publicSchema'
-import { BOARD_THEME_PRESETS } from '../../utils/boardThemes'
-import type { Widget, WidgetEvent, SchemaApiConfig, ConfigPanelType, ArrayFieldSchema, WidgetConfig, CanvasUnit, BoardLayoutMode } from '../../widgets/base/types'
-import type { SchemaLinkage } from '../WidgetRenderer/types'
+import { buildConfigHelpText } from '../../utils/configHelpText'
+import type { Widget, WidgetConfig, ConfigPanelType } from '../../widgets/base/types'
 import PropertyField from './PropertyField.vue'
 import BorderEditor from './BorderEditor.vue'
 import BorderRadiusEditor from './BorderRadiusEditor.vue'
@@ -44,16 +42,15 @@ import EventConfigDialog from './EventConfigDialog.vue'
 import LinkageSchemaDialog from './LinkageSchemaDialog.vue'
 import OptionsApiConfigDialog from './OptionsApiConfigDialog.vue'
 import VariableConfigDialog from './VariableConfigDialog.vue'
-import type { WidgetVariable } from '../../widgets/base/types'
-import { usePropertyAdapters } from '../../composables/usePropertyAdapters'
 import { useClipboard } from '../../composables/useClipboard'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 
 const editorStore = useEditorStore()
 const widgetStore = useWidgetStore()
 const boardStore = useBoardStore()
-const { getStyleLabel, getStyleInputType, getPropInputType, getStyleOptions } = usePropertyAdapters()
+const { t } = useI18n()
 const { copy } = useClipboard()
 
 // ---- 选中的 Widget ----
@@ -75,8 +72,8 @@ const widgetConfig = computed(() => {
 // ---- 属性面板声明 ----
 
 const panelDeclaration = computed(() => {
-  if (!widgetConfig.value) return null
-  return widgetConfig.value.config.propertyPanel ?? null
+  if (!widgetConfig.value) return undefined
+  return widgetConfig.value.config.propertyPanel ?? undefined
 })
 
 // ---- 事件目标（支持动态函数） ----
@@ -90,194 +87,16 @@ const resolvedEventTargets = computed(() => {
 
 // ---- 属性列表项类型 ----
 
-interface SelectOption {
-  label: string
-  value: string | number | boolean
-}
+// PropertyItem / PropertySection / propertySections 构建逻辑已抽到 usePropertySections composable
+import { usePropertySections } from '../../composables/usePropertySections'
+import { usePropertyPanelLogic } from '../../composables/usePropertyPanelLogic'
+import { usePropertyPanelDialogs } from '../../composables/usePropertyPanelDialogs'
 
-interface PropertyItem {
-  key: string
-  label: string
-  type: string
-  value: unknown
-  desc?: string
-  placeholder?: string
-  options?: SelectOption[]
-  fields?: ArrayFieldSchema[]
-  remoteUrl?: string
-  labelField?: string
-  valueField?: string
-  visibleOn?: string
-  unit?: string      // 单位值（如 'px', '%'）
-  unitKey?: string   // 单位属性的路径（如 'position.wUnit'）
-}
-
-interface PropertySection {
-  key: string
-  label: string
-  items: PropertyItem[]
-}
-
-// ---- 基础属性映射 ----
-
-function getBasicPropertyItem(prop: string, widget: Widget): PropertyItem {
-  const map: Record<string, { label: string; type: string; value: unknown; desc: string }> = {
-    field: { label: '字段名', type: 'text', value: widget.field, desc: '字段名，用于数据绑定' },
-    label: { label: '标签', type: 'text', value: widget.label, desc: '组件显示标签' },
-    defaultValue: { label: '默认值', type: 'text', value: widget.defaultValue, desc: '组件默认值' },
-    hidden: { label: '隐藏', type: 'switch', value: widget.hidden, desc: '设计时隐藏组件' },
-    options: { label: '选项', type: 'options', value: widget.options, desc: '下拉/单选/多选的选项列表' },
-    validationRules: { label: '校验规则', type: 'rules', value: widget.validationRules, desc: '表单校验规则' },
-  }
-  const mapped = map[prop]
-  if (mapped) {
-    return { key: prop, ...mapped }
-  }
-  return { key: prop, label: prop, type: 'text', value: widget.props?.[prop] }
-}
-
-// ---- 所有可编辑属性（按分区） ----
-
-const propertySections = computed<PropertySection[]>(() => {
-  if (!panelDeclaration.value || !selectedWidget.value) return []
-
-  const sections: PropertySection[] = []
-  const panel = panelDeclaration.value
-  const widget = selectedWidget.value
-
-  // 1. 基础属性
-  const basicItems: PropertyItem[] = []
-  if (panel.basic) {
-    for (const prop of panel.basic) {
-      if (typeof prop === 'string') {
-        basicItems.push(getBasicPropertyItem(prop, widget))
-      } else {
-        basicItems.push({
-          key: prop.key,
-          label: prop.label,
-          type: prop.type,
-          value: widget.props?.[prop.key] ?? prop.default,
-          desc: prop.desc,
-          options: prop.options,
-          fields: prop.fields,
-          visibleOn: prop.visibleOn,
-        })
-      }
-    }
-  }
-  if (basicItems.length) {
-    sections.push({ key: 'basic', label: '基础属性', items: basicItems })
-  }
-
-  // 2. 位置属性（Flex 流式布局无绝对坐标）
-  if (boardStore.layoutMode !== 'flex') {
-    sections.push({
-      key: 'position',
-      label: '位置',
-      items: [
-        { key: 'position.x', label: 'X', type: 'number', value: widget.position?.x ?? 0, desc: '水平位置', unit: widget.position?.xUnit ?? 'px', unitKey: 'position.xUnit' },
-        { key: 'position.y', label: 'Y', type: 'number', value: widget.position?.y ?? 0, desc: '垂直位置', unit: widget.position?.yUnit ?? 'px', unitKey: 'position.yUnit' },
-        { key: 'position.w', label: '宽度', type: 'number', value: widget.position?.w ?? 240, desc: '组件宽度', unit: widget.position?.wUnit ?? 'px', unitKey: 'position.wUnit' },
-        { key: 'position.h', label: '高度', type: 'number', value: widget.position?.h ?? 40, desc: '组件高度', unit: widget.position?.hUnit ?? 'px', unitKey: 'position.hUnit' },
-        { key: 'position.zIndex', label: '层级', type: 'number', value: widget.position?.zIndex ?? 0, desc: 'Z轴层级' },
-      ],
-    })
-  }
-
-  // 2b. Flex 布局属性（仅流式模式）
-  if (boardStore.layoutMode === 'flex') {
-    sections.push({
-      key: 'flex-layout',
-      label: 'Flex 布局',
-      items: [
-        { key: 'span', label: '栅格宽度', type: 'number', value: widget.span ?? 24, desc: '栅格列宽 (1-24)' },
-        { key: 'style.marginBottom', label: '下间距', type: 'text', value: widget.style?.marginBottom, desc: '如 12px' },
-      ],
-    })
-  }
-
-  // 3. 样式属性
-  const styleProps = [...publicStylePanel, ...(panel.style ?? [])]
-  const uniqueStyleProps = [...new Set(styleProps)]
-  const styleItems: PropertyItem[] = []
-  for (const prop of uniqueStyleProps) {
-    const styleLabel = getStyleLabel(prop)
-    styleItems.push({
-      key: `style.${prop}`,
-      label: styleLabel,
-      type: getStyleInputType(prop),
-      value: widget.style?.[prop],
-      desc: `组件${styleLabel}`,
-      options: getStyleOptions(prop),
-    })
-  }
-  if (styleItems.length) {
-    sections.push({ key: 'style', label: '样式', items: styleItems })
-  }
-
-  // 4. 组件属性
-  const propItems: PropertyItem[] = []
-  if (panel.props) {
-    for (const prop of panel.props) {
-      if (typeof prop === 'string') {
-        propItems.push({
-          key: `props.${prop}`,
-          label: prop,
-          type: getPropInputType(prop),
-          value: widget.props?.[prop],
-        })
-      } else {
-        propItems.push({
-          key: `props.${prop.key}`,
-          label: prop.label,
-          type: prop.type,
-          value: getNestedValue(widget.props, prop.key) ?? prop.default,
-          desc: prop.desc,
-          placeholder: (prop as any).placeholder,
-          options: prop.options,
-          fields: prop.fields,
-          remoteUrl: (prop as any).remoteUrl,
-          labelField: (prop as any).labelField,
-          valueField: (prop as any).valueField,
-          visibleOn: prop.visibleOn,
-        })
-      }
-    }
-  }
-  if (propItems.length) {
-    sections.push({ key: 'props', label: '组件属性', items: propItems })
-  }
-
-  return sections
-})
+const { propertySections } = usePropertySections(selectedWidget, panelDeclaration, t)
 
 // ---- visibleOn 条件求值 ----
 
-// 编译缓存
-const visibleOnCache = new Map<string, (props: Record<string, unknown>) => boolean>()
-
-function compileVisibleOn(expr: string): (props: Record<string, unknown>) => boolean {
-  const cached = visibleOnCache.get(expr)
-  if (cached) return cached
-
-  // 将 "props.xxx === 'yyy'" 转换为 Function
-  // 安全：visibleOn 来自 config.ts，非用户输入
-  const fn = new Function('props', `"use strict"; return (${expr})`) as (props: Record<string, unknown>) => boolean
-  visibleOnCache.set(expr, fn)
-  return fn
-}
-
-function isItemVisible(item: PropertyItem): boolean {
-  if (!item.visibleOn) return true
-  const widget = selectedWidget.value
-  if (!widget) return true
-  try {
-    const fn = compileVisibleOn(item.visibleOn)
-    return !!fn(widget.props ?? {})
-  } catch {
-    return true
-  }
-}
+const { updateProperty, updateStylePatch, isItemVisible } = usePropertyPanelLogic(selectedWidget, widgetStore)
 
 // 过滤可见项的 section
 const visibleSections = computed(() =>
@@ -299,71 +118,6 @@ function toggleSection(key: string) {
   }
 }
 
-// ---- 更新属性 ----
-
-const TOP_LEVEL_KEYS = new Set(['field', 'label', 'defaultValue', 'hidden', 'options', 'validationRules'])
-
-function setNestedValue(obj: Record<string, unknown>, path: string[], value: unknown): Record<string, unknown> {
-  if (path.length === 1) {
-    return { ...obj, [path[0]]: value }
-  }
-  const [head, ...rest] = path
-  return {
-    ...obj,
-    [head]: setNestedValue((obj[head] as Record<string, unknown>) ?? {}, rest, value),
-  }
-}
-
-function getNestedValue(obj: Record<string, unknown> | undefined, path: string): unknown {
-  if (!obj) return undefined
-  return path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], obj)
-}
-
-function updateProperty(key: string, value: unknown) {
-  if (!selectedWidget.value) return
-
-  const parts = key.split('.')
-  if (parts.length === 1) {
-    if (TOP_LEVEL_KEYS.has(key)) {
-      widgetStore.updateWidget(selectedWidget.value.id, { [key]: value })
-    } else {
-      widgetStore.updateWidget(selectedWidget.value.id, {
-        props: { ...(selectedWidget.value.props ?? {}), [key]: value },
-      })
-    }
-  } else if (parts[0] === 'position') {
-    widgetStore.updateWidget(selectedWidget.value.id, {
-      position: { ...selectedWidget.value.position, [parts[1]]: value },
-    })
-  } else if (parts[0] === 'style') {
-    widgetStore.updateWidget(selectedWidget.value.id, {
-      style: { ...(selectedWidget.value.style ?? {}), [parts[1]]: value },
-    })
-  } else if (parts[0] === 'props') {
-    // 支持嵌套路径：props.selection.enabled → props.selection.enabled
-    widgetStore.updateWidget(selectedWidget.value.id, {
-      props: setNestedValue(selectedWidget.value.props ?? {}, parts.slice(1), value),
-    })
-  }
-}
-
-function copyWidgetId() {
-  if (selectedWidget.value) {
-    copy(selectedWidget.value.id, '已复制部件 ID')
-  }
-}
-
-/**
- * 样式补丁更新 — BorderEditor / BorderRadiusEditor 发出多字段 patch
- * 合并到现有 style 对象上
- */
-function updateStylePatch(patch: Record<string, string>) {
-  if (!selectedWidget.value) return
-  widgetStore.updateWidget(selectedWidget.value.id, {
-    style: { ...(selectedWidget.value.style ?? {}), ...patch },
-  })
-}
-
 // ---- configPanels 声明 ----
 
 const configPanels = computed<ConfigPanelType[]>(() => {
@@ -372,256 +126,37 @@ const configPanels = computed<ConfigPanelType[]>(() => {
 })
 
 /** 根据 configPanels 自动生成配置说明 */
-const configHelpText = computed(() => {
-  const parts: string[] = ['<p><strong>配置说明</strong></p>']
-  if (configPanels.value.includes('events')) {
-    parts.push(`
-      <p><strong>事件配置</strong></p>
-      <p>为组件绑定交互事件，设置触发条件和执行动作：</p>
-      <ul>
-        <li><strong>触发</strong> — 选择事件类型（点击/值变化/聚焦/失焦/关闭）</li>
-        <li><strong>条件</strong> — 可选，满足条件时才执行动作</li>
-        <li><strong>确认</strong> — 可选，执行前弹出确认提示</li>
-        <li><strong>动作</strong> — 显示/隐藏组件、打开/关闭弹窗、切换标签页</li>
-      </ul>
-    `)
-  }
-  if (configPanels.value.includes('linkages') || configPanels.value.includes('rules')) {
-    parts.push(`
-      <p><strong>字段联动</strong></p>
-      <p>监听其他字段值变化，写入 <code>linkages</code>，运行时由 useLinkage 生效：</p>
-      <ul>
-        <li>可见 / 禁用 / 必填 / 选项 / 设置值 / 重置字段</li>
-        <li>设置监听字段和条件表达式</li>
-        <li>条件为假时可指定回退值</li>
-      </ul>
-    `)
-  }
-  if (configPanels.value.includes('api')) {
-    parts.push(`
-      <p><strong>数据源</strong></p>
-      <p>配置 API 接口实现动态数据加载：</p>
-      <ul>
-        <li>设置接口地址和请求方法</li>
-        <li>配置请求参数和字段映射</li>
-        <li>支持下拉选项、表格数据等动态加载</li>
-      </ul>
-    `)
-  }
-  if (configPanels.value.includes('variables')) {
-    parts.push(`
-      <p><strong>变量</strong></p>
-      <p>定义组件级变量，可在事件条件和联动规则中引用：</p>
-      <ul>
-        <li>通过 exposed.xxx.value 引用组件暴露值</li>
-        <li>通过 variables.xxx 引用变量值</li>
-      </ul>
-    `)
-  }
-  return parts.join('')
-})
+const configHelpText = computed(() => buildConfigHelpText(configPanels.value, t))
 
 // ---- 事件/规则/API/变量 弹框 ----
 
-const eventDialogVisible = ref(false)
-const linkageDialogVisible = ref(false)
-const apiDialogVisible = ref(false)
-const variableDialogVisible = ref(false)
-
-function openEventDialog() {
-  eventDialogVisible.value = true
-}
-
-function openLinkageDialog() {
-  linkageDialogVisible.value = true
-}
-
-function openApiDialog() {
-  apiDialogVisible.value = true
-}
-
-// ---- 监听右键菜单触发的弹框打开 ----
-watch(() => editorStore.configDialogTrigger, (trigger) => {
-  if (!trigger) return
-  if (trigger.type === 'events') eventDialogVisible.value = true
-  else if (trigger.type === 'rules' || trigger.type === 'linkages') linkageDialogVisible.value = true
-  else if (trigger.type === 'api') apiDialogVisible.value = true
-  else if (trigger.type === 'variables') variableDialogVisible.value = true
-  editorStore.clearConfigDialogTrigger()
-})
-
-function handleEventSave(events: WidgetEvent[]) {
-  if (!selectedWidget.value) return
-  widgetStore.updateWidget(selectedWidget.value.id, { events })
-}
-
-function handleLinkageSave(linkages: SchemaLinkage[]) {
-  if (!selectedWidget.value) return
-  widgetStore.updateWidget(selectedWidget.value.id, { linkages })
-}
-
-function handleApiSave(api: SchemaApiConfig | undefined) {
-  if (!selectedWidget.value) return
-  widgetStore.updateWidget(selectedWidget.value.id, { api })
-}
-
-function handleVariableSave(variables: WidgetVariable[]) {
-  if (!selectedWidget.value) return
-  widgetStore.updateWidget(selectedWidget.value.id, { variables })
-}
-
-// ---- 画布级变量配置 ----
-const boardVariableDialogVisible = ref(false)
-
-function handleBoardVariableSave(variables: WidgetVariable[]) {
-  boardStore.variables = variables as typeof boardStore.variables
-}
+const {
+  eventDialogVisible,
+  linkageDialogVisible,
+  apiDialogVisible,
+  variableDialogVisible,
+  boardVariableDialogVisible,
+  openEventDialog,
+  openLinkageDialog,
+  openApiDialog,
+  handleEventSave,
+  handleLinkageSave,
+  handleApiSave,
+  handleVariableSave,
+  handleBoardVariableSave,
+} = usePropertyPanelDialogs(selectedWidget, widgetStore, editorStore, boardStore)
 
 // ---- 画布配置（未选中部件时显示） ----
 
 const canvasExpanded = ref(true)
 
-interface BoardPropertyItem {
-  key: string
-  label: string
-  type: string
-  value: unknown
-  desc?: string
-  options?: Array<{ label: string; value: string | number | boolean }>
-}
+// boardPropertyItems 构建逻辑已抽到 useBoardPropertyItems composable
+import { useBoardPropertyItems } from '../../composables/useBoardPropertyItems'
+import { useBoardPropertyUpdater } from '../../composables/useBoardPropertyUpdater'
 
-const unitOptions = [
-  { label: 'px (像素)', value: 'px' },
-  { label: '% (百分比)', value: '%' },
-]
+const { boardPropertyItems } = useBoardPropertyItems(t)
 
-const layoutModeOptions = [
-  { label: '自由布局', value: 'free' as BoardLayoutMode },
-  { label: 'Flex 页面布局', value: 'flex' as BoardLayoutMode },
-]
-
-const boardPropertyItems = computed<BoardPropertyItem[]>(() => {
-  const c = boardStore.canvas
-  const isFree = (c.layoutMode ?? 'free') === 'free'
-  const items: BoardPropertyItem[] = [
-    { key: 'layoutMode', label: '布局模式', type: 'select', value: c.layoutMode ?? 'free', desc: 'free=绝对定位，flex=流式页面', options: layoutModeOptions },
-    {
-      key: 'themePreset',
-      label: '大屏主题',
-      type: 'select',
-      value: (c as { themePreset?: string }).themePreset ?? 'default-light',
-      desc: '深色/科技蓝等大屏预设',
-      options: BOARD_THEME_PRESETS.map(p => ({ label: p.label, value: p.id })),
-    },
-  ]
-  if (isFree) {
-    items.push(
-      { key: 'freeLayout.maxContentWidth', label: '内容最大宽度', type: 'number', value: c.freeLayout?.maxContentWidth ?? '', desc: 'px，留空为全宽' },
-      { key: 'freeLayout.contentAlign', label: '水平对齐', type: 'select', value: c.freeLayout?.contentAlign ?? 'left', options: [
-        { label: '左对齐', value: 'left' },
-        { label: '居中', value: 'center' },
-      ] },
-      { key: 'freeLayout.marginX', label: '左右留白', type: 'text', value: c.freeLayout?.marginX ?? '0', desc: '如 24px' },
-      { key: 'freeLayout.snapToGrid', label: '网格吸附', type: 'switch', value: c.freeLayout?.snapToGrid ?? false, desc: '拖拽/缩放时吸附到网格' },
-      { key: 'freeLayout.gridColumns', label: '网格列数', type: 'select', value: c.freeLayout?.gridColumns ?? 24, desc: '12 或 24 列', options: [
-        { label: '12 列', value: 12 },
-        { label: '24 列', value: 24 },
-      ] },
-      { key: 'freeLayout.gridRowHeight', label: '网格行高', type: 'number', value: c.freeLayout?.gridRowHeight ?? 8, desc: 'px，默认 8' },
-    )
-  }
-  items.push(
-    { key: 'width', label: '宽度', type: 'number', value: c.width, desc: isFree ? '画布宽度' : 'Flex 模式下通常为 100%' },
-    { key: 'widthUnit', label: '宽度单位', type: 'select', value: c.widthUnit ?? 'px', desc: '宽度单位', options: unitOptions },
-    { key: 'height', label: '高度', type: 'number', value: c.height, desc: isFree ? '画布高度' : 'Flex 模式下通常为 100%' },
-    { key: 'heightUnit', label: '高度单位', type: 'select', value: c.heightUnit ?? 'px', desc: '高度单位', options: unitOptions },
-    { key: 'backgroundColor', label: '背景色', type: 'color', value: c.backgroundColor, desc: '画布背景色' },
-    { key: 'padding', label: '内边距', type: 'text', value: c.padding, desc: '画布内边距' },
-  )
-  if (!isFree) {
-    items.push({ key: 'zoom', label: '缩放', type: 'number', value: c.zoom, desc: '缩放比例 (100-150)' })
-  }
-  return items
-})
-
-function updateBoardProperty(key: string, value: unknown) {
-  if (key === 'themePreset') {
-    const preset = BOARD_THEME_PRESETS.find(p => p.id === value)
-    if (preset) {
-      boardStore.updateCanvas({ ...preset.canvas, themePreset: preset.id } as typeof boardStore.canvas)
-      if (preset.cssVars) {
-        for (const [k, v] of Object.entries(preset.cssVars)) {
-          document.documentElement.style.setProperty(k, v)
-        }
-      }
-    }
-    return
-  }
-
-  if (key === 'layoutMode') {
-    const mode = value as BoardLayoutMode
-    if (mode === 'flex') {
-      boardStore.updateCanvas({
-        layoutMode: 'flex',
-        width: 100,
-        height: 100,
-        widthUnit: '%',
-        heightUnit: '%',
-        padding: '20px',
-      })
-    } else {
-      boardStore.updateCanvas({
-        layoutMode: 'free',
-        width: 1440,
-        height: 900,
-        widthUnit: 'px',
-        heightUnit: 'px',
-      })
-    }
-    widgetStore.adaptAllToLayoutMode(mode)
-    return
-  }
-
-  if (key.startsWith('freeLayout.')) {
-    const subKey = key.slice('freeLayout.'.length) as keyof NonNullable<typeof boardStore.canvas.freeLayout>
-    const fl = { ...(boardStore.canvas.freeLayout ?? {}), [subKey]: value === '' ? undefined : value }
-    boardStore.updateCanvas({ freeLayout: fl })
-    return
-  }
-
-  // 切换单位时自动转换数值
-  if (key === 'widthUnit') {
-    const newUnit = value as CanvasUnit
-    const oldUnit = boardStore.canvas.widthUnit ?? 'px'
-    if (newUnit !== oldUnit) {
-      const currentWidth = boardStore.canvas.width
-      const parentWidth = boardStore.getCanvasWidthPx()
-      if (oldUnit === 'px' && newUnit === '%' && parentWidth > 0) {
-        boardStore.updateCanvas({ widthUnit: newUnit, width: Math.round((currentWidth / parentWidth) * 100 * 100) / 100 })
-        return
-      } else if (oldUnit === '%' && newUnit === 'px') {
-        boardStore.updateCanvas({ widthUnit: newUnit, width: Math.round(parentWidth * currentWidth / 100) })
-        return
-      }
-    }
-  }
-  if (key === 'heightUnit') {
-    const newUnit = value as CanvasUnit
-    const oldUnit = boardStore.canvas.heightUnit ?? 'px'
-    if (newUnit !== oldUnit) {
-      const currentHeight = boardStore.canvas.height
-      const parentHeight = boardStore.getCanvasHeightPx()
-      if (oldUnit === 'px' && newUnit === '%' && parentHeight > 0) {
-        boardStore.updateCanvas({ heightUnit: newUnit, height: Math.round((currentHeight / parentHeight) * 100 * 100) / 100 })
-        return
-      } else if (oldUnit === '%' && newUnit === 'px') {
-        boardStore.updateCanvas({ heightUnit: newUnit, height: Math.round(parentHeight * currentHeight / 100) })
-        return
-      }
-    }
-  }
-  boardStore.updateCanvas({ [key]: value })
-}
+const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
 </script>
 
 <template>

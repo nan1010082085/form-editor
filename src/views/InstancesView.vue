@@ -10,7 +10,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useApiStore } from '@/stores/api'
 import { downloadSchemaJson, parseImportFile } from '@/utils/schemaExport'
-import { importSchema, updateSchema } from '@/utils/apiClient'
+import { importSchema, updateSchema } from '@/api/schemaApi'
 import type { SchemaTypeValue } from '@/types/api'
 import type { BoardLayoutMode, FlexPageTemplate, FreeLayoutPreset } from '@/widgets/base/types'
 import { createBoardFromTemplate } from '@/utils/boardTemplates'
@@ -20,10 +20,13 @@ import FilterTabs from '@schema-platform/platform-shared/components/common/Filte
 import type { SchemaListItem, SchemaDetail } from '@/types/api'
 import type { PartialWidget } from '@/widgets/base/types'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+import { reportTelemetry } from '@/api/telemetryApi'
 import styles from './InstancesView.module.scss'
 
 const router = useRouter()
 const store = useApiStore()
+const { t } = useI18n()
 
 /** 获取 JSON 中的组件数量 */
 function getJsonLength(json: SchemaListItem['json']): number {
@@ -42,35 +45,35 @@ const selectedIds = ref<Set<string>>(new Set())
 const publishingId = ref<string | null>(null)
 const COOLDOWN_MS = 2000
 
-const filterTabs = [
-  { label: '全部', value: 'all' as const },
-  { label: '表单', value: 'form' as const },
-  { label: '搜索列表', value: 'search-list' as const },
-  { label: '布局', value: 'layout' as const },
-  { label: '表格', value: 'table' as const },
-  { label: '图表', value: 'chart' as const },
-  { label: '业务', value: 'business' as const },
-  { label: '报表', value: 'report' as const },
-  { label: '其他', value: 'other' as const },
-]
+const filterTabs = computed(() => [
+  { label: t('editor.instances.filterAll'), value: 'all' as const },
+  { label: t('editor.instances.filterForm'), value: 'form' as const },
+  { label: t('editor.instances.filterSearchList'), value: 'search-list' as const },
+  { label: t('editor.instances.filterLayout'), value: 'layout' as const },
+  { label: t('editor.instances.filterTable'), value: 'table' as const },
+  { label: t('editor.instances.filterChart'), value: 'chart' as const },
+  { label: t('editor.instances.filterBusiness'), value: 'business' as const },
+  { label: t('editor.instances.filterReport'), value: 'report' as const },
+  { label: t('editor.instances.filterOther'), value: 'other' as const },
+])
 
-const sortOptions = [
-  { label: '最新优先', value: 'newest' as const },
-  { label: '最早优先', value: 'oldest' as const },
-  { label: '名称 A-Z', value: 'name' as const },
-]
+const sortOptions = computed(() => [
+  { label: t('editor.instances.sortNewest'), value: 'newest' as const },
+  { label: t('editor.instances.sortOldest'), value: 'oldest' as const },
+  { label: t('editor.instances.sortName'), value: 'name' as const },
+])
 
 // ---- Schema type options ----
-const schemaTypeOptions: { label: string; value: SchemaTypeValue }[] = [
-  { label: '表单', value: 'form' },
-  { label: '搜索列表', value: 'search-list' },
-  { label: '布局', value: 'layout' },
-  { label: '表格', value: 'table' },
-  { label: '图表', value: 'chart' },
-  { label: '业务', value: 'business' },
-  { label: '报表', value: 'report' },
-  { label: '其他', value: 'other' },
-]
+const schemaTypeOptions = computed<{ label: string; value: SchemaTypeValue }[]>(() => [
+  { label: t('editor.instances.filterForm'), value: 'form' },
+  { label: t('editor.instances.filterSearchList'), value: 'search-list' },
+  { label: t('editor.instances.filterLayout'), value: 'layout' },
+  { label: t('editor.instances.filterTable'), value: 'table' },
+  { label: t('editor.instances.filterChart'), value: 'chart' },
+  { label: t('editor.instances.filterBusiness'), value: 'business' },
+  { label: t('editor.instances.filterReport'), value: 'report' },
+  { label: t('editor.instances.filterOther'), value: 'other' },
+])
 
 // ---- Create Dialog ----
 const createDialogVisible = ref(false)
@@ -80,28 +83,28 @@ const createLayoutMode = ref<BoardLayoutMode>('flex')
 const createFlexTemplate = ref<FlexPageTemplate>('form')
 const createFreePreset = ref<FreeLayoutPreset>('list-standard')
 
-const layoutModeOptions: { label: string; value: BoardLayoutMode; desc: string }[] = [
-  { label: 'Flex 页面布局', value: 'flex', desc: '流式排列，适合表单、CRUD 列表，自适应容器' },
-  { label: '自由布局', value: 'free', desc: '绝对定位画布，适合大屏、门户、复杂可视化' },
-]
+const layoutModeOptions = computed<{ label: string; value: BoardLayoutMode; desc: string }[]>(() => [
+  { label: t('editor.instances.layoutFlex'), value: 'flex', desc: t('editor.instances.layoutFlexDesc') },
+  { label: t('editor.instances.layoutFree'), value: 'free', desc: t('editor.instances.layoutFreeDesc') },
+])
 
-const flexTemplateOptions: { label: string; value: FlexPageTemplate }[] = [
-  { label: '表单页', value: 'form' },
-  { label: '列表页（CRUD）', value: 'list' },
-  { label: '详情/审批页', value: 'detail' },
-  { label: '空白 Flex 页', value: 'blank' },
-]
+const flexTemplateOptions = computed<{ label: string; value: FlexPageTemplate }[]>(() => [
+  { label: t('editor.instances.tplForm'), value: 'form' },
+  { label: t('editor.instances.tplList'), value: 'list' },
+  { label: t('editor.instances.tplDetail'), value: 'detail' },
+  { label: t('editor.instances.tplBlank'), value: 'blank' },
+])
 
-const freePresetOptions: { label: string; value: FreeLayoutPreset }[] = [
-  { label: '全宽画布', value: 'full' },
-  { label: '居中窄版（表单 960px）', value: 'form-narrow' },
-  { label: '居中标准（列表 1200px）', value: 'list-standard' },
-  { label: '居中宽版（1440px）', value: 'list-wide' },
-  { label: '运营大屏 Demo（E1 验收）', value: 'dashboard-demo' },
-]
+const freePresetOptions = computed<{ label: string; value: FreeLayoutPreset }[]>(() => [
+  { label: t('editor.instances.presetFull'), value: 'full' },
+  { label: t('editor.instances.presetFormNarrow'), value: 'form-narrow' },
+  { label: t('editor.instances.presetListStandard'), value: 'list-standard' },
+  { label: t('editor.instances.presetListWide'), value: 'list-wide' },
+  { label: t('editor.instances.presetDashboardDemo'), value: 'dashboard-demo' },
+])
 
 const selectedLayoutDesc = computed(
-  () => layoutModeOptions.find((o) => o.value === createLayoutMode.value)?.desc ?? '',
+  () => layoutModeOptions.value.find((o) => o.value === createLayoutMode.value)?.desc ?? '',
 )
 
 function openCreateDialog() {
@@ -132,7 +135,7 @@ function onFlexTemplateChange(template: FlexPageTemplate) {
 async function confirmCreate() {
   const name = createName.value.trim()
   if (!name) {
-    ElMessage.warning('请输入实例名称')
+    ElMessage.warning(t('editor.instances.nameRequired'))
     return
   }
   const seed = createBoardFromTemplate({
@@ -154,10 +157,10 @@ async function confirmCreate() {
   })
   if (result) {
     createDialogVisible.value = false
-    ElMessage.success('创建成功')
+    ElMessage.success(t('editor.instances.createSuccess'))
     router.push({ path: '/editor', query: { id: result.id } })
   } else {
-    ElMessage.error(store.error || '创建失败')
+    ElMessage.error(store.error || t('editor.instances.createFailed'))
   }
 }
 
@@ -206,16 +209,16 @@ const sortedSchemas = computed(() => {
 function handleDelete(item: SchemaListItem) {
   const isPublished = !!item.publishId
   const message = isPublished
-    ? `"${item.name}" 已发布，删除后发布的表单将不可恢复。确认删除？`
-    : `确认删除 "${item.name}"？`
-  ElMessageBox.confirm(message, '删除确认', {
-    confirmButtonText: '删除',
-    cancelButtonText: '取消',
+    ? t('editor.instances.deletePublishedMessage', { name: item.name })
+    : t('editor.instances.deleteConfirmMessage', { name: item.name })
+  ElMessageBox.confirm(message, t('editor.instances.deleteConfirmTitle'), {
+    confirmButtonText: t('editor.instances.actionDelete'),
+    cancelButtonText: t('editor.instances.cancel'),
     type: isPublished ? 'error' : 'warning',
   }).then(async () => {
     const ok = await store.deleteSchema(item.id)
-    if (ok) ElMessage.success('已删除')
-    else ElMessage.error(store.error || '删除失败')
+    if (ok) ElMessage.success(t('editor.instances.deleteSuccess'))
+    else ElMessage.error(store.error || t('editor.instances.deleteFailed'))
   }).catch((err) => {
     if (err !== 'cancel') throw err
   })
@@ -240,11 +243,11 @@ async function handlePublish(item: SchemaListItem) {
   if (publishingId.value) return
   try {
     await ElMessageBox.confirm(
-      `确认发布 "${item.name}" 的最新版本？`,
-      '发布确认',
+      t('editor.instances.publishConfirmMessage', { name: item.name }),
+      t('editor.instances.publishConfirmTitle'),
       {
-        confirmButtonText: '发布',
-        cancelButtonText: '取消',
+        confirmButtonText: t('editor.instances.actionPublish'),
+        cancelButtonText: t('editor.instances.cancel'),
         type: 'info',
       }
     )
@@ -256,14 +259,14 @@ async function handlePublish(item: SchemaListItem) {
     publishingId.value = item.id
     const result = await store.publishSchema(item.id)
     if (result) {
-      ElMessage.success('发布成功')
+      ElMessage.success(t('editor.instances.publishSuccess'))
       store.fetchSchemas()
     } else {
-      ElMessage.error(store.error || '发布失败')
+      ElMessage.error(store.error || t('editor.instances.publishFailed'))
     }
   } catch (err) {
-    console.error('发布失败:', err)
-    ElMessage.error('发布失败')
+    console.error(t('editor.instances.publishFailed'), err)
+    ElMessage.error(t('editor.instances.publishFailed'))
   } finally {
     setTimeout(() => { publishingId.value = null }, COOLDOWN_MS)
   }
@@ -286,11 +289,11 @@ async function handleBulkDelete() {
   if (selectedIds.value.size === 0) return
   try {
     await ElMessageBox.confirm(
-      `确认删除选中的 ${selectedIds.value.size} 个实例？此操作不可撤销。`,
-      '批量删除',
+      t('editor.instances.bulkDeleteMessage', { count: selectedIds.value.size }),
+      t('editor.instances.bulkDeleteTitle'),
       {
-        confirmButtonText: '删除',
-        cancelButtonText: '取消',
+        confirmButtonText: t('editor.instances.actionDelete'),
+        cancelButtonText: t('editor.instances.cancel'),
         type: 'warning',
       }
     )
@@ -306,14 +309,14 @@ async function handleBulkDelete() {
       if (ok) success++
       else fail++
     }
-    if (fail === 0) ElMessage.success(`已删除 ${success} 个实例`)
-    else ElMessage.warning(`删除 ${success} 个成功，${fail} 个失败`)
+    if (fail === 0) ElMessage.success(t('editor.instances.bulkDeleteSuccess', { count: success }))
+    else ElMessage.warning(t('editor.instances.bulkDeletePartial', { success, fail }))
 
     bulkMode.value = false
     selectedIds.value.clear()
   } catch (err) {
-    console.error('批量删除失败:', err)
-    ElMessage.error('批量删除失败')
+    console.error(t('editor.instances.bulkDeleteFailed'), err)
+    ElMessage.error(t('editor.instances.bulkDeleteFailed'))
   }
 }
 
@@ -323,7 +326,8 @@ function handleExport(item: SchemaListItem) {
   store.fetchSchemaById(item.id).then((detail) => {
     if (detail) {
       downloadSchemaJson(detail as SchemaDetail)
-      ElMessage.success('导出成功')
+      ElMessage.success(t('editor.instances.exportSuccess'))
+      void reportTelemetry('export', { schemaId: item.id })
     }
   })
 }
@@ -349,7 +353,7 @@ function handleUploadChange(uploadFile: any) {
 
 async function confirmImport() {
   if (!importFile.value) {
-    ElMessage.warning('请选择文件')
+    ElMessage.warning(t('editor.instances.importFileRequired'))
     return
   }
 
@@ -358,10 +362,11 @@ async function confirmImport() {
     const parsed = await parseImportFile(importFile.value)
     await importSchema(parsed)
     importDialogVisible.value = false
-    ElMessage.success('导入成功')
+    ElMessage.success(t('editor.instances.importSuccess'))
+    void reportTelemetry('import')
     store.fetchSchemas()
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '导入失败')
+    ElMessage.error(err instanceof Error ? err.message : t('editor.instances.importFailed'))
   } finally {
     importLoading.value = false
   }
@@ -372,16 +377,16 @@ function formatDate(d: string) {
   return new Date(d).toLocaleString('zh-CN')
 }
 
-const TYPE_LABEL_MAP: Record<string, string> = {
-  form: '表单',
-  search_list: '搜索列表',
-  layout: '布局',
-  table: '表格',
-  chart: '图表',
-  business: '业务',
-  report: '报表',
-  other: '其他',
-}
+const TYPE_LABEL_MAP = computed<Record<string, string>>(() => ({
+  form: t('editor.instances.filterForm'),
+  search_list: t('editor.instances.filterSearchList'),
+  layout: t('editor.instances.filterLayout'),
+  table: t('editor.instances.filterTable'),
+  chart: t('editor.instances.filterChart'),
+  business: t('editor.instances.filterBusiness'),
+  report: t('editor.instances.filterReport'),
+  other: t('editor.instances.filterOther'),
+}))
 
 const TYPE_TAG_MAP: Record<string, 'info' | 'success' | 'warning' | 'danger'> = {
   form: 'info',
@@ -395,7 +400,7 @@ const TYPE_TAG_MAP: Record<string, 'info' | 'success' | 'warning' | 'danger'> = 
 }
 
 function typeLabel(type: string): string {
-  return TYPE_LABEL_MAP[type] ?? type
+  return TYPE_LABEL_MAP.value[type] ?? type
 }
 
 function typeTagType(type: string): 'info' | 'success' | 'warning' | 'danger' | '' {
@@ -427,11 +432,11 @@ async function confirmEdit() {
   editSaving.value = true
   try {
     await updateSchema(editId.value, { name: editName.value.trim(), type: editType.value })
-    ElMessage.success('已更新')
+    ElMessage.success(t('editor.instances.updateSuccess'))
     editDialogVisible.value = false
     store.fetchSchemas()
   } catch {
-    ElMessage.error('更新失败')
+    ElMessage.error(t('editor.instances.updateFailed'))
   } finally {
     editSaving.value = false
   }
@@ -471,15 +476,15 @@ function handleVersionPublished() {
       <div :class="styles['fg-instances__header']">
         <div :class="styles['fg-instances__title-row']">
           <div>
-            <h1>实例管理</h1>
-            <p :class="styles['fg-instances__subtitle']">管理所有 Schema 实例</p>
+            <h1>{{ t('editor.instances.title') }}</h1>
+            <p :class="styles['fg-instances__subtitle']">{{ t('editor.instances.subtitle') }}</p>
           </div>
           <div :class="styles['fg-instances__header-actions']">
             <el-button @click="openImportDialog">
-              <AppIcon name="upload" class="el-icon--left" />导入
+              <AppIcon name="upload" class="el-icon--left" />{{ t('editor.instances.import') }}
             </el-button>
             <el-button type="primary" @click="openCreateDialog">
-              <AppIcon name="plus" class="el-icon--left" />新建
+              <AppIcon name="plus" class="el-icon--left" />{{ t('editor.instances.create') }}
             </el-button>
           </div>
         </div>
@@ -488,7 +493,7 @@ function handleVersionPublished() {
         <div :class="styles['fg-instances__toolbar']">
           <FilterTabs v-model="activeTab" :options="filterTabs" />
           <div :class="styles['fg-instances__toolbar-right']">
-            <el-input v-model="searchInput" placeholder="搜索名称..." clearable :class="styles['fg-instances__search']" @input="handleSearch" @clear="handleSearch('')">
+            <el-input v-model="searchInput" :placeholder="t('editor.instances.searchPlaceholder')" clearable :class="styles['fg-instances__search']" @input="handleSearch" @clear="handleSearch('')">
               <template #prefix><AppIcon name="search" :size="14" /></template>
             </el-input>
             <el-dropdown @command="(cmd: string) => sortBy = cmd as any">
@@ -506,11 +511,11 @@ function handleVersionPublished() {
             </el-dropdown>
             <el-button size="small" :type="bulkMode ? 'danger' : 'default'" @click="toggleBulkMode">
               <AppIcon name="document" class="el-icon--left" />
-              {{ bulkMode ? '取消' : '批量操作' }}
+              {{ bulkMode ? t('editor.instances.cancelBulk') : t('editor.instances.bulkAction') }}
             </el-button>
             <el-button v-if="bulkMode && selectedIds.size > 0" size="small" type="danger" @click="handleBulkDelete">
               <AppIcon name="delete" class="el-icon--left" />
-              删除 ({{ selectedIds.size }})
+              {{ t('editor.instances.actionDelete') }} ({{ selectedIds.size }})
             </el-button>
           </div>
         </div>
@@ -531,7 +536,7 @@ function handleVersionPublished() {
       <div v-else-if="store.hasError && !store.hasSchemas" :class="styles['fg-instances__content']">
         <el-alert :title="store.error ?? ''" type="error" show-icon :closable="false">
           <template #default>
-            <el-button size="small" @click="store.fetchSchemas()">重试</el-button>
+            <el-button size="small" @click="store.fetchSchemas()">{{ t('editor.instances.retry') }}</el-button>
           </template>
         </el-alert>
       </div>
@@ -541,19 +546,19 @@ function handleVersionPublished() {
         <div :class="styles['fg-instances__empty-icon']">
           <AppIcon name="document" :size="64" />
         </div>
-        <h2 :class="styles['fg-instances__empty-title']">还没有 Schema 实例</h2>
-        <p :class="styles['fg-instances__empty-desc']">创建您的第一个 Schema 实例来开始使用</p>
+        <h2 :class="styles['fg-instances__empty-title']">{{ t('editor.instances.emptyTitle') }}</h2>
+        <p :class="styles['fg-instances__empty-desc']">{{ t('editor.instances.emptyDesc') }}</p>
         <div :class="styles['fg-instances__empty-actions']">
           <el-button type="primary" size="large" @click="openCreateDialog">
-            <AppIcon name="plus" class="el-icon--left" />创建实例
+            <AppIcon name="plus" class="el-icon--left" />{{ t('editor.instances.createInstance') }}
           </el-button>
         </div>
       </div>
 
       <!-- No search results -->
       <div v-else-if="isFiltered && sortedSchemas.length === 0 && !store.loading" :class="styles['fg-instances__state--no-results']">
-        <p>未找到匹配的实例</p>
-        <el-button @click="activeTab = 'all'; searchInput = ''; store.fetchSchemas()">清除筛选</el-button>
+        <p>{{ t('editor.instances.noMatch') }}</p>
+        <el-button @click="activeTab = 'all'; searchInput = ''; store.fetchSchemas()">{{ t('editor.instances.clearFilter') }}</el-button>
       </div>
 
       <!-- Card Grid -->
@@ -574,35 +579,35 @@ function handleVersionPublished() {
               <h3 :class="styles['fg-instances-card__name']">{{ item.name }}</h3>
               <div :class="styles['fg-instances-card__meta']">
                 <el-tag size="small" :type="typeTagType(item.type)">{{ typeLabel(item.type) }}</el-tag>
-                <el-tag v-if="item.publishId" size="small" type="success">已发布</el-tag>
+                <el-tag v-if="item.publishId" size="small" type="success">{{ t('editor.instances.published') }}</el-tag>
                 <span v-if="item.version" :class="styles['fg-instances-card__version']">v{{ item.version }}</span>
                 <!-- Component count -->
                 <span v-if="getJsonLength(item.json)" :class="styles['fg-instances-card__count']">
-                  {{ getJsonLength(item.json) }} 个组件
+                  {{ getJsonLength(item.json) }} {{ t('editor.instances.components') }}
                 </span>
                 <span :class="styles['fg-instances-card__date']">{{ formatDate(item.updatedAt) }}</span>
               </div>
             </div>
             <div :class="styles['fg-instances-card__actions']">
-              <el-tooltip content="编辑表单" placement="top" :show-after="300">
+              <el-tooltip :content="t('editor.instances.tooltipEdit')" placement="top" :show-after="300">
                 <el-button size="small" text type="primary" @click="handleEdit(item.id)"><AppIcon name="edit" /></el-button>
               </el-tooltip>
-              <el-tooltip content="设计器" placement="top" :show-after="300">
+              <el-tooltip :content="t('editor.instances.tooltipDesigner')" placement="top" :show-after="300">
                 <el-button size="small" text @click="handleDesigner(item.id)"><AppIcon name="setting" /></el-button>
               </el-tooltip>
-              <el-tooltip :content="item.publishId ? '预览发布版本' : '预览编辑版本'" placement="top" :show-after="300">
+              <el-tooltip :content="item.publishId ? t('editor.instances.previewPublished') : t('editor.instances.previewEdit')" placement="top" :show-after="300">
                 <el-button size="small" text type="warning" @click="handlePreview(item)"><AppIcon name="view" /></el-button>
               </el-tooltip>
-              <el-tooltip content="版本历史" placement="top" :show-after="300">
+              <el-tooltip :content="t('editor.instances.tooltipVersions')" placement="top" :show-after="300">
                 <el-button size="small" text @click="handleShowVersions(item)"><AppIcon name="clock" /></el-button>
               </el-tooltip>
-              <el-tooltip content="发布" placement="top" :show-after="300">
+              <el-tooltip :content="t('editor.instances.actionPublish')" placement="top" :show-after="300">
                 <el-button size="small" text type="success" :loading="publishingId === item.id" :disabled="publishingId !== null" @click="handlePublish(item)"><AppIcon name="promotion" /></el-button>
               </el-tooltip>
-              <el-tooltip content="导出" placement="top" :show-after="300">
+              <el-tooltip :content="t('editor.instances.actionExport')" placement="top" :show-after="300">
                 <el-button size="small" text @click="handleExport(item)"><AppIcon name="download" /></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top" :show-after="300">
+              <el-tooltip :content="t('editor.instances.actionDelete')" placement="top" :show-after="300">
                 <el-button size="small" text type="danger" @click="handleDelete(item)"><AppIcon name="delete" /></el-button>
               </el-tooltip>
             </div>
@@ -623,12 +628,12 @@ function handleVersionPublished() {
     </div>
 
     <!-- Create Dialog -->
-    <AppDialog v-model="createDialogVisible" title="新建实例" width="520px">
+    <AppDialog v-model="createDialogVisible" :title="t('editor.instances.createDialogTitleNew')" width="520px">
       <el-form label-width="96px" @submit.prevent="confirmCreate">
-        <el-form-item label="实例名称">
-          <el-input v-model="createName" placeholder="请输入实例名称" maxlength="100" show-word-limit @keyup.enter="confirmCreate" />
+        <el-form-item :label="t('editor.instances.createFormName')">
+          <el-input v-model="createName" :placeholder="t('editor.instances.createFormNamePlaceholder')" maxlength="100" show-word-limit @keyup.enter="confirmCreate" />
         </el-form-item>
-        <el-form-item label="布局模式">
+        <el-form-item :label="t('editor.instances.createFormLayoutMode')">
           <div :class="styles.createLayoutMode">
             <el-radio-group v-model="createLayoutMode" :class="styles.createLayoutRadios" @change="onLayoutModeChange">
               <el-radio
@@ -642,41 +647,41 @@ function handleVersionPublished() {
             <p v-if="selectedLayoutDesc" :class="styles.createLayoutDesc">{{ selectedLayoutDesc }}</p>
           </div>
         </el-form-item>
-        <el-form-item v-if="createLayoutMode === 'flex'" label="页面模板">
+        <el-form-item v-if="createLayoutMode === 'flex'" :label="t('editor.instances.createFormPageTemplate')">
           <el-select v-model="createFlexTemplate" style="width:100%" @change="onFlexTemplateChange">
             <el-option v-for="opt in flexTemplateOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
         </el-form-item>
-        <el-form-item v-else label="留白预设">
+        <el-form-item v-else :label="t('editor.instances.createFormPreset')">
           <el-select v-model="createFreePreset" style="width:100%">
             <el-option v-for="opt in freePresetOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="分类标签">
+        <el-form-item :label="t('editor.instances.createFormTypeTag')">
           <el-select v-model="createType" style="width:100%">
             <el-option v-for="opt in schemaTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
-          <div :class="styles.createFieldHint">仅用于实例列表筛选，不影响布局行为</div>
+          <div :class="styles.createFieldHint">{{ t('editor.instances.createFormTypeHint') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="createDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmCreate">创建并编辑</el-button>
+        <el-button @click="createDialogVisible = false">{{ t('editor.instances.cancel') }}</el-button>
+        <el-button type="primary" @click="confirmCreate">{{ t('editor.instances.createAndEdit') }}</el-button>
       </template>
     </AppDialog>
 
     <!-- Import Dialog -->
-    <AppDialog v-model="importDialogVisible" title="导入 Schema" width="440px">
+    <AppDialog v-model="importDialogVisible" :title="t('editor.instances.importDialogTitle')" width="440px">
       <el-upload drag :auto-upload="false" accept=".json" :limit="1" :on-change="handleUploadChange">
         <AppIcon name="upload" class="el-icon--upload" :size="40" />
-        <div class="el-upload__text">拖拽文件到此处，或 <em>点击选择</em></div>
+        <div class="el-upload__text">{{ t('editor.instances.importDragHint') }} <em>{{ t('editor.instances.importClickSelect') }}</em></div>
         <template #tip>
-          <div class="el-upload__tip">仅支持 .json 格式的 Schema 文件</div>
+          <div class="el-upload__tip">{{ t('editor.instances.importTip') }}</div>
         </template>
       </el-upload>
       <template #footer>
-        <el-button @click="importDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="importLoading" @click="confirmImport">导入</el-button>
+        <el-button @click="importDialogVisible = false">{{ t('editor.instances.cancel') }}</el-button>
+        <el-button type="primary" :loading="importLoading" @click="confirmImport">{{ t('editor.instances.import') }}</el-button>
       </template>
     </AppDialog>
 
@@ -692,20 +697,20 @@ function handleVersionPublished() {
     />
 
     <!-- Edit Instance Dialog -->
-    <AppDialog v-model="editDialogVisible" title="编辑实例" width="440px">
+    <AppDialog v-model="editDialogVisible" :title="t('editor.instances.editDialogTitle')" width="440px">
       <el-form label-width="80px" @submit.prevent="confirmEdit">
-        <el-form-item label="实例名称">
-          <el-input v-model="editName" placeholder="请输入实例名称" maxlength="100" show-word-limit @keyup.enter="confirmEdit" />
+        <el-form-item :label="t('editor.instances.editFormName')">
+          <el-input v-model="editName" :placeholder="t('editor.instances.createFormNamePlaceholder')" maxlength="100" show-word-limit @keyup.enter="confirmEdit" />
         </el-form-item>
-        <el-form-item label="分类标签">
+        <el-form-item :label="t('editor.instances.editFormTypeTag')">
           <el-select v-model="editType" style="width:100%">
             <el-option v-for="opt in schemaTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="editSaving" @click="confirmEdit">保存</el-button>
+        <el-button @click="editDialogVisible = false">{{ t('editor.instances.cancel') }}</el-button>
+        <el-button type="primary" :loading="editSaving" @click="confirmEdit">{{ t('editor.instances.save') }}</el-button>
       </template>
     </AppDialog>
   </div>

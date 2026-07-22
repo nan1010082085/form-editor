@@ -1,20 +1,31 @@
 <script setup lang="ts">
-import { inject, computed, reactive, watch, onMounted } from 'vue'
+import { inject, computed, watch, onMounted } from 'vue'
 import { TABLE_CLICK_INTERCEPT_KEY } from './clickIntercept'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import FgSearchForm from '../../components/SearchForm/FgSearchForm.vue'
+import WidgetStateShell from '../../components/WidgetRenderer/WidgetStateShell.vue'
+import FgAdvancedTableVirtual from './FgAdvancedTableVirtual.vue'
 import { widgetDataKey } from '../base/types'
 import { EVENT_CONTEXT_KEY, FORM_GRID_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
 import { useListData } from '../../composables/useListData'
 import { useExposeWidget } from '../../composables/useExposeWidget'
-import { triggerWidgetEvent } from '../../engine/eventEngine'
-import { evaluateCondition } from '../../engine/eventEngine'
-import type { ListApiConfig } from '../../components/WidgetRenderer/types'
-import type { AdvancedTableColumn, ActionButton, AdvPaginationConfig, AdvSelectionConfig, SearchBarConfig, SearchField } from './config'
+import type { AdvancedTableColumn, ActionButton } from './config'
 import { getRowCellValue } from './tableRowValue'
 import { resolveColumnFilters } from './columnFilters'
-import { buildServerFilterParams, shouldUseServerSideFilter } from './columnServerFilter'
+import { buildServerFilterParams } from './columnServerFilter'
 import { resolveEffectiveColumn } from './columnOptions'
+import { useAdvancedTableConfig } from './useAdvancedTableConfig'
+import { useAdvancedTableEvents } from './useAdvancedTableEvents'
+import {
+  getTagType,
+  getOptionLabel,
+  getFlowStatusLabel,
+  getFlowStatusTagType,
+  getExpiryLabel,
+  getExpiryTagType,
+  getTooltipContent,
+  cellValue,
+} from './advancedTableCellRender'
 import {
   WIDGET_SURFACE_KEY,
   getTableRowsFromMock,
@@ -28,46 +39,27 @@ const clickIntercept = inject(TABLE_CLICK_INTERCEPT_KEY, null)
 const gridContext = inject(FORM_GRID_CONTEXT_KEY, null)
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
 
-// ---- Schema config ----
+// ---- Schema config（抽到 useAdvancedTableConfig） ----
 
-const columns = computed<AdvancedTableColumn[]>(() =>
-  (widgetData.value.props?.columns as AdvancedTableColumn[]) ?? [],
-)
+const {
+  columns,
+  toolbar,
+  stripe,
+  border,
+  tableHeight,
+  globalSortable,
+  virtualEnabled,
+  paginationConfig,
+  selectionConfig,
+  searchFields,
+  searchEnabled,
+  listApiConfig,
+  serverSideFilter: serverSideFilterFn,
+} = useAdvancedTableConfig(widgetData)
 
-const toolbar = computed<ActionButton[]>(() =>
-  (widgetData.value.props?.toolbar as ActionButton[]) ?? [],
-)
+const serverSideFilter = computed(() => serverSideFilterFn(columns.value))
 
-const stripe = computed(() => (widgetData.value.props?.stripe as boolean) ?? true)
-const border = computed(() => (widgetData.value.props?.border as boolean) ?? true)
-const tableHeight = computed(() => (widgetData.value.props?.height as number) ?? 350)
-const globalSortable = computed(() => (widgetData.value.props?.sortable as boolean) ?? false)
-
-const paginationConfig = computed<AdvPaginationConfig>(() =>
-  (widgetData.value.props?.pagination as AdvPaginationConfig) ?? { enabled: true, pageSize: 20, pageSizes: [10, 20, 50, 100] },
-)
-
-const serverSideFilter = computed(() =>
-  shouldUseServerSideFilter(
-    widgetData.value.props as Record<string, unknown> | undefined,
-    !!listApiConfig.url,
-    columns.value,
-  ),
-)
-
-const selectionConfig = computed<AdvSelectionConfig>(() =>
-  (widgetData.value.props?.selection as AdvSelectionConfig) ?? { enabled: false },
-)
-
-const searchBarConfig = computed<SearchBarConfig>(() =>
-  (widgetData.value.props?.searchBar as SearchBarConfig) ?? { enabled: false, fields: [] },
-)
-
-const searchFields = computed<SearchField[]>(() => searchBarConfig.value.fields ?? [])
-
-const searchEnabled = computed(() =>
-  searchBarConfig.value.enabled !== false && searchFields.value.length > 0,
-)
+// ---- 数据层 ----
 
 function onSearch(params: Record<string, unknown>) {
   setSearchParams(params)
@@ -79,36 +71,11 @@ function onSearchReset() {
   fetchData()
 }
 
-// ---- Build ListApiConfig ----
-
-function buildListApiConfig(): ListApiConfig {
-  const api = widgetData.value.api
-  if (api?.url) {
-    return {
-      url: api.url,
-      method: api.method ?? 'post',
-      dataPath: api.dataPath,
-      pageParam: (api as ListApiConfig).pageParam ?? 'page',
-      sizeParam: (api as ListApiConfig).sizeParam ?? 'pageSize',
-      immediate: false,
-    }
-  }
-  return { url: '', immediate: false }
-}
-
-const listApiConfig = reactive<ListApiConfig>(buildListApiConfig())
-
-watch(
-  () => widgetData.value.api?.url,
-  () => Object.assign(listApiConfig, buildListApiConfig()),
-)
-
-// ---- useListData ----
-
 const {
   tableData,
   total,
   loading,
+  error,
   currentPage,
   pageSize,
   selectedRows,
@@ -124,6 +91,7 @@ const {
   listApi: listApiConfig,
   pageSize: paginationConfig.value.pageSize,
   autoLoad: false,
+  enableRetry: true, // 高可用：网络抖动时自动重试（指数退避，3 次）
 })
 
 watch(
@@ -145,31 +113,40 @@ useExposeWidget(() => ({
   },
 }))
 
-// ---- Sort ----
+// ---- 事件分发（抽到 useAdvancedTableEvents） ----
 
-function onSortChange({ prop, order }: { prop: string; order: 'ascending' | 'descending' | null }) {
-  handleSortChange({ prop, order: order ?? '' })
-  if (eventCtx) triggerWidgetEvent(widgetData.value, 'click', eventCtx, 'sort-change')
-}
-
-// ---- Selection ----
-
-function onSelectionChange(rows: Record<string, unknown>[]) {
-  handleSelectionChange(rows)
-  if (eventCtx) triggerWidgetEvent(widgetData.value, 'click', eventCtx, 'selection-change')
-}
+const {
+  onSortChange,
+  onSelectionChange,
+  onFilterChange,
+  onPageChange,
+  onRowClick,
+  handleToolbarClick,
+  handleRowButtonClick,
+  handleLinkClick,
+  isToolbarVisible,
+  isRowButtonVisible,
+} = useAdvancedTableEvents({
+  widgetData,
+  eventCtx,
+  clickIntercept,
+  tableData,
+  selectedRows,
+  serverSideFilter,
+  columns,
+  handleSortChange,
+  handleSelectionChange,
+  handlePageChange,
+  handleSearch,
+  setSearchParams,
+  buildServerFilterParams,
+})
 
 // ---- Filter ----
 
 function defaultFilterMethod(prop: string) {
   if (serverSideFilter.value) return () => true
   return (value: unknown, row: Record<string, unknown>) => getRowCellValue(row, prop) === value
-}
-
-function onFilterChange(filters: Record<string, unknown>) {
-  if (!serverSideFilter.value) return
-  setSearchParams(buildServerFilterParams(filters, columns.value))
-  handleSearch()
 }
 
 function columnFilters(col: AdvancedTableColumn) {
@@ -181,155 +158,10 @@ function effectiveColumn(col: AdvancedTableColumn): AdvancedTableColumn {
   return resolveEffectiveColumn(col, gridContext?.global?.dictMap)
 }
 
-// ---- Page change ----
+// ---- 虚拟滚动 ----
 
-function onPageChange(page: number) {
-  handlePageChange(page)
-  if (eventCtx) triggerWidgetEvent(widgetData.value, 'click', eventCtx, 'page-change')
-}
-
-// ---- Row click ----
-
-function onRowClick(row: Record<string, unknown>) {
-  if (eventCtx) {
-    const ctx = { ...eventCtx, row, rowIndex: tableData.value.indexOf(row) }
-    triggerWidgetEvent(widgetData.value, 'click', ctx, 'row-click')
-  }
-}
-
-// ---- Toolbar button click ----
-
-function handleToolbarClick(btn: ActionButton) {
-  if (!eventCtx) return
-  const ctx = {
-    ...eventCtx,
-    selectedRows: selectedRows.value,
-    selectedCount: selectedRows.value.length,
-    tableData: tableData.value,
-  }
-  // Quick confirm shortcut
-  if (btn.confirm && !window.confirm(btn.confirm)) return
-  if (clickIntercept?.onToolbarClick?.(btn, ctx)) return
-  triggerWidgetEvent(widgetData.value, 'click', ctx, `toolbar-${btn.key}`)
-}
-
-// ---- Row button click ----
-
-function handleRowButtonClick(btn: ActionButton, row: Record<string, unknown>, rowIndex: number) {
-  if (!eventCtx) return
-  const ctx = {
-    ...eventCtx,
-    row,
-    rowIndex,
-    selectedRows: selectedRows.value,
-    selectedCount: selectedRows.value.length,
-    tableData: tableData.value,
-  }
-  // Quick confirm shortcut
-  if (btn.confirm && !window.confirm(btn.confirm)) return
-  if (clickIntercept?.onRowButtonClick?.(btn, row, rowIndex, ctx)) return
-  triggerWidgetEvent(widgetData.value, 'click', ctx, `row-${btn.key}`)
-}
-
-// ---- Link click ----
-
-function handleLinkClick(col: AdvancedTableColumn, row: Record<string, unknown>, rowIndex: number) {
-  if (!eventCtx) return
-  const ctx = {
-    ...eventCtx,
-    row,
-    rowIndex,
-    selectedRows: selectedRows.value,
-    tableData: tableData.value,
-  }
-  if (clickIntercept?.onLinkClick?.(col, row, rowIndex, ctx)) return
-  triggerWidgetEvent(widgetData.value, 'click', ctx, `link-${col.prop}`)
-}
-
-// ---- Resolve tag type from colorMap ----
-
-function getTagType(colorMap?: Record<string, string>, value?: unknown): string {
-  if (!colorMap) return ''
-  return (colorMap[String(value)] ?? '') as string
-}
-
-// ---- Resolve option label ----
-
-function getOptionLabel(options?: Array<{ label: string; value: unknown }>, value?: unknown): string {
-  if (!options) return String(value ?? '')
-  const found = options.find(o => o.value === value)
-  return found?.label ?? String(value ?? '')
-}
-
-const FLOW_STATUS_COLOR: Record<string, string> = {
-  running: 'warning',
-  completed: 'success',
-  terminated: 'danger',
-  cancelled: 'info',
-}
-
-function getFlowStatusLabel(row: Record<string, unknown>): string {
-  const label = row.flowStatusLabel ?? row.flowStatus
-  if (label) return String(label)
-  return row.status != null ? String(row.status) : '—'
-}
-
-function getFlowStatusTagType(row: Record<string, unknown>): string {
-  const raw = String(row.flowStatus ?? '')
-  return FLOW_STATUS_COLOR[raw] ?? ''
-}
-
-const EXPIRY_COLOR: Record<string, string> = {
-  valid: 'success',
-  expiring: 'warning',
-  expired: 'danger',
-}
-
-function getExpiryLabel(row: Record<string, unknown>): string {
-  const status = String(row.expiryStatus ?? row.status ?? '')
-  if (status === 'expiring') return '即将到期'
-  if (status === 'expired') return '已过期'
-  if (status === 'valid') return '有效'
-  const days = row.daysUntilDue
-  if (typeof days === 'number' && days <= 30) return `${days} 天后到期`
-  return status || '—'
-}
-
-function getExpiryTagType(row: Record<string, unknown>): string {
-  const status = String(row.expiryStatus ?? row.status ?? '')
-  return EXPIRY_COLOR[status] ?? ''
-}
-
-// ---- Toolbar button visibility ----
-
-function isToolbarVisible(btn: ActionButton): boolean {
-  if (!btn.visibleCondition) return true
-  const context = {
-    selectedRows: selectedRows.value,
-    selectedCount: selectedRows.value.length,
-    tableData: tableData.value,
-  }
-  return evaluateCondition(btn.visibleCondition, context) === true
-}
-
-// ---- Row button visibility ----
-
-function isRowButtonVisible(btn: ActionButton, row: Record<string, unknown>): boolean {
-  if (!btn.visibleCondition) return true
-  const context = { row, ...row }
-  return evaluateCondition(btn.visibleCondition, context) === true
-}
-
-// ---- Tooltip content ----
-
-function getTooltipContent(col: AdvancedTableColumn, row: Record<string, unknown>): string {
-  if (col.tooltipField) return String(getRowCellValue(row, col.tooltipField) ?? '')
-  return String(getRowCellValue(row, col.prop) ?? '')
-}
-
-function cellValue(row: Record<string, unknown>, prop: string): unknown {
-  return getRowCellValue(row, prop)
-}
+const VIRTUAL_THRESHOLD = 100
+const useVirtual = computed(() => virtualEnabled.value && tableData.value.length > VIRTUAL_THRESHOLD)
 
 // ---- Auto-load ----
 
@@ -364,10 +196,32 @@ watch(
 
 // ---- Expose methods ----
 
+/** 乐观插入一行（头部），同步 total */
+function insertRow(row: Record<string, unknown>): void {
+  tableData.value = [row, ...tableData.value]
+  total.value += 1
+}
+
+/** 乐观更新匹配行（按 idField+id 定位），patch 合并 */
+function updateRow(idField: string, id: unknown, patch: Record<string, unknown>): void {
+  tableData.value = tableData.value.map((r) =>
+    r[idField] === id ? { ...r, ...patch } : r,
+  )
+}
+
+/** 乐观删除匹配行，同步 total */
+function removeRow(idField: string, id: unknown): void {
+  tableData.value = tableData.value.filter((r) => r[idField] !== id)
+  total.value = Math.max(0, total.value - 1)
+}
+
 defineExpose({
   refresh: fetchData,
   setSearchParams,
   clearSelection,
+  insertRow,
+  updateRow,
+  removeRow,
 })
 </script>
 
@@ -402,14 +256,32 @@ defineExpose({
       <el-button size="small" text @click="clearSelection">取消选择</el-button>
     </div>
 
-    <!-- Table -->
-    <el-table
-      v-loading="loading"
-      :data="tableData"
-      :stripe="stripe"
-      :border="border"
-      :height="tableHeight"
-      size="default"
+    <!-- Table + 统一状态壳（loading/empty/error） -->
+    <WidgetStateShell
+      :loading="loading && tableData.length === 0"
+      :error="error"
+      :empty="!loading && !error && tableData.length === 0"
+      :skeleton-rows="6"
+      :min-height="(tableHeight ?? 200) + 'px'"
+      @retry="fetchData"
+    >
+      <!-- 虚拟滚动路径：数据 > 阈值且 virtual 开启 -->
+      <FgAdvancedTableVirtual
+        v-if="useVirtual"
+        :columns="columns"
+        :data="tableData"
+        :height="tableHeight"
+        @row-click="(row: Record<string, unknown>, i: number) => onRowClick(row)"
+        @row-button-click="(btn: ActionButton, row: Record<string, unknown>, i: number) => handleRowButtonClick(btn, row, i)"
+      />
+      <!-- 常规路径：el-table（全特性） -->
+      <el-table
+        v-else
+        :data="tableData"
+        :stripe="stripe"
+        :border="border"
+        :height="tableHeight"
+        size="default"
       :class="styles.table"
       @sort-change="onSortChange"
       @filter-change="onFilterChange"
@@ -544,5 +416,6 @@ defineExpose({
       @current-change="onPageChange"
       @size-change="handleSizeChange"
     />
+    </WidgetStateShell>
   </div>
 </template>

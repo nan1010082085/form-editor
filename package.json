@@ -15,7 +15,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,vue,scss,json}\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "check:docs": "tsx scripts/check-docs-sync.ts"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

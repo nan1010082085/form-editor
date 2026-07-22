@@ -10,6 +10,8 @@ import { fetchCurrentUser } from '@/utils/apiClient'
 const appStore = useAppStore()
 
 onMounted(async () => {
+  // /perf 压测页无需登录，跳过用户上下文加载（避免 401 触发跳登录）
+  if (window.location.pathname.endsWith('/perf')) return
   try {
     const user = await fetchCurrentUser()
     appStore.userContext.id = user.id

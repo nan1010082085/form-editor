@@ -9,24 +9,27 @@
  * - 弹窗编辑器状态
  */
 import { defineStore } from 'pinia'
-import { ref, computed, shallowRef } from 'vue'
+import { ref, computed, shallowRef, toRaw } from 'vue'
 import { produce, enablePatches, applyPatches, type Patch } from 'immer'
 import type { Widget } from '../widgets/base/types'
 import type { InteractionMode } from '../composables/useConstant'
 import { useWidgetStore } from './widget'
 import { MAX_HISTORY_SIZE } from '../composables/useConstant'
+import { reportTelemetry } from '../api/telemetryApi'
 
 enablePatches()
+
+function cloneWidgets(widgets: Widget[]): Widget[] {
+  // toRaw 解包 Vue 响应式 proxy，避免 immer produce 冻结 proxy 时报错
+  const raw = widgets.map((w) => toRaw(w) as Widget)
+  return produce(raw, () => {}) as Widget[]
+}
 
 const MAX_HISTORY = MAX_HISTORY_SIZE
 
 interface HistoryEntry {
   patches: Patch[]
   inversePatches: Patch[]
-}
-
-function cloneWidgets(widgets: Widget[]): Widget[] {
-  return produce(widgets, () => {}) as Widget[]
 }
 
 export const useEditorStore = defineStore('editor', () => {
@@ -71,7 +74,7 @@ export const useEditorStore = defineStore('editor', () => {
     savedHistoryIndex.value = historyIndex.value
   }
 
-  type ConfigDialogType = 'events' | 'rules' | 'linkages' | 'api' | 'variables'
+  type ConfigDialogType = 'events' | 'linkages' | 'api' | 'variables'
   const configDialogTrigger = ref<{ widget: Widget; type: ConfigDialogType } | null>(null)
 
   function openConfigDialog(widget: Widget, type: ConfigDialogType) {
@@ -161,6 +164,7 @@ export const useEditorStore = defineStore('editor', () => {
     const entry = history.value[historyIndex.value]
     historyIndex.value--
     isDirty.value = historyIndex.value !== savedHistoryIndex.value
+    void reportTelemetry('undo')
     return applyPatches(current, entry.inversePatches)
   }
 
@@ -168,6 +172,7 @@ export const useEditorStore = defineStore('editor', () => {
     if (historyIndex.value >= history.value.length - 1) return null
     historyIndex.value++
     isDirty.value = historyIndex.value !== savedHistoryIndex.value
+    void reportTelemetry('redo')
     return cloneWidgets(getStateAt(historyIndex.value, history.value, baseState.value))
   }
 
@@ -255,14 +260,48 @@ export const useEditorStore = defineStore('editor', () => {
   function performCopyWidget(): void {
     const widgetStore = useWidgetStore()
     const widget = widgetStore.findWidget(selectedId.value ?? '')
-    if (widget) copy(widget)
+    if (widget) {
+      copy(widget)
+      void reportTelemetry('copy')
+    }
   }
 
   function performDeleteWidget(): void {
-    if (!selectedId.value) return
+    if (!selectedIds.value.length) return
     const widgetStore = useWidgetStore()
-    widgetStore.removeWidget(selectedId.value)
+    const count = selectedIds.value.length
+    for (const id of [...selectedIds.value]) {
+      widgetStore.removeWidget(id)
+    }
     clearSelection()
+    pushHistory([...widgetStore.widgets])
+    void reportTelemetry('delete', { props: { widgetCount: count, source: 'canvas' } })
+  }
+
+  /**
+   * 键盘上下移：在同级 siblings 内前移/后移选中部件（flex 流式重排，free 也可用）。
+   * 仅对单选生效；多选时不操作（避免乱序）。
+   *
+   * moveWidgetToIndex 的 toIndex 语义为「原数组目标位置」，同父后移时内部会 -1 补偿提取位移，
+   * 故 down 传 curIdx+2（-1 后落到 curIdx+1），up 传 curIdx-1（fromIdx>target 不触发 -1）。
+   */
+  function performMoveSelected(direction: 'up' | 'down'): void {
+    if (selectedIds.value.length !== 1) return
+    const id = selectedId.value
+    if (!id) return
+    const widgetStore = useWidgetStore()
+    const parent = widgetStore.findParent(id)
+    const parentId = parent?.id ?? null
+    const siblings = parent?.children ?? widgetStore.widgets
+    const curIdx = siblings.findIndex((w) => w.id === id)
+    if (curIdx < 0) return
+    if (direction === 'up') {
+      if (curIdx === 0) return
+      widgetStore.moveWidgetToIndex(id, parentId, curIdx - 1)
+    } else {
+      if (curIdx >= siblings.length - 1) return
+      widgetStore.moveWidgetToIndex(id, parentId, curIdx + 2)
+    }
     pushHistory([...widgetStore.widgets])
   }
 
@@ -307,5 +346,6 @@ export const useEditorStore = defineStore('editor', () => {
     performRedo,
     performCopyWidget,
     performDeleteWidget,
+    performMoveSelected,
   }
 })

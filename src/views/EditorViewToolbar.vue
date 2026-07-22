@@ -82,20 +82,8 @@ function handleCanvasSizeChange(preset: string) {
 }
 
 // ================================================================
-// Layout mode switcher
+// Layout mode：创建时由模板固定，工具栏仅展示当前模式，不可切换
 // ================================================================
-
-function handleLayoutModeChange(mode: 'free' | 'flex') {
-  if (mode === boardStore.layoutMode) return
-  boardStore.updateCanvas({
-    layoutMode: mode,
-    ...(mode === 'flex'
-      ? { width: 100, height: 100, widthUnit: '%' as const, heightUnit: '%' as const, padding: '20px' }
-      : { width: 1440, height: 900, widthUnit: 'px' as const, heightUnit: 'px' as const }
-    ),
-  })
-  widgetStore.adaptAllToLayoutMode(mode)
-}
 
 // ================================================================
 // Version management (toolbar-local state)
@@ -284,22 +272,10 @@ function handleClearCanvas() {
         </button>
       </el-tooltip>
       <div :class="styles.divider" />
-      <el-dropdown trigger="click" @command="handleLayoutModeChange">
-        <button :class="styles.iconBtn" title="布局模式">
-          <AppIcon name="switch" :size="14" />
-          <span :class="styles.modeLabel">{{ boardStore.layoutMode === 'flex' ? 'Flex' : 'Free' }}</span>
-        </button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="free" :class="{ 'is-active': boardStore.layoutMode === 'free' }">
-              自由布局 (Free)
-            </el-dropdown-item>
-            <el-dropdown-item command="flex" :class="{ 'is-active': boardStore.layoutMode === 'flex' }">
-              流式布局 (Flex)
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <div :class="styles.modeBadge" :title="`布局模式：${boardStore.layoutMode === 'flex' ? '流式布局' : '自由布局'}（创建时固定，不可切换）`">
+        <AppIcon name="switch" :size="14" />
+        <span :class="styles.modeLabel">{{ boardStore.layoutMode === 'flex' ? 'Flex' : 'Free' }}</span>
+      </div>
       <div :class="styles.divider" />
       <el-tooltip :content="editorStore.showZoomIndicator ? '隐藏缩放控制' : '显示缩放控制'" placement="bottom">
         <button
@@ -349,6 +325,14 @@ function handleClearCanvas() {
           <div :class="styles.shortcutRow">
             <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.lock') }}</span>
             <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>L/H</kbd></span>
+          </div>
+          <div :class="styles.shortcutRow">
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.moveUp') }}</span>
+            <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>↑</kbd></span>
+          </div>
+          <div :class="styles.shortcutRow">
+            <span :class="styles.shortcutLabel">{{ t('editor.shortcuts.moveDown') }}</span>
+            <span :class="styles.shortcutKeys"><kbd>Ctrl</kbd> + <kbd>↓</kbd></span>
           </div>
         </div>
         <template #reference>

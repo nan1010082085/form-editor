@@ -43,7 +43,9 @@ function render() {
     void reportError(err instanceof Error ? err : String(err), { info })
   }
   app.directive('permission', permissionDirective)
-  initCapabilityPlatformAuth()
+  // /perf 是公开压测页，跳过 auth bootstrap（避免 401 触发跳登录）
+  const isPerfRoute = window.location.pathname.endsWith('/perf')
+  initCapabilityPlatformAuth(isPerfRoute ? { bootstrap: false } : {})
   setupElementPlus(app)
   configureApiClient({
     baseUrl: import.meta.env.VITE_API_BASE_URL as string | undefined,

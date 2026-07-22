@@ -6,8 +6,8 @@
  */
 import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { createTemplate } from '@/utils/apiClient'
-import type { TemplateCategory } from '@/utils/apiClient'
+import { createTemplate } from '@/api/schemaApi'
+import type { TemplateCategory } from '@/api/schemaApi'
 
 const props = defineProps<{
   visible: boolean

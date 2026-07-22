@@ -26,6 +26,10 @@ const registry = new Map<SchemaType, WidgetRegistryItem>()
 
 /** 注册 Widget */
 export function registerWidget(item: WidgetRegistryItem): void {
+  // 未显式声明 availableIn 时，从 config.contexts 透传（声明式控制 widget 可用画布模式）
+  if (item.availableIn === undefined && item.config?.contexts) {
+    item.availableIn = item.config.contexts
+  }
   registry.set(item.type, item)
 }
 

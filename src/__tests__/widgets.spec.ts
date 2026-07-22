@@ -46,6 +46,7 @@ import { singleColConfig } from '@/widgets/single-col/config'
 import { doubleColConfig } from '@/widgets/double-col/config'
 import { tripleColConfig } from '@/widgets/triple-col/config'
 import { quadColConfig } from '@/widgets/quad-col/config'
+import { rowContainerConfig } from '@/widgets/row-container/config'
 import { switchConfig } from '@/widgets/switch/config'
 import { cascaderConfig } from '@/widgets/cascader/config'
 import { timePickerConfig } from '@/widgets/time-picker/config'
@@ -79,6 +80,7 @@ import { computeWidgetRenderState } from '@/__tests__/widgetTestHarness'
 
 // --- Widget store ---
 import { useWidgetStore } from '@/stores/widget'
+import { useEditorStore } from '@/stores/editor'
 
 // --- Public schema helpers ---
 import { publicStylePanel } from '@/widgets/base/publicSchema'
@@ -88,7 +90,7 @@ import { publicStylePanel } from '@/widgets/base/publicSchema'
 // =====================================================================
 const REGISTERED_TYPES: WidgetSchemaType[] = [
   'form', 'card', 'tabs', 'dialog',
-  'single-col', 'double-col', 'triple-col', 'quad-col',
+  'single-col', 'double-col', 'triple-col', 'quad-col', 'row-container',
   'input', 'select', 'number', 'radio', 'checkbox',
   'date', 'textarea', 'title', 'divider',
   'spacer', 'toolbar-buttons', 'table', 'button',
@@ -137,6 +139,7 @@ const ALL_CONFIGS = [
   { name: 'double-col', config: doubleColConfig },
   { name: 'triple-col', config: tripleColConfig },
   { name: 'quad-col', config: quadColConfig },
+  { name: 'row-container', config: rowContainerConfig },
   { name: 'switch', config: switchConfig },
   { name: 'cascader', config: cascaderConfig },
   { name: 'time-picker', config: timePickerConfig },
@@ -236,6 +239,43 @@ describe('Widget Registry & Loading', () => {
     for (const t of REGISTERED_TYPES) {
       expect(registeredTypes).toContain(t)
     }
+  })
+
+  // --- contexts（可用画布模式）声明式过滤 ---
+
+  it('config.contexts 透传到 registry availableIn', () => {
+    // card 声明 contexts: ['free'] -> availableIn 应为 ['free']
+    const card = getWidget('card')!
+    expect(card.availableIn).toEqual(['free'])
+    // row-container 声明 contexts: ['flex']
+    const row = getWidget('row-container')!
+    expect(row.availableIn).toEqual(['flex'])
+  })
+
+  it('未声明 contexts 的 widget availableIn 为 undefined（双模式可用）', () => {
+    const input = getWidget('input')!
+    expect(input.availableIn).toBeUndefined()
+  })
+
+  it('flex 模式布局类 widget 应被隐藏（availableIn 不含 flex）', () => {
+    const flexHidden = ['card', 'form', 'tabs', 'single-col', 'double-col', 'triple-col', 'quad-col', 'spacer', 'form-steps', 'tab-container', 'tree-layout']
+    for (const type of flexHidden) {
+      const entry = getWidget(type)!
+      expect(entry.availableIn, `${type} 应声明 contexts 且不含 flex`).toEqual(['free'])
+    }
+  })
+
+  it('row-container 仅 flex 可用，free 模式应被隐藏', () => {
+    const entry = getWidget('row-container')!
+    expect(entry.availableIn).toEqual(['flex'])
+  })
+
+  it('createWidget row-container 生成带 span 默认结构的 Widget', () => {
+    const w = createWidget('row-container', 'rc_test')!
+    expect(w.type).toBe('row-container')
+    expect(w.children).toEqual([])
+    expect(w.props?.gutter).toBe(12)
+    expect(w.style?.width).toBe('100%')
   })
 })
 
@@ -739,6 +779,97 @@ describe('Widget Store CRUD', () => {
     expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['w2', 'w1'])
   })
 
+  // --- 容器嵌套（dialog 装表单、card 装 tabs、tabs 嵌套 tabs 等） ---
+
+  it('insertWidgetAt 允许容器作为另一容器的子节点', () => {
+    const dialog = makeWidget('d1', 'dialog')
+    store.addWidget(dialog)
+    store.insertWidgetAt('d1', makeWidget('f1', 'form'), 0)
+    expect(store.widgets.map((w) => w.id)).toEqual(['d1'])
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['f1'])
+  })
+
+  it('moveWidgetToIndex 允许容器移入另一容器', () => {
+    const card = makeWidget('c1', 'card')
+    store.addWidget(card)
+    store.addWidget(makeWidget('t1', 'tabs'))
+    store.moveWidgetToIndex('t1', 'c1', 0)
+    expect(store.widgets.map((w) => w.id)).toEqual(['c1'])
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['t1'])
+  })
+
+  it('moveWidgetToIndex 拒绝将容器移入自己的后代（防递归环）', () => {
+    const inner = makeWidget('inner', 'card')
+    const outer = makeWidget('outer', 'card', { children: [inner] })
+    store.addWidget(outer)
+    store.moveWidgetToIndex('outer', 'inner', 0)
+    // outer 仍在根级，inner 仍是 outer 的子节点（未形成环）
+    expect(store.widgets.map((w) => w.id)).toEqual(['outer'])
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['inner'])
+  })
+
+  it('loadWidgets 保留 schema 中的嵌套容器（不再剥离到根级）', () => {
+    const form = makeWidget('f1', 'form')
+    const dialog = makeWidget('d1', 'dialog', { children: [form] })
+    store.loadWidgets([dialog])
+    expect(store.widgets.map((w) => w.id)).toEqual(['d1'])
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['f1'])
+  })
+
+  // --- 容器嵌套深度限制（最多 2 层：根级容器 -> 一级子容器） ---
+
+  it('insertWidgetAt 拒绝第 3 层容器嵌套并提升到根级', () => {
+    const dialog = makeWidget('d1', 'dialog')
+    store.addWidget(dialog)
+    // 第 2 层：dialog -> form ✅
+    store.insertWidgetAt('d1', makeWidget('f1', 'form'), 0)
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['f1'])
+    // 第 3 层：dialog -> form -> card ❌ 应被拒绝，card 提升到根级
+    store.insertWidgetAt('f1', makeWidget('c1', 'card'), 0)
+    expect(store.widgets.map((w) => w.id)).toEqual(['d1', 'c1'])
+    // form 从未被放入子节点，children 仍为 undefined
+    expect(store.widgets[0].children?.[0].children).toBeUndefined()
+  })
+
+  it('moveWidgetToIndex 拒绝将容器移入已是子容器的容器', () => {
+    const dialog = makeWidget('d1', 'dialog', { children: [makeWidget('f1', 'form')] })
+    const card = makeWidget('c1', 'card')
+    store.loadWidgets([dialog, card])
+    // form 已是子容器（depth=1），card 移入 form 应被拒绝，留在根级
+    store.moveWidgetToIndex('c1', 'f1', 0)
+    expect(store.widgets.map((w) => w.id)).toEqual(['d1', 'c1'])
+  })
+
+  it('loadWidgets 扁平化超过 2 层的旧 schema', () => {
+    // 三层嵌套：dialog -> form -> card
+    const card = makeWidget('c1', 'card')
+    const form = makeWidget('f1', 'form', { children: [card] })
+    const dialog = makeWidget('d1', 'dialog', { children: [form] })
+    store.loadWidgets([dialog])
+    // dialog -> form 保留（2 层），card 提升到根级
+    expect(store.widgets.map((w) => w.id)).toEqual(['d1', 'c1'])
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['f1'])
+    expect(store.widgets[0].children?.[0].children).toEqual([])
+  })
+
+  // --- row-container 栅格 ---
+
+  it('insertWidgetAt 到 row-container 时子节点填满单元格（style.width=100%）', () => {
+    const row = makeWidget('rc1', 'row-container')
+    store.addWidget(row)
+    store.insertWidgetAt('rc1', makeWidget('w1', 'input'), 0, { span: 12 })
+    const child = store.widgets[0].children?.[0]
+    expect(child?.span).toBe(12)
+    expect(child?.style?.width).toBe('100%')
+  })
+
+  it('row-container 默认拖入子节点 span=24', () => {
+    const row = makeWidget('rc1', 'row-container')
+    store.addWidget(row)
+    store.insertWidgetAt('rc1', makeWidget('w1', 'input'), 0, { span: 24 })
+    expect(store.widgets[0].children?.[0].span).toBe(24)
+  })
+
   // --- findWidget ---
 
   it('findWidget returns the correct widget by id', () => {
@@ -1032,4 +1163,95 @@ describe('Widget Store CRUD', () => {
     expect(store.widgets).toHaveLength(0)
   })
 
+})
+
+// =====================================================================
+// 多选 + 批量删除（editorStore × widgetStore）
+// =====================================================================
+
+describe('Multi-select batch operations', () => {
+  let widgetStore: ReturnType<typeof useWidgetStore>
+  let editorStore: ReturnType<typeof useEditorStore>
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    widgetStore = useWidgetStore()
+    editorStore = useEditorStore()
+  })
+
+  function makeWidget(id: string, type: WidgetSchemaType = 'input'): Widget {
+    return {
+      id,
+      name: `Fg${type}`,
+      type,
+      position: { x: 0, y: 0, w: 240, h: 40, zIndex: 1 },
+      props: {},
+    }
+  }
+
+  it('toggleSelect 支持多选累加', () => {
+    widgetStore.addWidget(makeWidget('w1'))
+    widgetStore.addWidget(makeWidget('w2'))
+    editorStore.select('w1')
+    editorStore.toggleSelect('w2')
+    expect(editorStore.selectedIds).toEqual(['w1', 'w2'])
+  })
+
+  it('performDeleteWidget 批量删除所有选中部件', () => {
+    widgetStore.addWidget(makeWidget('w1'))
+    widgetStore.addWidget(makeWidget('w2'))
+    widgetStore.addWidget(makeWidget('w3'))
+    editorStore.select('w1')
+    editorStore.toggleSelect('w2')
+    editorStore.performDeleteWidget()
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w3'])
+    expect(editorStore.selectedIds).toHaveLength(0)
+  })
+
+  it('select 单选时覆盖之前的多选', () => {
+    widgetStore.addWidget(makeWidget('w1'))
+    widgetStore.addWidget(makeWidget('w2'))
+    editorStore.select('w1')
+    editorStore.toggleSelect('w2')
+    editorStore.select('w1')
+    expect(editorStore.selectedIds).toEqual(['w1'])
+  })
+
+  it('performMoveSelected down 后移选中部件到同级末尾以内', () => {
+    widgetStore.addWidget(makeWidget('w1'))
+    widgetStore.addWidget(makeWidget('w2'))
+    widgetStore.addWidget(makeWidget('w3'))
+    editorStore.select('w2')
+    editorStore.performMoveSelected('down')
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w1', 'w3', 'w2'])
+  })
+
+  it('performMoveSelected up 前移选中部件', () => {
+    widgetStore.addWidget(makeWidget('w1'))
+    widgetStore.addWidget(makeWidget('w2'))
+    widgetStore.addWidget(makeWidget('w3'))
+    editorStore.select('w2')
+    editorStore.performMoveSelected('up')
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w2', 'w1', 'w3'])
+  })
+
+  it('performMoveSelected 已在边界时不越界', () => {
+    widgetStore.addWidget(makeWidget('w1'))
+    widgetStore.addWidget(makeWidget('w2'))
+    editorStore.select('w1')
+    editorStore.performMoveSelected('up')
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w1', 'w2'])
+    editorStore.select('w2')
+    editorStore.performMoveSelected('down')
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w1', 'w2'])
+  })
+
+  it('performMoveSelected 多选时不操作', () => {
+    widgetStore.addWidget(makeWidget('w1'))
+    widgetStore.addWidget(makeWidget('w2'))
+    editorStore.select('w1')
+    editorStore.toggleSelect('w2')
+    editorStore.performMoveSelected('up')
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w1', 'w2'])
+  })
 })
