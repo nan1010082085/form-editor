@@ -18,6 +18,7 @@ export const useDataSourceStore = defineStore('dataSource', () => {
   const definitions = shallowRef(new Map<string, DataSourceDefinition>())
   const states = shallowRef(new Map<string, DataSourceState>())
   const subscriptions = ref(new Map<string, Set<(data: unknown) => void>>())
+  const filterParams = ref<Record<string, unknown>>({})
 
   // L1 内存缓存
   const l1Cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>()
@@ -54,7 +55,18 @@ export const useDataSourceStore = defineStore('dataSource', () => {
     definitions.value = new Map()
     states.value = new Map()
     subscriptions.value = new Map()
+    filterParams.value = {}
     l1Cache.clear()
+  }
+
+  /** 设置筛选参数（合并模式） */
+  function setFilterParams(params: Record<string, unknown>): void {
+    filterParams.value = { ...filterParams.value, ...params }
+  }
+
+  /** 清除所有筛选参数 */
+  function clearFilterParams(): void {
+    filterParams.value = {}
   }
 
   // ================================================================
@@ -79,7 +91,11 @@ export const useDataSourceStore = defineStore('dataSource', () => {
 
     try {
       const http = def.http!
-      const url = interpolateUrl(http.url, http.params)
+      // 合并 filterParams 与 http.params（filterParams 优先）
+      const mergedParams = Object.keys(filterParams.value).length > 0
+        ? { ...http.params, ...filterParams.value }
+        : http.params
+      const url = interpolateUrl(http.url, mergedParams)
       const response = await fetchWithRetry(url, {
         method: http.method ?? 'get',
         headers: http.headers,
@@ -224,7 +240,10 @@ export const useDataSourceStore = defineStore('dataSource', () => {
   function buildCacheKey(def: DataSourceDefinition): string {
     const http = def.http
     if (!http) return def.id
-    return `${http.method}:${http.url}:${JSON.stringify(http.params ?? {})}`
+    const merged = Object.keys(filterParams.value).length > 0
+      ? { ...http.params, ...filterParams.value }
+      : http.params
+    return `${http.method}:${http.url}:${JSON.stringify(merged ?? {})}`
   }
 
   function l1Get(key: string): unknown | undefined {
@@ -344,6 +363,7 @@ export const useDataSourceStore = defineStore('dataSource', () => {
   return {
     definitions,
     states,
+    filterParams,
     registerAll,
     dispose,
     fetch,
@@ -352,5 +372,7 @@ export const useDataSourceStore = defineStore('dataSource', () => {
     stopPolling,
     connectWebSocket,
     closeWebSocket,
+    setFilterParams,
+    clearFilterParams,
   }
 })

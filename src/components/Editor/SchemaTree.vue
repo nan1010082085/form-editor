@@ -14,6 +14,9 @@ import type { PartialWidget, SchemaType } from '@/components/WidgetRenderer/type
 import { buildSchemaTree } from '@/utils/schemaTransform'
 import type { SchemaTreeNode } from '@/utils/schemaTransform'
 import { BASIC_TYPES, BUSINESS_TYPES } from '@/composables/useConstant'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   schema: PartialWidget[]
@@ -104,18 +107,31 @@ function handleNodeDrop(draggingNode: SchemaTreeNode, dropNode: SchemaTreeNode, 
   dragNodePath.value = null
 }
 
-function getTypeZh(type: string): string {
+function getTypeLabel(type: string): string {
   const map: Record<string, string> = {
-    'card': '卡片', 'title': '标题', 'divider': '分割线', 'spacer': '间距',
-    'tabs': '标签页',
-    'input': '输入框', 'number': '数字', 'select': '下拉选择', 'radio': '单选',
-    'checkbox': '多选', 'date': '日期',
-    'textarea': '多行文本', 'richtext': '富文本',
-    'button-list': '按钮', 'toolbar-buttons': '工具栏按钮', 'upload': '上传',
-    'table': '表格', 'file-list': '附件面板',
-    'transfer': '穿梭框',
-    'banner': '横幅', 'tree-layout': '侧栏面板',
-    'date-time-slot': '日期时段', 'dialog': '弹窗',
+    'card': t('editor.schemaTree.typeCard'),
+    'title': t('editor.schemaTree.typeTitle'),
+    'divider': t('editor.schemaTree.typeDivider'),
+    'spacer': t('editor.schemaTree.typeSpacer'),
+    'tabs': t('editor.schemaTree.typeTabs'),
+    'input': t('editor.schemaTree.typeInput'),
+    'number': t('editor.schemaTree.typeNumber'),
+    'select': t('editor.schemaTree.typeSelect'),
+    'radio': t('editor.schemaTree.typeRadio'),
+    'checkbox': t('editor.schemaTree.typeCheckbox'),
+    'date': t('editor.schemaTree.typeDate'),
+    'textarea': t('editor.schemaTree.typeTextarea'),
+    'richtext': t('editor.schemaTree.typeRichtext'),
+    'button-list': t('editor.schemaTree.typeButtonList'),
+    'toolbar-buttons': t('editor.schemaTree.typeToolbarButtons'),
+    'upload': t('editor.schemaTree.typeUpload'),
+    'table': t('editor.schemaTree.typeTable'),
+    'file-list': t('editor.schemaTree.typeFileList'),
+    'transfer': t('editor.schemaTree.typeTransfer'),
+    'banner': t('editor.schemaTree.typeBanner'),
+    'tree-layout': t('editor.schemaTree.typeTreeLayout'),
+    'date-time-slot': t('editor.schemaTree.typeDateTimeSlot'),
+    'dialog': t('editor.schemaTree.typeDialog'),
   }
   return map[type] ?? type
 }
@@ -223,7 +239,7 @@ function handleToggleExpand(node: SchemaTreeNode) {
 <template>
   <div class="schema-tree" style="overflow: auto; height: 100%;">
     <div v-if="treeData.length === 0" class="schema-tree__empty">
-      <p>暂无组件</p>
+      <p>{{ t('editor.schemaTree.emptyHint') }}</p>
     </div>
     <t-tree
       v-else
@@ -265,7 +281,7 @@ function handleToggleExpand(node: SchemaTreeNode) {
 
           <span class="schema-tree__type-icon">{{ getNodeIcon(data.type) }}</span>
 
-          <span class="schema-tree__type-badge">{{ getTypeZh(data.type) }}</span>
+          <span class="schema-tree__type-badge">{{ getTypeLabel(data.type) }}</span>
 
           <span v-if="data.field" class="schema-tree__field">{{ data.field }}</span>
 
@@ -273,7 +289,7 @@ function handleToggleExpand(node: SchemaTreeNode) {
           <span class="schema-tree__actions">
             <button
               class="schema-tree__action-btn"
-              title="切换可见性"
+              :title="t('editor.schemaTree.toggleVisibility')"
               @click="handleToggleHidden(data, $event)"
             >
               <svg v-if="isHidden(data)" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
@@ -289,7 +305,7 @@ function handleToggleExpand(node: SchemaTreeNode) {
             <button
               class="schema-tree__action-btn"
               :class="{ 'schema-tree__action-btn--locked': isLocked(data.id) }"
-              title="切换锁定"
+              :title="t('editor.schemaTree.toggleLock')"
               @mousedown.stop
               @click.stop="toggleLock(data.id)"
             >

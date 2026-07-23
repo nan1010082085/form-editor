@@ -8,6 +8,7 @@ import { GaugeChart } from 'echarts/charts'
 import { HeatmapChart } from 'echarts/charts'
 import { FunnelChart } from 'echarts/charts'
 import { CandlestickChart } from 'echarts/charts'
+import { MapChart } from 'echarts/charts'
 import {
   GridComponent,
   TooltipComponent,
@@ -17,14 +18,16 @@ import {
   TransformComponent,
   VisualMapComponent,
   ToolboxComponent,
+  GeoComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 
 echarts.use([
   BarChart, LineChart, PieChart, ScatterChart, RadarChart,
-  GaugeChart, HeatmapChart, FunnelChart, CandlestickChart,
+  GaugeChart, HeatmapChart, FunnelChart, CandlestickChart, MapChart,
   GridComponent, TooltipComponent, LegendComponent, TitleComponent,
   DatasetComponent, TransformComponent, VisualMapComponent, ToolboxComponent,
+  GeoComponent,
   CanvasRenderer,
 ])
 

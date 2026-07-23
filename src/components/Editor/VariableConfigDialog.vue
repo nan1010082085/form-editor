@@ -10,6 +10,9 @@ import type { WidgetVariable } from '../../widgets/base/types'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
 import styles from './VariableConfigDialog.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -37,13 +40,13 @@ watch(
 
 // ---- 类型选项 ----
 
-const typeOptions = [
-  { label: '字符串', value: 'string' },
-  { label: '数字', value: 'number' },
-  { label: '布尔', value: 'boolean' },
-  { label: '对象', value: 'object' },
-  { label: '数组', value: 'array' },
-]
+const typeOptions = computed(() => [
+  { label: t('editor.variableConfig.typeString'), value: 'string' },
+  { label: t('editor.variableConfig.typeNumber'), value: 'number' },
+  { label: t('editor.variableConfig.typeBoolean'), value: 'boolean' },
+  { label: t('editor.variableConfig.typeObject'), value: 'object' },
+  { label: t('editor.variableConfig.typeArray'), value: 'array' },
+])
 
 // ---- CRUD ----
 
@@ -75,9 +78,9 @@ function handleJsonInput(v: WidgetVariable, val: string) {
 const nameError = computed(() => {
   const names = localVariables.value.map(v => v.name).filter(Boolean)
   const duplicates = names.filter((n, i) => names.indexOf(n) !== i)
-  if (duplicates.length) return `变量名重复: ${duplicates[0]}`
+  if (duplicates.length) return t('editor.variableConfig.nameDuplicate', { name: duplicates[0] })
   const invalid = localVariables.value.find(v => v.name && !/^[a-zA-Z_]\w*$/.test(v.name))
-  if (invalid) return `变量名 "${invalid.name}" 格式不合法（仅支持字母、数字、下划线）`
+  if (invalid) return t('editor.variableConfig.nameInvalid', { name: invalid.name })
   return ''
 })
 
@@ -99,14 +102,14 @@ function handleClose() {
 <template>
   <AppDialog
     :model-value="visible"
-    :title="title || '变量配置'"
+    :title="title || t('editor.variableConfig.title')"
     width="600px"
     @update:model-value="emit('update:visible', $event)"
   >
     <div :class="styles.body">
       <!-- 空状态 -->
       <div v-if="localVariables.length === 0" :class="styles.empty">
-        暂无变量，点击下方按钮添加。
+        {{ t('editor.variableConfig.emptyHint') }}
       </div>
 
       <!-- 变量列表 -->
@@ -116,7 +119,7 @@ function handleClose() {
         :class="styles.card"
       >
         <div :class="styles.cardHeader">
-          <span :class="styles.cardTitle">变量 {{ i + 1 }}</span>
+          <span :class="styles.cardTitle">{{ t('editor.variableConfig.variableTitle', { index: i + 1 }) }}</span>
           <el-button
             type="danger"
             link
@@ -128,16 +131,16 @@ function handleClose() {
         </div>
 
         <div :class="styles.row">
-          <label :class="styles.label">名称</label>
+          <label :class="styles.label">{{ t('editor.variableConfig.name') }}</label>
           <el-input
             v-model="v.name"
-            placeholder="变量名（如 isAdmin）"
+            :placeholder="t('editor.variableConfig.namePlaceholder')"
             style="flex: 1"
           />
         </div>
 
         <div :class="styles.row">
-          <label :class="styles.label">类型</label>
+          <label :class="styles.label">{{ t('editor.variableConfig.type') }}</label>
           <el-select
             v-model="v.type"
             style="width: 120px"
@@ -151,7 +154,7 @@ function handleClose() {
             />
           </el-select>
 
-          <label :class="styles.label" style="margin-left: 8px">默认值</label>
+          <label :class="styles.label" style="margin-left: 8px">{{ t('editor.variableConfig.defaultValue') }}</label>
           <el-switch
             v-if="v.type === 'boolean'"
             v-model="v.defaultValue"
@@ -164,7 +167,7 @@ function handleClose() {
           <el-input
             v-else-if="v.type === 'string'"
             v-model="v.defaultValue as string"
-            placeholder="默认值"
+            :placeholder="t('editor.variableConfig.defaultValuePlaceholder')"
             style="flex: 1"
           />
           <el-input
@@ -179,10 +182,10 @@ function handleClose() {
         </div>
 
         <div :class="styles.row">
-          <label :class="styles.label">描述</label>
+          <label :class="styles.label">{{ t('editor.variableConfig.description') }}</label>
           <el-input
             v-model="v.description"
-            placeholder="可选，变量用途说明"
+            :placeholder="t('editor.variableConfig.descriptionPlaceholder')"
             style="flex: 1"
           />
         </div>
@@ -199,13 +202,13 @@ function handleClose() {
         @click="addVariable"
       >
         <AppIcon name="plus"  />
-        添加变量
+        {{ t('editor.variableConfig.addVariable') }}
       </el-button>
     </div>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" :disabled="!!nameError" @click="handleSave">保存</el-button>
+      <el-button @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
+      <el-button type="primary" :disabled="!!nameError" @click="handleSave">{{ t('editor.common.save') }}</el-button>
     </template>
   </AppDialog>
 </template>

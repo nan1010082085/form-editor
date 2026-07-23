@@ -42,6 +42,7 @@ import EventConfigDialog from './EventConfigDialog.vue'
 import LinkageSchemaDialog from './LinkageSchemaDialog.vue'
 import OptionsApiConfigDialog from './OptionsApiConfigDialog.vue'
 import VariableConfigDialog from './VariableConfigDialog.vue'
+import ChartLinkageDialog from './ChartLinkageDialog.vue'
 import { useClipboard } from '../../composables/useClipboard'
 import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
@@ -136,14 +137,17 @@ const {
   apiDialogVisible,
   variableDialogVisible,
   boardVariableDialogVisible,
+  chartLinkageDialogVisible,
   openEventDialog,
   openLinkageDialog,
   openApiDialog,
+  openChartLinkageDialog,
   handleEventSave,
   handleLinkageSave,
   handleApiSave,
   handleVariableSave,
   handleBoardVariableSave,
+  handleChartLinkageSave,
 } = usePropertyPanelDialogs(selectedWidget, widgetStore, editorStore, boardStore)
 
 // ---- 画布配置（未选中部件时显示） ----
@@ -231,6 +235,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
         @open-linkage="openLinkageDialog"
         @open-api="openApiDialog"
         @open-variables="variableDialogVisible = true"
+        @open-chart-linkage="openChartLinkageDialog"
       />
 
       <PropertyPanelSections
@@ -270,6 +275,14 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
         title="部件变量配置"
         @update:visible="variableDialogVisible = $event"
         @save="handleVariableSave"
+      />
+
+      <ChartLinkageDialog
+        :visible="chartLinkageDialogVisible"
+        :source-widget-id="selectedWidget.id"
+        :chart-linkages="selectedWidget.chartLinkages ?? []"
+        @update:visible="chartLinkageDialogVisible = $event"
+        @save="handleChartLinkageSave"
       />
     </template>
   </div>

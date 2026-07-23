@@ -18,6 +18,7 @@ import { fetchVersions, fetchVersion, deleteVersion } from '@/api/schemaApi'
 import { parseSchemaJson } from '@/utils/parseSchemaJson'
 import type { VersionEntry } from '@/types/api'
 import type { InteractionMode } from '@/composables/useConstant'
+import type { ScaleMode, PreviewBreakpoint } from '@/widgets/base/types'
 import styles from './EditorView.module.scss'
 
 const props = defineProps<{
@@ -33,6 +34,7 @@ const props = defineProps<{
   showAiDrawer: boolean
   showLogPanel: boolean
   showCodePanel: boolean
+  previewBreakpoint: PreviewBreakpoint
 }>()
 
 const emit = defineEmits<{
@@ -47,6 +49,7 @@ const emit = defineEmits<{
   updateAiDrawer: []
   updateLogPanel: []
   updateCodePanel: []
+  updatePreviewBreakpoint: [mode: PreviewBreakpoint]
   zoomIn: []
   zoomOut: []
   clearCanvas: []
@@ -65,12 +68,16 @@ const validation = useSchemaValidation()
 
 const canvasSizePreset = ref('1920x1080')
 const canvasSizePresets = [
-  { label: '1920x1080', value: '1920x1080' },
-  { label: '1440x900', value: '1440x900' },
-  { label: '1366x768', value: '1366x768' },
+  { label: '1920×1080 (Full HD)', value: '1920x1080' },
+  { label: '2560×1440 (2K)', value: '2560x1440' },
+  { label: '3840×2160 (4K)', value: '3840x2160' },
+  { label: '1440×900', value: '1440x900' },
+  { label: '1366×768', value: '1366x768' },
 ]
 const canvasSizeMap: Record<string, { w: number; h: number }> = {
   '1920x1080': { w: 1920, h: 1080 },
+  '2560x1440': { w: 2560, h: 1440 },
+  '3840x2160': { w: 3840, h: 2160 },
   '1440x900': { w: 1440, h: 900 },
   '1366x768': { w: 1366, h: 768 },
 }
@@ -79,6 +86,33 @@ function handleCanvasSizeChange(preset: string) {
   canvasSizePreset.value = preset
   const size = canvasSizeMap[preset]
   if (size) boardStore.updateCanvas({ width: size.w, height: size.h })
+}
+
+const showCustomSizeDialog = ref(false)
+const customWidth = ref(1920)
+const customHeight = ref(1080)
+
+function handleCustomSizeApply() {
+  const w = Math.max(320, Math.min(7680, customWidth.value))
+  const h = Math.max(240, Math.min(4320, customHeight.value))
+  canvasSizePreset.value = `${w}x${h}`
+  boardStore.updateCanvas({ width: w, height: h })
+  showCustomSizeDialog.value = false
+}
+
+// ================================================================
+// Scale mode (publish/preview 自适应模式)
+// ================================================================
+
+const scaleModeOptions: Array<{ label: string; value: ScaleMode }> = [
+  { label: '等比适应', value: 'contain' },
+  { label: '适应宽度', value: 'fit-width' },
+  { label: '适应高度', value: 'fit-height' },
+  { label: '拉伸填充', value: 'stretch' },
+]
+
+function handleScaleModeChange(mode: ScaleMode) {
+  boardStore.updateCanvas({ scaleMode: mode })
 }
 
 // ================================================================
@@ -137,9 +171,9 @@ async function handleLoadVersion(entry: VersionEntry) {
     editorStore.markClean()
     versionPopoverVisible.value = false
     emit('loadVersion', entry.version)
-    ElMessage.success(`已加载版本 ${formatVersion(entry.version)}`)
+    ElMessage.success(t('editor.instances.updateSuccess', { version: formatVersion(entry.version) }))
   } catch {
-    ElMessage.error('加载版本失败')
+    ElMessage.error(t('editor.toolbar.versionLoadFailed'))
   }
 }
 
@@ -149,18 +183,18 @@ async function handleDeleteVersion(entry: VersionEntry) {
   if (!props.currentEditId) return
   try {
     await ElMessageBox.confirm(
-      `确认删除版本 ${formatVersion(entry.version)}？删除后不可恢复。`,
-      '删除确认',
-      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
+      t('editor.toolbar.versionDeleteConfirm', { version: formatVersion(entry.version) }),
+      t('editor.toolbar.deleteConfirm'),
+      { confirmButtonText: t('editor.toolbar.delete'), cancelButtonText: t('editor.instances.cancel'), type: 'warning' },
     )
   } catch { return }
   deletingVersion.value = entry.version
   try {
     await deleteVersion(props.currentEditId, entry.version)
-    ElMessage.success('已删除')
+    ElMessage.success(t('editor.toolbar.deleted'))
     loadVersionList(versionPage.value)
   } catch {
-    ElMessage.error('删除失败')
+    ElMessage.error(t('editor.toolbar.deleteFailed'))
   } finally {
     deletingVersion.value = null
   }
@@ -194,7 +228,7 @@ function handleClearCanvas() {
   <div :class="[styles.toolbar, { [styles.toolbarPreview]: mode !== 'edit' }]">
     <!-- Left: back + name -->
     <div :class="styles.toolbarLeft">
-      <button :class="styles.iconBtn" title="返回列表" @click="router.push('/instances')">
+      <button :class="styles.iconBtn" :title="t('editor.toolbar.backToList')" @click="router.push('/instances')">
         <AppIcon name="arrow-left" :size="14" />
       </button>
       <div :class="styles.divider" />
@@ -202,10 +236,10 @@ function handleClearCanvas() {
         <input
           v-model="boardStore.name"
           :class="styles.nameInput"
-          placeholder="未命名画布"
+          :placeholder="t('editor.toolbar.unnamedCanvas')"
         />
         <span v-if="currentVersion" :class="styles.versionBadge">v{{ formatVersion(currentVersion) }}</span>
-        <el-tooltip :content="autoSaveEnabled ? '关闭自动保存' : '开启自动保存'" placement="bottom">
+        <el-tooltip :content="autoSaveEnabled ? t('editor.toolbar.autoSaveOff') : t('editor.toolbar.autoSaveOn')" placement="bottom">
           <button
             :class="[styles.iconBtn, styles.autoSaveToggle, { [styles.autoSaveToggleOn]: autoSaveEnabled }]"
             @click="emit('toggleAutoSave')"
@@ -213,57 +247,57 @@ function handleClearCanvas() {
             <AppIcon name="refresh" :size="14" />
           </button>
         </el-tooltip>
-        <span v-if="isAutoSaving" :class="styles.autoSaveBadge">自动保存中...</span>
-        <span v-else-if="editorStore.isDirty" :class="styles.dirtyBadge">未保存</span>
+        <span v-if="isAutoSaving" :class="styles.autoSaveBadge">{{ t('editor.toolbar.autoSaving') }}</span>
+        <span v-else-if="editorStore.isDirty" :class="styles.dirtyBadge">{{ t('editor.toolbar.unsaved') }}</span>
       </template>
     </div>
 
     <!-- Center: panel toggles + operations + AI -->
     <div v-if="mode === 'edit'" :class="styles.toolbarCenter">
-      <el-tooltip :content="leftPanelVisible ? '隐藏部件面板' : '显示部件面板'" placement="bottom">
+      <el-tooltip :content="leftPanelVisible ? t('editor.toolbar.hideWidgetPanel') : t('editor.toolbar.showWidgetPanel')" placement="bottom">
         <button
           :class="[styles.iconBtn, { [styles.iconBtnActive]: leftPanelVisible }]"
-          title="部件面板"
+          :title="t('editor.toolbar.widgetPanel')"
           @click="emit('updateLeftPanel')"
         >
           <AppIcon name="grid" :size="14" />
         </button>
       </el-tooltip>
       <div :class="styles.btnGroup">
-        <el-tooltip content="撤销 (Ctrl+Z)" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.undoTooltip')" placement="bottom">
           <button :class="styles.iconBtn" :disabled="!editorStore.canUndo" @click="handleUndo">
             <AppIcon name="back" :size="14" />
           </button>
         </el-tooltip>
-        <el-tooltip content="重做 (Ctrl+Y)" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.redoTooltip')" placement="bottom">
           <button :class="styles.iconBtn" :disabled="!editorStore.canRedo" @click="handleRedo">
             <AppIcon name="refresh" :size="14" />
           </button>
         </el-tooltip>
       </div>
-      <el-tooltip :content="rightPanelVisible ? '隐藏属性面板' : '显示属性面板'" placement="bottom">
+      <el-tooltip :content="rightPanelVisible ? t('editor.toolbar.hidePropertyPanel') : t('editor.toolbar.showPropertyPanel')" placement="bottom">
         <button
           :class="[styles.iconBtn, { [styles.iconBtnActive]: rightPanelVisible }]"
-          title="属性面板"
+          :title="t('editor.toolbar.propertyPanel')"
           @click="emit('updateRightPanel')"
         >
           <AppIcon name="setting" :size="14" />
         </button>
       </el-tooltip>
       <div :class="styles.btnGroup">
-        <el-tooltip content="复制部件 (Ctrl+C)" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.copyWidget')" placement="bottom">
           <button :class="styles.iconBtn" :disabled="!editorStore.selectedId" @click="handleCopyWidget">
             <AppIcon name="copy-document" :size="14" />
           </button>
         </el-tooltip>
-        <el-tooltip content="删除部件 (Del)" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.deleteWidget')" placement="bottom">
           <button :class="styles.iconBtn" :disabled="!editorStore.selectedId" @click="handleDeleteWidget">
             <AppIcon name="delete" :size="14" />
           </button>
         </el-tooltip>
       </div>
       <div :class="styles.divider" />
-      <el-tooltip content="AI 助手" placement="bottom">
+      <el-tooltip :content="t('editor.toolbar.aiAssistant')" placement="bottom">
         <button
           :class="[styles.iconBtn, styles.aiBtn, { [styles.iconBtnActive]: showAiDrawer }]"
           @click="emit('updateAiDrawer')"
@@ -272,15 +306,15 @@ function handleClearCanvas() {
         </button>
       </el-tooltip>
       <div :class="styles.divider" />
-      <div :class="styles.modeBadge" :title="`布局模式：${boardStore.layoutMode === 'flex' ? '流式布局' : '自由布局'}（创建时固定，不可切换）`">
+      <div :class="styles.modeBadge" :title="t('editor.toolbar.layoutModeTooltip', { mode: boardStore.layoutMode === 'flex' ? t('editor.toolbar.layoutFlex') : t('editor.toolbar.layoutFree') })">
         <AppIcon name="switch" :size="14" />
         <span :class="styles.modeLabel">{{ boardStore.layoutMode === 'flex' ? 'Flex' : 'Free' }}</span>
       </div>
       <div :class="styles.divider" />
-      <el-tooltip :content="editorStore.showZoomIndicator ? '隐藏缩放控制' : '显示缩放控制'" placement="bottom">
+      <el-tooltip :content="editorStore.showZoomIndicator ? t('editor.toolbar.hideZoomControl') : t('editor.toolbar.showZoomControl')" placement="bottom">
         <button
           :class="[styles.iconBtn, { [styles.iconBtnActive]: editorStore.showZoomIndicator }]"
-          title="缩放控制"
+          :title="t('editor.toolbar.zoomControl')"
           @click="editorStore.toggleZoomIndicator()"
         >
           <AppIcon name="aim" :size="14" />
@@ -336,34 +370,34 @@ function handleClearCanvas() {
           </div>
         </div>
         <template #reference>
-          <button :class="styles.iconBtn" title="快捷键帮助">
+          <button :class="styles.iconBtn" :title="t('editor.shortcuts.title')">
             <AppIcon name="question-filled" :size="14" />
           </button>
         </template>
       </el-popover>
       <div :class="styles.divider" />
-      <el-tooltip content="预览" placement="bottom">
+      <el-tooltip :content="t('editor.toolbar.preview')" placement="bottom">
         <button
           :class="styles.iconBtn"
-          title="预览"
+          :title="t('editor.toolbar.preview')"
           @click="editorStore.setMode('preview')"
         >
           <AppIcon name="view" :size="14" />
         </button>
       </el-tooltip>
-      <el-tooltip content="发布(交互)" placement="bottom">
+      <el-tooltip :content="t('editor.toolbar.publishInteractive')" placement="bottom">
         <button
           :class="styles.iconBtn"
-          title="发布(交互)"
+          :title="t('editor.toolbar.publishInteractive')"
           @click="editorStore.setMode('publish-interactive')"
         >
           <AppIcon name="video-play" :size="14" />
         </button>
       </el-tooltip>
-      <el-tooltip content="发布(只读)" placement="bottom">
+      <el-tooltip :content="t('editor.toolbar.publishReadonly')" placement="bottom">
         <button
           :class="styles.iconBtn"
-          title="发布(只读)"
+          :title="t('editor.toolbar.publishReadonly')"
           @click="editorStore.setMode('publish-readonly')"
         >
           <AppIcon name="lock" :size="14" />
@@ -374,8 +408,33 @@ function handleClearCanvas() {
     <!-- Center: non-edit modes -->
     <div v-if="mode !== 'edit'" :class="styles.toolbarCenter">
       <span :class="styles.previewLabel">
-        {{ mode === 'preview' ? '预览模式' : mode === 'publish-interactive' ? '发布(交互)' : '发布(只读)' }}
+        {{ mode === 'preview' ? t('editor.mode.preview') : mode === 'publish-interactive' ? t('editor.mode.publishInteractive') : t('editor.mode.publishReadonly') }}
       </span>
+      <div :class="styles.divider" />
+      <!-- 响应式断点切换 -->
+      <div :class="styles.breakpointSwitcher">
+        <button
+          :class="[styles.iconBtn, { [styles.iconBtnActive]: previewBreakpoint === 'desktop' }]"
+          title="桌面 (≥1024px)"
+          @click="emit('updatePreviewBreakpoint', 'desktop')"
+        >
+          <AppIcon name="monitor" :size="14" />
+        </button>
+        <button
+          :class="[styles.iconBtn, { [styles.iconBtnActive]: previewBreakpoint === 'tablet' }]"
+          title="平板 (≥768px)"
+          @click="emit('updatePreviewBreakpoint', 'tablet')"
+        >
+          <AppIcon name="iphone" :size="14" />
+        </button>
+        <button
+          :class="[styles.iconBtn, { [styles.iconBtnActive]: previewBreakpoint === 'mobile' }]"
+          title="移动端 (<768px)"
+          @click="emit('updatePreviewBreakpoint', 'mobile')"
+        >
+          <AppIcon name="cellphone" :size="14" />
+        </button>
+      </div>
     </div>
 
     <!-- Right: version + save + publish -->
@@ -383,7 +442,7 @@ function handleClearCanvas() {
       <template v-if="mode === 'edit'">
         <!-- Canvas size -->
         <el-dropdown trigger="click" @command="handleCanvasSizeChange">
-          <button :class="styles.iconBtn" title="画布尺寸">
+          <button :class="styles.iconBtn" :title="t('editor.toolbar.canvasSize')">
             <AppIcon name="full-screen" :size="14" />
           </button>
           <template #dropdown>
@@ -393,6 +452,25 @@ function handleClearCanvas() {
                 :key="p.value"
                 :command="p.value"
               >{{ p.label }}</el-dropdown-item>
+              <el-dropdown-item divided command="custom" @click="showCustomSizeDialog = true">
+                自定义尺寸...
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <!-- Scale mode -->
+        <el-dropdown trigger="click" @command="handleScaleModeChange">
+          <button :class="styles.iconBtn" title="发布视图自适应模式">
+            <AppIcon name="rank" :size="14" />
+          </button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="opt in scaleModeOptions"
+                :key="opt.value"
+                :command="opt.value"
+                :class="{ 'is-active': (boardStore.canvas.scaleMode ?? 'contain') === opt.value }"
+              >{{ opt.label }}</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -414,13 +492,13 @@ function handleClearCanvas() {
         >
           <div :class="styles.versionPanel">
             <div :class="styles.versionHeader">
-              <span :class="styles.versionTitle">版本历史</span>
+              <span :class="styles.versionTitle">{{ t('editor.toolbar.versionHistory') }}</span>
               <el-button size="small" text @click="loadVersionList(versionPage)">
                 <AppIcon name="refresh" />
               </el-button>
             </div>
-            <div v-if="versionLoading" :class="styles.versionLoading">加载中...</div>
-            <div v-else-if="versionList.length === 0" :class="styles.versionEmpty">暂无版本记录</div>
+            <div v-if="versionLoading" :class="styles.versionLoading">{{ t('editor.toolbar.loading') }}</div>
+            <div v-else-if="versionList.length === 0" :class="styles.versionEmpty">{{ t('editor.toolbar.noVersions') }}</div>
             <div v-else :class="styles.versionList">
               <div
                 v-for="entry in versionList"
@@ -430,8 +508,8 @@ function handleClearCanvas() {
                 <div :class="styles.versionInfo">
                   <span :class="styles.versionTime">{{ formatVersion(entry.version) }}</span>
                   <div :class="styles.versionTags">
-                    <el-tag v-if="entry.published" type="success" size="small">已发布</el-tag>
-                    <el-tag v-if="entry.version === currentVersion" size="small">当前</el-tag>
+                    <el-tag v-if="entry.published" type="success" size="small">{{ t('editor.toolbar.published') }}</el-tag>
+                    <el-tag v-if="entry.version === currentVersion" size="small">{{ t('editor.toolbar.current') }}</el-tag>
                   </div>
                 </div>
                 <div :class="styles.versionActions">
@@ -441,7 +519,7 @@ function handleClearCanvas() {
                     text
                     type="primary"
                     @click="handleLoadVersion(entry)"
-                  >加载</el-button>
+                  >{{ t('editor.toolbar.load') }}</el-button>
                   <el-button
                     v-if="entry.version !== currentVersion"
                     size="small"
@@ -449,7 +527,7 @@ function handleClearCanvas() {
                     type="danger"
                     :loading="deletingVersion === entry.version"
                     @click="handleDeleteVersion(entry)"
-                  >删除</el-button>
+                  >{{ t('editor.toolbar.delete') }}</el-button>
                 </div>
               </div>
             </div>
@@ -465,28 +543,28 @@ function handleClearCanvas() {
             </div>
           </div>
           <template #reference>
-            <button :class="styles.iconBtn" title="版本历史">
+            <button :class="styles.iconBtn" :title="t('editor.toolbar.versionHistory')">
               <AppIcon name="clock" :size="14" />
             </button>
           </template>
         </el-popover>
         <!-- Version compare -->
-        <el-tooltip content="版本对比" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.versionCompare')" placement="bottom">
           <button
             :class="styles.iconBtn"
             :disabled="!currentEditId"
-            title="版本对比"
+            :title="t('editor.toolbar.versionCompare')"
             @click="emit('openVersionCompare')"
           >
             <AppIcon name="document-copy" :size="14" />
           </button>
         </el-tooltip>
-        <el-button size="small" @click="handleClearCanvas">清空</el-button>
+        <el-button size="small" @click="handleClearCanvas">{{ t('editor.toolbar.clear') }}</el-button>
         <el-dropdown trigger="click" @command="(cmd: string) => emit('saveCommand', cmd)">
           <el-button size="small" :loading="saving">
-            <span v-if="saving">保存中...</span>
+            <span v-if="saving">{{ t('editor.toolbar.saving') }}</span>
             <span v-else :class="styles.saveBtnContent">
-              保存
+              {{ t('editor.toolbar.save') }}
               <AppIcon name="arrow-down" :size="10" />
             </span>
           </el-button>
@@ -494,11 +572,11 @@ function handleClearCanvas() {
             <el-dropdown-menu>
               <el-dropdown-item command="save" :class="styles.dropdownItem">
                 <AppIcon name="document" :size="14" />
-                <span :class="styles.dropdownLabel">保存</span>
+                <span :class="styles.dropdownLabel">{{ t('editor.toolbar.save') }}</span>
               </el-dropdown-item>
               <el-dropdown-item command="saveAsTemplate" :class="styles.dropdownItem">
                 <AppIcon name="grid" :size="14" />
-                <span :class="styles.dropdownLabel">保存为模板</span>
+                <span :class="styles.dropdownLabel">{{ t('editor.toolbar.saveAsTemplate') }}</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -510,21 +588,21 @@ function handleClearCanvas() {
           :loading="publishing"
           @click="emit('publish')"
         >
-          {{ publishing ? '发布中...' : '发布' }}
+          {{ publishing ? t('editor.toolbar.publishing') : t('editor.toolbar.publish') }}
         </el-button>
       </template>
       <template v-if="mode !== 'edit'">
         <!-- Mode switch back to edit -->
         <button
           :class="[styles.iconBtn, { [styles.iconBtnActive]: showLogPanel }]"
-          title="执行日志"
+          :title="t('editor.toolbar.executionLog')"
           @click="emit('updateLogPanel')"
         >
           <AppIcon name="document" :size="14" />
         </button>
         <button
           :class="[styles.iconBtn, { [styles.iconBtnActive]: showCodePanel }]"
-          title="Store 数据"
+          :title="t('editor.toolbar.storeData')"
           @click="emit('updateCodePanel')"
         >
           <AppIcon name="data-line" :size="14" />
@@ -540,7 +618,7 @@ function handleClearCanvas() {
           <template #reference>
             <button
               :class="styles.iconBtn"
-              title="Schema 校验"
+              :title="t('editor.toolbar.schemaValidation')"
             >
               <el-badge
                 v-if="validation.errorCount.value > 0"
@@ -554,11 +632,11 @@ function handleClearCanvas() {
             </button>
           </template>
           <div v-if="validation.issues.value.length === 0" style="text-align: center; padding: 20px; color: var(--color-success);">
-            ✓ 校验通过，未发现问题
+            {{ t('editor.toolbar.validationPassed') }}
           </div>
           <div v-else style="max-height: 360px; overflow-y: auto;">
             <div style="padding: 0 0 8px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--border-color-lighter); margin-bottom: 8px;">
-              {{ validation.errorCount.value }} 错误 · {{ validation.warningCount.value }} 警告
+              {{ t('editor.toolbar.validationSummary', { errors: validation.errorCount.value, warnings: validation.warningCount.value }) }}
             </div>
             <div
               v-for="(issue, idx) in validation.issues.value"
@@ -579,9 +657,34 @@ function handleClearCanvas() {
         <div :class="styles.divider" />
         <el-button size="small" @click="editorStore.setMode('edit')">
           <AppIcon name="edit" :size="12" />
-          <span>退出预览</span>
+          <span>{{ t('editor.toolbar.exitPreview') }}</span>
         </el-button>
       </template>
     </div>
   </div>
+
+  <!-- Custom canvas size dialog -->
+  <el-dialog
+    v-model="showCustomSizeDialog"
+    title="自定义画布尺寸"
+    width="360px"
+    append-to-body
+  >
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:40px;text-align:right;font-size:13px;">宽度</span>
+        <el-input-number v-model="customWidth" :min="320" :max="7680" :step="10" size="default" style="flex:1;" />
+        <span style="font-size:12px;color:var(--text-color-secondary);">px</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="width:40px;text-align:right;font-size:13px;">高度</span>
+        <el-input-number v-model="customHeight" :min="240" :max="4320" :step="10" size="default" style="flex:1;" />
+        <span style="font-size:12px;color:var(--text-color-secondary);">px</span>
+      </div>
+    </div>
+    <template #footer>
+      <el-button @click="showCustomSizeDialog = false">取消</el-button>
+      <el-button type="primary" @click="handleCustomSizeApply">确定</el-button>
+    </template>
+  </el-dialog>
 </template>

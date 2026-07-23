@@ -12,6 +12,9 @@ import { normalizeListResponse } from '@/utils/responseNormalizer'
 import type { SchemaApiConfig, PartialWidget } from '@/components/WidgetRenderer/types'
 import styles from './ApiConfig.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   api: SchemaApiConfig | undefined
@@ -83,7 +86,7 @@ function handleParamsChange(text: string) {
     paramsError.value = ''
     emitApiField('params', parsed)
   } catch {
-    paramsError.value = '无效的 JSON'
+    paramsError.value = t('editor.api.invalidJson')
   }
 }
 
@@ -100,7 +103,7 @@ function handleBodyChange(text: string) {
     bodyError.value = ''
     emitApiField('body', parsed)
   } catch {
-    bodyError.value = '无效的 JSON'
+    bodyError.value = t('editor.api.invalidJson')
   }
 }
 
@@ -199,18 +202,18 @@ async function testConnection() {
     const suggestedDataPath = detectSuggestedDataPath(res, props.api.dataPath, extractedData)
 
     if (extractedData.length === 0) {
-      const errorParts = ['未找到数据数组']
+      const errorParts = [t('editor.api.noDataArray')]
       if (suggestedDataPath) {
-        errorParts.push(`建议设置数据路径为 "${suggestedDataPath}"`)
+        errorParts.push(t('editor.api.suggestSetPath', { path: suggestedDataPath }))
       } else if (res && typeof res === 'object' && !Array.isArray(res)) {
         const keys = Object.keys(res as Record<string, unknown>)
-        errorParts.push(`响应包含字段: ${keys.join(', ')}`)
+        errorParts.push(t('editor.api.responseFields', { fields: keys.join(', ') }))
       }
-      testResult.value = { success: false, message: errorParts.join('。'), responsePreview }
+      testResult.value = { success: false, message: errorParts.join('. '), responsePreview }
     } else {
       testResult.value = {
         success: true,
-        message: `成功: ${extractedData.length} 条数据返回`,
+        message: t('editor.api.testSuccess', { count: extractedData.length }),
         responsePreview,
         suggestedDataPath,
         parsedOptions,
@@ -218,7 +221,7 @@ async function testConnection() {
     }
   } catch (e: unknown) {
     rawResponse.value = null
-    testResult.value = { success: false, message: e instanceof Error ? e.message : '请求失败' }
+    testResult.value = { success: false, message: e instanceof Error ? e.message : t('editor.api.requestFailed') }
   } finally {
     testing.value = false
   }
@@ -245,7 +248,7 @@ defineExpose({ testConnection, testing })
   <div :class="styles.root">
     <!-- 未配置时的入口 -->
     <div v-if="!hasApi" :class="styles.toggle">
-      <el-button type="primary" plain @click="enableApi">配置 API</el-button>
+      <el-button type="primary" plain @click="enableApi">{{ t('editor.api.configApi') }}</el-button>
     </div>
 
     <!-- 左右分栏 -->
@@ -255,13 +258,13 @@ defineExpose({ testConnection, testing })
         <!-- 移除配置 -->
         <div :class="styles.removeRow">
           <el-button type="danger" link size="small" @click="emit('remove-config')">
-            移除配置
+            {{ t('editor.api.removeConfig') }}
           </el-button>
         </div>
 
         <!-- 分组 1：请求配置 -->
         <div :class="styles.card">
-          <div :class="styles.cardTitle">请求配置</div>
+          <div :class="styles.cardTitle">{{ t('editor.api.requestConfig') }}</div>
           <!-- URL -->
           <div :class="styles.row">
             <label :class="styles.label">URL <span :class="styles.required">*</span></label>
@@ -275,7 +278,7 @@ defineExpose({ testConnection, testing })
 
           <!-- 请求方法 + 超时并排 -->
           <div :class="styles.row">
-            <label :class="styles.label">方法</label>
+            <label :class="styles.label">{{ t('editor.api.method') }}</label>
             <el-select
               :model-value="api?.method ?? 'get'"
               style="flex: 1"
@@ -284,7 +287,7 @@ defineExpose({ testConnection, testing })
               <el-option label="GET" value="get" />
               <el-option label="POST" value="post" />
             </el-select>
-            <label :class="styles.label">超时</label>
+            <label :class="styles.label">{{ t('editor.api.timeout') }}</label>
             <el-input-number
               :model-value="api?.timeout ?? 5000"
               :min="1000"
@@ -297,7 +300,7 @@ defineExpose({ testConnection, testing })
 
           <!-- 查询参数 -->
           <div :class="styles.row">
-            <label :class="styles.label">参数</label>
+            <label :class="styles.label">{{ t('editor.api.params') }}</label>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
               <el-input
                 type="textarea"
@@ -313,7 +316,7 @@ defineExpose({ testConnection, testing })
 
           <!-- 请求头 Headers -->
           <div :class="styles.row">
-            <label :class="styles.label">请求头</label>
+            <label :class="styles.label">{{ t('editor.api.headers') }}</label>
             <div :class="styles.kvList" style="flex: 1">
               <div v-for="(row, idx) in headerRows" :key="idx" :class="styles.kvRow">
                 <el-input
@@ -335,7 +338,7 @@ defineExpose({ testConnection, testing })
                 </el-button>
               </div>
               <el-button size="small" link type="primary" @click="addHeaderRow">
-                + 添加
+                {{ t('editor.api.add') }}
               </el-button>
             </div>
           </div>
@@ -359,9 +362,9 @@ defineExpose({ testConnection, testing })
 
         <!-- 分组 2：数据映射 -->
         <div :class="styles.card">
-          <div :class="styles.cardTitle">数据映射</div>
+          <div :class="styles.cardTitle">{{ t('editor.api.dataMapping') }}</div>
           <div :class="styles.row">
-            <label :class="styles.label">路径</label>
+            <label :class="styles.label">{{ t('editor.api.path') }}</label>
             <el-input
               :model-value="api?.dataPath ?? ''"
               placeholder="result.records"
@@ -370,21 +373,21 @@ defineExpose({ testConnection, testing })
             />
           </div>
           <div :class="styles.row">
-            <label :class="styles.label">标签</label>
+            <label :class="styles.label">{{ t('editor.api.label') }}</label>
             <el-input
               :model-value="api?.labelKey ?? 'label'"
               placeholder="label"
               style="flex: 1"
               @update:model-value="(v: string) => emitApiField('labelKey', v)"
             />
-            <label :class="styles.label">值</label>
+            <label :class="styles.label">{{ t('editor.api.value') }}</label>
             <el-input
               :model-value="api?.valueKey ?? 'value'"
               placeholder="value"
               style="flex: 1"
               @update:model-value="(v: string) => emitApiField('valueKey', v)"
             />
-            <label :class="styles.label">子节点</label>
+            <label :class="styles.label">{{ t('editor.api.children') }}</label>
             <el-input
               :model-value="api?.childrenKey ?? ''"
               placeholder="children"
@@ -396,14 +399,14 @@ defineExpose({ testConnection, testing })
 
         <!-- 分组 3：加载策略 -->
         <div :class="styles.card">
-          <div :class="styles.cardTitle">加载策略</div>
+          <div :class="styles.cardTitle">{{ t('editor.api.loadStrategy') }}</div>
           <div :class="styles.row">
-            <label :class="styles.label">加载</label>
+            <label :class="styles.label">{{ t('editor.api.load') }}</label>
             <el-switch
               :model-value="api?.immediate !== false"
               @update:model-value="(v: boolean) => emitApiField('immediate', v)"
             />
-            <label :class="styles.label">缓存</label>
+            <label :class="styles.label">{{ t('editor.api.cache') }}</label>
             <el-input-number
               :model-value="api?.ttl ?? 0"
               :min="0"
@@ -414,7 +417,7 @@ defineExpose({ testConnection, testing })
             />
           </div>
           <div :class="styles.row">
-            <label :class="styles.label">重试</label>
+            <label :class="styles.label">{{ t('editor.api.retry') }}</label>
             <div style="display: flex; align-items: center; gap: 8px; flex: 1">
               <el-switch
                 :model-value="api?.enableRetry ?? false"
@@ -430,15 +433,15 @@ defineExpose({ testConnection, testing })
                 @update:model-value="(v: number) => emitApiField('retryCount', v ?? 3)"
               />
             </div>
-            <label :class="styles.label">策略</label>
+            <label :class="styles.label">{{ t('editor.api.policy') }}</label>
             <el-select
               :model-value="api?.cacheLevel ?? 'memory'"
               style="flex: 1"
               @update:model-value="(v: string) => emitApiField('cacheLevel', v as 'memory' | 'indexeddb' | 'both')"
             >
-              <el-option label="内存" value="memory" />
+              <el-option :label="t('editor.api.memory')" value="memory" />
               <el-option label="IndexedDB" value="indexeddb" />
-              <el-option label="两者" value="both" />
+              <el-option :label="t('editor.api.both')" value="both" />
             </el-select>
           </div>
         </div>
@@ -447,7 +450,7 @@ defineExpose({ testConnection, testing })
 
       <!-- 右侧测试面板 -->
       <div :class="styles.test">
-        <div :class="styles.testTitle">测试连接</div>
+        <div :class="styles.testTitle">{{ t('editor.api.testConnection') }}</div>
         <div :class="styles.testBody">
           <el-button
             type="primary"
@@ -455,7 +458,7 @@ defineExpose({ testConnection, testing })
             style="width: 100%"
             @click="testConnection"
           >
-            {{ testing ? '测试中...' : '测试连接' }}
+            {{ testing ? t('editor.api.testing') : t('editor.api.testConnection') }}
           </el-button>
 
           <!-- 成功结果 -->
@@ -467,13 +470,13 @@ defineExpose({ testConnection, testing })
 
             <!-- 响应结构预览 -->
             <div v-if="testResult.responsePreview" :class="styles.previewSection">
-              <div :class="styles.previewLabel">响应结构</div>
+              <div :class="styles.previewLabel">{{ t('editor.api.responseStructure') }}</div>
               <pre :class="styles.previewCode">{{ testResult.responsePreview }}</pre>
             </div>
 
             <!-- 解析预览 -->
             <div v-if="testResult.parsedOptions && testResult.parsedOptions.length > 0" :class="styles.previewSection">
-              <div :class="styles.previewLabel">解析预览 (前 5 项)</div>
+              <div :class="styles.previewLabel">{{ t('editor.api.parsePreview') }}</div>
               <div :class="styles.optionsList">
                 <div v-for="(opt, idx) in testResult.parsedOptions" :key="idx" :class="styles.optionItem">
                   <span :class="styles.optionLabel">{{ opt.label }}</span>
@@ -484,15 +487,15 @@ defineExpose({ testConnection, testing })
 
             <!-- 建议数据路径 -->
             <div v-if="testResult.suggestedDataPath" :class="styles.suggestion">
-              <span>建议路径: <code>{{ testResult.suggestedDataPath }}</code></span>
+              <span>{{ t('editor.api.suggestedPath') }} <code>{{ testResult.suggestedDataPath }}</code></span>
               <el-button size="small" type="primary" link @click="applySuggestedDataPath">
-                应用
+                {{ t('editor.api.apply') }}
               </el-button>
             </div>
 
             <!-- 分析按钮 -->
             <el-button type="success" plain style="width: 100%; margin-top: 8px" @click="analyzeAndGenerateSchema">
-              分析并生成 Schema
+              {{ t('editor.api.analyzeAndGenerate') }}
             </el-button>
           </template>
 
@@ -504,14 +507,14 @@ defineExpose({ testConnection, testing })
             </div>
 
             <div v-if="testResult.responsePreview" :class="styles.previewSection">
-              <div :class="styles.previewLabel">响应内容</div>
+              <div :class="styles.previewLabel">{{ t('editor.api.responseContent') }}</div>
               <pre :class="[styles.previewCode, styles.previewCodeError]">{{ testResult.responsePreview }}</pre>
             </div>
 
             <div v-if="testResult.suggestedDataPath" :class="styles.suggestionError">
-              <span>建议路径: <code>{{ testResult.suggestedDataPath }}</code></span>
+              <span>{{ t('editor.api.suggestedPath') }} <code>{{ testResult.suggestedDataPath }}</code></span>
               <el-button size="small" type="primary" link @click="applySuggestedDataPath">
-                应用
+                {{ t('editor.api.apply') }}
               </el-button>
             </div>
           </template>

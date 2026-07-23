@@ -4,6 +4,9 @@ import { widgetDataKey } from '../base/types'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -26,7 +29,7 @@ function forwardNativeChange() {
     v-model="widgetData.defaultValue as string"
     :style="dynamicStyle"
     type="textarea"
-    :placeholder="(widgetData.props?.placeholder as string) || '请输入'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.textarea.placeholder')"
     :disabled="isDisabled"
     :readonly="(widgetData.props?.readonly as boolean) || false"
     :rows="(widgetData.props?.rows as number) ?? 3"

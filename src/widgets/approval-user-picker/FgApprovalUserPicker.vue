@@ -3,8 +3,11 @@ import { inject, computed, ref } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -109,7 +112,7 @@ function getUserLabel(user: UserItem): string {
     ref="selectRef"
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || '请选择审批人'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.approvalUserPicker.placeholder')"
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :multiple="(widgetData.props?.multiple as boolean) || false"
@@ -128,7 +131,7 @@ function getUserLabel(user: UserItem): string {
     <el-option
       v-if="hasMore && options.length > 0"
       :value="'__load_more__'"
-      :label="'加载更多...'"
+      :label="t('editor.approvalUserPicker.loadMore')"
       disabled
       @click="loadMore"
     />

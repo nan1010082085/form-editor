@@ -2,11 +2,13 @@
 import { inject, computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { UploadFile, UploadUserFile } from 'element-plus'
+import { useI18n } from '@schema-platform/platform-shared'
 import { widgetDataKey } from '../base/types'
 import './FgUpload.module.scss'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useWidgetLayoutStyle } from '../../composables/useWidgetControlSize'
 
+const { t } = useI18n()
 const widgetData = inject(widgetDataKey)!
 const { layoutStyle } = useWidgetLayoutStyle(80, 240)
 
@@ -49,7 +51,7 @@ const accept = computed(() => (widgetData.value.props?.accept as string) || unde
 const multiple = computed(() => Boolean(widgetData.value.props?.multiple))
 const limit = computed(() => (widgetData.value.props?.limit as number) || undefined)
 const maxSizeMb = computed(() => (widgetData.value.props?.maxSize as number) || 10)
-const buttonText = computed(() => (widgetData.value.props?.buttonText as string) || '点击上传')
+const buttonText = computed(() => (widgetData.value.props?.buttonText as string) || t('editor.upload.clickToUpload'))
 const listType = computed(() => ((widgetData.value.props?.listType as string) || 'text') as 'text' | 'picture' | 'picture-card')
 
 function syncDefaultValue(files: UploadUserFile[]) {
@@ -69,7 +71,7 @@ function handleRemove(_file: UploadFile, uploadFiles: UploadUserFile[]) {
 function beforeUpload(rawFile: File) {
   const maxBytes = maxSizeMb.value * 1024 * 1024
   if (rawFile.size > maxBytes) {
-    ElMessage.warning(`文件大小不能超过 ${maxSizeMb.value}MB`)
+    ElMessage.warning(t('editor.upload.fileSizeExceeded', { size: maxSizeMb.value }))
     return false
   }
   return true

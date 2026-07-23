@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { inject, ref, watch, onMounted } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useWidgetLayoutStyle } from '../../composables/useWidgetControlSize'
 import styles from './style.module.scss'
 
+const { t } = useI18n()
 const widgetData = inject(widgetDataKey)!
 const { layoutStyle: dynamicStyle } = useWidgetLayoutStyle(200)
 
@@ -47,7 +49,7 @@ watch(() => widgetData.value.defaultValue, syncFromModel)
       ref="editorRef"
       :class="[styles.content, { [styles.contentEmpty]: !widgetData.defaultValue }]"
       :contenteditable="!isReadonly()"
-      :data-placeholder="(widgetData.props?.placeholder as string) || '请输入内容'"
+      :data-placeholder="(widgetData.props?.placeholder as string) || t('editor.richtext.placeholder')"
       @input="handleInput"
     />
   </div>

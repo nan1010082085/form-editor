@@ -4,8 +4,10 @@ import { widgetDataKey } from '../base/types'
 import './FgCascader.module.scss'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
-
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -32,7 +34,7 @@ function forwardNativeChange() {
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
     :options="(widgetData.props?.options as any[]) || []"
-    :placeholder="(widgetData.props?.placeholder as string) || '请选择'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.common.selectPlaceholder')"
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :show-all-levels="(widgetData.props?.showAllLevels as boolean) ?? true"

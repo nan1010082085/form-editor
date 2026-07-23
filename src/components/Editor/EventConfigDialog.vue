@@ -22,6 +22,9 @@ import FlowPreview from '@/components/Editor/FlowPreview.vue'
 import type { FlowItem } from '@/components/Editor/FlowPreview.vue'
 import styles from './EventConfigDialog.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -52,36 +55,36 @@ watch(
 
 // ---- 选项常量 ----
 
-const triggerOptions = [
-  { label: '点击', value: 'click' },
-  { label: '值变化', value: 'change' },
-  { label: '关闭', value: 'close' },
-  { label: '失焦', value: 'blur' },
-  { label: '聚焦', value: 'focus' },
-]
+const triggerOptions = computed(() => [
+  { label: t('editor.eventDialog.triggerClick'), value: 'click' },
+  { label: t('editor.eventDialog.triggerChange'), value: 'change' },
+  { label: t('editor.eventDialog.triggerClose'), value: 'close' },
+  { label: t('editor.eventDialog.triggerBlur'), value: 'blur' },
+  { label: t('editor.eventDialog.triggerFocus'), value: 'focus' },
+])
 
-const actionTypeOptions: ActionTypeOption[] = [
-  { label: '显示', value: 'show' },
-  { label: '隐藏', value: 'hide' },
-  { label: '打开弹窗', value: 'open-dialog' },
-  { label: '关闭弹窗', value: 'close-dialog' },
-  { label: '切换标签', value: 'switch-tab' },
-  { label: '设置值', value: 'set-value' },
-  { label: '提交表单', value: 'submit' },
-  { label: '重置表单', value: 'reset' },
-  { label: '触发事件', value: 'emit' },
-  { label: '触发组件事件', value: 'trigger-event' },
-  { label: '设置变量', value: 'set-variable' },
-  { label: '调用 API', value: 'api' },
-  { label: '路由跳转', value: 'navigate' },
-  { label: '发送消息', value: 'post-message' },
-  { label: '复制文本', value: 'copy' },
-  { label: '刷新数据', value: 'refresh' },
-  { label: '关闭页签', value: 'close-tab' },
-  { label: '发起流程', value: 'startFlow' },
-  { label: '结束流程', value: 'endFlow' },
-  { label: '提交表单数据', value: 'submitSubmission' },
-]
+const actionTypeOptions = computed<ActionTypeOption[]>(() => [
+  { label: t('editor.eventDialog.actionShow'), value: 'show' },
+  { label: t('editor.eventDialog.actionHide'), value: 'hide' },
+  { label: t('editor.eventDialog.actionOpenDialog'), value: 'open-dialog' },
+  { label: t('editor.eventDialog.actionCloseDialog'), value: 'close-dialog' },
+  { label: t('editor.eventDialog.actionSwitchTab'), value: 'switch-tab' },
+  { label: t('editor.eventDialog.actionSetValue'), value: 'set-value' },
+  { label: t('editor.eventDialog.actionSubmit'), value: 'submit' },
+  { label: t('editor.eventDialog.actionReset'), value: 'reset' },
+  { label: t('editor.eventDialog.actionEmit'), value: 'emit' },
+  { label: t('editor.eventDialog.actionTriggerEvent'), value: 'trigger-event' },
+  { label: t('editor.eventDialog.actionSetVariable'), value: 'set-variable' },
+  { label: t('editor.eventDialog.actionCallApi'), value: 'api' },
+  { label: t('editor.eventDialog.actionNavigate'), value: 'navigate' },
+  { label: t('editor.eventDialog.actionPostMessage'), value: 'post-message' },
+  { label: t('editor.eventDialog.actionCopy'), value: 'copy' },
+  { label: t('editor.eventDialog.actionRefresh'), value: 'refresh' },
+  { label: t('editor.eventDialog.actionCloseTab'), value: 'close-tab' },
+  { label: t('editor.eventDialog.actionStartFlow'), value: 'startFlow' },
+  { label: t('editor.eventDialog.actionEndFlow'), value: 'endFlow' },
+  { label: t('editor.eventDialog.actionSubmitSubmission'), value: 'submitSubmission' },
+])
 
 // ---- 根据目标组件获取可接收事件 ----
 
@@ -126,16 +129,16 @@ function handleClose() {
 
 // ---- 流程预览数据 ----
 
-const triggerLabelMap: Record<string, string> = Object.fromEntries(
-  triggerOptions.map(o => [o.value, o.label]),
-)
+const triggerLabelMap = computed(() => Object.fromEntries(
+  triggerOptions.value.map(o => [o.value, o.label]),
+))
 
-const actionLabelMap: Record<string, string> = Object.fromEntries(
-  actionTypeOptions.map(o => [o.value, o.label]),
-)
+const actionLabelMap = computed(() => Object.fromEntries(
+  actionTypeOptions.value.map(o => [o.value, o.label]),
+))
 
 function getActionLabel(action: SchemaEventAction): string {
-  return actionLabelMap[action.type] ?? action.type
+  return actionLabelMap.value[action.type] ?? action.type
 }
 
 function getActionDesc(action: SchemaEventAction): string {
@@ -150,11 +153,11 @@ function getActionDesc(action: SchemaEventAction): string {
 const flowItems = computed<FlowItem[]>(() =>
   localEvents.value.map(evt => ({
     type: 'trigger',
-    label: triggerLabelMap[evt.trigger] ?? evt.trigger,
+    label: triggerLabelMap.value[evt.trigger] ?? evt.trigger,
     description: evt.eventTarget || undefined,
     children: [
-      ...(evt.condition ? [{ type: 'condition' as const, label: '条件', description: evt.condition }] : []),
-      ...(evt.confirm ? [{ type: 'action' as const, label: '确认', description: evt.confirm }] : []),
+      ...(evt.condition ? [{ type: 'condition' as const, label: t('editor.eventDialog.condition'), description: evt.condition }] : []),
+      ...(evt.confirm ? [{ type: 'action' as const, label: t('editor.eventDialog.confirm'), description: evt.confirm }] : []),
       ...evt.actions.map(a => ({
         type: 'action' as const,
         label: getActionLabel(a),
@@ -168,7 +171,7 @@ const flowItems = computed<FlowItem[]>(() =>
 <template>
   <AppDialog
     :model-value="visible"
-    title="事件配置"
+    :title="t('editor.eventDialog.title')"
     width="1000px"
     @update:model-value="emit('update:visible', $event)"
   >
@@ -177,7 +180,7 @@ const flowItems = computed<FlowItem[]>(() =>
       <div :class="styles.form">
       <!-- 空状态 -->
       <div v-if="localEvents.length === 0" :class="styles.empty">
-        暂无事件，点击下方按钮添加。
+        {{ t('editor.eventDialog.emptyHint') }}
       </div>
 
       <!-- 事件列表 -->
@@ -187,7 +190,7 @@ const flowItems = computed<FlowItem[]>(() =>
         :class="styles.card"
       >
         <div :class="styles.cardHeader">
-          <span :class="styles.cardTitle">事件 <span :class="styles.cardNum">{{ ei + 1 }}</span></span>
+          <span :class="styles.cardTitle">{{ t('editor.eventDialog.event') }} <span :class="styles.cardNum">{{ ei + 1 }}</span></span>
           <el-button
             type="danger"
             size="small"
@@ -200,7 +203,7 @@ const flowItems = computed<FlowItem[]>(() =>
 
         <!-- trigger -->
         <div :class="styles.row">
-          <label :class="styles.label">触发</label>
+          <label :class="styles.label">{{ t('editor.eventDialog.trigger') }}</label>
           <el-select
             v-model="evt.trigger"
             style="flex: 1"
@@ -216,12 +219,12 @@ const flowItems = computed<FlowItem[]>(() =>
 
         <!-- eventTarget -->
         <div v-if="eventTargets?.length" :class="styles.row">
-          <label :class="styles.label">目标</label>
+          <label :class="styles.label">{{ t('editor.eventDialog.target') }}</label>
           <el-select
             v-model="evt.eventTarget"
             style="flex: 1"
             clearable
-            placeholder="整个部件"
+            :placeholder="t('editor.eventDialog.entireWidget')"
           >
             <el-option
               v-for="t in eventTargets"
@@ -237,7 +240,7 @@ const flowItems = computed<FlowItem[]>(() =>
 
         <!-- condition -->
         <div :class="styles.row">
-          <label :class="styles.label">条件</label>
+          <label :class="styles.label">{{ t('editor.eventDialog.condition') }}</label>
           <div :class="styles.conditionArea">
             <ConditionBuilder v-model="evt.condition" />
           </div>
@@ -245,10 +248,10 @@ const flowItems = computed<FlowItem[]>(() =>
 
         <!-- confirm -->
         <div :class="styles.row">
-          <label :class="styles.label">确认</label>
+          <label :class="styles.label">{{ t('editor.eventDialog.confirm') }}</label>
           <el-input
             v-model="evt.confirm"
-            placeholder="可选，执行前弹出的确认提示"
+            :placeholder="t('editor.eventDialog.confirmPlaceholder')"
           />
         </div>
 
@@ -269,13 +272,13 @@ const flowItems = computed<FlowItem[]>(() =>
         @click="addEvent"
       >
         <AppIcon name="plus" />
-        添加事件
+        {{ t('editor.eventDialog.addEvent') }}
       </el-button>
       </div>
 
       <!-- 右侧：流程预览 -->
       <div :class="styles.preview">
-        <div :class="styles.previewTitle">事件流预览</div>
+        <div :class="styles.previewTitle">{{ t('editor.eventDialog.eventFlowPreview') }}</div>
         <div :class="styles.previewBody">
           <FlowPreview :items="flowItems" />
         </div>
@@ -283,8 +286,8 @@ const flowItems = computed<FlowItem[]>(() =>
     </div>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleSave">保存</el-button>
+      <el-button @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
+      <el-button type="primary" @click="handleSave">{{ t('editor.common.save') }}</el-button>
     </template>
   </AppDialog>
 </template>

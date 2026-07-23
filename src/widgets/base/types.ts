@@ -61,6 +61,7 @@ export type BasicType =
   | 'heatmap'
   | 'funnel' | 'compare-funnel'
   | 'candlestick'
+  | 'map'
   | 'statistic'
   | 'approval-user-picker'
   | 'approval-role-picker'
@@ -162,6 +163,7 @@ export type EventActionType =
   | 'endFlow'         // 结束流程
   | 'submitSubmission' // 校验并提交表单数据到 Submission API
   | 'exportData'       // 导出文件下载（CSV/Excel 等）
+  | 'chart-linkage'    // 图表联动（钻取/筛选/高亮）
 
 /** 事件动作 */
 export interface SchemaEventAction {
@@ -209,6 +211,9 @@ export interface SchemaEventAction {
   schemaId?: string
   /** exportData 专用：下载文件名（不含扩展名时可从 Content-Disposition 推断） */
   exportFileName?: string
+  // ---- chart-linkage 专用 ----
+  /** 图表联动规则 ID */
+  chartLinkageRuleId?: string
 }
 
 // ============================================================
@@ -345,11 +350,53 @@ export interface LinkageState {
 }
 
 // ============================================================
+// 图表联动配置
+// ============================================================
+
+/** 图表联动触发方式 */
+export type ChartLinkageTrigger = 'click' | 'select' | 'hover'
+
+/** 图表联动动作类型 */
+export type ChartLinkageAction = 'filter' | 'drilldown' | 'highlight'
+
+/** 图表联动规则 */
+export interface ChartLinkageRule {
+  /** 规则 ID */
+  id: string
+  /** 源图表 Widget ID（触发联动的图表） */
+  sourceWidgetId: string
+  /** 触发方式 */
+  trigger: ChartLinkageTrigger
+  /** 目标图表 Widget ID 列表（被联动的图表） */
+  targetWidgetIds: string[]
+  /** 参数映射：源数据字段 -> 目标筛选字段 */
+  paramMapping: Record<string, string>
+  /** 联动动作类型 */
+  action: ChartLinkageAction
+  /** 钻取维度字段（drilldown 动作专用） */
+  drilldownField?: string
+  /** 钻取层级标签（用于面包屑显示） */
+  drilldownLabel?: string
+}
+
+/** 图表钻取历史记录 */
+export interface DrilldownHistoryEntry {
+  /** 钻取的维度值 */
+  value: string
+  /** 钻取的维度字段 */
+  field: string
+  /** 显示标签 */
+  label: string
+  /** 钻取时的筛选条件快照 */
+  filters: Record<string, unknown>
+}
+
+// ============================================================
 // 属性面板配置类型
 // ============================================================
 
 /** 配置面板类型（属性面板底部的弹框入口按钮） */
-export type ConfigPanelType = 'events' | 'linkages' | 'api' | 'variables'
+export type ConfigPanelType = 'events' | 'linkages' | 'api' | 'variables' | 'chart-linkages'
 
 /** 属性面板声明中的基础属性快捷键 */
 export type BasicPropKey = 'field' | 'label' | 'defaultValue' | 'hidden' | 'options' | 'validationRules'
@@ -470,6 +517,10 @@ export interface Widget {
     zIndex?: number
   }
 
+  // === 响应式位置 ===
+  /** 按断点覆盖位置/尺寸（仅预览/发布模式生效） */
+  responsivePosition?: ResponsivePosition
+
   // === 样式配置 ===
   /** 组件特有样式 */
   style?: Record<string, unknown>
@@ -485,6 +536,10 @@ export interface Widget {
   // === 联动 ===
   /** 组件联动规则列表（SchemaLinkage） */
   linkages?: SchemaLinkage[]
+
+  // === 图表联动 ===
+  /** 图表联动规则列表（ChartLinkageRule） */
+  chartLinkages?: ChartLinkageRule[]
 
   // === 运行时状态（由规则引擎设置） ===
   /** 组件是否禁用（规则引擎可动态设置） */
@@ -612,6 +667,7 @@ export const FULL_WIDTH_TYPES = [
   'heatmap',
   'funnel', 'compare-funnel',
   'candlestick',
+  'map',
 ] as const
 
 /**
@@ -630,6 +686,27 @@ export type CanvasUnit = 'px' | '%'
 
 /** 画布布局模式：free=绝对定位自由画布，flex=流式页面布局 */
 export type BoardLayoutMode = 'free' | 'flex'
+
+/** 响应式断点（编辑器预览/发布模式） */
+export type PreviewBreakpoint = 'desktop' | 'tablet' | 'mobile'
+
+/** 单个断点的位置/尺寸覆盖 */
+export interface BreakpointPosition {
+  x?: number
+  y?: number
+  w?: number
+  h?: number
+  xUnit?: 'px' | '%'
+  yUnit?: 'px' | '%'
+  wUnit?: 'px' | '%'
+  hUnit?: 'px' | '%'
+  zIndex?: number
+  /** 是否在该断点下隐藏 */
+  hidden?: boolean
+}
+
+/** 响应式位置配置 — 按断点覆盖 Widget 位置 */
+export type ResponsivePosition = Partial<Record<PreviewBreakpoint, BreakpointPosition>>
 
 /** 自由布局留白预设 */
 export type FreeLayoutPreset = 'full' | 'form-narrow' | 'list-standard' | 'list-wide' | 'dashboard-demo'
@@ -653,6 +730,9 @@ export interface FreeLayoutOptions {
   gridRowHeight?: number
 }
 
+/** 发布视图自适应模式 */
+export type ScaleMode = 'fit-width' | 'fit-height' | 'contain' | 'stretch'
+
 export interface CanvasConfig {
   width: number
   height: number
@@ -670,6 +750,8 @@ export interface CanvasConfig {
   flexTemplate?: FlexPageTemplate
   /** 大屏主题预设 ID（boardThemes.ts） */
   themePreset?: string
+  /** 发布视图自适应模式（仅 publish/preview 生效） */
+  scaleMode?: ScaleMode
 }
 
 export interface BoardVariable {

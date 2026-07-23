@@ -5,9 +5,13 @@
  * Sprint 18: Replaces JSON textarea with per-action structured form.
  * Each action type shows conditional fields for its specific properties.
  */
+import { computed } from 'vue'
 import type { SchemaButtonConfig, SchemaAction, ActionType } from '@/components/WidgetRenderer/types'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './ButtonEditor.module.scss'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   buttons: SchemaButtonConfig[]
@@ -17,25 +21,25 @@ const emit = defineEmits<{
   'update:buttons': [buttons: SchemaButtonConfig[]]
 }>()
 
-const buttonTypeOptions = [
-  { label: '默认', value: '' as const },
-  { label: '主要', value: 'primary' as const },
-  { label: '成功', value: 'success' as const },
-  { label: '警告', value: 'warning' as const },
-  { label: '危险', value: 'danger' as const },
-  { label: '信息', value: 'info' as const },
-]
+const buttonTypeOptions = computed(() => [
+  { label: t('editor.columnsEditor.buttonTypeDefault'), value: '' as const },
+  { label: t('editor.columnsEditor.buttonTypePrimary'), value: 'primary' as const },
+  { label: t('editor.columnsEditor.buttonTypeSuccess'), value: 'success' as const },
+  { label: t('editor.columnsEditor.buttonTypeWarning'), value: 'warning' as const },
+  { label: t('editor.columnsEditor.buttonTypeDanger'), value: 'danger' as const },
+  { label: t('editor.columnsEditor.buttonTypeInfo'), value: 'info' as const },
+])
 
-const actionTypeOptions: { label: string; value: ActionType }[] = [
-  { label: '触发事件', value: 'emit' },
-  { label: '弹窗', value: 'dialog' },
-  { label: '接口请求', value: 'api' },
-  { label: '页面跳转', value: 'navigate' },
-  { label: '提交表单', value: 'submit' },
-  { label: '重置表单', value: 'reset' },
-  { label: '上传', value: 'upload' },
-  { label: '校验', value: 'validate' },
-]
+const actionTypeOptions = computed<{ label: string; value: ActionType }[]>(() => [
+  { label: t('editor.buttonEditor.actionEmit'), value: 'emit' },
+  { label: t('editor.buttonEditor.actionDialog'), value: 'dialog' },
+  { label: t('editor.buttonEditor.actionApi'), value: 'api' },
+  { label: t('editor.buttonEditor.actionNavigate'), value: 'navigate' },
+  { label: t('editor.buttonEditor.actionSubmit'), value: 'submit' },
+  { label: t('editor.buttonEditor.actionReset'), value: 'reset' },
+  { label: t('editor.buttonEditor.actionUpload'), value: 'upload' },
+  { label: t('editor.buttonEditor.actionValidate'), value: 'validate' },
+])
 
 const apiMethodOptions = [
   { label: 'GET', value: 'get' as const },
@@ -131,11 +135,11 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
 
 <template>
   <div :class="styles['button-editor']">
-    <div v-if="buttons.length === 0" :class="styles['button-editor__empty']">未配置按钮。</div>
+    <div v-if="buttons.length === 0" :class="styles['button-editor__empty']">{{ t('editor.buttonEditor.emptyHint') }}</div>
 
     <div v-for="(btn, btnIdx) in buttons" :key="btnIdx" :class="styles['button-editor__item']">
       <div :class="styles['button-editor__item-header']">
-        <span :class="styles['button-editor__item-title']">按钮 {{ btnIdx + 1 }}</span>
+        <span :class="styles['button-editor__item-title']">{{ t('editor.buttonEditor.buttonTitle', { index: btnIdx + 1 }) }}</span>
         <div :class="styles['button-editor__item-actions']">
           <el-button size="small" text :disabled="btnIdx === 0" @click="moveUp(btnIdx)">
             <AppIcon name="arrow-up" />
@@ -150,12 +154,12 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
       </div>
 
       <div :class="styles['button-editor__field']">
-        <label :class="styles['button-editor__label']">文本</label>
-        <el-input :model-value="btn.text" size="small" placeholder="按钮文字" @update:model-value="(v: string) => updateButton(btnIdx, 'text', v)" />
+        <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.text') }}</label>
+        <el-input :model-value="btn.text" size="small" :placeholder="t('editor.buttonEditor.buttonTextPlaceholder')" @update:model-value="(v: string) => updateButton(btnIdx, 'text', v)" />
       </div>
 
       <div :class="styles['button-editor__field']">
-        <label :class="styles['button-editor__label']">按钮类型</label>
+        <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.buttonType') }}</label>
         <el-select :model-value="btn.buttonType ?? ''" size="small" style="width: 100%" @update:model-value="(v: string) => updateButton(btnIdx, 'buttonType', v)">
           <el-option v-for="opt in buttonTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
         </el-select>
@@ -164,18 +168,18 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
       <!-- Actions list -->
       <div :class="styles['button-editor__actions-section']">
         <div :class="styles['button-editor__actions-header']">
-          <span :class="styles['button-editor__label']">操作</span>
+          <span :class="styles['button-editor__label']">{{ t('editor.buttonEditor.actions') }}</span>
           <el-button size="small" text @click="addAction(btnIdx)">
             <AppIcon name="plus" />
-            添加
+            {{ t('editor.buttonEditor.addAction') }}
           </el-button>
         </div>
 
-        <div v-if="!btn.actions?.length" :class="styles['button-editor__help']" style="margin-bottom:4px">无操作。点击"添加"创建一个。</div>
+        <div v-if="!btn.actions?.length" :class="styles['button-editor__help']" style="margin-bottom:4px">{{ t('editor.buttonEditor.noActionsHint') }}</div>
 
         <div v-for="(action, aIdx) in (btn.actions ?? [])" :key="aIdx" :class="styles['button-editor__action-item']">
           <div :class="styles['button-editor__action-header']">
-            <span :class="styles['button-editor__action-title']">操作 {{ aIdx + 1 }}</span>
+            <span :class="styles['button-editor__action-title']">{{ t('editor.buttonEditor.actionTitle', { index: aIdx + 1 }) }}</span>
             <div style="display:flex;gap:2px">
               <el-button :disabled="aIdx === 0" size="small" text @click="moveActionUp(btnIdx, aIdx)">
                 <AppIcon name="arrow-up" />
@@ -191,7 +195,7 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
 
           <!-- Type -->
           <div :class="styles['button-editor__field']">
-            <label :class="styles['button-editor__label']">类型</label>
+            <label :class="styles['button-editor__label']">{{ t('editor.common.type') }}</label>
             <el-select :model-value="action.type" size="small" style="width:100%" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { type: v as ActionType })">
               <el-option v-for="opt in actionTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
             </el-select>
@@ -199,24 +203,24 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
 
           <!-- Common: Label -->
           <div :class="styles['button-editor__field']">
-            <label :class="styles['button-editor__label']">标签</label>
-            <el-input :model-value="action.label ?? ''" size="small" placeholder="操作标签" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { label: v || undefined })" />
+            <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.label') }}</label>
+            <el-input :model-value="action.label ?? ''" size="small" :placeholder="t('editor.buttonEditor.labelPlaceholder')" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { label: v || undefined })" />
           </div>
 
           <!-- Common: Confirm -->
           <div :class="styles['button-editor__field']">
-            <label :class="styles['button-editor__label']">确认提示</label>
-            <el-input :model-value="action.confirm ?? ''" size="small" placeholder="执行前的确认提示" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { confirm: v || undefined })" />
+            <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.confirmPrompt') }}</label>
+            <el-input :model-value="action.confirm ?? ''" size="small" :placeholder="t('editor.buttonEditor.confirmPlaceholder')" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { confirm: v || undefined })" />
           </div>
 
           <!-- emit: eventName + eventPayload -->
           <template v-if="action.type === 'emit'">
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">事件名称</label>
-              <el-input :model-value="action.eventName ?? ''" size="small" placeholder="例如: save" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { eventName: v || undefined })" />
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.eventName') }}</label>
+              <el-input :model-value="action.eventName ?? ''" size="small" :placeholder="t('editor.buttonEditor.eventNamePlaceholder')" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { eventName: v || undefined })" />
             </div>
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">事件参数 (JSON)</label>
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.eventPayload') }}</label>
               <el-input
                 type="textarea"
                 :model-value="eventPayloadCache[cacheKey(btnIdx, aIdx, 'payload')] ?? jsonText(action.eventPayload)"
@@ -229,15 +233,15 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
           <!-- dialog: dialogTitle + dialogWidth + dialogSchema -->
           <template v-if="action.type === 'dialog'">
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">弹窗标题</label>
-              <el-input :model-value="action.dialogTitle ?? ''" size="small" placeholder="弹窗标题" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { dialogTitle: v || undefined })" />
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.dialogTitle') }}</label>
+              <el-input :model-value="action.dialogTitle ?? ''" size="small" :placeholder="t('editor.buttonEditor.dialogTitlePlaceholder')" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { dialogTitle: v || undefined })" />
             </div>
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">弹窗宽度</label>
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.dialogWidth') }}</label>
               <el-input :model-value="action.dialogWidth ?? ''" size="small" placeholder="600px" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { dialogWidth: v || undefined })" />
             </div>
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">弹窗 Schema (JSON)</label>
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.dialogSchema') }}</label>
               <el-input
                 type="textarea"
                 :model-value="dialogSchemaCache[cacheKey(btnIdx, aIdx, 'schema')] ?? jsonText(action.dialogSchema)"
@@ -250,21 +254,21 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
           <!-- api: apiUrl + apiMethod + apiParams -->
           <template v-if="action.type === 'api'">
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">接口地址</label>
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.apiUrl') }}</label>
               <el-input :model-value="action.apiUrl ?? ''" size="small" placeholder="/api/endpoint" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { apiUrl: v || undefined })" />
             </div>
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">请求方法</label>
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.apiMethod') }}</label>
               <el-select :model-value="action.apiMethod ?? 'post'" size="small" style="width:100%" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { apiMethod: v as 'get' | 'post' })">
                 <el-option v-for="opt in apiMethodOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
               </el-select>
             </div>
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">接口参数 (JSON 或 "formData")</label>
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.apiParams') }}</label>
               <el-input
                 type="textarea"
                 :model-value="apiParamsCache[cacheKey(btnIdx, aIdx, 'params')] ?? (typeof action.apiParams === 'string' ? action.apiParams : jsonText(action.apiParams))"
-                :rows="2" placeholder='{"key":"value"} 或 "formData"'
+                :rows="2" :placeholder="t('editor.buttonEditor.apiParamsPlaceholder')"
                 @update:model-value="(v: string) => { apiParamsCache[cacheKey(btnIdx, aIdx, 'params')] = v; updateAction(btnIdx, aIdx, { apiParams: v === 'formData' ? 'formData' : (parseJson(v) as Record<string, unknown> | undefined) }) }"
               />
             </div>
@@ -273,11 +277,11 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
           <!-- navigate: navigatePath + navigateQuery -->
           <template v-if="action.type === 'navigate'">
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">跳转路径</label>
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.navigatePath') }}</label>
               <el-input :model-value="action.navigatePath ?? ''" size="small" placeholder="/detail/:id" @update:model-value="(v: string) => updateAction(btnIdx, aIdx, { navigatePath: v || undefined })" />
             </div>
             <div :class="styles['button-editor__field']">
-              <label :class="styles['button-editor__label']">跳转参数 (JSON)</label>
+              <label :class="styles['button-editor__label']">{{ t('editor.buttonEditor.navigateQuery') }}</label>
               <el-input
                 type="textarea"
                 :model-value="navigateQueryCache[cacheKey(btnIdx, aIdx, 'query')] ?? jsonText(action.navigateQuery)"
@@ -294,7 +298,7 @@ function cacheKey(btnIdx: number, actionIdx: number, field: string) { return `${
 
     <el-button type="primary" size="small" plain style="width:100%;margin-top:8px" @click="addButton">
       <AppIcon name="plus" />
-      添加按钮
+      {{ t('editor.buttonEditor.addButtonText') }}
     </el-button>
   </div>
 </template>

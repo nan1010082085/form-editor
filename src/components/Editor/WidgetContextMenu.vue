@@ -24,6 +24,7 @@ const emit = defineEmits<{
   openRule: [widget: Widget]
   openApi: [widget: Widget]
   openVariables: [widget: Widget]
+  openChartLinkage: [widget: Widget]
   savePreview: [widget: Widget]
 }>()
 
@@ -51,6 +52,7 @@ function handleAction(action: string) {
     case 'rule': emit('openRule', props.widget); break
     case 'api': emit('openApi', props.widget); break
     case 'variables': emit('openVariables', props.widget); break
+    case 'chartLinkage': emit('openChartLinkage', props.widget); break
     case 'savePreview': emit('savePreview', props.widget); break
   }
   emit('close')
@@ -85,6 +87,7 @@ function handleAction(action: string) {
         <div v-if="configPanels.includes('linkages')" :class="styles.item" @click="handleAction('rule')">字段联动</div>
         <div v-if="configPanels.includes('api')" :class="styles.item" @click="handleAction('api')">数据源</div>
         <div v-if="configPanels.includes('variables')" :class="styles.item" @click="handleAction('variables')">变量配置</div>
+        <div v-if="configPanels.includes('chart-linkages')" :class="styles.item" @click="handleAction('chartLinkage')">图表联动</div>
       </template>
     </div>
   </Teleport>

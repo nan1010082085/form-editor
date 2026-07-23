@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { mount } from '@vue/test-utils'
 import { computed } from 'vue'
@@ -9,6 +9,11 @@ import { createWidget } from '@/widgets/registry'
 import { widgetDataKey, widgetStyleKey } from '../../base/types'
 import FgBanner from '../FgBanner.vue'
 import { bannerConfig } from '../config'
+
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
 
 describe('FgBanner', () => {
   let store: ReturnType<typeof useWidgetStore>

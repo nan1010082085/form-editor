@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, computed, watch, onMounted } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { TABLE_CLICK_INTERCEPT_KEY } from './clickIntercept'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import FgSearchForm from '../../components/SearchForm/FgSearchForm.vue'
@@ -33,6 +34,7 @@ import {
 } from '../base/widgetMock'
 import styles from './style.module.scss'
 
+const { t } = useI18n()
 const widgetData = inject(widgetDataKey)!
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
 const clickIntercept = inject(TABLE_CLICK_INTERCEPT_KEY, null)
@@ -252,8 +254,8 @@ defineExpose({
 
     <!-- Batch actions bar -->
     <div v-if="selectionConfig.enabled && selectedRows.length > 0" :class="styles.batchBar">
-      <span :class="styles.batchInfo">已选 {{ selectedRows.length }} 项</span>
-      <el-button size="small" text @click="clearSelection">取消选择</el-button>
+      <span :class="styles.batchInfo">{{ t('editor.advancedTable.batchSelected', { count: selectedRows.length }) }}</span>
+      <el-button size="small" text @click="clearSelection">{{ t('editor.advancedTable.cancelSelection') }}</el-button>
     </div>
 
     <!-- Table + 统一状态壳（loading/empty/error） -->

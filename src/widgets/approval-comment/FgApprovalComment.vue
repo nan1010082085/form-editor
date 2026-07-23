@@ -3,8 +3,11 @@ import { inject } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -20,7 +23,7 @@ useExposeWidget((wd) => ({
     v-model="widgetData.defaultValue"
     type="textarea"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || '请输入审批意见'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.approvalComment.placeholder')"
     :disabled="isDisabled"
     :rows="(widgetData.props?.rows as number) || 4"
     :maxlength="(widgetData.props?.maxlength as number) || 1000"

@@ -12,6 +12,9 @@ import { useWidgetOptions } from '@/composables/useWidgetOptions'
 import type { SchemaEventAction, EventActionType, ReceivableEventConfig } from '../../widgets/base/types'
 import styles from './ActionListEditor.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 // ---- Types ----
 
@@ -251,7 +254,7 @@ function handleChange() {
 <template>
   <div :class="styles.section">
     <div :class="styles.sectionHeader">
-      <span :class="styles.sectionTitle">动作列表</span>
+      <span :class="styles.sectionTitle">{{ t('editor.actionList.title') }}</span>
       <el-button
         type="primary"
         size="small"
@@ -259,12 +262,12 @@ function handleChange() {
         @click="addAction"
       >
         <AppIcon name="plus" />
-        添加
+        {{ t('editor.actionList.addAction') }}
       </el-button>
     </div>
 
     <div v-if="localActions.length === 0" :class="styles.sectionEmpty">
-      暂无动作
+      {{ t('editor.actionList.noActions') }}
     </div>
 
     <div
@@ -273,7 +276,7 @@ function handleChange() {
       :class="styles.actionCard"
     >
       <div :class="styles.actionHeader">
-        <span :class="styles.actionIndex">动作 {{ ai + 1 }}</span>
+        <span :class="styles.actionIndex">{{ t('editor.actionList.action') }} {{ ai + 1 }}</span>
         <el-button
           type="danger"
           size="small"
@@ -286,7 +289,7 @@ function handleChange() {
 
       <!-- action type -->
       <div :class="styles.row">
-        <label :class="styles.label">类型</label>
+        <label :class="styles.label">{{ t('editor.actionList.type') }}</label>
         <el-select
           :model-value="action.type"
           style="flex: 1"
@@ -304,11 +307,11 @@ function handleChange() {
       <!-- target: open-dialog / hide / visible / disabled / switch-tab / refresh / show -->
       <template v-if="['open-dialog', 'hide', 'visible', 'disabled', 'switch-tab', 'refresh', 'show'].includes(action.type)">
         <div :class="styles.row">
-          <label :class="styles.label">目标</label>
+          <label :class="styles.label">{{ t('editor.actionList.target') }}</label>
           <el-select
             v-model="action.target"
             filterable
-            :placeholder="action.type === 'open-dialog' ? '选择弹窗组件' : action.type === 'hide' ? '选择要隐藏的组件' : action.type === 'visible' ? '选择要显示的组件' : action.type === 'disabled' ? '选择要禁用的组件' : '选择目标组件'"
+            :placeholder="action.type === 'open-dialog' ? t('editor.actionList.targetPlaceholderDialog') : action.type === 'hide' ? t('editor.actionList.targetPlaceholderHide') : action.type === 'visible' ? t('editor.actionList.targetPlaceholderVisible') : action.type === 'disabled' ? t('editor.actionList.targetPlaceholderDisabled') : t('editor.actionList.targetPlaceholderDefault')"
             style="flex: 1"
             @update:model-value="handleChange"
           >
@@ -350,10 +353,10 @@ function handleChange() {
 
       <!-- switch-tab: value (tab key) -->
       <div v-if="action.type === 'switch-tab'" :class="styles.row">
-        <label :class="styles.label">标签</label>
+        <label :class="styles.label">{{ t('editor.actionList.tab') }}</label>
         <el-input
           v-model="action.value"
-          placeholder="标签 key"
+          :placeholder="t('editor.actionList.tabPlaceholder')"
           style="flex: 1"
           @update:model-value="handleChange"
         />
@@ -362,11 +365,11 @@ function handleChange() {
       <!-- set-value: target (field) + value -->
       <template v-if="action.type === 'set-value'">
         <div :class="styles.row">
-          <label :class="styles.label">目标</label>
+          <label :class="styles.label">{{ t('editor.actionList.target') }}</label>
           <el-select
             v-model="action.target"
             filterable
-            placeholder="选择要设置值的字段"
+            :placeholder="t('editor.actionList.valuePlaceholderSetField')"
             style="flex: 1"
             @update:model-value="handleChange"
           >
@@ -379,10 +382,10 @@ function handleChange() {
           </el-select>
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">值</label>
+          <label :class="styles.label">{{ t('editor.api.value') }}</label>
           <el-input
             v-model="action.value"
-            placeholder="要设置的值"
+            :placeholder="t('editor.actionList.valuePlaceholderSetValue')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
@@ -401,7 +404,7 @@ function handleChange() {
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">方法</label>
+          <label :class="styles.label">{{ t('editor.api.method') }}</label>
           <el-select
             v-model="action.apiMethod"
             style="width: 120px"
@@ -418,19 +421,19 @@ function handleChange() {
       <!-- set-variable: variable + value -->
       <template v-if="action.type === 'set-variable'">
         <div :class="styles.row">
-          <label :class="styles.label">变量</label>
+          <label :class="styles.label">{{ t('editor.config.variables') }}</label>
           <el-input
             v-model="action.variable"
-            placeholder="变量名"
+            :placeholder="t('editor.actionList.variableName')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">值</label>
+          <label :class="styles.label">{{ t('editor.api.value') }}</label>
           <el-input
             v-model="action.value"
-            placeholder="要设置的值"
+            :placeholder="t('editor.actionList.valuePlaceholderSetValue')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
@@ -440,11 +443,11 @@ function handleChange() {
       <!-- trigger-event: target (component) + event (from receivableEvents or free input) -->
       <template v-if="action.type === 'trigger-event'">
         <div :class="styles.row">
-          <label :class="styles.label">目标</label>
+          <label :class="styles.label">{{ t('editor.actionList.target') }}</label>
           <el-select
             v-model="action.eventTarget"
             filterable
-            placeholder="选择目标组件"
+            :placeholder="t('editor.actionList.targetPlaceholderDefault')"
             style="flex: 1"
             @update:model-value="handleChange"
           >
@@ -457,12 +460,12 @@ function handleChange() {
           </el-select>
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">事件</label>
+          <label :class="styles.label">{{ t('editor.actionList.event') }}</label>
           <el-select
             v-if="action.eventTarget && getReceivableEvents(action.eventTarget).length > 0"
             v-model="action.eventName"
             filterable
-            placeholder="选择事件"
+            :placeholder="t('editor.actionList.selectEvent')"
             style="flex: 1"
             @update:model-value="handleChange"
           >
@@ -476,7 +479,7 @@ function handleChange() {
           <el-input
             v-else
             v-model="action.eventName"
-            placeholder="事件名（如 click）"
+            :placeholder="t('editor.actionList.eventNamePlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
@@ -486,7 +489,7 @@ function handleChange() {
       <!-- navigate: path -->
       <template v-if="action.type === 'navigate'">
         <div :class="styles.row">
-          <label :class="styles.label">路径</label>
+          <label :class="styles.label">{{ t('editor.actionList.path') }}</label>
           <el-input
             v-model="action.value"
             placeholder="/path"
@@ -499,10 +502,10 @@ function handleChange() {
       <!-- emit: value -->
       <template v-if="action.type === 'emit'">
         <div :class="styles.row">
-          <label :class="styles.label">值</label>
+          <label :class="styles.label">{{ t('editor.api.value') }}</label>
           <el-input
             v-model="action.value"
-            placeholder="事件 payload"
+            :placeholder="t('editor.actionList.eventPayload')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
@@ -512,7 +515,7 @@ function handleChange() {
       <!-- post-message: message (JSON) -->
       <template v-if="action.type === 'post-message'">
         <div :class="styles.row">
-          <label :class="styles.label">消息</label>
+          <label :class="styles.label">{{ t('editor.actionList.message') }}</label>
           <el-input
             v-model="action.message"
             placeholder='{"type":"save"}'
@@ -525,10 +528,10 @@ function handleChange() {
       <!-- copy: text -->
       <template v-if="action.type === 'copy'">
         <div :class="styles.row">
-          <label :class="styles.label">内容</label>
+          <label :class="styles.label">{{ t('editor.actionList.content') }}</label>
           <el-input
             v-model="action.text"
-            placeholder="复制内容（支持 formData.xxx）"
+            :placeholder="t('editor.actionList.copyPlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
@@ -541,25 +544,25 @@ function handleChange() {
           <label :class="styles.label">Schema ID</label>
           <el-input
             v-model="action.schemaId"
-            placeholder="sourceId 或 publishId"
+            :placeholder="t('editor.actionList.schemaIdPlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">流程定义</label>
+          <label :class="styles.label">{{ t('editor.actionList.flowDefinition') }}</label>
           <el-input
             v-model="action.definitionId"
-            placeholder="可选，提交后自动发起流程"
+            :placeholder="t('editor.actionList.flowDefinitionPlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">流程变量</label>
+          <label :class="styles.label">{{ t('editor.actionList.flowVariables') }}</label>
           <el-input
             v-model="action.flowVariables"
-            placeholder='{"key": "value"}（可选）'
+            :placeholder="t('editor.actionList.flowVarsPlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
@@ -569,19 +572,19 @@ function handleChange() {
       <!-- startFlow: definitionId + variables -->
       <template v-if="action.type === 'startFlow'">
         <div :class="styles.row">
-          <label :class="styles.label">流程定义</label>
+          <label :class="styles.label">{{ t('editor.actionList.flowDefinition') }}</label>
           <el-input
             v-model="action.definitionId"
-            placeholder="流程定义 ID"
+            :placeholder="t('editor.actionList.flowDefIdPlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">变量</label>
+          <label :class="styles.label">{{ t('editor.config.variables') }}</label>
           <el-input
             v-model="action.flowVariables"
-            placeholder='{"key": "value"}（可选）'
+            :placeholder="t('editor.actionList.flowVarsPlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
@@ -591,19 +594,19 @@ function handleChange() {
       <!-- endFlow: instanceId + reason -->
       <template v-if="action.type === 'endFlow'">
         <div :class="styles.row">
-          <label :class="styles.label">实例 ID</label>
+          <label :class="styles.label">{{ t('editor.actionList.instanceId') }}</label>
           <el-input
             v-model="action.instanceId"
-            placeholder="流程实例 ID"
+            :placeholder="t('editor.actionList.instanceIdPlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">原因</label>
+          <label :class="styles.label">{{ t('editor.actionList.reason') }}</label>
           <el-input
             v-model="action.reason"
-            placeholder="结束原因（可选）"
+            :placeholder="t('editor.actionList.reasonPlaceholder')"
             style="flex: 1"
             @update:model-value="handleChange"
           />
@@ -612,7 +615,7 @@ function handleChange() {
 
       <!-- 无需配置的类型 -->
       <div v-if="NO_CONFIG_TYPES.has(action.type)" :class="styles.noConfigHint">
-        此动作无需额外配置
+        {{ t('editor.actionList.noConfigHint') }}
       </div>
     </div>
   </div>

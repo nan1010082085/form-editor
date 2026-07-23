@@ -7,7 +7,7 @@
  * - 各弹框保存时写入 widgetStore / boardStore
  */
 import { ref, watch, type ComputedRef } from 'vue'
-import type { Widget, WidgetEvent, SchemaApiConfig, WidgetVariable } from '@/widgets/base/types'
+import type { Widget, WidgetEvent, SchemaApiConfig, WidgetVariable, ChartLinkageRule } from '@/widgets/base/types'
 import type { SchemaLinkage } from '@/components/WidgetRenderer/types'
 import type { useWidgetStore } from '@/stores/widget'
 import type { useEditorStore } from '@/stores/editor'
@@ -24,6 +24,7 @@ export function usePropertyPanelDialogs(
   const apiDialogVisible = ref(false)
   const variableDialogVisible = ref(false)
   const boardVariableDialogVisible = ref(false)
+  const chartLinkageDialogVisible = ref(false)
 
   function openEventDialog() {
     eventDialogVisible.value = true
@@ -37,6 +38,10 @@ export function usePropertyPanelDialogs(
     apiDialogVisible.value = true
   }
 
+  function openChartLinkageDialog() {
+    chartLinkageDialogVisible.value = true
+  }
+
   // ---- 监听右键菜单触发的弹框打开 ----
   watch(() => editorStore.configDialogTrigger, (trigger) => {
     if (!trigger) return
@@ -44,6 +49,7 @@ export function usePropertyPanelDialogs(
     else if (trigger.type === 'linkages') linkageDialogVisible.value = true
     else if (trigger.type === 'api') apiDialogVisible.value = true
     else if (trigger.type === 'variables') variableDialogVisible.value = true
+    else if (trigger.type === 'chart-linkages') chartLinkageDialogVisible.value = true
     editorStore.clearConfigDialogTrigger()
   })
 
@@ -71,19 +77,27 @@ export function usePropertyPanelDialogs(
     boardStore.variables = variables as typeof boardStore.variables
   }
 
+  function handleChartLinkageSave(rules: ChartLinkageRule[]) {
+    if (!selectedWidget.value) return
+    widgetStore.updateWidget(selectedWidget.value.id, { chartLinkages: rules })
+  }
+
   return {
     eventDialogVisible,
     linkageDialogVisible,
     apiDialogVisible,
     variableDialogVisible,
     boardVariableDialogVisible,
+    chartLinkageDialogVisible,
     openEventDialog,
     openLinkageDialog,
     openApiDialog,
+    openChartLinkageDialog,
     handleEventSave,
     handleLinkageSave,
     handleApiSave,
     handleVariableSave,
     handleBoardVariableSave,
+    handleChartLinkageSave,
   }
 }

@@ -6,7 +6,10 @@
  * 每个选项包含 label + value，支持增删。
  */
 import { ref, watch } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './OptionsEditor.module.scss'
+
+const { t } = useI18n()
 
 interface DictItem {
   label: string
@@ -65,19 +68,19 @@ function updateOptionValue(index: number, value: string) {
       >
         <el-input
           :model-value="opt.label"
-          placeholder="显示文本"
+          :placeholder="t('editor.optionsEditor.displayText')"
           size="small"
           @update:model-value="(v: string) => updateOptionLabel(i, v)"
         />
         <el-input
           :model-value="String(opt.value)"
-          placeholder="值"
+          :placeholder="t('editor.optionsEditor.value')"
           size="small"
           @update:model-value="(v: string) => updateOptionValue(i, v)"
         />
         <button :class="styles.remove" @click="removeOption(i)">&times;</button>
       </div>
-      <button :class="styles.add" @click="addOption">+ 添加选项</button>
+      <button :class="styles.add" @click="addOption">{{ t('editor.optionsEditor.addOption') }}</button>
     </div>
   </div>
 </template>

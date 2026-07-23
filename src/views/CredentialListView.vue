@@ -12,8 +12,10 @@ import type { CredentialItem, CredentialDetail, CredentialType } from '@/types/c
 import { CREDENTIAL_TYPE_LABELS } from '@/types/credential'
 import styles from './CredentialListView.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
 
 const credentialStore = useCredentialStore()
+const { t } = useI18n()
 
 const searchInput = ref('')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
@@ -199,8 +201,8 @@ function typeTagType(type: CredentialType): '' | 'success' | 'warning' | 'info' 
           </el-table-column>
           <el-table-column label="Actions" width="150" fixed="right" align="center">
             <template #default="{ row }">
-              <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
-              <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button link type="primary" @click="openEditDialog(row)">{{ t('editor.credential.edit') }}</el-button>
+              <el-button link type="danger" @click="handleDelete(row)">{{ t('editor.credential.delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>

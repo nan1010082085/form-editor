@@ -25,21 +25,36 @@ function formatTarget(targetId: string, ctx: EventExecutionContext): string {
   return w ? formatWidget(w) : `#${targetId}`
 }
 
-const TRIGGER_LABELS: Record<string, string> = {
-  click: '点击',
-  change: '值变化',
-  'chart-click': '图表点击',
-  focus: '获得焦点',
-  blur: '失去焦点',
-  submit: '提交',
-  close: '关闭',
-  open: '打开',
-  confirm: '确认',
-  cancel: '取消',
-  refresh: '刷新',
-  'api-success': 'API 成功',
-  'api-error': 'API 失败',
-  mounted: '挂载完成',
+/** i18n key 映射：trigger → editor.eventEngine.* */
+const TRIGGER_I18N_KEYS: Record<string, string> = {
+  click: 'editor.eventEngine.triggerClick',
+  change: 'editor.eventEngine.triggerChange',
+  'chart-click': 'editor.eventEngine.triggerChartClick',
+  focus: 'editor.eventEngine.triggerFocus',
+  blur: 'editor.eventEngine.triggerBlur',
+  submit: 'editor.eventEngine.triggerSubmit',
+  close: 'editor.eventEngine.triggerClose',
+  open: 'editor.eventEngine.triggerOpen',
+  confirm: 'editor.eventEngine.triggerConfirm',
+  cancel: 'editor.eventEngine.triggerCancel',
+  refresh: 'editor.eventEngine.triggerRefresh',
+  'api-success': 'editor.eventEngine.triggerApiSuccess',
+  'api-error': 'editor.eventEngine.triggerApiError',
+  mounted: 'editor.eventEngine.triggerMounted',
+}
+
+/** 外部注入的翻译函数（由 Vue 层通过 setTriggerLabelProvider 设置） */
+let _t: ((key: string) => string) | undefined
+
+/** 设置触发器标签翻译提供者（编辑器初始化时调用） */
+export function setTriggerLabelProvider(t: (key: string) => string): void {
+  _t = t
+}
+
+function getTriggerLabel(trigger: string): string {
+  const key = TRIGGER_I18N_KEYS[trigger]
+  if (key && _t) return _t(key)
+  return trigger
 }
 
 /** 事件执行上下文 — 由编辑器或运行时提供 */
@@ -88,6 +103,18 @@ export interface EventExecutionContext {
     seriesName: string
     data: Record<string, unknown>
   }
+  /** 图表联动处理回调（由运行时注入，供 chart-linkage action 调用） */
+  handleChartLinkage?: (
+    sourceWidgetId: string,
+    chartEvent: {
+      dataIndex: number
+      name: string
+      value: unknown
+      seriesName: string
+      data: Record<string, unknown>
+    },
+    ruleId?: string,
+  ) => void
 }
 
 /**
@@ -409,6 +436,22 @@ export async function executeEventAction(
       }
       break
     }
+    case 'chart-linkage': {
+      if (ctx.chartEvent && ctx.handleChartLinkage) {
+        // 从事件上下文中获取源 widget ID
+        // chart-linkage action 的 target 字段存储源 widget ID
+        const sourceWidgetId = action.target ?? ''
+        ctx.handleChartLinkage(
+          sourceWidgetId,
+          ctx.chartEvent,
+          action.chartLinkageRuleId,
+        )
+        logger.event(`图表联动: #${sourceWidgetId}`)
+      } else if (!ctx.handleChartLinkage) {
+        logger.warn('chart-linkage: handleChartLinkage 回调未注入')
+      }
+      break
+    }
   }
 }
 
@@ -489,7 +532,7 @@ export async function triggerWidgetEvent(
 ): Promise<void> {
   if (!widget.events?.length) return
   const widgetLabel = formatWidget(widget)
-  const triggerLabel = TRIGGER_LABELS[trigger] ?? trigger
+  const triggerLabel = getTriggerLabel(trigger)
   logger.event(`触发: ${widgetLabel} [${triggerLabel}]`)
 
   // 构建完整的表达式上下文

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { inject, computed, type CSSProperties } from 'vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './FgTitle.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey)!
@@ -20,7 +23,7 @@ const tag = computed(() => {
 })
 
 const content = computed(() => {
-  return (widgetData.value.props?.content as string) || '标题文字'
+  return (widgetData.value.props?.content as string) || t('editor.title.defaultContent')
 })
 </script>
 

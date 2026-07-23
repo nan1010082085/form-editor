@@ -9,6 +9,11 @@ import { createWidget, getWidget } from '@/widgets/registry'
 import { widgetDataKey, widgetStyleKey } from '../../base/types'
 import FgDescriptions from '../FgDescriptions.vue'
 
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
 // Mock global fetch for API data source tests
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)

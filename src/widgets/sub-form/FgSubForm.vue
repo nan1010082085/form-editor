@@ -8,8 +8,11 @@
 import { inject, ref, computed } from 'vue'
 import { widgetDataKey, widgetStyleKey, type FormFieldValue } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
@@ -17,7 +20,7 @@ const widgetStyle = inject(widgetStyleKey, ref({}))
 const fields = computed(() => (widgetData.value.props?.fields as Array<{ key: string; label: string; type: string; placeholder?: string }>) ?? [])
 const minRows = computed(() => (widgetData.value.props?.minRows as number) ?? 0)
 const maxRows = computed(() => (widgetData.value.props?.maxRows as number) ?? 100)
-const addButtonText = computed(() => (widgetData.value.props?.addButtonText as string) ?? '添加一行')
+const addButtonText = computed(() => (widgetData.value.props?.addButtonText as string) ?? t('editor.subForm.addRow'))
 
 interface SubFormRow {
   _id: string
@@ -73,14 +76,14 @@ useExposeWidget(() => ({
 <template>
   <div :class="styles.subForm" :style="widgetStyle">
     <div v-if="fields.length === 0" :class="styles.empty">
-      请在属性面板中配置字段
+      {{ t('editor.subForm.emptyHint') }}
     </div>
     <template v-else>
       <div :class="styles.header">
         <div v-for="field in fields" :key="field.key" :class="styles.headerCell">
           {{ field.label }}
         </div>
-        <div :class="styles.headerAction">操作</div>
+        <div :class="styles.headerAction">{{ t('editor.subForm.actionHeader') }}</div>
       </div>
       <div :class="styles.body">
         <div v-for="(row, index) in rows" :key="row._id" :class="styles.row">
@@ -119,7 +122,7 @@ useExposeWidget(() => ({
             <button
               :class="styles.removeBtn"
               :disabled="rows.length <= minRows"
-              title="删除行"
+              :title="t('editor.subForm.deleteRow')"
               @click="removeRow(index)"
             >
               <AppIcon name="delete" :size="14" />

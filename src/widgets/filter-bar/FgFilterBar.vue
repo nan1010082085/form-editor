@@ -8,17 +8,26 @@
 import { inject, ref, computed } from 'vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useFilterSync } from '../../composables/useFilterSync'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
 
 const filters = computed(() => (widgetData.value.props?.filters as Array<Record<string, unknown>>) ?? [])
 const showSearch = computed(() => widgetData.value.props?.showSearch !== false)
-const searchPlaceholder = computed(() => (widgetData.value.props?.searchPlaceholder as string) ?? '请输入关键词')
+const searchPlaceholder = computed(() => (widgetData.value.props?.searchPlaceholder as string) ?? t('editor.filterBar.searchPlaceholder'))
 
 const formData = ref<Record<string, unknown>>({})
 const searchValue = ref('')
+
+const filterData = computed(() => ({ ...formData.value, keyword: searchValue.value }))
+
+// 自动同步筛选参数到 DataSourceStore + URL
+const { clearFilters } = useFilterSync(filterData)
 
 function handleFilterChange(key: string, value: unknown) {
   formData.value = { ...formData.value, [key]: value }
@@ -29,10 +38,11 @@ function handleSearch() {
 }
 
 useExposeWidget(() => ({
-  get filterData() { return { ...formData.value, keyword: searchValue.value } },
+  get filterData() { return filterData.value },
   resetFilters() {
     formData.value = {}
     searchValue.value = ''
+    clearFilters()
   },
 }))
 </script>
@@ -45,7 +55,7 @@ useExposeWidget(() => ({
         <el-select
           v-if="filter.type === 'select'"
           :model-value="formData[(filter.key as string)]"
-          placeholder="请选择"
+          :placeholder="t('editor.filterBar.selectPlaceholder')"
           clearable
           size="default"
           @update:model-value="handleFilterChange((filter.key as string), $event)"
@@ -61,9 +71,9 @@ useExposeWidget(() => ({
           v-else-if="filter.type === 'date-range'"
           :model-value="formData[(filter.key as string)]"
           type="daterange"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
+          :range-separator="t('editor.filterBar.dateRangeSeparator')"
+          :start-placeholder="t('editor.filterBar.dateRangeStart')"
+          :end-placeholder="t('editor.filterBar.dateRangeEnd')"
           size="default"
           @update:model-value="handleFilterChange((filter.key as string), $event)"
         />
@@ -71,7 +81,7 @@ useExposeWidget(() => ({
           v-else-if="filter.type === 'date'"
           :model-value="formData[(filter.key as string)]"
           type="date"
-          placeholder="请选择日期"
+          :placeholder="t('editor.filterBar.datePlaceholder')"
           size="default"
           @update:model-value="handleFilterChange((filter.key as string), $event)"
         />

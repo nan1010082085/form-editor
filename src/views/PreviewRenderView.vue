@@ -13,10 +13,12 @@ import { fetchSchemaById } from '@/api/schemaApi'
 import { registerAllWidgets } from '@/widgets'
 import styles from './PreviewRenderView.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
 
 registerAllWidgets()
 
 const route = useRoute()
+const { t } = useI18n()
 const schemaId = computed(() => route.query.id as string)
 const schema = ref<PartialWidget[]>([])
 const schemaName = ref('')
@@ -31,7 +33,7 @@ async function loadSchema(id: string) {
     schema.value = Array.isArray(result.json) ? result.json : (result.json as any)?.widgets ?? []
     schemaName.value = result.name
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : `Schema "${id}" 未找到`
+    error.value = err instanceof Error ? err.message : t('editor.previewView.schemaNotFound', { id })
   } finally {
     loading.value = false
   }
@@ -43,13 +45,13 @@ watch(schemaId, (id) => { if (id) loadSchema(id) }, { immediate: true })
 <template>
   <div :class="styles['fg-preview-render']">
     <div v-if="schemaName" :class="styles['fg-preview-render__banner']">
-      <span>预览模式 — {{ schemaName }}</span>
-      <span :class="styles['fg-preview-render__banner-hint']">（草稿数据，非发布版本）</span>
+      <span>{{ t('editor.previewView.previewMode') }} — {{ schemaName }}</span>
+      <span :class="styles['fg-preview-render__banner-hint']">{{ t('editor.previewView.draftHint') }}</span>
     </div>
 
     <div v-if="loading" :class="styles['fg-preview-render__state']">
       <AppIcon name="loading" :class="styles['loading-spinner']" :size="24" />
-      <span>加载中...</span>
+      <span>{{ t('editor.previewView.loading') }}</span>
     </div>
 
     <div v-else-if="error" :class="[styles['fg-preview-render__state'], styles['fg-preview-render__state--error']]">

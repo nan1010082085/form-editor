@@ -18,8 +18,9 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick, provide } from 
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { connect as connectSocket, onAiApply, onAiPublished } from '@schema-platform/platform-shared/socket'
-import { track, initTelemetry, reportError } from '@schema-platform/platform-shared'
+import { track, initTelemetry, reportError, useI18n } from '@schema-platform/platform-shared'
 import type { AiApplyEvent, AiPublishedEvent } from '@schema-platform/platform-shared/socket'
+import { setTriggerLabelProvider } from '@/engine/eventEngine'
 import { useSnapshot } from '@/composables/useSnapshot'
 import { useAutoSave } from '@/composables/useAutoSave'
 import { useBoardStore } from '@/stores/board'
@@ -35,7 +36,7 @@ import ZoomIndicator from '@/components/Editor/ZoomIndicator.vue'
 import EventLogPanel from '@/components/Editor/EventLogPanel.vue'
 import { setLogCollector } from '@/composables/useLogger'
 import { useEventLog } from '@/composables/useEventLog'
-import type { Widget } from '@/widgets/base/types'
+import type { Widget, PreviewBreakpoint } from '@/widgets/base/types'
 import { fetchVersion } from '@/api/schemaApi'
 import SchemaVersionCompare from '@/components/SchemaVersionCompare.vue'
 import { useSchemaVersionStore } from '@/stores/schemaVersion'
@@ -55,6 +56,9 @@ import styles from './EditorView.module.scss'
 
 // Register all widgets on first mount
 registerAllWidgets()
+
+const { t } = useI18n()
+setTriggerLabelProvider(t)
 
 const route = useRoute()
 const router = useRouter()
@@ -128,6 +132,7 @@ const showLogPanel = ref(false)
 const showCodePanel = ref(false)
 const showAiDrawer = ref(false)
 const showVersionCompare = ref(false)
+const previewBreakpoint = ref<PreviewBreakpoint>('desktop')
 
 /** 缩放指示器右侧偏移：属性面板 300px + AI 抽屉 400px */
 const zoomRightOffset = computed(() => {
@@ -251,7 +256,7 @@ onMounted(async () => {
 
   // Set default board name if empty
   if (!boardStore.name) {
-    boardStore.name = '未命名画布'
+    boardStore.name = t('editor.editorView.unnamedCanvas')
   }
 
   // 从实例列表进入时，始终为编辑模式
@@ -266,7 +271,7 @@ onMounted(async () => {
       for (const widget of widgets) {
         widgetStore.addWidget(widget)
       }
-      ElMessage.success(`已插入 ${widgets.length} 个组件到画布`)
+      ElMessage.success(t('editor.editorView.insertSuccess', { count: widgets.length }))
 
       // 自动保存并生成缩略图
       await nextTick()
@@ -275,7 +280,7 @@ onMounted(async () => {
   })
   onAiPublished((data: AiPublishedEvent) => {
     if (data.type === 'schema') {
-      ElMessage.success('AI 已发布 Schema')
+      ElMessage.success(t('editor.editorView.aiPublished'))
     }
   })
 
@@ -492,9 +497,9 @@ async function handleSave() {
       currentVersion.value = result.version
       editorStore.markClean()
       track('schema.save', { schemaId: result.id })
-      ElMessage.success('已保存')
+      ElMessage.success(t('editor.editorView.saveSuccess'))
     } else {
-      ElMessage.error(apiStore.error || '保存失败')
+      ElMessage.error(apiStore.error || t('editor.editorView.saveFailed'))
     }
   } finally {
     setTimeout(() => {
@@ -523,11 +528,11 @@ async function handlePublish() {
 
   try {
     await ElMessageBox.confirm(
-      '确认发布当前版本？',
-      '发布确认',
+      t('editor.editorView.publishConfirm'),
+      t('editor.editorView.publishConfirmTitle'),
       {
-        confirmButtonText: '发布',
-        cancelButtonText: '取消',
+        confirmButtonText: t('editor.editorView.publish'),
+        cancelButtonText: t('editor.editorView.cancel'),
         type: 'info',
       }
     )
@@ -542,9 +547,9 @@ async function handlePublish() {
       if (result) {
         boardStore.status = 'published'
         track('schema.publish', { schemaId: boardStore.id })
-        ElMessage.success('发布成功')
+        ElMessage.success(t('editor.editorView.publishSuccess'))
       } else {
-        ElMessage.error(apiStore.error || '发布失败')
+        ElMessage.error(apiStore.error || t('editor.editorView.publishFailed'))
       }
     } finally {
       setTimeout(() => {
@@ -559,12 +564,12 @@ async function handlePublish() {
 
 async function handleSavePreview(dataUrl: string) {
   if (!boardStore.id) {
-    ElMessage.warning('请先保存画布')
+    ElMessage.warning(t('editor.editorView.saveCanvasFirst'))
     return
   }
   const result = await apiStore.updateSchema(boardStore.id, { thumbnail: dataUrl })
   if (result) {
-    ElMessage.success('预览图已保存')
+    ElMessage.success(t('editor.editorView.previewSaved'))
   }
 }
 
@@ -574,7 +579,7 @@ async function handleSavePreview(dataUrl: string) {
 
 async function handleOpenVersionCompare() {
   if (!currentEditId.value) {
-    ElMessage.warning('请先保存 Schema 后才能查看版本历史')
+    ElMessage.warning(t('editor.editorView.versionHistoryHint'))
     return
   }
   await schemaVersionStore.init(currentEditId.value, currentVersion.value)
@@ -606,6 +611,7 @@ function handleVersionLoadedFromToolbar(version: string) {
       :show-ai-drawer="showAiDrawer"
       :show-log-panel="showLogPanel"
       :show-code-panel="showCodePanel"
+      :preview-breakpoint="previewBreakpoint"
       @save="handleSave"
       @publish="handlePublish"
       @save-command="handleSaveCommand"
@@ -617,6 +623,7 @@ function handleVersionLoadedFromToolbar(version: string) {
       @update-ai-drawer="showAiDrawer = !showAiDrawer"
       @update-log-panel="showLogPanel = !showLogPanel"
       @update-code-panel="showCodePanel = !showCodePanel"
+      @update-preview-breakpoint="previewBreakpoint = $event"
     />
 
     <!-- Body: left panel + canvas + right panel -->
@@ -637,6 +644,7 @@ function handleVersionLoadedFromToolbar(version: string) {
         <div ref="canvasScrollRef" :class="styles.canvasScroll">
           <EditorCanvas
             ref="editorCanvasRef"
+            :preview-breakpoint="previewBreakpoint"
             @open-event="handleOpenEvent"
             @open-rule="handleOpenRule"
             @open-api="handleOpenApi"
@@ -654,8 +662,8 @@ function handleVersionLoadedFromToolbar(version: string) {
         <!-- Store 数据面板（全屏覆盖） -->
         <div v-if="mode !== 'edit' && showCodePanel" :class="styles.codeOverlay">
           <div :class="styles.codeHeader">
-            <span :class="styles.codeTitle">Store 数据</span>
-            <el-button type="danger" text size="small" @click="showCodePanel = false">关闭</el-button>
+            <span :class="styles.codeTitle">{{ t('editor.editorView.storeData') }}</span>
+            <el-button type="danger" text size="small" @click="showCodePanel = false">{{ t('editor.editorView.close') }}</el-button>
           </div>
           <div :class="styles.codeScroll">
             <pre :class="styles.codePre">{{ storeSnapshot }}</pre>
@@ -686,7 +694,7 @@ function handleVersionLoadedFromToolbar(version: string) {
     <!-- 版本对比面板 -->
     <el-drawer
       v-model="showVersionCompare"
-      title="版本对比"
+      :title="t('editor.editorView.versionCompare')"
       direction="rtl"
       size="560px"
       :destroy-on-close="true"

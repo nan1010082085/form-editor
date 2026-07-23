@@ -5,8 +5,11 @@ import { useExposeWidget } from '../../composables/useExposeWidget'
 import { fetchWidgetDataSource } from '@/api/widgetApi'
 import { resolveWidgetUrl } from '@/utils/resolveWidgetUrl'
 import { useWidgetData } from '@/composables/useWidgetData'
+import { useI18n } from '@schema-platform/platform-shared'
 import type { DescriptionItemConfig } from './config'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const variablesContext = inject<ComputedRef<Record<string, unknown>>>(
@@ -171,6 +174,6 @@ function formatDate(item: DescriptionItemConfig): string {
         </template>
       </el-descriptions-item>
     </el-descriptions>
-    <div v-else :class="styles.empty">暂无数据</div>
+    <div v-else :class="styles.empty">{{ t('editor.descriptions.empty') }}</div>
   </div>
 </template>

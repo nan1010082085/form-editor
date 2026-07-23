@@ -17,6 +17,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import ElementPlus from 'element-plus'
 
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
 // Mock vue-router
 vi.mock('vue-router', () => ({
   useRoute: () => ({ path: '/templates' }),
@@ -149,7 +154,7 @@ describe('WidgetTemplateView', () => {
 
   it('renders usage count', () => {
     const { wrapper } = mountView()
-    expect(wrapper.text()).toContain('10 次使用')
+    expect(wrapper.text()).toContain('editor.templateView.usageCount')
   })
 
   it('renders template tags', () => {
@@ -162,7 +167,7 @@ describe('WidgetTemplateView', () => {
     const { wrapper } = mountView({
       templates: [makeTemplate({ isBuiltin: true, tags: [] })],
     })
-    expect(wrapper.text()).toContain('内置')
+    expect(wrapper.text()).toContain('editor.templateView.builtin')
   })
 
   // ------------------------------------------------------------------
@@ -189,7 +194,7 @@ describe('WidgetTemplateView', () => {
     const { wrapper, templateStore } = mountView()
     // FilterTabs 渲染原生 button，找到"表单"分类并点击
     const buttons = wrapper.findAll('button')
-    const formBtn = buttons.find(b => b.text().includes('表单'))
+    const formBtn = buttons.find(b => b.text().includes('editor.templateView.categoryForm'))
     expect(formBtn).toBeTruthy()
     await formBtn!.trigger('click')
     expect(templateStore.setCategory).toHaveBeenCalledWith('form')
@@ -199,7 +204,7 @@ describe('WidgetTemplateView', () => {
   it('resets category on "全部" click', async () => {
     const { wrapper, templateStore } = mountView()
     const buttons = wrapper.findAll('button')
-    const allBtn = buttons.find(b => b.text().includes('全部'))
+    const allBtn = buttons.find(b => b.text().includes('editor.templateView.categoryAll'))
     await allBtn!.trigger('click')
     expect(templateStore.setCategory).toHaveBeenCalledWith('')
   })
@@ -245,7 +250,7 @@ describe('WidgetTemplateView', () => {
 
   it('shows empty state when no templates', () => {
     const { wrapper } = mountView({ templates: [], total: 0 })
-    expect(wrapper.text()).toContain('暂无模板')
+    expect(wrapper.text()).toContain('editor.templateView.emptyTitle')
   })
 
   // ------------------------------------------------------------------
@@ -255,7 +260,7 @@ describe('WidgetTemplateView', () => {
   it('shows loading state', () => {
     const { wrapper } = mountView({ loading: true, templates: [] })
     // 加载态渲染骨架屏卡片，不含"暂无模板"
-    expect(wrapper.text()).not.toContain('暂无模板')
+    expect(wrapper.text()).not.toContain('editor.templateView.emptyTitle')
   })
 
   // ------------------------------------------------------------------

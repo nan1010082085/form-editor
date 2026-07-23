@@ -7,8 +7,11 @@
 import { inject, ref, computed } from 'vue'
 import { widgetDataKey, widgetStyleKey, type Widget } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import SchemaRender from '../../components/WidgetRenderer/SchemaRender.vue'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
@@ -74,12 +77,12 @@ useExposeWidget(() => ({
     </div>
     <div :class="styles.stepBody">
       <SchemaRender v-if="currentChildren.length > 0" :widgets="currentChildren" mode="edit" />
-      <div v-else :class="styles.empty">拖拽组件到此步骤</div>
+      <div v-else :class="styles.empty">{{ t('editor.formSteps.emptyHint') }}</div>
     </div>
     <div :class="styles.stepFooter">
-      <button :class="styles.stepBtn" :disabled="!canPrev" @click="handlePrev">上一步</button>
-      <button v-if="canNext" :class="[styles.stepBtn, styles.stepBtnPrimary]" @click="handleNext">下一步</button>
-      <button v-else :class="[styles.stepBtn, styles.stepBtnSuccess]">完成</button>
+      <button :class="styles.stepBtn" :disabled="!canPrev" @click="handlePrev">{{ t('editor.formSteps.prev') }}</button>
+      <button v-if="canNext" :class="[styles.stepBtn, styles.stepBtnPrimary]" @click="handleNext">{{ t('editor.formSteps.next') }}</button>
+      <button v-else :class="[styles.stepBtn, styles.stepBtnSuccess]">{{ t('editor.formSteps.finish') }}</button>
     </div>
   </div>
 </template>

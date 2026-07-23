@@ -7,12 +7,15 @@
 import { inject, ref, computed, onMounted, onUnmounted } from 'vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
 
-const text = computed(() => (widgetData.value.props?.text as string) ?? '这是一条滚动公告')
+const text = computed(() => (widgetData.value.props?.text as string) ?? t('editor.marqueeText.defaultText'))
 const speed = computed(() => (widgetData.value.props?.speed as number) ?? 50)
 const direction = computed(() => (widgetData.value.props?.direction as string) ?? 'left')
 const pauseOnHover = computed(() => widgetData.value.props?.pauseOnHover !== false)

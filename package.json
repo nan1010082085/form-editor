@@ -16,7 +16,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "check:docs": "tsx scripts/check-docs-sync.ts"
+    "check:docs": "tsx scripts/check-docs-sync.ts",
+    "check:i18n": "tsx scripts/check-i18n-coverage.ts",
+    "monitor": "bash scripts/monitor.sh",
+    "monitor:json": "bash scripts/monitor.sh --json",
+    "ci:check": "pnpm test && pnpm check:i18n && pnpm check:docs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

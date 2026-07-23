@@ -27,6 +27,7 @@ import { useWidgetStore } from '../../stores/widget'
 import { useBoardStore } from '../../stores/board'
 import { EDITOR_CONTEXTMENU_KEY } from '../Editor/editorContextKeys'
 import { useFlexDropZone } from '../../composables/useFlexDropZone'
+import { useWidgetAnimation } from '../../composables/useWidgetAnimation'
 import SchemaRender from './SchemaRender.vue'
 import WidgetErrorBoundary from './WidgetErrorBoundary.vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
@@ -225,6 +226,14 @@ async function handleDialogCancel() {
   }
   dialogVisible.value = false
 }
+// ---- Widget 入场动画（仅预览/发布模式生效） ----
+const isPreviewOrPublish = computed(() => !props.editorSelectable)
+
+const { animationStyle } = useWidgetAnimation(
+  computed(() => props.widget.style ?? {}) as ComputedRef<Record<string, unknown>>,
+  isPreviewOrPublish,
+)
+
 const shellClass = computed(() => {
   if (!props.editorSelectable) return styles.passiveShell
   return [
@@ -290,6 +299,7 @@ const containerDropClass = computed(() => [
     ref="shellEl"
     :data-widget-id="editorSelectable ? widget.id : undefined"
     :class="[shellClass, { [styles.hiddenInEdit]: editorSelectable && props.widget.hidden }]"
+    :style="animationStyle || undefined"
     :draggable="editorSelectable && !props.widget.locked ? true : undefined"
     @click="editorSelectable ? handleEditorSelect($event) : undefined"
     @contextmenu="editorSelectable ? handleEditorContextMenu($event) : undefined"

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { inject, ref, watch } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useWidgetLayoutStyle } from '../../composables/useWidgetControlSize'
 import styles from './style.module.scss'
 
+const { t } = useI18n()
 const widgetData = inject(widgetDataKey)!
 const { layoutStyle } = useWidgetLayoutStyle(200)
 
@@ -58,10 +60,10 @@ function handlePreview(file: FileItem) {
 
 <template>
   <div :class="styles.container" :style="layoutStyle">
-    <div :class="styles.title">{{ (widgetData.props?.title as string) || '附件' }}</div>
+    <div :class="styles.title">{{ (widgetData.props?.title as string) || t('editor.fileList.title') }}</div>
     <div :class="styles.body">
       <div :class="styles.list">
-        <div v-if="!fileList.length" :class="styles.empty">暂无文件</div>
+        <div v-if="!fileList.length" :class="styles.empty">{{ t('editor.fileList.empty') }}</div>
         <div v-for="(file, i) in fileList" :key="i" :class="styles.item">
           <span
             :class="[styles.fileName, { [styles.fileNameClickable]: widgetData.props?.allowPreview !== false }]"
@@ -79,7 +81,7 @@ function handlePreview(file: FileItem) {
         </div>
       </div>
       <el-button type="primary" :class="styles.uploadBtn" @click="handleUpload">
-        {{ (widgetData.props?.buttonText as string) || '选择文件' }}
+        {{ (widgetData.props?.buttonText as string) || t('editor.fileList.selectFile') }}
       </el-button>
     </div>
   </div>

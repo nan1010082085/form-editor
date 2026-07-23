@@ -9,6 +9,11 @@ import { createWidget } from '@/widgets/registry'
 import { computeWidgetRenderState } from '@/__tests__/widgetTestHarness'
 import { widgetDataKey, widgetStyleKey } from '../../base/types'
 
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
 vi.mock('../../base/echarts', () => ({
   echarts: {
     init: vi.fn(() => ({

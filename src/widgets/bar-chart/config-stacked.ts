@@ -34,7 +34,7 @@ export const stackedBarChartConfig: WidgetConfig = {
     { key: 'loading', type: 'boolean', description: '加载状态' },
     { key: 'chartData', type: 'array', description: '图表数据' },
   ],
-  configPanels: ['api', 'variables'],
+  configPanels: ['api', 'variables', 'events', 'chart-linkages'],
   receivableEvents: [
     { name: 'refresh', description: '重新加载数据' },
     { name: 'set-data', description: '设置图表数据', params: { data: '数据数组' } },

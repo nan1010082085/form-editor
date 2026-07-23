@@ -9,6 +9,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick, defineComponent } from 'vue'
 import ElementPlus from 'element-plus'
 
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
 // Mock vue-router
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: {}, query: { id: 'test-publish-id' } }),

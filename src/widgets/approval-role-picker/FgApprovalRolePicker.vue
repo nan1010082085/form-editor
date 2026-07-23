@@ -3,8 +3,11 @@ import { inject, computed, ref } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -83,7 +86,7 @@ async function remoteSearch(query: string) {
     ref="selectRef"
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || '请选择审批角色'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.approvalRolePicker.placeholder')"
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :multiple="(widgetData.props?.multiple as boolean) || false"

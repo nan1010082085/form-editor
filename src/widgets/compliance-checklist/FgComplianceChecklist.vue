@@ -3,7 +3,10 @@ import { inject, computed, ref, onMounted } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { WIDGET_SURFACE_KEY, getWidgetMock, type WidgetSurface } from '../base/widgetMock'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 interface CheckItem {
   key: string
@@ -20,7 +23,7 @@ useExposeWidget(() => ({
   get remark() { return remark.value },
 }))
 
-const title = computed(() => (widgetData.value.props?.title as string) || '合规检查')
+const title = computed(() => (widgetData.value.props?.title as string) || t('editor.complianceChecklist.title'))
 const items = computed<CheckItem[]>(() =>
   (widgetData.value.props?.items as CheckItem[]) ?? [],
 )
@@ -54,6 +57,6 @@ onMounted(() => {
     >
       {{ item.label }}
     </el-checkbox>
-    <el-input v-model="remark" type="textarea" :rows="2" placeholder="备注" :class="styles.remark" />
+    <el-input v-model="remark" type="textarea" :rows="2" :placeholder="t('editor.complianceChecklist.remarkPlaceholder')" :class="styles.remark" />
   </div>
 </template>

@@ -1,8 +1,9 @@
 /** 节点类型枚举 */
-import type { InjectionKey, ComputedRef } from 'vue'
+import type { InjectionKey, ComputedRef, Ref } from 'vue'
 import type { FormItemRule } from 'element-plus'
-import type { SchemaType } from '../../widgets/base/types'
+import type { SchemaType, PreviewBreakpoint } from '../../widgets/base/types'
 export type { SchemaType }
+export type { PreviewBreakpoint }
 
 /** 响应式 span 配置 — 断点定义与 Element Plus 一致 */
 export interface ResponsiveSpan {
@@ -432,3 +433,6 @@ export interface FormGridTelemetry {
   /** Schema 校验失败时调用 */
   onSchemaError?: (info: { errors: unknown[]; count: number }) => void
 }
+
+/** 响应式断点注入 Key — 预览/发布模式下的当前断点 */
+export const PREVIEW_BREAKPOINT_KEY: InjectionKey<Ref<PreviewBreakpoint>> = Symbol('PreviewBreakpoint')

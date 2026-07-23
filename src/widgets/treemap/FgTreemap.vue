@@ -5,6 +5,7 @@
  * 适合层级占比展示，ECharts 内置图表类型。
  */
 import { inject, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useChartOption } from '../base/useChartOption'
@@ -14,6 +15,7 @@ import { echarts, type EChartsType } from '../base/echarts'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const { t } = useI18n()
 
 function buildOption(data: Record<string, unknown>[], props: Record<string, unknown>): Record<string, unknown> {
   const title = props.title as string
@@ -99,7 +101,7 @@ onUnmounted(() => {
 
 <template>
   <div :class="styles.treemap">
-    <div v-if="loading" :class="styles.loading">加载中...</div>
+    <div v-if="loading" :class="styles.loading">{{ t('editor.treemap.loading') }}</div>
     <div ref="chartRef" :class="styles.chart" />
   </div>
 </template>

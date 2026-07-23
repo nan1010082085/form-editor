@@ -23,6 +23,7 @@ import { userManagementMock } from '../user-management/mock'
 import { roleManagementMock } from '../role-management/mock'
 import { tableMock } from '../table/mock'
 import { flowTaskActionsMock } from '../flow-task-actions/mock'
+import { mapChartMock } from '../map/mock'
 
 /** 渲染表面：editor=设计器画布，runtime=PublishView/正式运行时 */
 export type WidgetSurface = 'editor' | 'runtime'
@@ -95,6 +96,7 @@ export const COMPLEX_WIDGET_MOCK_TYPES = [
   'qr-scanner',
   'tree-table',
   'kanban',
+  'map',
 ] as const
 
 export type ComplexWidgetMockType = (typeof COMPLEX_WIDGET_MOCK_TYPES)[number]
@@ -133,6 +135,7 @@ const MOCK_REGISTRY: Partial<Record<string, WidgetMockBundle>> = {
   'role-management': roleManagementMock,
   table: tableMock,
   'flow-task-actions': flowTaskActionsMock,
+  'map': mapChartMock,
 }
 
 export function getWidgetMock(type: string): WidgetMockBundle | undefined {

@@ -6,7 +6,7 @@
  * 模板卡片可拖拽到画布（通过 dataTransfer 传递模板 ID）。
  * 支持应用模板和删除操作。
  */
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { fetchTemplates, deleteTemplate } from '@/api/schemaApi'
 import type { TemplateItem as WidgetTemplateItem, TemplateCategory } from '@/api/schemaApi'
@@ -17,6 +17,9 @@ import { registerAllWidgets } from '@/widgets'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
 import styles from './TemplatePanel.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 registerAllWidgets()
 
@@ -24,16 +27,16 @@ const emit = defineEmits<{
   apply: [template: WidgetTemplateItem]
 }>()
 
-const CATEGORY_LABELS: Record<TemplateCategory, string> = {
-  form: '表单',
-  layout: '布局',
-  table: '表格',
-  search: '搜索',
-  chart: '图表',
-  business: '业务',
-  report: '报表',
-  other: '其他',
-}
+const CATEGORY_LABELS = computed<Record<TemplateCategory, string>>(() => ({
+  form: t('editor.templatePanel.categoryForm'),
+  layout: t('editor.templatePanel.categoryLayout'),
+  table: t('editor.templatePanel.categoryTable'),
+  search: t('editor.templatePanel.categorySearch'),
+  chart: t('editor.templatePanel.categoryChart'),
+  business: t('editor.templatePanel.categoryBusiness'),
+  report: t('editor.templatePanel.categoryReport'),
+  other: t('editor.templatePanel.categoryOther'),
+}))
 
 const searchQuery = ref('')
 const categoryFilter = ref<TemplateCategory | ''>('')
@@ -58,7 +61,7 @@ async function loadTemplates() {
     items.value = res.items
     total.value = res.total
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '加载模板失败')
+    ElMessage.error(err instanceof Error ? err.message : t('editor.templatePanel.loadFailed'))
   } finally {
     loading.value = false
   }
@@ -95,16 +98,16 @@ function handleDragStart(event: DragEvent, template: WidgetTemplateItem) {
 async function handleDelete(template: WidgetTemplateItem) {
   try {
     await ElMessageBox.confirm(
-      `确定删除模板「${template.name}」？`,
-      '删除确认',
+      t('editor.templatePanel.deleteConfirmMessage', { name: template.name }),
+      t('editor.templatePanel.deleteConfirmTitle'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('editor.common.confirm'),
+        cancelButtonText: t('editor.common.cancel'),
         type: 'warning',
       }
     )
     await deleteTemplate(template.id)
-    ElMessage.success('模板已删除')
+    ElMessage.success(t('editor.templatePanel.templateDeleted'))
     loadTemplates()
   } catch {
     // 用户取消
@@ -120,9 +123,9 @@ function openPreview(template: WidgetTemplateItem) {
 async function handleApply(template: WidgetTemplateItem): Promise<boolean> {
   try {
     await ElMessageBox.confirm(
-      `确认应用模板「${template.name}」？模板内容将添加到画布。`,
-      '应用模板',
-      { confirmButtonText: '应用', cancelButtonText: '取消' },
+      t('editor.templatePanel.applyConfirmMessage', { name: template.name }),
+      t('editor.templatePanel.applyConfirmTitle'),
+      { confirmButtonText: t('editor.templatePanel.apply'), cancelButtonText: t('editor.common.cancel') },
     )
   } catch {
     return false
@@ -158,7 +161,7 @@ defineExpose({ loadTemplates })
         v-model="searchQuery"
         :class="styles.search"
         size="small"
-        placeholder="搜索模板..."
+        :placeholder="t('editor.templatePanel.searchPlaceholder')"
         clearable
       >
         <template #prefix>
@@ -169,7 +172,7 @@ defineExpose({ loadTemplates })
         v-model="categoryFilter"
         :class="styles.categorySelect"
         size="small"
-        placeholder="分类"
+        :placeholder="t('editor.templatePanel.categoryPlaceholder')"
         clearable
       >
         <el-option
@@ -194,33 +197,33 @@ defineExpose({ loadTemplates })
           <!-- 缩略图 -->
           <div :class="styles.thumbnail">
             <img v-if="template.thumbnail" :src="template.thumbnail" :alt="template.name" />
-            <span v-else :class="styles.placeholder">无预览</span>
+            <span v-else :class="styles.placeholder">{{ t('editor.templatePanel.noPreview') }}</span>
           </div>
 
           <!-- 信息 -->
           <div :class="styles.info">
             <div :class="styles.name">{{ template.name }}</div>
             <div :class="styles.meta">
-              <span :class="styles.category">{{ CATEGORY_LABELS[template.category] ?? '其他' }}</span>
-              <span v-if="template.isBuiltin" :class="styles.builtin">内置</span>
+              <span :class="styles.category">{{ CATEGORY_LABELS[template.category] ?? t('editor.templatePanel.categoryOther') }}</span>
+              <span v-if="template.isBuiltin" :class="styles.builtin">{{ t('editor.templatePanel.builtin') }}</span>
             </div>
           </div>
 
           <!-- 操作按钮 -->
           <div :class="styles.actions">
-            <el-tooltip content="预览" placement="top" :show-after="300">
+            <el-tooltip :content="t('editor.templatePanel.preview')" placement="top" :show-after="300">
               <el-button size="small" text @click.stop="openPreview(template)">
                 <AppIcon name="view" />
               </el-button>
             </el-tooltip>
-            <el-tooltip content="使用模板" placement="top" :show-after="300">
+            <el-tooltip :content="t('editor.templatePanel.useTemplate')" placement="top" :show-after="300">
               <el-button size="small" text type="primary" @click.stop="handleApply(template)">
                 <AppIcon name="plus" />
               </el-button>
             </el-tooltip>
             <el-tooltip
               v-if="!template.isBuiltin"
-              content="删除"
+              :content="t('editor.templatePanel.delete')"
               placement="top"
               :show-after="300"
             >
@@ -233,7 +236,7 @@ defineExpose({ loadTemplates })
       </div>
 
       <div v-if="items.length === 0 && !loading" :class="styles.empty">
-        暂无模板
+        {{ t('editor.templatePanel.emptyHint') }}
       </div>
     </div>
 
@@ -250,7 +253,7 @@ defineExpose({ loadTemplates })
 
     <AppDialog
       v-model="previewVisible"
-      :title="previewTemplate ? `预览：${previewTemplate.name}` : '模板预览'"
+      :title="previewTemplate ? t('editor.templatePanel.previewTitleWithName', { name: previewTemplate.name }) : t('editor.templatePanel.previewTitle')"
       width="720px"
       :show-fullscreen-btn="true"
     >
@@ -263,13 +266,13 @@ defineExpose({ loadTemplates })
         </div>
       </div>
       <template #footer>
-        <el-button @click="previewVisible = false">关闭</el-button>
+        <el-button @click="previewVisible = false">{{ t('editor.common.close') }}</el-button>
         <el-button
           v-if="previewTemplate"
           type="primary"
           @click="handleApplyFromPreview"
         >
-          使用
+          {{ t('editor.templatePanel.apply') }}
         </el-button>
       </template>
     </AppDialog>

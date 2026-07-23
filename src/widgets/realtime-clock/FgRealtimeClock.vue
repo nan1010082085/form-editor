@@ -7,7 +7,10 @@
 import { inject, ref, computed, onMounted, onUnmounted } from 'vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
@@ -21,7 +24,7 @@ const dateFormat = computed(() => (widgetData.value.props?.dateFormat as string)
 const now = ref(new Date())
 let timer: ReturnType<typeof setInterval> | null = null
 
-const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+const weekdayKeys = ['weekdaySun', 'weekdayMon', 'weekdayTue', 'weekdayWed', 'weekdayThu', 'weekdayFri', 'weekdaySat'] as const
 
 const dateStr = computed(() => {
   const d = now.value
@@ -45,7 +48,7 @@ const timeStr = computed(() => {
   return `${String(h).padStart(2, '0')}:${min}:${sec}`
 })
 
-const weekdayStr = computed(() => `星期${weekdays[now.value.getDay()]}`)
+const weekdayStr = computed(() => t(`editor.realtimeClock.${weekdayKeys[now.value.getDay()]}`))
 
 onMounted(() => {
   timer = setInterval(() => { now.value = new Date() }, 1000)

@@ -10,7 +10,10 @@ import { widgetDataKey } from '../base/types'
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import { loadMicroApp } from 'qiankun'
 import type { MicroApp } from 'qiankun'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
@@ -22,7 +25,7 @@ const appRoute = computed(() => widgetData.value.props?.microappRoute as string 
 const sandbox = computed(() => widgetData.value.props?.microappSandbox !== false)
 const styleIsolation = computed(() => (widgetData.value.props?.microappStyleIsolation as string) ?? 'experimental')
 const timeout = computed(() => (widgetData.value.props?.microappTimeout as number) ?? 10000)
-const fallbackText = computed(() => (widgetData.value.props?.microappFallback as string) ?? '子应用加载失败')
+const fallbackText = computed(() => (widgetData.value.props?.microappFallback as string) ?? t('editor.microAppContainer.fallbackError'))
 const routeBase = computed(() => widgetData.value.props?.microappRouteBase as string ?? '')
 const height = computed(() => (widgetData.value.props?.height as string) || '100%')
 const variables = computed(() => (widgetData.value.props?.variables as Record<string, unknown>) ?? {})
@@ -65,7 +68,7 @@ async function loadApp() {
   if (timeoutTimer) clearTimeout(timeoutTimer)
   timeoutTimer = setTimeout(() => {
     if (loading.value) {
-      error.value = `加载超时（${timeout.value}ms）`
+      error.value = t('editor.microAppContainer.loadTimeout', { ms: timeout.value })
       loading.value = false
       emit('error', new Error('timeout'))
     }
@@ -112,12 +115,12 @@ onUnmounted(() => {
   <div :class="styles.container" :style="{ height }">
     <div v-if="isEditorSurface" :class="styles.preview">
       <span v-if="appName">{{ appName }}</span>
-      <span v-else>微应用容器</span>
+      <span v-else>{{ t('editor.microAppContainer.containerLabel') }}</span>
       <span v-if="appEntry" :class="styles.entry">{{ appEntry }}</span>
-      <span :class="styles.hint">设计器预览 · 不加载子应用</span>
+      <span :class="styles.hint">{{ t('editor.microAppContainer.editorHint') }}</span>
     </div>
     <div v-else-if="!appName || !appEntry" :class="styles.placeholder">
-      请配置子应用名称和入口地址
+      {{ t('editor.microAppContainer.configHint') }}
     </div>
     <div v-else-if="error" :class="styles.error">
       {{ error }}

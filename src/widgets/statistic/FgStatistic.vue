@@ -4,8 +4,11 @@ import { widgetDataKey } from '../base/types'
 import { useApiRequest } from '../../composables/useApiRequest'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useWidgetAutoRefresh } from '../../composables/useWidgetAutoRefresh'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { fetchApi } = useApiRequest()
@@ -119,7 +122,7 @@ useExposeWidget(() => ({
         :class="styles.icon"
       />
       <span :class="styles.title" :style="titleStyle">
-        {{ (props.title as string) || '统计指标' }}
+        {{ (props.title as string) || t('editor.statistic.defaultTitle') }}
       </span>
     </div>
     <div :class="styles.body">

@@ -7,6 +7,9 @@
  */
 import { inject, computed } from 'vue'
 import { widgetDataKey } from '../base/types'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 
@@ -20,11 +23,11 @@ const isIframe = computed(() => widgetData.value.props?.iframe as boolean ?? fal
 <template>
   <div :class="$style.container" :style="{ width, height }">
     <div v-if="!appName || !appUrl" :class="$style.placeholder">
-      请配置微应用名称和 URL
+      {{ t('editor.microApp.configHint') }}
     </div>
     <div v-else :class="$style.placeholder">
       <span :class="$style.appName">{{ appName }}</span>
-      <span :class="$style.mode">{{ isIframe ? 'iframe 模式' : '默认模式' }}</span>
+      <span :class="$style.mode">{{ isIframe ? t('editor.microApp.iframeMode') : t('editor.microApp.defaultMode') }}</span>
     </div>
   </div>
 </template>

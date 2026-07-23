@@ -26,14 +26,17 @@ import { fetchPublishedSchema, fetchPublishedByPublishId, fetchPublishedByCode }
 import { sendToHost } from '@/microapp/bridge'
 import { registerAllWidgets } from '@/widgets'
 import { buildContentFrameStyle, resolveRendererLayout } from '@/utils/boardTemplates'
+import { useCanvasScale } from '@/composables/useCanvasScale'
 import styles from './PublishView.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
 
 registerAllWidgets()
 
 const route = useRoute()
 const formRef = ref<InstanceType<typeof WidgetRenderer>>()
 const appStore = useAppStore()
+const { t } = useI18n()
 
 const schema = ref<PartialWidget[]>([])
 const canvasConfig = ref<Partial<CanvasConfig>>({})
@@ -85,6 +88,19 @@ const context = computed(() => appStore.formGridContext)
 const rendererLayout = computed(() => resolveRendererLayout(canvasConfig.value))
 const contentFrameStyle = computed(() => buildContentFrameStyle(canvasConfig.value))
 const isFlexLayout = computed(() => canvasConfig.value.layoutMode === 'flex')
+
+// ---- 多分辨率自适应 ----
+const scaleContainerRef = ref<HTMLElement | null>(null)
+const canvasScaleWidth = computed(() => canvasConfig.value.width ?? 1920)
+const canvasScaleHeight = computed(() => canvasConfig.value.height ?? 1080)
+const canvasScaleMode = computed(() => canvasConfig.value.scaleMode ?? 'contain')
+
+const { canvasStyle: adaptiveCanvasStyle } = useCanvasScale({
+  canvasWidth: canvasScaleWidth,
+  canvasHeight: canvasScaleHeight,
+  containerRef: scaleContainerRef,
+  scaleMode: canvasScaleMode,
+})
 
 /** A-08 — 可选 AI 侧边栏（query.aiSidebar=1 或 board 变量 enableAiSidebar） */
 const showAiSidebar = computed(() => {
@@ -146,12 +162,12 @@ async function loadSchemaByCode(code: string) {
   try {
     const publishedSchema = await fetchPublishedByCode(code)
     if (!publishedSchema) {
-      error.value = `未找到 code 为 "${code}" 的已发布 Schema`
+      error.value = t('editor.publishView.schemaNotFoundByCode', { code })
       return
     }
     applyPublishedSchema(publishedSchema)
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : `加载 Schema 失败`
+    error.value = err instanceof Error ? err.message : t('editor.publishView.loadFailed')
   } finally {
     loading.value = false
   }
@@ -188,12 +204,12 @@ async function loadSchema(id: string) {
       publishedSchema = await fetchPublishedSchema(id)
     }
     if (!publishedSchema) {
-      error.value = `未找到 ID 为 "${id}" 的已发布 Schema`
+      error.value = t('editor.publishView.schemaNotFoundById', { id })
       return
     }
     applyPublishedSchema(publishedSchema)
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : `加载 Schema 失败`
+    error.value = err instanceof Error ? err.message : t('editor.publishView.loadFailed')
   } finally {
     loading.value = false
   }
@@ -297,7 +313,7 @@ onUnmounted(() => window.removeEventListener('message', handleMessage))
   <div :class="styles['fg-renderer']">
     <div v-if="loading" :class="styles['fg-renderer__loading']">
       <AppIcon name="loading" :class="styles['loading-spinner']" :size="24" />
-      <span>加载中...</span>
+      <span>{{ t('editor.publishView.loading') }}</span>
     </div>
 
     <div v-else-if="error" :class="styles['fg-renderer__error']">
@@ -305,17 +321,45 @@ onUnmounted(() => window.removeEventListener('message', handleMessage))
       <p>{{ error }}</p>
     </div>
 
-    <div v-else :class="[styles['fg-renderer'], showAiSidebar && styles['fg-renderer--with-sidebar'], isFlexLayout && styles['fg-renderer--flex']]">
+    <div
+      v-else
+      ref="scaleContainerRef"
+      :class="[styles['fg-renderer'], showAiSidebar && styles['fg-renderer--with-sidebar'], isFlexLayout && styles['fg-renderer--flex']]"
+    >
       <div
         v-if="route.query.showModeToggle === '1' || route.query.showModeToggle === 'true'"
         style="position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,0.55);padding:6px 12px;border-radius:6px;color:#fff;font-size:13px;"
       >
-        <span>{{ isReadonly ? '只读模式' : '交互模式' }}</span>
+        <span>{{ isReadonly ? t('editor.publishView.readonlyMode') : t('editor.publishView.interactiveMode') }}</span>
         <el-button size="small" @click="togglePublishInteraction">
-          {{ isReadonly ? '切换为交互' : '切换为只读' }}
+          {{ isReadonly ? t('editor.publishView.switchToInteractive') : t('editor.publishView.switchToReadonly') }}
         </el-button>
       </div>
-      <div :class="styles['fg-renderer__content']" :style="contentFrameStyle">
+      <div
+        v-if="!isFlexLayout"
+        :class="styles['fg-renderer__content']"
+        :style="{ ...contentFrameStyle, ...adaptiveCanvasStyle }"
+      >
+        <WidgetRenderer
+          ref="formRef"
+          :schema="schema"
+          :layout="rendererLayout"
+          :canvas-config="canvasConfig"
+          :board-variables="boardVariables"
+          :user="context.user"
+          :request="context.request"
+          :global="context.global"
+          :readonly="isReadonly"
+          :editable-fields="formMode === 'partial' ? editableFields : undefined"
+          :readonly-fields="formMode === 'partial' ? readonlyFields : undefined"
+          @submit="handleSubmit"
+        />
+      </div>
+      <div
+        v-else
+        :class="styles['fg-renderer__content']"
+        :style="contentFrameStyle"
+      >
         <WidgetRenderer
           ref="formRef"
           :schema="schema"
@@ -332,7 +376,7 @@ onUnmounted(() => window.removeEventListener('message', handleMessage))
         />
       </div>
       <aside v-if="showAiSidebar" :class="styles['fg-renderer__ai-sidebar']">
-        <iframe :src="aiSidebarUrl" title="AI 助手" :class="styles['fg-renderer__ai-iframe']" />
+        <iframe :src="aiSidebarUrl" :title="t('editor.publishView.aiAssistant')" :class="styles['fg-renderer__ai-iframe']" />
       </aside>
     </div>
   </div>

@@ -9,6 +9,11 @@ import { createWidget, getWidget } from '@/widgets/registry'
 import { widgetDataKey, widgetStyleKey } from '../../base/types'
 import FgStatistic from '../FgStatistic.vue'
 
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
 // Mock useApiRequest to avoid real API calls
 vi.mock('@/composables/useApiRequest', () => ({
   useApiRequest: () => ({

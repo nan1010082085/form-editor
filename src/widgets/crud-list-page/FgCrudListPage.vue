@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, computed, provide, ref, reactive, watch, type ComputedRef } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { widgetDataKey } from '../base/types'
@@ -18,6 +19,7 @@ import CrudFormField from './CrudFormField.vue'
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import styles from './style.module.scss'
 
+const { t } = useI18n()
 const widgetData = inject(widgetDataKey)!
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 const isEditorSurface = computed(() => surface === 'editor')
@@ -84,8 +86,8 @@ const visibleFormFields = computed(() => {
 const formDialogTitle = computed(() => {
   const cfg = formDialogConfig.value
   if (!cfg) return ''
-  if (formMode.value === 'add') return cfg.createTitle ?? cfg.title ?? '新增'
-  return cfg.editTitle ?? cfg.title ?? '编辑'
+  if (formMode.value === 'add') return cfg.createTitle ?? cfg.title ?? t('editor.crudListPage.createTitle')
+  return cfg.editTitle ?? cfg.title ?? t('editor.crudListPage.editTitle')
 })
 
 const formRules = computed<FormRules>(() => {
@@ -93,7 +95,7 @@ const formRules = computed<FormRules>(() => {
   for (const field of visibleFormFields.value) {
     if (!field.required) continue
     rules[field.field] = [
-      { required: true, message: `请填写${field.label}`, trigger: field.type === 'select' ? 'change' : 'blur' },
+      { required: true, message: t('editor.crudListPage.fillRequired', { field: field.label }), trigger: field.type === 'select' ? 'change' : 'blur' },
     ]
   }
   return rules
@@ -161,7 +163,7 @@ async function submitFormDialog() {
   formSubmitting.value = true
   try {
     if (isEditorSurface.value) {
-      ElMessage.success(formMode.value === 'add' ? '（预览）新增成功' : '（预览）保存成功')
+      ElMessage.success(formMode.value === 'add' ? t('editor.crudListPage.previewCreateSuccess') : t('editor.crudListPage.previewSaveSuccess'))
       formVisible.value = false
       return
     }
@@ -169,22 +171,22 @@ async function submitFormDialog() {
     const payload = { ...formData }
     if (formMode.value === 'add') {
       if (!cfg.createApiUrl) {
-        ElMessage.warning('未配置新增 API')
+        ElMessage.warning(t('editor.crudListPage.createApiNotConfigured'))
         return
       }
       const url = resolveWidgetUrl(cfg.createApiUrl, variablesContext.value)
       const created = await apiClient.post<Record<string, unknown>>(url, payload)
       // 乐观更新：立即插入返回行（无 id 时用 payload），失败 refresh 回滚
       tableRef.value?.insertRow(created ?? payload)
-      ElMessage.success('新增成功')
+      ElMessage.success(t('editor.crudListPage.createSuccess'))
     } else {
       if (!cfg.updateApiUrl) {
-        ElMessage.warning('未配置更新 API')
+        ElMessage.warning(t('editor.crudListPage.updateApiNotConfigured'))
         return
       }
       const id = editingRecordId.value
       if (!id) {
-        ElMessage.error('缺少记录 ID')
+        ElMessage.error(t('editor.crudListPage.missingRecordId'))
         return
       }
       const url = resolveUpdateUrl(cfg.updateApiUrl, id)
@@ -192,12 +194,12 @@ async function submitFormDialog() {
       // 乐观更新：立即合并 patch 到匹配行
       const idField = (cfg.recordIdField as string) ?? 'id'
       tableRef.value?.updateRow(idField, id, payload)
-      ElMessage.success('保存成功')
+      ElMessage.success(t('editor.crudListPage.saveSuccess'))
     }
     formVisible.value = false
   } catch (err) {
     console.error('[FgCrudListPage] form submit failed:', err)
-    ElMessage.error(formMode.value === 'add' ? '新增失败' : '保存失败')
+    ElMessage.error(formMode.value === 'add' ? t('editor.crudListPage.createFailed') : t('editor.crudListPage.saveFailed'))
     // 失败回滚：重新拉取服务端真实状态
     tableRef.value?.refresh()
   } finally {
@@ -442,9 +444,9 @@ watch(formVisible, (visible) => {
         </el-row>
       </el-form>
       <template #footer>
-        <el-button @click="formVisible = false">取消</el-button>
+        <el-button @click="formVisible = false">{{ t('editor.common.cancel') }}</el-button>
         <el-button type="primary" :loading="formSubmitting" @click="submitFormDialog">
-          确定
+          {{ t('editor.common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -452,7 +454,7 @@ watch(formVisible, (visible) => {
     <el-dialog
       v-if="detailDialogConfig"
       v-model="detailVisible"
-      :title="detailDialogConfig.title || '申请详情'"
+      :title="detailDialogConfig.title || t('editor.crudListPage.applyDetail')"
       width="920px"
       destroy-on-close
       append-to-body
@@ -460,7 +462,7 @@ watch(formVisible, (visible) => {
       <div v-loading="detailLoading" :class="styles.detailBody">
         <el-descriptions
           v-if="descriptionItems.length > 0"
-          :title="detailDialogConfig.title || '申请信息'"
+          :title="detailDialogConfig.title || t('editor.crudListPage.applyInfo')"
           :column="2"
           border
         >
@@ -485,8 +487,8 @@ watch(formVisible, (visible) => {
           v-if="detailDialogConfig.showFlowTimeline"
           :class="styles.timelineSection"
         >
-          <div :class="styles.timelineTitle">审批记录</div>
-          <div v-if="timelineLoading" :class="styles.timelineLoading">加载中…</div>
+          <div :class="styles.timelineTitle">{{ t('editor.crudListPage.approvalRecord') }}</div>
+          <div v-if="timelineLoading" :class="styles.timelineLoading">{{ t('editor.crudListPage.loading') }}</div>
           <el-timeline v-else-if="timelineLogs.length > 0">
             <el-timeline-item
               v-for="(log, idx) in timelineLogs"
@@ -499,18 +501,18 @@ watch(formVisible, (visible) => {
               <div v-if="log.comment">{{ log.comment }}</div>
             </el-timeline-item>
           </el-timeline>
-          <div v-else :class="styles.timelineEmpty">暂无审批记录</div>
+          <div v-else :class="styles.timelineEmpty">{{ t('editor.crudListPage.noApprovalRecord') }}</div>
         </div>
       </div>
 
       <template #footer>
-        <el-button @click="detailVisible = false">关闭</el-button>
+        <el-button @click="detailVisible = false">{{ t('editor.common.close') }}</el-button>
         <el-button
           v-if="detailDialogConfig.confirmNavigatePath"
           type="primary"
           @click="handleConfirmNavigate"
         >
-          {{ detailDialogConfig.confirmText || '全屏审批' }}
+          {{ detailDialogConfig.confirmText || t('editor.crudListPage.fullscreenApproval') }}
         </el-button>
       </template>
     </el-dialog>

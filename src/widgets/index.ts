@@ -92,6 +92,7 @@ import { FgDynamicDetailTable, createDynamicDetailTableWidget, dynamicDetailTabl
 import { FgComplianceChecklist, createComplianceChecklistWidget, complianceChecklistConfig } from './compliance-checklist'
 import { FgQrScanner, createQrScannerWidget, qrScannerConfig } from './qr-scanner'
 import { FgAutoRefresh, createAutoRefreshWidget, autoRefreshConfig } from './auto-refresh'
+import { FgMap, createMapWidget, mapConfig } from './map'
 
 export function registerAllWidgets() {
   // Layout widgets (结构布局)
@@ -543,6 +544,7 @@ export function registerAllWidgets() {
   registerWidget({ name: funnelConfig.name, displayName: funnelConfig.displayName, type: 'funnel', group: 'chart', component: FgFunnel, create: createFunnelWidget, config: funnelConfig })
   registerWidget({ name: compareFunnelConfig.name, displayName: compareFunnelConfig.displayName, type: 'compare-funnel', group: 'chart', component: FgCompareFunnel, create: createCompareFunnelWidget, config: compareFunnelConfig })
   registerWidget({ name: candlestickConfig.name, displayName: candlestickConfig.displayName, type: 'candlestick', group: 'chart', component: FgCandlestick, create: createCandlestickWidget, config: candlestickConfig })
+  registerWidget({ name: mapConfig.name, displayName: mapConfig.displayName, type: 'map', group: 'chart', component: FgMap, create: createMapWidget, config: mapConfig })
 
   // Extended business widgets (扩展业务组件)
   registerWidget({ name: iconPickerConfig.name, displayName: iconPickerConfig.displayName, type: 'icon-picker', group: 'form', component: FgIconPicker, create: createIconPickerWidget, config: iconPickerConfig })

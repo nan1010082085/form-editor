@@ -3,8 +3,10 @@ import { inject, computed, ref } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
-
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -39,7 +41,7 @@ function fetchSuggestions(queryString: string, callback: (suggestions: { value: 
     ref="autocompleteRef"
     v-model="widgetData.defaultValue as string"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || '请输入'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.autocomplete.placeholder')"
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :fetch-suggestions="fetchSuggestions"

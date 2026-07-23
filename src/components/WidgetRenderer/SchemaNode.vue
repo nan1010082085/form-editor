@@ -17,16 +17,17 @@
  */
 import { computed, inject, provide, ref, onMounted, onUnmounted, type ComputedRef, type ComponentPublicInstance } from 'vue'
 import { widgetDataKey, widgetStyleKey, widgetRenderStateKey, formContextKey, widgetBoundsKey, parentBoundsKey, type WidgetBounds } from '../../widgets/base/types'
-import type { Widget, SchemaType, LinkageState } from '../../widgets/base/types'
+import type { Widget, SchemaType, LinkageState, PreviewBreakpoint } from '../../widgets/base/types'
 import type { FormData, EventExecutionContext } from './types'
-import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY, FORM_GRID_FORM_KEY } from './types'
+import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY, FORM_GRID_FORM_KEY, PREVIEW_BREAKPOINT_KEY } from './types'
+import { useResponsivePosition } from '../../composables/useResponsivePosition'
 import { getComponentMap } from '../../widgets/registry'
 import { useWidgetStore } from '../../stores/widget'
 import { useEditorStore } from '../../stores/editor'
 import { useBoardStore } from '../../stores/board'
-import { resolveWidgetSize } from '../../utils/unitResolver'
 import { triggerWidgetEvent } from '../../engine/eventEngine'
 import { useLogger } from '../../composables/useLogger'
+import { useWidgetAnimation } from '../../composables/useWidgetAnimation'
 import SchemaRender from './SchemaRender.vue'
 import WidgetErrorBoundary from './WidgetErrorBoundary.vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
@@ -155,11 +156,11 @@ const parentBounds = inject(parentBoundsKey, computed<WidgetBounds>(() => ({
 
 /** 当前部件解析尺寸 — 与 EditorOverlay hitArea 算法一致 */
 const resolvedBounds = computed<WidgetBounds>(() => {
-  const { w, h } = resolveWidgetSize(
-    props.widget,
-    parentBounds.value.widthPx,
-    parentBounds.value.heightPx,
-  )
+  const pos = resolvedPosition.value
+  const parentW = parentBounds.value.widthPx
+  const parentH = parentBounds.value.heightPx
+  const w = pos.wUnit === '%' ? parentW * pos.w / 100 : pos.w
+  const h = pos.hUnit === '%' ? parentH * pos.h / 100 : pos.h
   return { widthPx: w, heightPx: h }
 })
 
@@ -193,6 +194,17 @@ onUnmounted(() => {
 
 /** 事件执行上下文（预览模式从 EditorCanvas/WidgetRenderer 注入） */
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
+
+/** 响应式断点（预览/发布模式从 EditorCanvas 注入） */
+const previewBreakpoint = inject(PREVIEW_BREAKPOINT_KEY, ref<PreviewBreakpoint>('desktop'))
+
+/** 响应式位置解析 */
+const widgetRef = computed(() => props.widget)
+const { resolvedPosition } = useResponsivePosition({
+  widget: widgetRef,
+  breakpoint: previewBreakpoint,
+  isPreviewMode: computed(() => !isEditMode.value),
+})
 
 /** 顶层 formData（absolute 布局联动/提交聚合） */
 const formGridData = inject(FORM_GRID_FORM_KEY, null)
@@ -273,6 +285,10 @@ const renderState = computed(() => {
   if (props.widget.hidden) {
     return { ...base, visible: false }
   }
+  // 响应式断点隐藏：当前断点配置了 hidden=true
+  if (resolvedPosition.value.hidden) {
+    return { ...base, visible: false }
+  }
   // disabled 属性覆盖（规则引擎动态设置）
   if (props.widget.disabled) {
     return { ...base, disabled: true }
@@ -307,26 +323,21 @@ const CSS_STYLE_KEYS: ReadonlySet<string> = new Set([
   'fontSize', 'fontWeight', 'color', 'textAlign',
 ])
 
-const animationClass = computed(() => {
-  const anim = props.widget.style?.animation as string | undefined
-  if (anim === 'fade-in') return styles.animatedFadeIn
-  if (anim === 'slide-up') return styles.animatedSlideUp
-  if (anim === 'scale-in') return styles.animatedScaleIn
-  return undefined
-})
+const isPreviewOrPublish = computed(() => !isEditMode.value)
+
+const { animationStyle } = useWidgetAnimation(
+  widgetStyle as ComputedRef<Record<string, unknown>>,
+  isPreviewOrPublish,
+)
 
 const wrapperStyle = computed(() => {
-  const pos = props.widget.position ?? { x: 0, y: 0, w: 240, h: 40 }
-  const xUnit = pos.xUnit ?? 'px'
-  const yUnit = pos.yUnit ?? 'px'
-  const wUnit = pos.wUnit ?? 'px'
-  const hUnit = pos.hUnit ?? 'px'
+  const pos = resolvedPosition.value
   const style: Record<string, string | number> = {
     position: 'absolute',
-    left: `${pos.x}${xUnit}`,
-    top: `${pos.y}${yUnit}`,
-    width: `${pos.w}${wUnit}`,
-    height: `${pos.h}${hUnit}`,
+    left: `${pos.x}${pos.xUnit}`,
+    top: `${pos.y}${pos.yUnit}`,
+    width: `${pos.w}${pos.wUnit}`,
+    height: `${pos.h}${pos.hUnit}`,
   }
   if (pos.zIndex !== undefined) {
     style.zIndex = pos.zIndex
@@ -372,8 +383,8 @@ const wrapperStyle = computed(() => {
           <SchemaRender
             :widgets="filteredChildren"
             :mode="mode"
-            :canvas-offset-x="(canvasOffsetX ?? 0) + (widget.position?.x ?? 0)"
-            :canvas-offset-y="(canvasOffsetY ?? 0) + (widget.position?.y ?? 0)"
+            :canvas-offset-x="(canvasOffsetX ?? 0) + resolvedPosition.x"
+            :canvas-offset-y="(canvasOffsetY ?? 0) + resolvedPosition.y"
           />
         </div>
       </div>
@@ -420,7 +431,7 @@ const wrapperStyle = computed(() => {
           [styles.interactiveContainer]: INTERACTIVE_CONTAINER_TYPES.has(widget.type),
         },
       ]"
-      :style="wrapperStyle"
+      :style="[wrapperStyle, animationStyle]"
       @click.stop="INTERACTIVE_CONTAINER_TYPES.has(widget.type) && handleInteractiveContainerClick()"
     >
       <!-- 容器组件自身渲染（卡片标题、表单包裹等） -->
@@ -439,8 +450,8 @@ const wrapperStyle = computed(() => {
             <SchemaRender
               :widgets="filteredChildren"
               :mode="mode"
-              :canvas-offset-x="(canvasOffsetX ?? 0) + (widget.position?.x ?? 0)"
-              :canvas-offset-y="(canvasOffsetY ?? 0) + (widget.position?.y ?? 0)"
+              :canvas-offset-x="(canvasOffsetX ?? 0) + resolvedPosition.x"
+              :canvas-offset-y="(canvasOffsetY ?? 0) + resolvedPosition.y"
             />
           </div>
         </component>
@@ -463,8 +474,8 @@ const wrapperStyle = computed(() => {
     <div
       v-else
       :data-widget-id="widget.id"
-      :class="[styles.nodeWrapper, styles.nodeWrapperBase, animationClass, { [styles.nodeWrapperEdit]: isEditMode }]"
-      :style="wrapperStyle"
+      :class="[styles.nodeWrapper, styles.nodeWrapperBase, { [styles.nodeWrapperEdit]: isEditMode }]"
+      :style="[wrapperStyle, animationStyle]"
       @change="FORM_COMPONENT_TYPES.has(widget.type) && (isEditMode ? handleWidgetEvent('change', $event) : handlePreviewEvent('change', $event))"
       @focus="INPUT_COMPONENT_TYPES.has(widget.type) && (isEditMode ? handleWidgetEvent('focus') : handlePreviewEvent('focus'))"
       @blur="INPUT_COMPONENT_TYPES.has(widget.type) && (isEditMode ? handleWidgetEvent('blur') : handlePreviewEvent('blur'))"

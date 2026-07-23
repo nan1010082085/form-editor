@@ -17,9 +17,12 @@ import SchemaRender from '../../components/WidgetRenderer/SchemaRender.vue'
 import { useWidgetLifecycle } from '@/composables/useWidgetLifecycle'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
 import { useExposeWidget } from '@/composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import { loadMicroApp } from 'qiankun'
 import type { MicroApp } from 'qiankun'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
@@ -57,7 +60,7 @@ const microappRoute = computed(() => widgetData.value.props?.microappRoute as st
 const sandbox = computed(() => widgetData.value.props?.microappSandbox !== false)
 const styleIsolation = computed(() => (widgetData.value.props?.microappStyleIsolation as string) ?? 'experimental')
 const timeout = computed(() => (widgetData.value.props?.microappTimeout as number) ?? 10000)
-const fallbackText = computed(() => (widgetData.value.props?.microappFallback as string) ?? '子应用加载失败')
+const fallbackText = computed(() => (widgetData.value.props?.microappFallback as string) ?? t('editor.microAppContainer.fallbackError'))
 const routeBase = computed(() => widgetData.value.props?.microappRouteBase as string ?? '')
 
 const microappContainerRef = ref<HTMLDivElement>()
@@ -89,7 +92,7 @@ async function loadMicroAppDynamic() {
   if (timeoutTimer) clearTimeout(timeoutTimer)
   timeoutTimer = setTimeout(() => {
     if (microappLoading.value) {
-      microappError.value = `加载超时（${timeout.value}ms）`
+      microappError.value = t('editor.microAppContainer.loadTimeout', { ms: timeout.value })
       microappLoading.value = false
     }
   }, timeout.value)
@@ -182,7 +185,7 @@ async function handleCancel() {
   <!-- 编辑模式：容器 shell -->
   <div v-if="editable" :class="styles.dialogShell">
     <div :class="styles.dialogHeader">
-      <span :class="styles.dialogTitle">{{ (widgetData.props?.title as string) || '弹窗标题' }}</span>
+      <span :class="styles.dialogTitle">{{ (widgetData.props?.title as string) || t('editor.dialog.defaultTitle') }}</span>
     </div>
   </div>
 
@@ -190,7 +193,7 @@ async function handleCancel() {
   <template v-else>
     <AppDialog
       v-model="visible"
-      :title="(widgetData.props?.title as string) || '弹窗标题'"
+      :title="(widgetData.props?.title as string) || t('editor.dialog.defaultTitle')"
       :width="(widgetData.props?.width as string) || '600px'"
       :draggable="widgetData.props?.draggable !== false"
       :show-fullscreen-btn="widgetData.props?.showFullscreenBtn !== false"
@@ -200,7 +203,7 @@ async function handleCancel() {
       <!-- 微应用模式 -->
       <div v-if="contentMode === 'microapp'" style="height: 100%; min-height: 200px;">
         <div v-if="!microappName || !microappEntry" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--el-text-color-secondary);">
-          请配置子应用名称和入口地址
+          {{ t('editor.microAppContainer.configHint') }}
         </div>
         <div v-else-if="microappError" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--el-color-danger);background:var(--el-color-danger-light-9);">
           {{ microappError }}
@@ -213,8 +216,8 @@ async function handleCancel() {
 
       <template v-if="widgetData.props?.showFooter !== false" #footer>
         <div :class="styles.footer">
-          <el-button @click="handleCancel">{{ (widgetData.props?.cancelText as string) || '取消' }}</el-button>
-          <el-button type="primary" @click="handleConfirm">{{ (widgetData.props?.confirmText as string) || '确定' }}</el-button>
+          <el-button @click="handleCancel">{{ (widgetData.props?.cancelText as string) || t('editor.dialog.cancel') }}</el-button>
+          <el-button type="primary" @click="handleConfirm">{{ (widgetData.props?.confirmText as string) || t('editor.dialog.confirm') }}</el-button>
         </div>
       </template>
     </AppDialog>

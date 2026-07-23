@@ -8,8 +8,11 @@
 import { inject, ref, computed } from 'vue'
 import { widgetDataKey, widgetStyleKey, type Widget } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import SchemaRender from '../../components/WidgetRenderer/SchemaRender.vue'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
@@ -54,7 +57,7 @@ useExposeWidget(() => ({
     </div>
     <div :class="styles.tabBody">
       <SchemaRender v-if="activeChildren.length > 0" :widgets="activeChildren" mode="edit" />
-      <div v-else :class="styles.empty">拖拽组件到此 Tab 页</div>
+      <div v-else :class="styles.empty">{{ t('editor.tabContainer.emptyHint') }}</div>
     </div>
   </div>
 </template>

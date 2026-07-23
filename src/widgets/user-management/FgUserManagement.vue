@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, computed, ref, reactive, onMounted, watch } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import type { Widget } from '../base/types'
@@ -19,6 +20,8 @@ import {
   getTableRowsFromMock,
 } from '../base/widgetMock'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 // ---- Inject ----
 const widgetData = inject(widgetDataKey)!
@@ -78,31 +81,45 @@ interface ColumnDef {
 }
 
 const ALL_COLUMNS: Record<string, ColumnDef> = {
-  username: { prop: 'username', label: '用户名', width: 120 },
-  displayName: { prop: 'displayName', label: '昵称', width: 120 },
-  deptId: { prop: 'deptId', label: '部门', width: 120 },
-  phone: { prop: 'phone', label: '手机号', width: 140 },
-  status: { prop: 'status', label: '状态', width: 80 },
-  createdAt: { prop: 'createdAt', label: '创建时间', width: 180 },
+  username: { prop: 'username', label: 'Username', width: 120 },
+  displayName: { prop: 'displayName', label: 'Nickname', width: 120 },
+  deptId: { prop: 'deptId', label: 'Department', width: 120 },
+  phone: { prop: 'phone', label: 'Phone', width: 140 },
+  status: { prop: 'status', label: 'Status', width: 80 },
+  createdAt: { prop: 'createdAt', label: 'Created At', width: 180 },
+}
+
+const COLUMN_I18N_KEYS: Record<string, string> = {
+  username: 'col_username',
+  displayName: 'col_displayName',
+  deptId: 'col_deptId',
+  phone: 'col_phone',
+  status: 'col_status',
+  createdAt: 'col_createdAt',
 }
 
 const visibleColumns = computed(() => {
-  return tableColumns.value.map(key => ALL_COLUMNS[key]).filter(Boolean)
+  return tableColumns.value.map(key => {
+    const col = ALL_COLUMNS[key]
+    if (!col) return null as any
+    const i18nKey = COLUMN_I18N_KEYS[key]
+    return i18nKey ? { ...col, label: t(`editor.userManagement.${i18nKey}`) } : col
+  }).filter(Boolean)
 })
 
 // ---- Form rules ----
-const formRules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-  displayName: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
-}
+const formRules = computed(() => ({
+  username: [{ required: true, message: t('editor.userManagement.enterUsername'), trigger: 'blur' }],
+  password: [{ required: true, message: t('editor.userManagement.enterPassword'), trigger: 'blur' }],
+  displayName: [{ required: true, message: t('editor.userManagement.enterNickname'), trigger: 'blur' }],
+}))
 
-const resetPwdRules = {
+const resetPwdRules = computed(() => ({
   password: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, message: '密码至少6位', trigger: 'blur' },
+    { required: true, message: t('editor.userManagement.enterNewPassword'), trigger: 'blur' },
+    { min: 6, message: t('editor.userManagement.passwordMinLength'), trigger: 'blur' },
   ],
-}
+}))
 
 // ---- API ----
 function applyEditorMock(): boolean {
@@ -126,7 +143,7 @@ async function loadData() {
     total.value = res.data.total
   } catch (err) {
     if (applyEditorMock()) return
-    ElMessage.error('加载用户列表失败')
+    ElMessage.error(t('editor.userManagement.loadUserListFailed'))
   } finally {
     loading.value = false
   }
@@ -199,29 +216,29 @@ async function submitForm() {
   try {
     if (dialogMode.value === 'add') {
       await createUser(formData)
-      ElMessage.success('用户创建成功')
+      ElMessage.success(t('editor.userManagement.userCreated'))
     } else {
       const { password: _, ...updates } = formData
       await updateUser(editingUserId.value, updates)
-      ElMessage.success('用户更新成功')
+      ElMessage.success(t('editor.userManagement.userUpdated'))
     }
     dialogVisible.value = false
     loadData()
   } catch (err) {
-    ElMessage.error(dialogMode.value === 'add' ? '创建失败' : '更新失败')
+    ElMessage.error(dialogMode.value === 'add' ? t('editor.userManagement.createFailed') : t('editor.userManagement.updateFailed'))
   }
 }
 
 // ---- Delete ----
 async function handleDelete(row: UserItem) {
   try {
-    await ElMessageBox.confirm('确认删除该用户？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('editor.userManagement.confirmDeleteUser'), t('editor.common.info'), {
+      confirmButtonText: t('editor.common.confirm'),
+      cancelButtonText: t('editor.common.cancel'),
       type: 'warning',
     })
     await deleteUser(row._id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('editor.userManagement.deleteSuccess'))
     loadData()
   } catch {
     // user cancelled
@@ -244,10 +261,10 @@ async function submitResetPwd() {
   if (!resetPwdTarget.value) return
   try {
     await resetUserPassword(resetPwdTarget.value._id, resetPwdValue.value)
-    ElMessage.success('密码重置成功')
+    ElMessage.success(t('editor.userManagement.passwordResetSuccess'))
     resetPwdVisible.value = false
   } catch {
-    ElMessage.error('密码重置失败')
+    ElMessage.error(t('editor.userManagement.passwordResetFailed'))
   }
 }
 
@@ -291,17 +308,17 @@ onMounted(() => {
       <el-input
         v-model="searchQuery"
         :class="styles.searchInput"
-        placeholder="搜索用户名 / 昵称"
+        :placeholder="t('editor.userManagement.searchPlaceholder')"
         clearable
         @input="onSearchInput"
       />
       <el-button type="primary" @click="openAddDialog" :disabled="isDisabled">
-        新增用户
+        {{ t('editor.userManagement.addUser') }}
       </el-button>
     </div>
     <div v-else :class="styles.searchBar">
       <el-button type="primary" @click="openAddDialog" :disabled="isDisabled">
-        新增用户
+        {{ t('editor.userManagement.addUser') }}
       </el-button>
     </div>
 
@@ -330,7 +347,7 @@ onMounted(() => {
               :type="row.status === 'active' ? 'success' : 'danger'"
               size="small"
             >
-              {{ row.status === 'active' ? '启用' : '停用' }}
+              {{ row.status === 'active' ? t('editor.userManagement.enabled') : t('editor.userManagement.disabled') }}
             </el-tag>
             <span v-else-if="col.prop === 'createdAt'">
               {{ formatTime(row.createdAt) }}
@@ -338,16 +355,16 @@ onMounted(() => {
             <span v-else>{{ row[col.prop] ?? '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column :label="t('editor.userManagement.actions')" width="220" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="openEditDialog(row)">
-              编辑
+              {{ t('editor.common.edit') }}
             </el-button>
             <el-button type="warning" link size="small" @click="openResetPwd(row)">
-              重置密码
+              {{ t('editor.userManagement.resetPassword') }}
             </el-button>
             <el-button type="danger" link size="small" @click="handleDelete(row)">
-              删除
+              {{ t('editor.common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -370,7 +387,7 @@ onMounted(() => {
     <!-- Add/Edit Dialog -->
     <el-dialog
       v-model="dialogVisible"
-      :title="dialogMode === 'add' ? '新增用户' : '编辑用户'"
+      :title="dialogMode === 'add' ? t('editor.userManagement.addUserTitle') : t('editor.userManagement.editUserTitle')"
       width="560px"
       destroy-on-close
     >
@@ -381,16 +398,16 @@ onMounted(() => {
         label-width="80px"
         :class="styles.formGrid"
       >
-        <el-form-item label="用户名" prop="username" :class="styles.fullWidth">
+        <el-form-item :label="t('editor.userManagement.col_username')" prop="username" :class="styles.fullWidth">
           <el-input
             v-model="formData.username"
             :disabled="dialogMode === 'edit'"
-            placeholder="请输入用户名"
+            :placeholder="t('editor.userManagement.enterUsername')"
           />
         </el-form-item>
         <el-form-item
           v-if="dialogMode === 'add'"
-          label="密码"
+          :label="t('editor.userManagement.password')"
           prop="password"
           :class="styles.fullWidth"
         >
@@ -398,38 +415,38 @@ onMounted(() => {
             v-model="formData.password"
             type="password"
             show-password
-            placeholder="请输入密码"
+            :placeholder="t('editor.userManagement.enterPassword')"
           />
         </el-form-item>
-        <el-form-item label="昵称" prop="displayName">
-          <el-input v-model="formData.displayName" placeholder="请输入昵称" />
+        <el-form-item :label="t('editor.userManagement.col_displayName')" prop="displayName">
+          <el-input v-model="formData.displayName" :placeholder="t('editor.userManagement.enterNickname')" />
         </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="formData.phone" placeholder="请输入手机号" />
+        <el-form-item :label="t('editor.userManagement.col_phone')" prop="phone">
+          <el-input v-model="formData.phone" :placeholder="t('editor.userManagement.enterPhone')" />
         </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="formData.email" placeholder="请输入邮箱" />
+        <el-form-item :label="t('editor.userManagement.email')" prop="email">
+          <el-input v-model="formData.email" :placeholder="t('editor.userManagement.enterEmail')" />
         </el-form-item>
-        <el-form-item label="部门" prop="deptId">
-          <el-input v-model="formData.deptId" placeholder="请输入部门" />
+        <el-form-item :label="t('editor.userManagement.col_deptId')" prop="deptId">
+          <el-input v-model="formData.deptId" :placeholder="t('editor.userManagement.enterDepartment')" />
         </el-form-item>
-        <el-form-item label="状态" prop="status" :class="styles.fullWidth">
-          <el-select v-model="formData.status" placeholder="请选择状态">
-            <el-option label="启用" value="active" />
-            <el-option label="停用" value="inactive" />
+        <el-form-item :label="t('editor.userManagement.col_status')" prop="status" :class="styles.fullWidth">
+          <el-select v-model="formData.status" :placeholder="t('editor.userManagement.selectStatus')">
+            <el-option :label="t('editor.userManagement.enabled')" value="active" />
+            <el-option :label="t('editor.userManagement.disabled')" value="inactive" />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('editor.common.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('editor.common.confirm') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- Reset Password Dialog -->
     <el-dialog
       v-model="resetPwdVisible"
-      title="重置密码"
+      :title="t('editor.userManagement.resetPasswordTitle')"
       width="400px"
       destroy-on-close
     >
@@ -439,21 +456,21 @@ onMounted(() => {
         :rules="resetPwdRules"
         label-width="80px"
       >
-        <el-form-item label="用户">
+        <el-form-item :label="t('editor.userManagement.user')">
           <span>{{ resetPwdTarget?.displayName }}（{{ resetPwdTarget?.username }}）</span>
         </el-form-item>
-        <el-form-item label="新密码" prop="password">
+        <el-form-item :label="t('editor.userManagement.newPassword')" prop="password">
           <el-input
             v-model="resetPwdValue"
             type="password"
             show-password
-            placeholder="请输入新密码（至少6位）"
+            :placeholder="t('editor.userManagement.enterNewPasswordHint')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="resetPwdVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitResetPwd">确定</el-button>
+        <el-button @click="resetPwdVisible = false">{{ t('editor.common.cancel') }}</el-button>
+        <el-button type="primary" @click="submitResetPwd">{{ t('editor.common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>

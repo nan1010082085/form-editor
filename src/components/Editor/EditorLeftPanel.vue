@@ -15,7 +15,10 @@ import { useEditorStore } from '@/stores/editor'
 import { applyTemplate } from '@/api/schemaApi'
 import type { TemplateItem } from '@/api/schemaApi'
 import type { Widget } from '@/widgets/base/types'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './EditorLeftPanel.module.scss'
+
+const { t } = useI18n()
 
 defineProps<{
   schemaStatus: 'draft' | 'published'
@@ -36,9 +39,9 @@ async function handleApplyTemplate(template: TemplateItem) {
       widgetStore.addWidget(w as unknown as Widget)
     }
     editorStore.pushHistory(widgetStore.widgets)
-    ElMessage.success(`已应用模板「${template.name}」`)
+    ElMessage.success(t('editor.leftPanel.templateApplied', { name: template.name }))
   } catch {
-    ElMessage.error('应用模板失败')
+    ElMessage.error(t('editor.leftPanel.templateApplyFailed'))
   }
 }
 </script>
@@ -52,21 +55,21 @@ async function handleApplyTemplate(template: TemplateItem) {
         @click="activeTab = 'components'"
       >
         <AppIcon name="grid" :size="14" />
-        <span>部件库</span>
+        <span>{{ t('editor.leftPanel.tabComponents') }}</span>
       </button>
       <button
         :class="[styles['left-panel__tab'], { [styles['left-panel__tab--active']]: activeTab === 'structure' }]"
         @click="activeTab = 'structure'"
       >
         <AppIcon name="list" :size="14" />
-        <span>结构</span>
+        <span>{{ t('editor.leftPanel.tabStructure') }}</span>
       </button>
       <button
         :class="[styles['left-panel__tab'], { [styles['left-panel__tab--active']]: activeTab === 'templates' }]"
         @click="activeTab = 'templates'"
       >
         <AppIcon name="document" :size="14" />
-        <span>模板</span>
+        <span>{{ t('editor.leftPanel.tabTemplates') }}</span>
       </button>
     </div>
 
@@ -84,10 +87,10 @@ async function handleApplyTemplate(template: TemplateItem) {
     <!-- Status bar -->
     <div v-if="schemaId" :class="styles['left-panel__status']">
       <span :class="[styles['left-panel__status-tag'], styles[`left-panel__status-tag--${schemaStatus}`]]">
-        {{ schemaStatus === 'published' ? '已发布' : '草稿' }}
+        {{ schemaStatus === 'published' ? t('editor.leftPanel.statusPublished') : t('editor.leftPanel.statusDraft') }}
       </span>
       <span :class="[styles['left-panel__status-tag'], styles['left-panel__status-tag--form']]">
-        表单
+        {{ t('editor.leftPanel.statusForm') }}
       </span>
     </div>
   </aside>

@@ -32,4 +32,7 @@ export const publicStylePanel = [
   'fontSize',
   'fontWeight',
   'color',
+  'animationPreset',
+  'animationDelay',
+  'animationDuration',
 ] as const

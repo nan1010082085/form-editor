@@ -18,6 +18,7 @@ const emit = defineEmits<{
   openLinkage: []
   openApi: []
   openVariables: []
+  openChartLinkage: []
 }>()
 </script>
 
@@ -56,6 +57,12 @@ const emit = defineEmits<{
             变量
             <span v-if="selectedWidget.variables?.length" :class="styles.badge">
               {{ selectedWidget.variables.length }}
+            </span>
+          </el-button>
+          <el-button v-if="panel === 'chart-linkages'" plain @click="emit('openChartLinkage')">
+            图表联动
+            <span v-if="selectedWidget.chartLinkages?.length" :class="styles.badge">
+              {{ selectedWidget.chartLinkages.length }}
             </span>
           </el-button>
         </template>

@@ -5,6 +5,7 @@ import { widgetDataKey, widgetStyleKey } from '../base/types'
 import type { Widget } from '../base/types'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import {
   fetchRoles,
   createRole,
@@ -26,6 +27,7 @@ const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey)!
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
 const { isDisabled } = useWidgetRenderState()
+const { t } = useI18n()
 
 // ---- State ----
 const loading = ref(false)
@@ -80,29 +82,29 @@ interface ColumnDef {
   minWidth?: number
 }
 
-const ALL_COLUMNS: Record<string, ColumnDef> = {
-  name: { prop: 'name', label: '角色名称', width: 150 },
-  permissions: { prop: 'permissions', label: '权限字符', minWidth: 200 },
-  data_scope: { prop: 'data_scope', label: '数据范围', width: 120 },
-  createdAt: { prop: 'createdAt', label: '创建时间', width: 180 },
-}
+const ALL_COLUMNS = computed<Record<string, ColumnDef>>(() => ({
+  name: { prop: 'name', label: t('editor.roleManagement.col_name'), width: 150 },
+  permissions: { prop: 'permissions', label: t('editor.roleManagement.col_permissions'), minWidth: 200 },
+  data_scope: { prop: 'data_scope', label: t('editor.roleManagement.col_dataScope'), width: 120 },
+  createdAt: { prop: 'createdAt', label: t('editor.common.createdAt'), width: 180 },
+}))
 
 const visibleColumns = computed(() => {
-  return tableColumns.value.map(key => ALL_COLUMNS[key]).filter(Boolean)
+  return tableColumns.value.map(key => ALL_COLUMNS.value[key]).filter(Boolean)
 })
 
 // ---- Data scope labels ----
-const dataScopeLabels: Record<string, string> = {
-  all: '全部数据',
-  dept: '本部门数据',
-  self: '仅本人数据',
-  custom: '自定义',
-}
+const dataScopeLabels = computed<Record<string, string>>(() => ({
+  all: t('editor.roleManagement.scope_all'),
+  dept: t('editor.roleManagement.scope_dept'),
+  self: t('editor.roleManagement.scope_self'),
+  custom: t('editor.roleManagement.scope_custom'),
+}))
 
 // ---- Form rules ----
-const formRules = {
-  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
-}
+const formRules = computed(() => ({
+  name: [{ required: true, message: t('editor.roleManagement.enterRoleName'), trigger: 'blur' }],
+}))
 
 // ---- Permission tree ----
 interface TreeNode {
@@ -148,7 +150,7 @@ async function loadData() {
         return
       }
     }
-    ElMessage.error('加载角色列表失败')
+    ElMessage.error(t('editor.roleManagement.loadRoleListFailed'))
   } finally {
     loading.value = false
   }
@@ -159,7 +161,7 @@ async function loadPermissions() {
     const res = await fetchPermissions()
     permissions.value = res.data
   } catch {
-    ElMessage.error('加载权限列表失败')
+    ElMessage.error(t('editor.roleManagement.loadPermissionsFailed'))
   }
 }
 
@@ -226,28 +228,28 @@ async function submitForm() {
   try {
     if (dialogMode.value === 'add') {
       await createRole(formData)
-      ElMessage.success('角色创建成功')
+      ElMessage.success(t('editor.roleManagement.roleCreated'))
     } else {
       await updateRole(editingRoleId.value, formData)
-      ElMessage.success('角色更新成功')
+      ElMessage.success(t('editor.roleManagement.roleUpdated'))
     }
     dialogVisible.value = false
     loadData()
   } catch (err) {
-    ElMessage.error(dialogMode.value === 'add' ? '创建失败' : '更新失败')
+    ElMessage.error(dialogMode.value === 'add' ? t('editor.common.failed') : t('editor.roleManagement.updateFailed'))
   }
 }
 
 // ---- Delete ----
 async function handleDelete(row: RoleItem) {
   try {
-    await ElMessageBox.confirm(`确认删除角色「${row.name}」？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('editor.roleManagement.confirmDeleteRole', { name: row.name }), t('editor.common.info'), {
+      confirmButtonText: t('editor.common.confirm'),
+      cancelButtonText: t('editor.common.cancel'),
       type: 'warning',
     })
     await deleteRole(row._id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('editor.common.success'))
     loadData()
   } catch {
     // user cancelled
@@ -265,11 +267,11 @@ function openPermDialog(row: RoleItem) {
 async function submitPermissions() {
   try {
     await updateRole(permRoleId.value, { permissions: checkedPermissions.value })
-    ElMessage.success('权限分配成功')
+    ElMessage.success(t('editor.roleManagement.permAssignSuccess'))
     permDialogVisible.value = false
     loadData()
   } catch {
-    ElMessage.error('权限分配失败')
+    ElMessage.error(t('editor.roleManagement.permAssignFailed'))
   }
 }
 
@@ -297,8 +299,8 @@ function formatTime(val: string | undefined): string {
 
 function formatPermissions(perms: string[]): string {
   if (!perms.length) return '-'
-  if (perms.length <= 3) return perms.join('、')
-  return `${perms.slice(0, 3).join('、')} 等${perms.length}项`
+  if (perms.length <= 3) return perms.join(', ')
+  return `${perms.slice(0, 3).join(', ')} +${perms.length - 3}`
 }
 
 // ---- Expose ----
@@ -329,17 +331,17 @@ onMounted(() => {
       <el-input
         v-model="searchQuery"
         :class="styles.searchInput"
-        placeholder="搜索角色名称 / 描述"
+        :placeholder="t('editor.roleManagement.searchPlaceholder')"
         clearable
         @input="onSearchInput"
       />
       <el-button type="primary" @click="openAddDialog" :disabled="isDisabled">
-        新增角色
+        {{ t('editor.roleManagement.addRole') }}
       </el-button>
     </div>
     <div v-else :class="styles.searchBar">
       <el-button type="primary" @click="openAddDialog" :disabled="isDisabled">
-        新增角色
+        {{ t('editor.roleManagement.addRole') }}
       </el-button>
     </div>
 
@@ -371,7 +373,7 @@ onMounted(() => {
               size="small"
               :type="row.data_scope === 'all' ? 'primary' : row.data_scope === 'custom' ? 'warning' : 'info'"
             >
-              {{ dataScopeLabels[row.data_scope] ?? row.data_scope }}
+              {{ dataScopeLabels.value[row.data_scope] ?? row.data_scope }}
             </el-tag>
             <span v-else-if="col.prop === 'createdAt'">
               {{ formatTime(row.createdAt) }}
@@ -379,16 +381,16 @@ onMounted(() => {
             <span v-else>{{ row[col.prop] ?? '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column :label="t('editor.common.actions')" width="220" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="openEditDialog(row)">
-              编辑
+              {{ t('editor.common.edit') }}
             </el-button>
             <el-button type="success" link size="small" @click="openPermDialog(row)">
-              分配权限
+              {{ t('editor.roleManagement.assignPerm') }}
             </el-button>
             <el-button type="danger" link size="small" @click="handleDelete(row)">
-              删除
+              {{ t('editor.common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -411,7 +413,7 @@ onMounted(() => {
     <!-- Add/Edit Dialog -->
     <el-dialog
       v-model="dialogVisible"
-      :title="dialogMode === 'add' ? '新增角色' : '编辑角色'"
+      :title="dialogMode === 'add' ? t('editor.roleManagement.addRoleTitle') : t('editor.roleManagement.editRoleTitle')"
       width="500px"
       destroy-on-close
     >
@@ -421,36 +423,36 @@ onMounted(() => {
         :rules="formRules"
         label-width="100px"
       >
-        <el-form-item label="角色名称" prop="name">
-          <el-input v-model="formData.name" placeholder="请输入角色名称" />
+        <el-form-item :label="t('editor.roleManagement.name')" prop="name">
+          <el-input v-model="formData.name" :placeholder="t('editor.roleManagement.enterRoleName')" />
         </el-form-item>
-        <el-form-item label="描述" prop="description">
+        <el-form-item :label="t('editor.common.description')" prop="description">
           <el-input
             v-model="formData.description"
             type="textarea"
             :rows="3"
-            placeholder="请输入角色描述"
+            :placeholder="t('editor.roleManagement.enterRoleDesc')"
           />
         </el-form-item>
-        <el-form-item label="数据范围" prop="data_scope">
-          <el-select v-model="formData.data_scope" placeholder="请选择数据范围">
-            <el-option label="全部数据" value="all" />
-            <el-option label="本部门数据" value="dept" />
-            <el-option label="仅本人数据" value="self" />
-            <el-option label="自定义" value="custom" />
+        <el-form-item :label="t('editor.roleManagement.dataScope')" prop="data_scope">
+          <el-select v-model="formData.data_scope" :placeholder="t('editor.roleManagement.selectDataScope')">
+            <el-option :label="t('editor.roleManagement.scope_all')" value="all" />
+            <el-option :label="t('editor.roleManagement.scope_dept')" value="dept" />
+            <el-option :label="t('editor.roleManagement.scope_self')" value="self" />
+            <el-option :label="t('editor.roleManagement.scope_custom')" value="custom" />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ t('editor.common.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ t('editor.common.confirm') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- Assign Permissions Dialog -->
     <el-dialog
       v-model="permDialogVisible"
-      :title="`分配权限 — ${permRoleName}`"
+      :title="t('editor.roleManagement.assignPermTitle', { name: permRoleName })"
       width="560px"
       destroy-on-close
     >
@@ -468,8 +470,8 @@ onMounted(() => {
         />
       </div>
       <template #footer>
-        <el-button @click="permDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitPermissions">确定</el-button>
+        <el-button @click="permDialogVisible = false">{{ t('editor.common.cancel') }}</el-button>
+        <el-button type="primary" @click="submitPermissions">{{ t('editor.common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>

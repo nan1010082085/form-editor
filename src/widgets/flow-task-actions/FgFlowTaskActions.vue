@@ -3,6 +3,7 @@ import { inject, computed, ref, onMounted, watch, type ComputedRef, type Ref } f
 import { ElMessage } from 'element-plus'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import {
   fetchFlowTask,
   fetchMyPendingTaskForInstance,
@@ -28,6 +29,7 @@ const exposedContext = inject<Ref<Record<string, Record<string, unknown>>>>(
   ref({}),
 )
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
+const { t } = useI18n()
 
 const task = ref<FlowTaskData | null>(null)
 const loading = ref(false)
@@ -44,7 +46,7 @@ useExposeWidget(() => ({
   get loading() { return acting.value },
 }))
 
-const title = computed(() => (widgetData.value.props?.title as string) || '审批操作')
+const title = computed(() => (widgetData.value.props?.title as string) || t('editor.flowTaskActions.defaultTitle'))
 const canAct = computed(() => task.value && ['pending', 'claimed'].includes(task.value.status))
 
 function readComment(): string {
@@ -119,7 +121,7 @@ async function loadTask() {
 async function handleApprove() {
   if (!task.value) return
   if (surface === 'editor') {
-    ElMessage.info('设计器预览：已通过')
+    ElMessage.info(t('editor.flowTaskActions.editorPreviewApproved'))
     return
   }
   acting.value = true
@@ -129,10 +131,10 @@ async function handleApprove() {
       comment: readComment(),
       formData: task.value.formData,
     })
-    ElMessage.success('已通过')
+    ElMessage.success(t('editor.flowTaskActions.approved'))
     await loadTask()
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '操作失败')
+    ElMessage.error(err instanceof Error ? err.message : t('editor.flowTaskActions.approveFailed'))
   } finally {
     acting.value = false
   }
@@ -141,7 +143,7 @@ async function handleApprove() {
 async function handleReject() {
   if (!task.value || !rejectTarget.value) return
   if (surface === 'editor') {
-    ElMessage.info('设计器预览：已驳回')
+    ElMessage.info(t('editor.flowTaskActions.editorPreviewRejected'))
     showReject.value = false
     return
   }
@@ -152,10 +154,10 @@ async function handleReject() {
       comment: readComment(),
     })
     showReject.value = false
-    ElMessage.success('已驳回')
+    ElMessage.success(t('editor.flowTaskActions.rejected'))
     await loadTask()
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '驳回失败')
+    ElMessage.error(err instanceof Error ? err.message : t('editor.flowTaskActions.rejectFailed'))
   } finally {
     acting.value = false
   }
@@ -164,16 +166,16 @@ async function handleReject() {
 async function handleClaim() {
   if (!task.value) return
   if (surface === 'editor') {
-    ElMessage.info('设计器预览：已认领')
+    ElMessage.info(t('editor.flowTaskActions.editorPreviewClaimed'))
     return
   }
   acting.value = true
   try {
     await claimFlowTask(task.value.id)
-    ElMessage.success('已认领')
+    ElMessage.success(t('editor.flowTaskActions.claimed'))
     await loadTask()
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '认领失败')
+    ElMessage.error(err instanceof Error ? err.message : t('editor.flowTaskActions.claimFailed'))
   } finally {
     acting.value = false
   }
@@ -182,7 +184,7 @@ async function handleClaim() {
 async function handleDelegate() {
   if (!task.value || !delegateUserId.value.trim()) return
   if (surface === 'editor') {
-    ElMessage.info('设计器预览：已委派')
+    ElMessage.info(t('editor.flowTaskActions.editorPreviewDelegated'))
     showDelegate.value = false
     delegateUserId.value = ''
     return
@@ -195,10 +197,10 @@ async function handleDelegate() {
     })
     showDelegate.value = false
     delegateUserId.value = ''
-    ElMessage.success('已委派')
+    ElMessage.success(t('editor.flowTaskActions.delegated'))
     await loadTask()
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '委派失败')
+    ElMessage.error(err instanceof Error ? err.message : t('editor.flowTaskActions.delegateFailed'))
   } finally {
     acting.value = false
   }
@@ -222,10 +224,10 @@ watch(variablesContext, loadTask, { deep: true })
   <div :class="styles.wrapper">
     <h4 v-if="title" :class="styles.title">{{ title }}</h4>
 
-    <div v-if="surface === 'editor'" :class="styles.editorBadge">设计器预览</div>
+    <div v-if="surface === 'editor'" :class="styles.editorBadge">{{ t('editor.flowTaskActions.editorPreview') }}</div>
 
-    <div v-if="loading" :class="styles.loading">加载任务...</div>
-    <div v-else-if="!task" :class="styles.empty">当前无待办任务</div>
+    <div v-if="loading" :class="styles.loading">{{ t('editor.flowTaskActions.loadingTask') }}</div>
+    <div v-else-if="!task" :class="styles.empty">{{ t('editor.flowTaskActions.noPendingTask') }}</div>
     <template v-else>
         <div v-if="aiSuggestion" :class="styles.suggestion">
           <el-alert
@@ -235,22 +237,22 @@ watch(variablesContext, loadTask, { deep: true })
             show-icon
             :closable="false"
           />
-          <el-button size="small" type="primary" link @click="applySuggestion">采纳建议</el-button>
+          <el-button size="small" type="primary" link @click="applySuggestion">{{ t('editor.flowTaskActions.adoptSuggestion') }}</el-button>
         </div>
 
         <div v-if="canAct" :class="styles.actions">
-          <el-button type="success" :loading="acting" @click="handleApprove">通过</el-button>
-          <el-button type="danger" :loading="acting" @click="showReject = true">驳回</el-button>
-          <el-button v-if="task.status === 'pending'" :loading="acting" @click="handleClaim">认领</el-button>
-          <el-button :loading="acting" @click="showDelegate = true">委派</el-button>
+          <el-button type="success" :loading="acting" @click="handleApprove">{{ t('editor.flowTaskActions.approve') }}</el-button>
+          <el-button type="danger" :loading="acting" @click="showReject = true">{{ t('editor.flowTaskActions.reject') }}</el-button>
+          <el-button v-if="task.status === 'pending'" :loading="acting" @click="handleClaim">{{ t('editor.flowTaskActions.claim') }}</el-button>
+          <el-button :loading="acting" @click="showDelegate = true">{{ t('editor.flowTaskActions.delegate') }}</el-button>
         </div>
-        <div v-else :class="styles.done">任务已处理或无操作权限</div>
+        <div v-else :class="styles.done">{{ t('editor.flowTaskActions.taskProcessed') }}</div>
       </template>
 
-    <el-dialog v-model="showReject" title="驳回" width="420px">
+    <el-dialog v-model="showReject" :title="t('editor.flowTaskActions.rejectTitle')" width="420px">
       <el-form label-width="80px">
-        <el-form-item label="驳回到">
-          <el-select v-model="rejectTarget" placeholder="选择节点">
+        <el-form-item :label="t('editor.flowTaskActions.rejectTo')">
+          <el-select v-model="rejectTarget" :placeholder="t('editor.flowTaskActions.selectNode')">
             <el-option
               v-for="t in rejectTargets"
               :key="t.nodeId"
@@ -261,20 +263,20 @@ watch(variablesContext, loadTask, { deep: true })
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showReject = false">取消</el-button>
-        <el-button type="danger" :loading="acting" @click="handleReject">确认驳回</el-button>
+        <el-button @click="showReject = false">{{ t('editor.common.cancel') }}</el-button>
+        <el-button type="danger" :loading="acting" @click="handleReject">{{ t('editor.flowTaskActions.confirmReject') }}</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="showDelegate" title="委派" width="420px">
+    <el-dialog v-model="showDelegate" :title="t('editor.flowTaskActions.delegateTitle')" width="420px">
       <el-form label-width="80px">
-        <el-form-item label="委派给">
-          <el-input v-model="delegateUserId" placeholder="用户 ID" />
+        <el-form-item :label="t('editor.flowTaskActions.delegateTo')">
+          <el-input v-model="delegateUserId" :placeholder="t('editor.flowTaskActions.userId')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showDelegate = false">取消</el-button>
-        <el-button type="primary" :loading="acting" @click="handleDelegate">确认委派</el-button>
+        <el-button @click="showDelegate = false">{{ t('editor.common.cancel') }}</el-button>
+        <el-button type="primary" :loading="acting" @click="handleDelegate">{{ t('editor.flowTaskActions.confirmDelegate') }}</el-button>
       </template>
     </el-dialog>
   </div>

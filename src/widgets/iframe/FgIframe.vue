@@ -7,7 +7,10 @@
 import { inject, computed, ref } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
@@ -72,12 +75,12 @@ const isEditorMode = computed(() => isEditorSurface.value || !src.value)
   <div v-if="dialogMode && !fullscreen" :class="styles.dialogOverlay">
     <div :class="styles.dialogContent">
       <div v-if="loading" :class="styles.loadingOverlay">
-        <span>加载中...</span>
+        <span>{{ t('editor.iframe.loading') }}</span>
       </div>
       <div v-if="hasError" :class="styles.errorOverlay">
-        <span>加载失败</span>
+        <span>{{ t('editor.iframe.loadFailed') }}</span>
         <span :style="{ fontSize: '12px', color: 'var(--el-text-color-secondary)' }">
-          请检查 URL 是否正确
+          {{ t('editor.iframe.checkUrl') }}
         </span>
       </div>
       <iframe
@@ -95,10 +98,10 @@ const isEditorMode = computed(() => isEditorSurface.value || !src.value)
   <!-- Fullscreen mode -->
   <div v-else-if="fullscreen" :class="styles.fullscreen">
     <div v-if="loading" :class="styles.loadingOverlay">
-      <span>加载中...</span>
+      <span>{{ t('editor.iframe.loading') }}</span>
     </div>
     <div v-if="hasError" :class="styles.errorOverlay">
-      <span>加载失败</span>
+      <span>{{ t('editor.iframe.loadFailed') }}</span>
     </div>
     <iframe
       v-if="src && !hasError"
@@ -116,17 +119,17 @@ const isEditorMode = computed(() => isEditorSurface.value || !src.value)
     <!-- Editor canvas placeholder -->
     <div v-if="isEditorMode" :class="styles.placeholder">
       <span v-if="src">{{ src }}</span>
-      <span v-else>请配置 iframe URL</span>
-      <span v-if="isEditorSurface" :class="styles.editorHint">设计器预览 · 不加载外部页面</span>
+      <span v-else>{{ t('editor.iframe.configUrl') }}</span>
+      <span v-if="isEditorSurface" :class="styles.editorHint">{{ t('editor.iframe.editorHint') }}</span>
     </div>
     <template v-else>
       <div v-if="loading" :class="styles.loadingOverlay">
-        <span>加载中...</span>
+        <span>{{ t('editor.iframe.loading') }}</span>
       </div>
       <div v-if="hasError" :class="styles.errorOverlay">
-        <span>加载失败</span>
+        <span>{{ t('editor.iframe.loadFailed') }}</span>
         <span :style="{ fontSize: '12px', color: 'var(--el-text-color-secondary)' }">
-          请检查 URL 是否正确
+          {{ t('editor.iframe.checkUrl') }}
         </span>
       </div>
       <iframe

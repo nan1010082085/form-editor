@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useChartOption } from '../base/useChartOption'
@@ -9,6 +10,7 @@ import { echarts, type EChartsType } from '../base/echarts'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const { t } = useI18n()
 
 function buildOption(data: Record<string, unknown>[], props: Record<string, unknown>): Record<string, unknown> {
   const dateField = (props.dateField as string) || 'date'
@@ -43,12 +45,12 @@ function buildOption(data: Record<string, unknown>[], props: Record<string, unkn
       trigger: 'axis',
       axisPointer: { type: 'cross' },
     },
-    legend: showLegend ? { bottom: 0, data: ['K 线'] } : undefined,
+    legend: showLegend ? { bottom: 0, data: [t('editor.candlestick.seriesName')] } : undefined,
     grid: { left: '3%', right: '4%', bottom: showLegend ? '12%' : '3%', containLabel: true },
     xAxis: { type: 'category', data: dates },
     yAxis: { type: 'value', scale: true },
     series: [{
-      name: 'K 线',
+      name: t('editor.candlestick.seriesName'),
       type: 'candlestick',
       data: seriesData,
     }],

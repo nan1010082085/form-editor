@@ -4,7 +4,7 @@
  *
  * 卡片网格展示模板，支持搜索、分类筛选、详情预览。
  */
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTemplateStore } from '@/stores/template'
 import { useWidgetStore } from '@/stores/widget'
@@ -14,25 +14,27 @@ import FilterTabs from '@schema-platform/platform-shared/components/common/Filte
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import type { TemplateItem } from '@/api/schemaApi'
 import type { PartialWidget } from '@/widgets/base/types'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './WidgetTemplateView.module.scss'
 
 registerAllWidgets()
 
 const templateStore = useTemplateStore()
 const widgetStore = useWidgetStore()
+const { t } = useI18n()
 
 // ---- 分类定义 ----
-const CATEGORY_OPTIONS: { label: string; value: string }[] = [
-  { label: '全部', value: '' },
-  { label: '表单', value: 'form' },
-  { label: '布局', value: 'layout' },
-  { label: '表格', value: 'table' },
-  { label: '搜索', value: 'search' },
-  { label: '图表', value: 'chart' },
-  { label: '业务', value: 'business' },
-  { label: '报表', value: 'report' },
-  { label: '其他', value: 'other' },
-]
+const CATEGORY_OPTIONS = computed<{ label: string; value: string }[]>(() => [
+  { label: t('editor.templateView.categoryAll'), value: '' },
+  { label: t('editor.templateView.categoryForm'), value: 'form' },
+  { label: t('editor.templateView.categoryLayout'), value: 'layout' },
+  { label: t('editor.templateView.categoryTable'), value: 'table' },
+  { label: t('editor.templateView.categorySearch'), value: 'search' },
+  { label: t('editor.templateView.categoryChart'), value: 'chart' },
+  { label: t('editor.templateView.categoryBusiness'), value: 'business' },
+  { label: t('editor.templateView.categoryReport'), value: 'report' },
+  { label: t('editor.templateView.categoryOther'), value: 'other' },
+])
 
 // ---- 搜索防抖 ----
 const searchInput = ref('')
@@ -79,12 +81,12 @@ function openPreview(template: TemplateItem) {
 async function handleDelete(template: TemplateItem) {
   try {
     await ElMessageBox.confirm(
-      `确定删除模板"${template.name}"吗？此操作不可撤销。`,
-      '删除确认',
-      { type: 'warning', confirmButtonText: '确定删除', cancelButtonText: '取消' }
+      t('editor.templateView.deleteConfirmMessage', { name: template.name }),
+      t('editor.templateView.deleteConfirmTitle'),
+      { type: 'warning', confirmButtonText: t('editor.templateView.confirmDelete'), cancelButtonText: t('editor.common.cancel') }
     )
     await templateStore.removeTemplate(template.id)
-    ElMessage.success('模板已删除')
+    ElMessage.success(t('editor.templateView.templateDeleted'))
   } catch {
     // 用户取消
   }
@@ -108,7 +110,7 @@ function getCategoryTagType(category: string): 'default' | 'success' | 'warning'
 
 // ---- 分类中文名 ----
 function getCategoryLabel(category: string): string {
-  return CATEGORY_OPTIONS.find(c => c.value === category)?.label ?? category
+  return CATEGORY_OPTIONS.value.find(c => c.value === category)?.label ?? category
 }
 
 // ---- 日期格式化 ----
@@ -130,12 +132,12 @@ onMounted(() => {
     <div :class="styles.header">
       <div :class="styles.titleRow">
         <div>
-          <h1>模板库</h1>
-          <p :class="styles.subtitle">管理组件模板，支持搜索、分类筛选、详情预览</p>
+          <h1>{{ t('editor.templateView.title') }}</h1>
+          <p :class="styles.subtitle">{{ t('editor.templateView.subtitle') }}</p>
         </div>
         <div :class="styles.headerActions">
           <el-tag size="small" :class="styles.countTag">
-            {{ templateStore.total }} 个模板
+            {{ t('editor.templateView.templateCount', { count: templateStore.total }) }}
           </el-tag>
         </div>
       </div>
@@ -146,7 +148,7 @@ onMounted(() => {
         <div :class="styles.toolbarRight">
           <el-input
             v-model="searchInput"
-            placeholder="搜索模板名称或描述"
+            :placeholder="t('editor.templateView.searchPlaceholder')"
             clearable
             :class="styles.searchInput"
             @input="handleSearch"
@@ -174,7 +176,7 @@ onMounted(() => {
     <div v-else-if="templateStore.error" :class="styles.content">
       <el-alert :title="templateStore.error" type="error" show-icon :closable="false">
         <template #default>
-          <el-button size="small" @click="templateStore.loadTemplates()">重试</el-button>
+          <el-button size="small" @click="templateStore.loadTemplates()">{{ t('editor.common.retry') }}</el-button>
         </template>
       </el-alert>
     </div>
@@ -184,8 +186,8 @@ onMounted(() => {
       <div :class="styles.emptyIcon">
         <AppIcon name="document" :size="64" />
       </div>
-      <h2 :class="styles.emptyTitle">暂无模板</h2>
-      <p :class="styles.emptyDesc">尝试调整筛选条件或创建新模板</p>
+      <h2 :class="styles.emptyTitle">{{ t('editor.templateView.emptyTitle') }}</h2>
+      <p :class="styles.emptyDesc">{{ t('editor.templateView.emptyDesc') }}</p>
     </div>
 
     <!-- Card Grid -->
@@ -218,9 +220,9 @@ onMounted(() => {
             <div :class="styles.cardMeta">
               <span :class="styles.metaItem">
                 <AppIcon name="view" :size="12" />
-                {{ tpl.usageCount }} 次使用
+                {{ t('editor.templateView.usageCount', { count: tpl.usageCount }) }}
               </span>
-              <span v-if="tpl.isBuiltin" :class="styles.builtinBadge">内置</span>
+              <span v-if="tpl.isBuiltin" :class="styles.builtinBadge">{{ t('editor.templateView.builtin') }}</span>
               <span :class="styles.metaDate">{{ formatDate(tpl.updatedAt) }}</span>
             </div>
             <p v-if="tpl.description" :class="styles.cardDesc">{{ tpl.description }}</p>
@@ -238,12 +240,12 @@ onMounted(() => {
 
           <!-- 卡片操作 -->
           <div :class="styles.cardActions">
-            <el-tooltip content="预览" placement="top" :show-after="300">
+            <el-tooltip :content="t('editor.common.preview')" placement="top" :show-after="300">
               <el-button size="small" text @click="openPreview(tpl)">
                 <AppIcon name="view" />
               </el-button>
             </el-tooltip>
-            <el-tooltip v-if="!tpl.isBuiltin" content="删除" placement="top" :show-after="300">
+            <el-tooltip v-if="!tpl.isBuiltin" :content="t('editor.common.delete')" placement="top" :show-after="300">
               <el-button size="small" text type="danger" @click="handleDelete(tpl)">
                 <AppIcon name="delete" />
               </el-button>
@@ -267,7 +269,7 @@ onMounted(() => {
     <!-- 详情预览抽屉 -->
     <el-drawer
       v-model="previewVisible"
-      :title="previewTemplate?.name ?? '模板预览'"
+      :title="previewTemplate?.name ?? t('editor.templateView.previewDrawerTitle')"
       size="55%"
       direction="rtl"
     >
@@ -277,8 +279,8 @@ onMounted(() => {
           <FilterTabs
             v-model="previewMode"
             :options="[
-              { label: '渲染预览', value: 'render' },
-              { label: 'JSON 源码', value: 'json' },
+              { label: t('editor.templateView.renderPreview'), value: 'render' },
+              { label: t('editor.templateView.jsonSource'), value: 'json' },
             ]"
           />
         </div>
@@ -286,23 +288,23 @@ onMounted(() => {
         <!-- 模板基本信息 -->
         <div :class="styles.previewMeta">
           <div :class="styles.previewMetaRow">
-            <span :class="styles.previewMetaLabel">分类</span>
+            <span :class="styles.previewMetaLabel">{{ t('editor.templateView.category') }}</span>
             <el-tag :type="getCategoryTagType(previewTemplate.category)" size="small">
               {{ getCategoryLabel(previewTemplate.category) }}
             </el-tag>
           </div>
           <div :class="styles.previewMetaRow">
-            <span :class="styles.previewMetaLabel">统计</span>
+            <span :class="styles.previewMetaLabel">{{ t('editor.templateView.stats') }}</span>
             <span :class="styles.previewMetaValue">
-              使用 {{ previewTemplate.usageCount }} 次 · 包含 {{ previewTemplate.widgets.length }} 个组件
+              {{ t('editor.templateView.statsDetail', { usage: previewTemplate.usageCount, count: previewTemplate.widgets.length }) }}
             </span>
           </div>
           <div v-if="previewTemplate.description" :class="styles.previewMetaRow">
-            <span :class="styles.previewMetaLabel">描述</span>
+            <span :class="styles.previewMetaLabel">{{ t('editor.common.description') }}</span>
             <span :class="styles.previewMetaValue">{{ previewTemplate.description }}</span>
           </div>
           <div v-if="previewTemplate.tags.length > 0" :class="styles.previewMetaRow">
-            <span :class="styles.previewMetaLabel">标签</span>
+            <span :class="styles.previewMetaLabel">{{ t('editor.templateView.tags') }}</span>
             <div :class="styles.previewTagList">
               <el-tag
                 v-for="tag in previewTemplate.tags"

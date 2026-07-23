@@ -9,6 +9,8 @@ import PropertyField from './PropertyField.vue'
 import BorderEditor from './BorderEditor.vue'
 import BorderRadiusEditor from './BorderRadiusEditor.vue'
 import SpacingEditor from './SpacingEditor.vue'
+import ShadowEditor from './ShadowEditor.vue'
+import BackgroundEditor from './BackgroundEditor.vue'
 import TableColumnsEditor from './TableColumnsEditor.vue'
 import type { TableColumn } from '../../widgets/table/config'
 import AdvancedColumnsEditor from './AdvancedColumnsEditor.vue'
@@ -178,6 +180,20 @@ const emit = defineEmits<{
             <div :class="styles.columnsLabel">{{ item.label }}</div>
             <SpacingEditor
               mode="padding"
+              :value="(selectedWidget?.style as Record<string, string>) ?? {}"
+              @update="(p: Record<string, string>) => emit('updateStylePatch', p)"
+            />
+          </div>
+          <div v-else-if="item.type === 'shadow-editor'" :class="styles.columnsSection">
+            <div :class="styles.columnsLabel">{{ item.label }}</div>
+            <ShadowEditor
+              :value="(selectedWidget?.style as Record<string, string>) ?? {}"
+              @update="(p: Record<string, string>) => emit('updateStylePatch', p)"
+            />
+          </div>
+          <div v-else-if="item.type === 'background-editor'" :class="styles.columnsSection">
+            <div :class="styles.columnsLabel">{{ item.label }}</div>
+            <BackgroundEditor
               :value="(selectedWidget?.style as Record<string, string>) ?? {}"
               @update="(p: Record<string, string>) => emit('updateStylePatch', p)"
             />

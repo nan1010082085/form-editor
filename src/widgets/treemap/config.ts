@@ -18,7 +18,7 @@ export const treemapConfig: WidgetConfig = {
     { key: 'loading', type: 'boolean', description: '加载状态' },
     { key: 'chartData', type: 'array', description: '图表数据' },
   ],
-  configPanels: ['api', 'variables', 'events'],
+  configPanels: ['api', 'variables', 'events', 'chart-linkages'],
   eventTargets: [
     { id: 'chart-click', label: '图表点击', description: '点击图表数据项时触发' },
   ],

@@ -4,8 +4,10 @@ import { widgetDataKey } from '../base/types'
 import './FgNumber.module.scss'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
-
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -32,7 +34,7 @@ function forwardNativeChange() {
     ref="numberRef"
     v-model="widgetData.defaultValue as number"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || '请输入数字'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.number.placeholder')"
     :disabled="isDisabled"
     :min="(widgetData.props?.min as number) || undefined"
     :max="(widgetData.props?.max as number) || undefined"

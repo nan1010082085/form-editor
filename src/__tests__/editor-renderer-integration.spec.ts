@@ -30,6 +30,21 @@ beforeAll(() => {
   }))
 })
 
+// Mock useI18n for components that use it (ColumnsEditor, etc.)
+import editorZhCN from '@/locales/editor-zh-CN'
+const messages = editorZhCN as unknown as Record<string, unknown>
+function lookup(obj: Record<string, unknown>, path: string): string {
+  const parts = path.split('.')
+  let cur: unknown = obj
+  for (const p of parts) {
+    cur = (cur as Record<string, unknown>)?.[p]
+  }
+  return typeof cur === 'string' ? cur : path
+}
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => lookup(messages, key) }),
+}))
+
 // Mock useListData to return predictable data (using actual Vue refs)
 vi.mock('@/composables/useListData', () => ({
   useListData: () => ({

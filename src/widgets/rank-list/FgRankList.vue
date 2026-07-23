@@ -7,7 +7,10 @@
 import { inject, ref, computed } from 'vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
@@ -66,7 +69,7 @@ useExposeWidget(() => ({
           {{ getTrendIcon(item[trendKey]) }}
         </span>
       </div>
-      <div v-if="sortedItems.length === 0" :class="styles.empty">暂无数据</div>
+      <div v-if="sortedItems.length === 0" :class="styles.empty">{{ t('editor.rankList.empty') }}</div>
     </div>
   </div>
 </template>

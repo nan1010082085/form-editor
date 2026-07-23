@@ -8,8 +8,11 @@
 import { inject, ref, computed } from 'vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
@@ -22,25 +25,25 @@ interface Condition {
 }
 
 const fields = computed(() => (widgetData.value.props?.fields as Array<{ key: string; label: string }>) ?? [
-  { key: 'name', label: '名称' },
-  { key: 'age', label: '年龄' },
-  { key: 'status', label: '状态' },
+  { key: 'name', label: t('editor.conditionBuilder.defaultFieldName') },
+  { key: 'age', label: t('editor.conditionBuilder.defaultFieldAge') },
+  { key: 'status', label: t('editor.conditionBuilder.defaultFieldStatus') },
 ])
 
-const operators = [
-  { value: 'eq', label: '等于' },
-  { value: 'ne', label: '不等于' },
-  { value: 'gt', label: '大于' },
-  { value: 'lt', label: '小于' },
-  { value: 'gte', label: '大于等于' },
-  { value: 'lte', label: '小于等于' },
-  { value: 'contains', label: '包含' },
-  { value: 'not_contains', label: '不包含' },
-  { value: 'in', label: '在...中' },
-  { value: 'not_in', label: '不在...中' },
-  { value: 'is_empty', label: '为空' },
-  { value: 'is_not_empty', label: '不为空' },
-]
+const operators = computed(() => [
+  { value: 'eq', label: t('editor.conditionBuilder.opEqual') },
+  { value: 'ne', label: t('editor.conditionBuilder.opNotEqual') },
+  { value: 'gt', label: t('editor.conditionBuilder.opGreater') },
+  { value: 'lt', label: t('editor.conditionBuilder.opLess') },
+  { value: 'gte', label: t('editor.conditionBuilder.opGreaterEqual') },
+  { value: 'lte', label: t('editor.conditionBuilder.opLessEqual') },
+  { value: 'contains', label: t('editor.conditionBuilder.opContains') },
+  { value: 'not_contains', label: t('editor.conditionBuilder.opNotContains') },
+  { value: 'in', label: t('editor.conditionBuilder.opIn') },
+  { value: 'not_in', label: t('editor.conditionBuilder.opNotIn') },
+  { value: 'is_empty', label: t('editor.conditionBuilder.opEmpty') },
+  { value: 'is_not_empty', label: t('editor.conditionBuilder.opNotEmpty') },
+])
 
 const logic = ref<'and' | 'or'>('and')
 const conditions = ref<Condition[]>([
@@ -81,8 +84,8 @@ useExposeWidget(() => ({
   <div :class="styles.conditionBuilder" :style="widgetStyle">
     <div :class="styles.logicRow">
       <el-radio-group v-model="logic" size="small">
-        <el-radio-button value="and">并且 (AND)</el-radio-button>
-        <el-radio-button value="or">或者 (OR)</el-radio-button>
+        <el-radio-button value="and">{{ t('editor.conditionBuilder.logicAnd') }}</el-radio-button>
+        <el-radio-button value="or">{{ t('editor.conditionBuilder.logicOr') }}</el-radio-button>
       </el-radio-group>
     </div>
     <div :class="styles.conditions">
@@ -90,7 +93,7 @@ useExposeWidget(() => ({
         <el-select
           :model-value="cond.field"
           size="small"
-          placeholder="选择字段"
+          :placeholder="t('editor.conditionBuilder.selectField')"
           @update:model-value="updateCondition(index, 'field', $event)"
         >
           <el-option
@@ -103,7 +106,7 @@ useExposeWidget(() => ({
         <el-select
           :model-value="cond.operator"
           size="small"
-          placeholder="运算符"
+          :placeholder="t('editor.conditionBuilder.selectOperator')"
           @update:model-value="updateCondition(index, 'operator', $event)"
         >
           <el-option
@@ -117,13 +120,13 @@ useExposeWidget(() => ({
           v-if="!['is_empty', 'is_not_empty'].includes(cond.operator)"
           :model-value="String(cond.value ?? '')"
           size="small"
-          placeholder="值"
+          :placeholder="t('editor.conditionBuilder.valuePlaceholder')"
           @update:model-value="updateCondition(index, 'value', $event)"
         />
         <button
           :class="styles.removeBtn"
           :disabled="conditions.length <= 1"
-          title="删除条件"
+          :title="t('editor.conditionBuilder.deleteCondition')"
           @click="removeCondition(index)"
         >
           <AppIcon name="delete" :size="14" />
@@ -132,7 +135,7 @@ useExposeWidget(() => ({
     </div>
     <button :class="styles.addBtn" @click="addCondition">
       <AppIcon name="plus" :size="14" />
-      <span>添加条件</span>
+      <span>{{ t('editor.conditionBuilder.addCondition') }}</span>
     </button>
   </div>
 </template>

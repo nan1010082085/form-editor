@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { mount } from '@vue/test-utils'
 import { computed } from 'vue'
@@ -9,6 +9,11 @@ import { createWidget } from '@/widgets/registry'
 import { widgetDataKey, widgetStyleKey } from '../../base/types'
 import FgFileList from '../FgFileList.vue'
 import { fileListConfig } from '../config'
+
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
 
 describe('FgFileList', () => {
   let store: ReturnType<typeof useWidgetStore>
@@ -106,7 +111,7 @@ describe('FgFileList', () => {
   describe('空状态', () => {
     it('显示暂无文件提示', () => {
       const wrapper = mountWidget()
-      expect(wrapper.text()).toContain('暂无文件')
+      expect(wrapper.text()).toContain('editor.fileList.empty')
     })
   })
 

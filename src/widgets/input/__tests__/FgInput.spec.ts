@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { mount } from '@vue/test-utils'
 import { computed } from 'vue'
@@ -9,6 +9,11 @@ import { createWidget } from '@/widgets/registry'
 import { computeWidgetRenderState } from '@/__tests__/widgetTestHarness'
 import { widgetDataKey, widgetStyleKey } from '../../base/types'
 import FgInput from '../FgInput.vue'
+
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
 
 describe('FgInput', () => {
   let store: ReturnType<typeof useWidgetStore>

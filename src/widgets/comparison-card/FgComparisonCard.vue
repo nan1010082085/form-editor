@@ -7,7 +7,10 @@
 import { inject, ref, computed } from 'vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey, ref({}))
@@ -17,7 +20,7 @@ const currentValue = computed(() => widgetData.value.props?.currentValue ?? 0)
 const previousValue = computed(() => widgetData.value.props?.previousValue ?? 0)
 const unit = computed(() => (widgetData.value.props?.unit as string) ?? '')
 const prefix = computed(() => (widgetData.value.props?.prefix as string) ?? '')
-const comparisonLabel = computed(() => (widgetData.value.props?.comparisonLabel as string) ?? '同比')
+const comparisonLabel = computed(() => (widgetData.value.props?.comparisonLabel as string) ?? t('editor.comparisonCard.defaultLabel'))
 const precision = computed(() => (widgetData.value.props?.precision as number) ?? 1)
 
 const changePercent = computed(() => {
@@ -34,8 +37,8 @@ const trendDirection = computed(() => {
 
 const formattedValue = computed(() => {
   const v = Number(currentValue.value)
-  if (v >= 100000000) return `${(v / 100000000).toFixed(precision.value)}亿`
-  if (v >= 10000) return `${(v / 10000).toFixed(precision.value)}万`
+  if (v >= 100000000) return `${(v / 100000000).toFixed(precision.value)}${t('editor.comparisonCard.unitYi')}`
+  if (v >= 10000) return `${(v / 10000).toFixed(precision.value)}${t('editor.comparisonCard.unitWan')}`
   return v.toLocaleString()
 })
 

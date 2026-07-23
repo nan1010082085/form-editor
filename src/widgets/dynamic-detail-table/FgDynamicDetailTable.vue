@@ -4,10 +4,13 @@ import { widgetDataKey, formContextKey } from '../base/types'
 import type { FormFieldValue } from '../base/types'
 import { FORM_GRID_FORM_KEY } from '@/components/WidgetRenderer/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import type { DetailColumn } from './config'
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import { dynamicDetailTableMock } from './mock'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const formGridData = inject(FORM_GRID_FORM_KEY, null)
@@ -57,7 +60,7 @@ useExposeWidget(() => ({
   get totalAmount() { return sumAmountColumn() },
 }))
 
-const title = computed(() => (widgetData.value.props?.title as string) || '费用明细')
+const title = computed(() => (widgetData.value.props?.title as string) || t('editor.dynamicDetailTable.title'))
 const columns = computed<DetailColumn[]>(() =>
   (widgetData.value.props?.columns as DetailColumn[]) ?? dynamicDetailTableMock.defaultProps.columns,
 )
@@ -95,7 +98,7 @@ watch(rows, () => {
   <div :class="styles.wrapper">
     <div :class="styles.header">
       <h4 v-if="title" :class="styles.title">{{ title }}</h4>
-      <el-button type="primary" size="small" @click="addRow">添加行</el-button>
+      <el-button type="primary" size="small" @click="addRow">{{ t('editor.dynamicDetailTable.addRow') }}</el-button>
     </div>
     <el-table :data="rows" border size="small" :class="styles.table">
       <el-table-column
@@ -115,9 +118,9 @@ watch(rows, () => {
           <el-input v-else v-model="row[col.prop]" size="small" />
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="80" fixed="right">
+      <el-table-column :label="t('editor.dynamicDetailTable.actions')" width="80" fixed="right">
         <template #default="{ $index }">
-          <el-button link type="danger" size="small" @click="removeRow($index)">删除</el-button>
+          <el-button link type="danger" size="small" @click="removeRow($index)">{{ t('editor.dynamicDetailTable.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>

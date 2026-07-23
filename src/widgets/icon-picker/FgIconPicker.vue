@@ -4,7 +4,10 @@ import * as ElementPlusIcons from '@element-plus/icons-vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey)!
@@ -61,7 +64,7 @@ const dynamicStyle = computed(() => ({
       <template #reference>
         <el-input
           :model-value="selectedIconName"
-          :placeholder="(widgetData.props?.placeholder as string) || '请选择图标'"
+          :placeholder="(widgetData.props?.placeholder as string) || t('editor.iconPicker.placeholder')"
           :disabled="isDisabled"
           :clearable="(widgetData.props?.clearable as boolean) ?? true"
           :style="dynamicStyle"
@@ -81,7 +84,7 @@ const dynamicStyle = computed(() => ({
         <el-input
           v-model="searchQuery"
           :class="styles.searchInput"
-          placeholder="搜索图标..."
+          :placeholder="t('editor.iconPicker.searchPlaceholder')"
           clearable
           :prefix-icon="ElementPlusIcons.Search"
         />
@@ -100,7 +103,7 @@ const dynamicStyle = computed(() => ({
           </div>
         </div>
         <div v-if="filteredIcons.length === 0" :class="styles.emptyText">
-          未找到匹配图标
+          {{ t('editor.iconPicker.noMatchIcon') }}
         </div>
       </div>
     </el-popover>

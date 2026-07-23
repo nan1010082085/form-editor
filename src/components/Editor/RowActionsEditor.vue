@@ -5,9 +5,13 @@
  * List-based editor for search-list row operation buttons.
  * Conditional fields shown based on action type (emit/api/navigate/dialog).
  */
+import { computed } from 'vue'
 import type { SearchListRowAction } from '@/components/WidgetRenderer/types'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './RowActionsEditor.module.scss'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   rowActions: SearchListRowAction[]
@@ -17,21 +21,21 @@ const emit = defineEmits<{
   'update:rowActions': [actions: SearchListRowAction[]]
 }>()
 
-const actionTypeOptions = [
-  { label: '触发事件', value: 'emit' as const },
-  { label: '接口请求', value: 'api' as const },
-  { label: '页面跳转', value: 'navigate' as const },
-  { label: '弹窗', value: 'dialog' as const },
-]
+const actionTypeOptions = computed(() => [
+  { label: t('editor.rowActionsEditor.actionTypeEmit'), value: 'emit' as const },
+  { label: t('editor.rowActionsEditor.actionTypeApi'), value: 'api' as const },
+  { label: t('editor.rowActionsEditor.actionTypeNavigate'), value: 'navigate' as const },
+  { label: t('editor.rowActionsEditor.actionTypeDialog'), value: 'dialog' as const },
+])
 
-const buttonTypeOptions = [
-  { label: '默认', value: '' as const },
-  { label: '主要', value: 'primary' as const },
-  { label: '成功', value: 'success' as const },
-  { label: '警告', value: 'warning' as const },
-  { label: '危险', value: 'danger' as const },
-  { label: '信息', value: 'info' as const },
-]
+const buttonTypeOptions = computed(() => [
+  { label: t('editor.columnsEditor.buttonTypeDefault'), value: '' as const },
+  { label: t('editor.columnsEditor.buttonTypePrimary'), value: 'primary' as const },
+  { label: t('editor.columnsEditor.buttonTypeSuccess'), value: 'success' as const },
+  { label: t('editor.columnsEditor.buttonTypeWarning'), value: 'warning' as const },
+  { label: t('editor.columnsEditor.buttonTypeDanger'), value: 'danger' as const },
+  { label: t('editor.columnsEditor.buttonTypeInfo'), value: 'info' as const },
+])
 
 const apiMethodOptions = [
   { label: 'GET', value: 'get' as const },
@@ -97,7 +101,7 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
 <template>
   <div :class="styles['row-actions-editor']">
     <div v-if="rowActions.length === 0" :class="styles['row-actions-editor__empty']">
-      未配置行操作。
+      {{ t('editor.rowActionsEditor.emptyHint') }}
     </div>
 
     <div
@@ -106,7 +110,7 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       :class="styles['row-actions-editor__item']"
     >
       <div :class="styles['row-actions-editor__item-header']">
-        <span :class="styles['row-actions-editor__item-title']">操作 {{ idx + 1 }}</span>
+        <span :class="styles['row-actions-editor__item-title']">{{ t('editor.rowActionsEditor.actionTitle', { index: idx + 1 }) }}</span>
         <div :class="styles['row-actions-editor__item-actions']">
           <el-button
             size="small"
@@ -136,17 +140,17 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">标签</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.label') }}</label>
         <el-input
           :model-value="action.label"
           size="small"
-          placeholder="按钮文字"
+          :placeholder="t('editor.rowActionsEditor.labelPlaceholder')"
           @update:model-value="updateAction(idx, 'label', $event)"
         />
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">按钮类型</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.buttonType') }}</label>
         <el-select
           :model-value="action.buttonType ?? ''"
           size="small"
@@ -163,17 +167,17 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">图标</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.icon') }}</label>
         <el-input
           :model-value="action.icon ?? ''"
           size="small"
-          placeholder="例如: Edit 或 EditPen"
+          :placeholder="t('editor.rowActionsEditor.iconPlaceholder')"
           @update:model-value="updateAction(idx, 'icon', $event || undefined)"
         />
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">操作类型</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.actionType') }}</label>
         <el-select
           :model-value="action.type"
           size="small"
@@ -191,11 +195,11 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
 
       <!-- Emit type: event name -->
       <div v-if="action.type === 'emit'" :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">触发事件</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.emitEvent') }}</label>
         <el-input
           :model-value="action.emitEvent ?? ''"
           size="small"
-          placeholder="例如: edit"
+          :placeholder="t('editor.rowActionsEditor.emitEventPlaceholder')"
           @update:model-value="updateAction(idx, 'emitEvent', $event || undefined)"
         />
       </div>
@@ -203,7 +207,7 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       <!-- API type: url and method -->
       <template v-if="action.type === 'api'">
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">接口地址</label>
+          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.apiUrl') }}</label>
           <el-input
             :model-value="action.apiUrl ?? ''"
             size="small"
@@ -212,7 +216,7 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
           />
         </div>
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">请求方法</label>
+          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.apiMethod') }}</label>
           <el-select
             :model-value="action.apiMethod ?? 'get'"
             size="small"
@@ -231,7 +235,7 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
 
       <!-- Navigate type: path + query -->
       <div v-if="action.type === 'navigate'" :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">跳转路径</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.navigatePath') }}</label>
         <el-input
           :model-value="action.navigatePath ?? ''"
           size="small"
@@ -240,7 +244,7 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
         />
       </div>
       <div v-if="action.type === 'navigate'" :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">跳转参数 (JSON)</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.navigateQuery') }}</label>
         <el-input
           type="textarea"
           :model-value="action.navigateQuery ? JSON.stringify(action.navigateQuery, null, 2) : ''"
@@ -253,25 +257,25 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       <!-- Dialog type: title, width, and schema -->
       <template v-if="action.type === 'dialog'">
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">弹窗标题</label>
+          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.dialogTitle') }}</label>
           <el-input
             :model-value="action.dialogTitle ?? ''"
             size="small"
-            placeholder="弹窗标题"
+            :placeholder="t('editor.rowActionsEditor.dialogTitlePlaceholder')"
             @update:model-value="updateAction(idx, 'dialogTitle', $event || undefined)"
           />
         </div>
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">弹窗宽度</label>
+          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.dialogWidth') }}</label>
           <el-input
             :model-value="action.dialogWidth ?? ''"
             size="small"
-            placeholder="例如: 600px"
+            :placeholder="t('editor.rowActionsEditor.dialogWidthPlaceholder')"
             @update:model-value="updateAction(idx, 'dialogWidth', $event || undefined)"
           />
         </div>
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">弹窗 Schema (JSON)</label>
+          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.dialogSchema') }}</label>
           <el-input
             type="textarea"
             :model-value="action.dialogSchema ? JSON.stringify(action.dialogSchema, null, 2) : ''"
@@ -283,31 +287,31 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       </template>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">确认提示</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.confirmPrompt') }}</label>
         <el-input
           :model-value="action.confirm ?? ''"
           size="small"
-          placeholder="例如: 确定要执行吗？"
+          :placeholder="t('editor.rowActionsEditor.confirmPlaceholder')"
           @update:model-value="updateAction(idx, 'confirm', $event || undefined)"
         />
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">显示条件 (表达式)</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.visibleCondition') }}</label>
         <el-input
           :model-value="action.visibleOn ?? ''"
           size="small"
-          placeholder="例如: status === 'active'"
+          :placeholder="t('editor.rowActionsEditor.visibleConditionPlaceholder')"
           @update:model-value="updateAction(idx, 'visibleOn', $event || undefined)"
         />
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">禁用条件 (表达式)</label>
+        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.disabledCondition') }}</label>
         <el-input
           :model-value="action.disabledOn ?? ''"
           size="small"
-          placeholder="例如: status === 'closed'"
+          :placeholder="t('editor.rowActionsEditor.disabledConditionPlaceholder')"
           @update:model-value="updateAction(idx, 'disabledOn', $event || undefined)"
         />
       </div>
@@ -321,7 +325,7 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       @click="addAction"
     >
       <AppIcon name="plus" />
-      添加行操作
+      {{ t('editor.rowActionsEditor.addActionText') }}
     </el-button>
   </div>
 </template>

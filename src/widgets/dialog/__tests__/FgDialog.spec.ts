@@ -9,6 +9,11 @@ import { createWidget, getWidget } from '@/widgets/registry'
 import { widgetDataKey, widgetStyleKey, formContextKey } from '../../base/types'
 import FgDialog from '../FgDialog.vue'
 
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
+
 vi.mock('@/composables/useWidgetLifecycle', () => ({
   useWidgetLifecycle: () => ({
     trigger: vi.fn().mockResolvedValue(undefined),

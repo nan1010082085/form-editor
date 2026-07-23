@@ -5,8 +5,10 @@ import './FgSelect.module.scss'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useDynamicOptions } from '../../composables/useDynamicOptions'
 import { useExposeWidget } from '../../composables/useExposeWidget'
-
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -38,7 +40,7 @@ function forwardNativeChange() {
     ref="selectRef"
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || '请选择'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.select.placeholder')"
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :multiple="(widgetData.props?.multiple as boolean) || false"

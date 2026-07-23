@@ -2,6 +2,7 @@ import 'element-plus/dist/index.css'
 import '@schema-platform/platform-shared/styles/theme.scss'
 import '@schema-platform/platform-shared/styles/css-variables.scss'
 import '@/styles/variables.scss'
+import '@/styles/widget-animations.scss'
 
 import { createApp, type App } from 'vue'
 import { createPinia } from 'pinia'

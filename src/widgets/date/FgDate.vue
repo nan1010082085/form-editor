@@ -4,8 +4,10 @@ import { widgetDataKey } from '../base/types'
 import './FgDate.module.scss'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
-
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { isDisabled } = useWidgetRenderState()
@@ -34,7 +36,7 @@ function forwardNativeChange() {
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
     :type="pickerType"
-    :placeholder="(widgetData.props?.placeholder as string) || '请选择日期'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.date.placeholder')"
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :format="(widgetData.props?.format as string) || 'YYYY-MM-DD'"

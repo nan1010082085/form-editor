@@ -5,7 +5,11 @@
  * Sprint 18: Replaces "configured in JSON view" with structured form.
  * Each rule row: required switch -> type -> min/max -> pattern -> message -> trigger.
  */
+import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './RulesEditor.module.scss'
+
+const { t } = useI18n()
 
 interface FormRule {
   required?: boolean
@@ -26,22 +30,22 @@ const emit = defineEmits<{
 }>()
 
 const ruleTypeOptions = [
-  { label: '字符串', value: 'string' },
-  { label: '数字', value: 'number' },
-  { label: '布尔', value: 'boolean' },
-  { label: '日期', value: 'date' },
-  { label: '数组', value: 'array' },
-  { label: '对象', value: 'object' },
-  { label: '邮箱', value: 'email' },
-  { label: 'URL', value: 'url' },
-  { label: '整数', value: 'integer' },
-  { label: '浮点数', value: 'float' },
+  { label: t('editor.rulesEditor.typeString'), value: 'string' },
+  { label: t('editor.rulesEditor.typeNumber'), value: 'number' },
+  { label: t('editor.rulesEditor.typeBoolean'), value: 'boolean' },
+  { label: t('editor.rulesEditor.typeDate'), value: 'date' },
+  { label: t('editor.rulesEditor.typeArray'), value: 'array' },
+  { label: t('editor.rulesEditor.typeObject'), value: 'object' },
+  { label: t('editor.rulesEditor.typeEmail'), value: 'email' },
+  { label: t('editor.rulesEditor.typeUrl'), value: 'url' },
+  { label: t('editor.rulesEditor.typeInteger'), value: 'integer' },
+  { label: t('editor.rulesEditor.typeFloat'), value: 'float' },
 ]
 
 const triggerOptions = [
-  { label: '失焦', value: 'blur' },
-  { label: '变更', value: 'change' },
-  { label: '失焦+变更', value: 'blur,change' },
+  { label: t('editor.rulesEditor.triggerBlur'), value: 'blur' },
+  { label: t('editor.rulesEditor.triggerChange'), value: 'change' },
+  { label: t('editor.rulesEditor.triggerBoth'), value: 'blur,change' },
 ]
 
 function addRule() {
@@ -71,11 +75,11 @@ function setRequired(index: number, val: boolean) {
 
 <template>
   <div :class="styles['rules-editor']">
-    <div v-if="!rules?.length" :class="styles['rules-editor__empty']">未配置校验规则。</div>
+    <div v-if="!rules?.length" :class="styles['rules-editor__empty']">{{ t('editor.rulesEditor.emptyHint') }}</div>
 
     <div v-for="(rule, idx) in (rules ?? [])" :key="idx" :class="styles['rules-editor__item']">
       <div :class="styles['rules-editor__item-header']">
-        <span :class="styles['rules-editor__item-title']">规则 {{ idx + 1 }}</span>
+        <span :class="styles['rules-editor__item-title']">{{ t('editor.rulesEditor.ruleTitle', { index: idx + 1 }) }}</span>
         <el-button type="danger" size="small" text @click="removeRule(idx)">
           <AppIcon name="delete" />
         </el-button>
@@ -83,13 +87,13 @@ function setRequired(index: number, val: boolean) {
 
       <!-- Required -->
       <div :class="styles['rules-editor__field']">
-        <label :class="styles['rules-editor__label']">必填</label>
+        <label :class="styles['rules-editor__label']">{{ t('editor.rulesEditor.required') }}</label>
         <el-switch :model-value="rule.required === true" @update:model-value="setRequired(idx, $event)" />
       </div>
 
       <!-- Type -->
       <div :class="styles['rules-editor__field']">
-        <label :class="styles['rules-editor__label']">类型</label>
+        <label :class="styles['rules-editor__label']">{{ t('editor.rulesEditor.type') }}</label>
         <el-select
           :model-value="rule.type ?? ''"
           size="small"
@@ -103,7 +107,7 @@ function setRequired(index: number, val: boolean) {
 
       <!-- Min -->
       <div :class="styles['rules-editor__field']">
-        <label :class="styles['rules-editor__label']">最小值</label>
+        <label :class="styles['rules-editor__label']">{{ t('editor.rulesEditor.minValue') }}</label>
         <el-input-number
           :model-value="rule.min as number ?? undefined"
           size="small"
@@ -116,7 +120,7 @@ function setRequired(index: number, val: boolean) {
 
       <!-- Max -->
       <div :class="styles['rules-editor__field']">
-        <label :class="styles['rules-editor__label']">最大值</label>
+        <label :class="styles['rules-editor__label']">{{ t('editor.rulesEditor.maxValue') }}</label>
         <el-input-number
           :model-value="rule.max as number ?? undefined"
           size="small"
@@ -129,7 +133,7 @@ function setRequired(index: number, val: boolean) {
 
       <!-- Pattern -->
       <div :class="styles['rules-editor__field']">
-        <label :class="styles['rules-editor__label']">正则表达式</label>
+        <label :class="styles['rules-editor__label']">{{ t('editor.rulesEditor.regex') }}</label>
         <el-input
           :model-value="rule.pattern ? String(rule.pattern) : ''"
           size="small"
@@ -140,18 +144,18 @@ function setRequired(index: number, val: boolean) {
 
       <!-- Message -->
       <div :class="styles['rules-editor__field']">
-        <label :class="styles['rules-editor__label']">错误提示</label>
+        <label :class="styles['rules-editor__label']">{{ t('editor.rulesEditor.errorMessage') }}</label>
         <el-input
           :model-value="rule.message ?? ''"
           size="small"
-          placeholder="校验错误提示"
+          :placeholder="t('editor.rulesEditor.errorMessagePlaceholder')"
           @update:model-value="updateRule(idx, { message: $event || undefined })"
         />
       </div>
 
       <!-- Trigger -->
       <div :class="styles['rules-editor__field']">
-        <label :class="styles['rules-editor__label']">触发方式</label>
+        <label :class="styles['rules-editor__label']">{{ t('editor.rulesEditor.triggerMode') }}</label>
         <el-select
           :model-value="rule.trigger ?? 'blur'"
           size="small"
@@ -165,7 +169,7 @@ function setRequired(index: number, val: boolean) {
 
     <el-button type="primary" size="small" plain style="width:100%;margin-top:8px" @click="addRule">
       <AppIcon name="plus" />
-      添加规则
+      {{ t('editor.rulesEditor.addRule') }}
     </el-button>
   </div>
 </template>

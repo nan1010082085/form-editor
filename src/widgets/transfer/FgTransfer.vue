@@ -5,6 +5,9 @@ import './FgTransfer.module.scss'
 import { useExposeWidget } from '../../composables/useExposeWidget'
 import { useDynamicOptions } from '../../composables/useDynamicOptions'
 import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const { widgetWidth, controlStyle } = useWidgetControlSize(300, 700)
@@ -44,8 +47,8 @@ const dynamicStyle = computed(() => ({
 }))
 
 const titles = computed(() => [
-  (widgetData.value.props?.leftTitle as string) || '待选',
-  (widgetData.value.props?.rightTitle as string) || '已选',
+  (widgetData.value.props?.leftTitle as string) || t('editor.transfer.leftTitle'),
+  (widgetData.value.props?.rightTitle as string) || t('editor.transfer.rightTitle'),
 ])
 
 const panelWidth = computed(() => {

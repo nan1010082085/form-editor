@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /** E-09 — 大屏自动刷新：定时调用目标组件 exposed.refresh 或 triggerEvent('refresh') */
 import { inject, computed, ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { widgetDataKey } from '../base/types'
 import { EVENT_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
@@ -8,6 +9,7 @@ import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import styles from './style.module.scss'
 
 const widgetData = inject(widgetDataKey)!
+const { t } = useI18n()
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
 const exposedContext = inject<Ref<Record<string, Record<string, unknown>>> | null>('exposedContext', null)
@@ -57,7 +59,7 @@ function startTimer() {
 
 onMounted(() => {
   if (surface === 'editor') {
-    lastRefreshAt.value = '设计器预览'
+    lastRefreshAt.value = t('editor.autoRefresh.designerPreview')
     countdown.value = intervalSeconds.value
     return
   }
@@ -79,8 +81,8 @@ useExposeWidget(() => ({
 <template>
   <div v-if="showStatus" :class="styles.container">
     <span :class="styles.dot" />
-    <span v-if="surface === 'editor'">自动刷新 · 预览（{{ intervalSeconds }}s 间隔）</span>
-    <span v-else>自动刷新 {{ countdown }}s</span>
+    <span v-if="surface === 'editor'">{{ t('editor.autoRefresh.previewStatus', { interval: intervalSeconds }) }}</span>
+    <span v-else>{{ t('editor.autoRefresh.countdownStatus', { countdown }) }}</span>
     <span v-if="lastRefreshAt">· {{ lastRefreshAt }}</span>
   </div>
 </template>

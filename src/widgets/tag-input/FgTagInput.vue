@@ -3,7 +3,10 @@ import { inject, computed, ref } from 'vue'
 import { widgetDataKey, widgetStyleKey } from '../base/types'
 import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './style.module.scss'
+
+const { t } = useI18n()
 
 const widgetData = inject(widgetDataKey)!
 const widgetStyle = inject(widgetStyleKey)!
@@ -60,7 +63,7 @@ function handleKeydown(e: KeyboardEvent) {
       v-if="tags.length < ((widgetData.props?.maxTags as number) || 10)"
       v-model="inputValue"
       size="small"
-      :placeholder="(widgetData.props?.placeholder as string) || '请输入标签'"
+      :placeholder="(widgetData.props?.placeholder as string) || t('editor.tagInput.placeholder')"
       :disabled="isDisabled"
       :maxlength="(widgetData.props?.maxlength as number) || undefined"
       @keydown="handleKeydown"

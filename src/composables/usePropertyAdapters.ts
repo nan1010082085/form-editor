@@ -10,6 +10,7 @@
  * 配合 PropertyPanel / PropertyField 使用。
  */
 import type { Widget } from '../widgets/base/types'
+import { ANIMATION_OPTIONS } from '../utils/widgetAnimations'
 
 // ---- Style metadata maps ----
 
@@ -19,26 +20,35 @@ const STYLE_LABEL_MAP: Record<string, string> = {
   margin: '外边距',
   padding: '内边距',
   backgroundColor: '背景色',
+  background: '背景',
   border: '边框',
   borderRadius: '圆角',
+  boxShadow: '阴影',
   fontSize: '字号',
   fontWeight: '字重',
   color: '颜色',
+  animationPreset: '入场动画',
+  animationDelay: '动画延迟',
+  animationDuration: '动画时长',
 }
 
 const COLOR_STYLE_PROPS = new Set(['color', 'backgroundColor'])
 const TEXT_STYLE_PROPS = new Set(['width', 'height', 'fontSize'])
-const SELECT_STYLE_PROPS = new Set(['fontWeight'])
+const SELECT_STYLE_PROPS = new Set(['fontWeight', 'animationPreset'])
 const BORDER_STYLE_PROPS = new Set(['border'])
 const BORDER_RADIUS_STYLE_PROPS = new Set(['borderRadius'])
 const SPACING_MARGIN_PROPS = new Set(['margin'])
 const SPACING_PADDING_PROPS = new Set(['padding'])
+const SHADOW_STYLE_PROPS = new Set(['boxShadow'])
+const BACKGROUND_STYLE_PROPS = new Set(['background'])
+const NUMBER_STYLE_PROPS = new Set(['animationDelay', 'animationDuration'])
 
 const STYLE_OPTIONS_MAP: Record<string, { label: string; value: string | number }[]> = {
   fontWeight: [
     { label: '正常', value: 'normal' },
     { label: '粗体', value: 'bold' },
   ],
+  animationPreset: ANIMATION_OPTIONS,
 }
 
 // ---- Props metadata maps ----
@@ -119,10 +129,13 @@ export function usePropertyAdapters() {
   function getStyleInputType(prop: string): string {
     if (COLOR_STYLE_PROPS.has(prop)) return 'color'
     if (SELECT_STYLE_PROPS.has(prop)) return 'select'
+    if (NUMBER_STYLE_PROPS.has(prop)) return 'number'
     if (BORDER_STYLE_PROPS.has(prop)) return 'border-editor'
     if (BORDER_RADIUS_STYLE_PROPS.has(prop)) return 'border-radius-editor'
     if (SPACING_MARGIN_PROPS.has(prop)) return 'spacing-margin-editor'
     if (SPACING_PADDING_PROPS.has(prop)) return 'spacing-padding-editor'
+    if (SHADOW_STYLE_PROPS.has(prop)) return 'shadow-editor'
+    if (BACKGROUND_STYLE_PROPS.has(prop)) return 'background-editor'
     if (TEXT_STYLE_PROPS.has(prop)) return 'text'
     return 'text'
   }

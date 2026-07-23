@@ -2,6 +2,7 @@
 import { inject, computed, ref, onMounted } from 'vue'
 import { widgetDataKey } from '../base/types'
 import { useExposeWidget } from '../../composables/useExposeWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
 import { calendarMock } from './mock'
 import styles from './style.module.scss'
@@ -14,13 +15,14 @@ interface CalendarEvent {
 
 const widgetData = inject(widgetDataKey)!
 const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
+const { t } = useI18n()
 
 const events = ref<CalendarEvent[]>([])
 const selectedDate = ref(new Date())
 
 useExposeWidget(() => ({ get events() { return events.value } }))
 
-const title = computed(() => (widgetData.value.props?.title as string) || '日程日历')
+const title = computed(() => (widgetData.value.props?.title as string) || t('editor.calendar.defaultTitle'))
 
 const eventsByDate = computed(() => {
   const map = new Map<string, CalendarEvent[]>()
