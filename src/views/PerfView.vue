@@ -12,6 +12,7 @@
  */
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { createPinia } from 'pinia'
+import { useI18n } from '@schema-platform/platform-shared'
 import { WidgetRenderer } from '@/components/WidgetRenderer'
 import { registerAllWidgets } from '@/widgets'
 import { seedStressDashboard } from '@/utils/seedStressDashboard'
@@ -21,6 +22,7 @@ import type { AdvancedTableColumn } from '@/widgets/advanced-table/config'
 
 registerAllWidgets()
 
+const { t } = useI18n()
 const pinia = createPinia()
 
 const widgetCount = ref(120)
@@ -145,21 +147,21 @@ onBeforeUnmount(() => {
 <template>
   <div style="background:#0a1628; min-height:100vh; color:#e8eaed; font-family: sans-serif;">
     <div style="padding:16px; position:sticky; top:0; background:#0a1628; z-index:10; border-bottom:1px solid #1f3a5f;">
-      <h2 style="margin:0 0 8px;">Editor 性能压测 / FPS Walkthrough</h2>
+      <h2 style="margin:0 0 8px;">{{ t('editor.perfView.title') }}</h2>
       <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-        <label>Widget 数量:
+        <label>{{ t('editor.perfView.widgetCount') }}
           <input v-model.number="widgetCount" type="number" min="20" max="500" step="10"
             style="background:#1a2a40; color:#e8eaed; border:1px solid #3a5a80; padding:4px 8px; border-radius:4px; width:90px;" />
         </label>
         <button @click="run" :disabled="running"
           style="background:#409eff; color:#fff; border:none; padding:6px 16px; border-radius:4px; cursor:pointer;">
-          {{ running ? '压测中...' : '开始压测' }}
+          {{ running ? t('editor.perfView.running') : t('editor.perfView.start') }}
         </button>
-        <span v-if="mountMs !== null">挂载: <b>{{ mountMs.toFixed(0) }}ms</b></span>
-        <span v-if="avgFps !== null">平均 FPS: <b>{{ avgFps }}</b></span>
-        <span v-if="minFps !== null">最低 FPS: <b>{{ minFps }}</b></span>
-        <span v-if="maxFrameMs !== null">最长帧: <b>{{ maxFrameMs }}ms</b></span>
-        <span v-if="jsHeapMb !== null">JS 堆: <b>{{ jsHeapMb }}MB</b></span>
+        <span v-if="mountMs !== null">{{ t('editor.perfView.mountTime') }} <b>{{ mountMs.toFixed(0) }}ms</b></span>
+        <span v-if="avgFps !== null">{{ t('editor.perfView.avgFps') }} <b>{{ avgFps }}</b></span>
+        <span v-if="minFps !== null">{{ t('editor.perfView.minFps') }} <b>{{ minFps }}</b></span>
+        <span v-if="maxFrameMs !== null">{{ t('editor.perfView.maxFrame') }} <b>{{ maxFrameMs }}ms</b></span>
+        <span v-if="jsHeapMb !== null">{{ t('editor.perfView.jsHeap') }} <b>{{ jsHeapMb }}MB</b></span>
       </div>
     </div>
 
@@ -171,17 +173,17 @@ onBeforeUnmount(() => {
 
     <!-- 虚拟表格压测 -->
     <div style="padding:16px; border-top:1px solid #1f3a5f;">
-      <h3 style="margin:0 0 8px;">虚拟表格压测（el-table-v2）</h3>
+      <h3 style="margin:0 0 8px;">{{ t('editor.perfView.virtualTableTitle') }}</h3>
       <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
-        <label>行数:
+        <label>{{ t('editor.perfView.rowCount') }}
           <input v-model.number="virtualRowCount" type="number" min="100" max="100000" step="1000"
             style="background:#1a2a40; color:#e8eaed; border:1px solid #3a5a80; padding:4px 8px; border-radius:4px; width:100px;" />
         </label>
         <button @click="runVirtualTable"
           style="background:#67c23a; color:#fff; border:none; padding:6px 16px; border-radius:4px; cursor:pointer;">
-          渲染虚拟表格
+          {{ t('editor.perfView.renderVirtualTable') }}
         </button>
-        <span v-if="virtualMountMs !== null">挂载: <b>{{ virtualMountMs }}ms</b>（{{ virtualRowCount }} 行）</span>
+        <span v-if="virtualMountMs !== null">{{ t('editor.perfView.mountRows') }} <b>{{ virtualMountMs }}ms</b>（{{ virtualRowCount }} {{ t('editor.perfView.rowsUnit') }}）</span>
       </div>
       <div v-if="showVirtualTable" style="background:#fff; border-radius:6px; padding:8px;">
         <FgAdvancedTableVirtual :key="virtualTableKey" :columns="virtualColumns" :data="virtualTableData" :height="500" />

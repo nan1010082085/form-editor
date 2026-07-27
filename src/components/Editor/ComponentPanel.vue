@@ -13,19 +13,9 @@ import { Search } from '@element-plus/icons-vue'
 import { getWidgetsByGroup, type WidgetRegistryItem } from '@/widgets/registry'
 import type { SchemaType } from '@/widgets/base/types'
 import { useBoardStore } from '@/stores/board'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './ComponentPanel.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-
-const GROUP_LABELS: Record<string, string> = {
-  layout: '布局部件',
-  container: '容器部件',
-  form: '表单部件',
-  table: '表格部件',
-  chart: '图表部件',
-  static: '展示部件',
-  action: '操作部件',
-  business: '业务部件',
-}
 
 // 部件类型图标映射
 const TYPE_ICONS: Record<string, string> = {
@@ -56,11 +46,23 @@ interface ComponentGroup {
 }
 
 const boardStore = useBoardStore()
+const { t } = useI18n()
+
+const GROUP_LABELS = computed(() => ({
+  layout: t('editor.componentPanel.groupLayout'),
+  container: t('editor.componentPanel.groupContainer'),
+  form: t('editor.componentPanel.groupForm'),
+  table: t('editor.componentPanel.groupTable'),
+  chart: t('editor.componentPanel.groupChart'),
+  static: t('editor.componentPanel.groupStatic'),
+  action: t('editor.componentPanel.groupAction'),
+  business: t('editor.componentPanel.groupBusiness'),
+}))
 
 const allGroups = computed<ComponentGroup[]>(() => {
   const currentMode = boardStore.layoutMode
   const groups: ComponentGroup[] = []
-  for (const [key, label] of Object.entries(GROUP_LABELS)) {
+  for (const [key, label] of Object.entries(GROUP_LABELS.value)) {
     const items = getWidgetsByGroup(key as WidgetRegistryItem['group'])
       .filter(item => !item.availableIn || item.availableIn.includes(currentMode))
     if (items.length > 0) {
@@ -332,7 +334,7 @@ function isGroupExpanded(groupKey: string): boolean {
       <el-input
         v-model="searchInput"
         size="small"
-        placeholder="搜索部件（支持拼音）..."
+        :placeholder="t('editor.componentPanel.searchPlaceholder')"
         clearable
         :prefix-icon="Search"
       />
@@ -384,8 +386,8 @@ function isGroupExpanded(groupKey: string): boolean {
       </div>
 
       <div v-if="filteredGroups.length === 0" :class="styles.empty">
-        <p :class="styles.emptyText">未找到匹配的部件</p>
-        <p :class="styles.emptyHint">试试其他关键词或拼音首字母</p>
+        <p :class="styles.emptyText">{{ t('editor.componentPanel.emptyText') }}</p>
+        <p :class="styles.emptyHint">{{ t('editor.componentPanel.emptyHint') }}</p>
       </div>
     </div>
   </div>

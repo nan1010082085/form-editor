@@ -8,8 +8,11 @@
  * - 选中某边时显示该边的值，未选中时显示简写值
  */
 import { ref, computed } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './BorderEditor.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   value?: Record<string, string>
@@ -137,12 +140,12 @@ function getSideStyle(side: Side): Record<string, string> {
   }
 }
 
-const borderStyleOptions = [
-  { label: '实线', value: 'solid' },
-  { label: '虚线', value: 'dashed' },
-  { label: '点线', value: 'dotted' },
-  { label: '无', value: 'none' },
-]
+const borderStyleOptions = computed(() => [
+  { label: t('editor.borderEditor.styleSolid'), value: 'solid' },
+  { label: t('editor.borderEditor.styleDashed'), value: 'dashed' },
+  { label: t('editor.borderEditor.styleDotted'), value: 'dotted' },
+  { label: t('editor.borderEditor.styleNone'), value: 'none' },
+])
 </script>
 
 <template>
@@ -181,7 +184,7 @@ const borderStyleOptions = [
       </div>
 
       <!-- Link toggle -->
-      <el-tooltip :content="linked ? '解除链接' : '链接四边'" placement="top" :show-after="300">
+      <el-tooltip :content="linked ? t('editor.borderEditor.unlinkTooltip') : t('editor.borderEditor.linkTooltip')" placement="top" :show-after="300">
         <button
           :class="[styles.linkBtn, linked && styles.linkBtnActive]"
           @click="toggleLinked"
@@ -194,15 +197,15 @@ const borderStyleOptions = [
     <!-- 选中边提示（仅解除链接模式） -->
     <div v-if="!linked" :class="styles.sideHint">
       <template v-if="activeSide">
-        当前编辑：{{ { top: '上边', right: '右边', bottom: '下边', left: '左边' }[activeSide] }}
+        {{ t('editor.borderEditor.editingSide', { side: { top: t('editor.borderEditor.sideTop'), right: t('editor.borderEditor.sideRight'), bottom: t('editor.borderEditor.sideBottom'), left: t('editor.borderEditor.sideLeft') }[activeSide] }) }}
       </template>
-      <template v-else>点击边线选择要编辑的边</template>
+      <template v-else>{{ t('editor.borderEditor.clickSideHint') }}</template>
     </div>
 
     <!-- 编辑控件 -->
     <div :class="styles.controls">
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">宽度</label>
+        <label :class="styles.controlLabel">{{ t('editor.borderEditor.width') }}</label>
         <el-input-number
           :model-value="currentWidth"
           :min="0"
@@ -214,7 +217,7 @@ const borderStyleOptions = [
         />
       </div>
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">样式</label>
+        <label :class="styles.controlLabel">{{ t('editor.borderEditor.style') }}</label>
         <el-select
           :model-value="currentStyle"
           size="small"
@@ -230,7 +233,7 @@ const borderStyleOptions = [
         </el-select>
       </div>
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">颜色</label>
+        <label :class="styles.controlLabel">{{ t('editor.borderEditor.color') }}</label>
         <el-color-picker
           :model-value="currentColor"
           size="small"

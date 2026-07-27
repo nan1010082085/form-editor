@@ -8,6 +8,9 @@ import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createTemplate } from '@/api/schemaApi'
 import type { TemplateCategory } from '@/api/schemaApi'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -43,7 +46,7 @@ function handleClose() {
 
 async function handleSave() {
   if (!name.value.trim()) {
-    ElMessage.warning('请输入模板名称')
+    ElMessage.warning(t('editor.saveTemplate.nameRequired'))
     return
   }
 
@@ -62,12 +65,12 @@ async function handleSave() {
       tags,
     })
 
-    ElMessage.success('模板保存成功')
+    ElMessage.success(t('editor.saveTemplate.saveSuccess'))
     emit('saved')
     emit('update:visible', false)
     emit('close')
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '保存失败')
+    ElMessage.error(err instanceof Error ? err.message : t('editor.saveTemplate.saveFailed'))
   } finally {
     saving.value = false
   }
@@ -77,7 +80,7 @@ async function handleSave() {
 <template>
   <el-dialog
     :model-value="visible"
-    title="保存为模板"
+    :title="t('editor.saveTemplate.dialogTitle')"
     width="420px"
     :close-on-click-modal="false"
     :append-to-body="true"
@@ -85,38 +88,38 @@ async function handleSave() {
     @close="handleClose"
   >
     <el-form ref="formRef" label-width="70px" label-position="left">
-      <el-form-item label="名称" required>
-        <el-input v-model="name" placeholder="输入模板名称" maxlength="100" show-word-limit />
+      <el-form-item :label="t('editor.saveTemplate.name')" required>
+        <el-input v-model="name" :placeholder="t('editor.saveTemplate.namePlaceholder')" maxlength="100" show-word-limit />
       </el-form-item>
 
-      <el-form-item label="描述">
+      <el-form-item :label="t('editor.saveTemplate.description')">
         <el-input
           v-model="description"
           type="textarea"
           :rows="2"
-          placeholder="模板描述（可选）"
+          :placeholder="t('editor.saveTemplate.descriptionPlaceholder')"
           maxlength="500"
           show-word-limit
         />
       </el-form-item>
 
-      <el-form-item label="分类">
+      <el-form-item :label="t('editor.saveTemplate.category')">
         <el-select v-model="category" style="width: 100%">
-          <el-option label="表单" value="form" />
-          <el-option label="报表" value="report" />
-          <el-option label="布局" value="layout" />
-          <el-option label="其他" value="other" />
+          <el-option :label="t('editor.saveTemplate.categoryForm')" value="form" />
+          <el-option :label="t('editor.saveTemplate.categoryReport')" value="report" />
+          <el-option :label="t('editor.saveTemplate.categoryLayout')" value="layout" />
+          <el-option :label="t('editor.saveTemplate.categoryOther')" value="other" />
         </el-select>
       </el-form-item>
 
-      <el-form-item label="标签">
-        <el-input v-model="tagsInput" placeholder="多个标签用逗号分隔" />
+      <el-form-item :label="t('editor.saveTemplate.tags')">
+        <el-input v-model="tagsInput" :placeholder="t('editor.saveTemplate.tagsPlaceholder')" />
       </el-form-item>
     </el-form>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+      <el-button @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
+      <el-button type="primary" :loading="saving" @click="handleSave">{{ t('editor.common.save') }}</el-button>
     </template>
   </el-dialog>
 </template>

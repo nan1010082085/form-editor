@@ -22,6 +22,9 @@ import { useBoardStore } from '@/stores/board'
 import { parseSchemaJson } from '@/utils/parseSchemaJson'
 import type { VersionEntry } from '@/types/api'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const versionStore = useSchemaVersionStore()
 const widgetStore = useWidgetStore()
@@ -101,11 +104,11 @@ function handleBackToList() {
 async function handleRollback(version: string) {
   try {
     await ElMessageBox.confirm(
-      `确认回滚到版本 ${formatVersion(version)}？当前未保存的修改将丢失。`,
-      '版本回滚',
+      t('editor.versionCompare.rollbackConfirm', { version: formatVersion(version) }),
+      t('editor.versionCompare.rollbackTitle'),
       {
-        confirmButtonText: '回滚',
-        cancelButtonText: '取消',
+        confirmButtonText: t('editor.versionCompare.rollback'),
+        cancelButtonText: t('editor.common.cancel'),
         type: 'warning',
       }
     )
@@ -127,10 +130,10 @@ async function handleRollback(version: string) {
     widgetStore.loadWidgets(widgets)
     editorStore.markClean()
     emit('version-loaded', version)
-    ElMessage.success(`已回滚到版本 ${formatVersion(version)}`)
+    ElMessage.success(t('editor.versionCompare.rollbackSuccess', { version: formatVersion(version) }))
     emit('close')
   } else {
-    ElMessage.error('回滚失败')
+    ElMessage.error(t('editor.versionCompare.rollbackFailed'))
   }
 }
 
@@ -153,9 +156,9 @@ async function handleExport(version: string) {
   if (json) {
     const filename = `schema-${versionStore.editId}-${version}.json`
     downloadJson(json, filename)
-    ElMessage.success('导出成功')
+    ElMessage.success(t('editor.versionCompare.exportSuccess'))
   } else {
-    ElMessage.error('导出失败')
+    ElMessage.error(t('editor.versionCompare.exportFailed'))
   }
 }
 
@@ -163,21 +166,21 @@ async function handleExport(version: string) {
 
 async function handleDelete(entry: VersionEntry) {
   if (entry.published) {
-    ElMessage.warning('不能删除已发布的版本')
+    ElMessage.warning(t('editor.versionCompare.deletePublishedWarning'))
     return
   }
   if (entry.version === versionStore.currentVersion) {
-    ElMessage.warning('不能删除当前版本')
+    ElMessage.warning(t('editor.versionCompare.deleteCurrentWarning'))
     return
   }
 
   try {
     await ElMessageBox.confirm(
-      `确认删除版本 ${formatVersion(entry.version)}？此操作不可恢复。`,
-      '删除版本',
+      t('editor.versionCompare.deleteConfirm', { version: formatVersion(entry.version) }),
+      t('editor.versionCompare.deleteTitle'),
       {
-        confirmButtonText: '删除',
-        cancelButtonText: '取消',
+        confirmButtonText: t('editor.versionCompare.delete'),
+        cancelButtonText: t('editor.common.cancel'),
         type: 'warning',
       }
     )
@@ -187,9 +190,9 @@ async function handleDelete(entry: VersionEntry) {
 
   const success = await versionStore.removeVersion(entry.version)
   if (success) {
-    ElMessage.success('版本已删除')
+    ElMessage.success(t('editor.versionCompare.deletedSuccess'))
   } else {
-    ElMessage.error('删除失败')
+    ElMessage.error(t('editor.versionCompare.deleteFailed'))
   }
 }
 
@@ -213,11 +216,11 @@ function getStatusColor(status: string): string {
 
 function getStatusLabel(status: string): string {
   switch (status) {
-    case 'added': return '新增'
-    case 'removed': return '删除'
-    case 'modified': return '修改'
-    case 'moved': return '移动'
-    default: return '相同'
+    case 'added': return t('editor.versionCompare.added')
+    case 'removed': return t('editor.versionCompare.removed')
+    case 'modified': return t('editor.versionCompare.modified')
+    case 'moved': return t('editor.versionCompare.moved')
+    default: return t('editor.versionCompare.same')
   }
 }
 
@@ -269,8 +272,8 @@ const diffRows = computed<DiffRow[]>(() => {
 // ---- 侧边标记 ----
 
 function getSideLabel(version: string): string {
-  if (version === versionStore.compareLeft) return '旧'
-  if (version === versionStore.compareRight) return '新'
+  if (version === versionStore.compareLeft) return t('editor.versionCompare.old')
+  if (version === versionStore.compareRight) return t('editor.versionCompare.new')
   return ''
 }
 
@@ -278,7 +281,7 @@ function getSideLabel(version: string): string {
  * 格式化变更值用于展示。
  */
 function formatChangeValue(val: unknown): string {
-  if (val === null || val === undefined) return '(空)'
+  if (val === null || val === undefined) return t('editor.versionCompare.emptyValue')
   if (typeof val === 'object') {
     try {
       return JSON.stringify(val)
@@ -294,7 +297,7 @@ function formatChangeValue(val: unknown): string {
   <div :class="$style.compare">
     <!-- Header -->
     <div :class="$style.header">
-      <span :class="$style.title">版本历史</span>
+      <span :class="$style.title">{{ t('editor.versionCompare.title') }}</span>
       <el-button :class="$style.closeBtn" text @click="emit('close')">
         <AppIcon name="close" />
       </el-button>
@@ -306,9 +309,9 @@ function formatChangeValue(val: unknown): string {
         <!-- 操作栏 -->
         <div :class="$style.versionHeader">
           <div :class="$style.versionHeaderLeft">
-            <span :class="$style.versionTitle">版本列表</span>
+            <span :class="$style.versionTitle">{{ t('editor.versionCompare.versionList') }}</span>
             <span :class="$style.versionBadge">
-              共 {{ versionStore.total }} 个版本
+              {{ t('editor.versionCompare.totalVersions', { count: versionStore.total }) }}
             </span>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -319,7 +322,7 @@ function formatChangeValue(val: unknown): string {
               :disabled="!canCompare"
               @click="handleCompare"
             >
-              对比选中版本
+              {{ t('editor.versionCompare.compareSelected') }}
             </el-button>
             <el-button size="small" text @click="handleRefresh">
               <AppIcon name="refresh" />
@@ -330,10 +333,10 @@ function formatChangeValue(val: unknown): string {
         <!-- 列表 -->
         <div :class="$style.versionList" style="overflow: auto; height: 100%;">
           <div v-if="versionStore.loading" :class="$style.versionLoading">
-            加载中...
+            {{ t('editor.versionCompare.loading') }}
           </div>
           <div v-else-if="versionStore.isEmpty" :class="$style.versionEmpty">
-            暂无版本记录
+            {{ t('editor.versionCompare.noVersions') }}
           </div>
           <template v-else>
             <div
@@ -358,10 +361,10 @@ function formatChangeValue(val: unknown): string {
                   </span>
                   <div :class="$style.versionTags">
                     <el-tag v-if="entry.published" type="success" size="small">
-                      已发布
+                      {{ t('editor.versionCompare.published') }}
                     </el-tag>
                     <el-tag v-if="entry.version === versionStore.currentVersion" type="primary" size="small">
-                      当前
+                      {{ t('editor.versionCompare.current') }}
                     </el-tag>
                     <el-tag v-if="getSideLabel(entry.version)" type="warning" size="small">
                       {{ getSideLabel(entry.version) }}
@@ -371,7 +374,7 @@ function formatChangeValue(val: unknown): string {
               </div>
 
               <div :class="$style.versionItemRight">
-                <el-tooltip content="回滚到此版本" placement="top">
+                <el-tooltip :content="t('editor.versionCompare.rollbackTooltip')" placement="top">
                   <el-button
                     size="small"
                     text
@@ -381,7 +384,7 @@ function formatChangeValue(val: unknown): string {
                     <AppIcon name="refresh-left" />
                   </el-button>
                 </el-tooltip>
-                <el-tooltip content="导出" placement="top">
+                <el-tooltip :content="t('editor.versionCompare.export')" placement="top">
                   <el-button
                     size="small"
                     text
@@ -392,7 +395,7 @@ function formatChangeValue(val: unknown): string {
                 </el-tooltip>
                 <el-tooltip
                   v-if="!entry.published && entry.version !== versionStore.currentVersion"
-                  content="删除此版本"
+                  :content="t('editor.versionCompare.deleteTooltip')"
                   placement="top"
                 >
                   <el-button
@@ -428,18 +431,18 @@ function formatChangeValue(val: unknown): string {
       <div :class="$style.comparePanel">
         <!-- 对比头部 -->
         <div :class="$style.compareHeader">
-          <span :class="$style.compareTitle">版本对比</span>
+          <span :class="$style.compareTitle">{{ t('editor.versionCompare.compareTitle') }}</span>
           <el-button :class="$style.compareBack" size="small" text @click="handleBackToList">
-            返回列表
+            {{ t('editor.versionCompare.backToList') }}
           </el-button>
         </div>
 
         <!-- 对比信息 -->
         <div :class="$style.compareInfo">
-          <span :class="$style.compareLabel">旧版本:</span>
+          <span :class="$style.compareLabel">{{ t('editor.versionCompare.oldVersion') }}</span>
           <span :class="$style.compareVersion">{{ formatVersion(versionStore.compareLeft) }}</span>
           <AppIcon name="arrow-right" :class="$style.compareArrow" />
-          <span :class="$style.compareLabel">新版本:</span>
+          <span :class="$style.compareLabel">{{ t('editor.versionCompare.newVersion') }}</span>
           <span :class="$style.compareVersion">{{ formatVersion(versionStore.compareRight) }}</span>
         </div>
 
@@ -447,26 +450,26 @@ function formatChangeValue(val: unknown): string {
         <div v-if="versionStore.hasDiff" :class="$style.summary">
           <span :class="$style.summaryItem">
             <span :class="$style.dot" :style="{ background: '#67c23a' }" />
-            新增 {{ diffSummaryCounts.added }}
+            {{ t('editor.versionCompare.added') }} {{ diffSummaryCounts.added }}
           </span>
           <span :class="$style.summaryItem">
             <span :class="$style.dot" :style="{ background: '#f56c6c' }" />
-            删除 {{ diffSummaryCounts.removed }}
+            {{ t('editor.versionCompare.removed') }} {{ diffSummaryCounts.removed }}
           </span>
           <span :class="$style.summaryItem">
             <span :class="$style.dot" :style="{ background: '#e6a23c' }" />
-            修改 {{ diffSummaryCounts.modified }}
+            {{ t('editor.versionCompare.modified') }} {{ diffSummaryCounts.modified }}
           </span>
           <span :class="$style.summaryItem">
             <span :class="$style.dot" :style="{ background: '#409eff' }" />
-            移动 {{ diffSummaryCounts.moved }}
+            {{ t('editor.versionCompare.moved') }} {{ diffSummaryCounts.moved }}
           </span>
         </div>
 
         <!-- Loading -->
         <div v-if="versionStore.compareLoading" :class="$style.compareLoading">
           <AppIcon name="refresh" :class="'is-loading'" />
-          <span>正在对比...</span>
+          <span>{{ t('editor.versionCompare.comparing') }}</span>
         </div>
 
         <!-- Error -->
@@ -476,7 +479,7 @@ function formatChangeValue(val: unknown): string {
 
         <!-- No diff -->
         <div v-else-if="!versionStore.hasDiff" :class="$style.noDiff">
-          两个版本完全相同
+          {{ t('editor.versionCompare.identical') }}
         </div>
 
         <!-- Diff table -->
@@ -484,9 +487,9 @@ function formatChangeValue(val: unknown): string {
           <table :class="$style.diffTable">
             <thead>
               <tr>
-                <th :class="$style.diffTh">字段</th>
-                <th :class="$style.diffTh">详情</th>
-                <th :class="$style.diffTh">状态</th>
+                <th :class="$style.diffTh">{{ t('editor.versionCompare.field') }}</th>
+                <th :class="$style.diffTh">{{ t('editor.versionCompare.detail') }}</th>
+                <th :class="$style.diffTh">{{ t('editor.versionCompare.status') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -521,9 +524,9 @@ function formatChangeValue(val: unknown): string {
                       <span :class="$style.changeNew">{{ formatChangeValue(change.newValue) }}</span>
                     </div>
                   </div>
-                  <span v-else-if="row.status === 'added'">新增部件</span>
-                  <span v-else-if="row.status === 'removed'">已删除</span>
-                  <span v-else-if="row.status === 'moved'">位置变更</span>
+                  <span v-else-if="row.status === 'added'">{{ t('editor.versionCompare.newWidget') }}</span>
+                  <span v-else-if="row.status === 'removed'">{{ t('editor.versionCompare.alreadyDeleted') }}</span>
+                  <span v-else-if="row.status === 'moved'">{{ t('editor.versionCompare.positionChanged') }}</span>
                 </td>
                 <td :class="$style.diffTd">
                   <span

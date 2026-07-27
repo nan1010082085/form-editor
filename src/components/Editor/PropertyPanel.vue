@@ -165,7 +165,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
 
 <template>
   <div :class="[styles.panel, 'editor-ui']">
-    <div :class="styles.header">属性配置</div>
+    <div :class="styles.header">{{ t('editor.property.title') }}</div>
 
     <!-- 未选中部件时：显示画布配置 -->
     <template v-if="!selectedWidget">
@@ -173,7 +173,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
         <div :class="styles.section">
           <div :class="styles.sectionHeader" @click="canvasExpanded = !canvasExpanded">
             <AppIcon name="arrow-down" :size="12" :class="styles.arrow" />
-            <span :class="styles.sectionLabel">画布配置</span>
+            <span :class="styles.sectionLabel">{{ t('editor.property.canvasConfig') }}</span>
           </div>
           <div v-if="canvasExpanded" :class="styles.sectionBody">
             <PropertyField
@@ -188,7 +188,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
             />
             <div :class="styles.variableBtn">
               <el-button size="small" @click="boardVariableDialogVisible = true">
-                画布变量 ({{ boardStore.variables.length }})
+                {{ t('editor.property.canvasVariables') }} ({{ boardStore.variables.length }})
               </el-button>
             </div>
           </div>
@@ -197,7 +197,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
         <VariableConfigDialog
           :visible="boardVariableDialogVisible"
           :variables="boardStore.variables"
-          title="画布变量配置"
+          :title="t('editor.property.canvasVariableConfig')"
           @update:visible="boardVariableDialogVisible = $event"
           @save="handleBoardVariableSave"
         />
@@ -218,7 +218,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
             <AppIcon name="question-filled" :class="styles.questionIcon" />
           </template>
         </el-popover>
-        <el-popover v-if="selectedWidget" content="复制部件 ID" placement="top" :show-after="500" trigger="hover">
+        <el-popover v-if="selectedWidget" :content="t('editor.property.copyId')" placement="top" :show-after="500" trigger="hover">
           <template #reference>
             <AppIcon name="copy-document" :class="styles.copyIdIcon" @click="copyWidgetId" />
           </template>
@@ -272,7 +272,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
       <VariableConfigDialog
         :visible="variableDialogVisible"
         :variables="selectedWidget.variables ?? []"
-        title="部件变量配置"
+        :title="t('editor.property.widgetVariableConfig')"
         @update:visible="variableDialogVisible = $event"
         @save="handleVariableSave"
       />

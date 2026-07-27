@@ -19,7 +19,7 @@ import { computed, inject, provide, ref, onMounted, onUnmounted, type ComputedRe
 import { widgetDataKey, widgetStyleKey, widgetRenderStateKey, formContextKey, widgetBoundsKey, parentBoundsKey, type WidgetBounds } from '../../widgets/base/types'
 import type { Widget, SchemaType, LinkageState, PreviewBreakpoint } from '../../widgets/base/types'
 import type { FormData, EventExecutionContext } from './types'
-import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY, FORM_GRID_FORM_KEY, PREVIEW_BREAKPOINT_KEY } from './types'
+import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY, FORM_GRID_FORM_KEY, PREVIEW_BREAKPOINT_KEY, FORM_GRID_T_KEY } from './types'
 import { useResponsivePosition } from '../../composables/useResponsivePosition'
 import { getComponentMap } from '../../widgets/registry'
 import { useWidgetStore } from '../../stores/widget'
@@ -191,6 +191,9 @@ onUnmounted(() => {
     dialogRegistry.delete(props.widget.id)
   }
 })
+
+/** 翻译函数（从 WidgetRenderer 注入） */
+const t = inject(FORM_GRID_T_KEY, (key: string) => key)
 
 /** 事件执行上下文（预览模式从 EditorCanvas/WidgetRenderer 注入） */
 const eventCtx = inject(EVENT_CONTEXT_KEY, null)
@@ -393,7 +396,7 @@ const wrapperStyle = computed(() => {
       <AppDialog
         v-else
         v-model="dialogVisible"
-        :title="(widget.props?.title as string) || widget.label || '弹窗'"
+        :title="(widget.props?.title as string) || widget.label || t('dialog.defaultTitle')"
         :width="(widget.props?.width as string) || '600px'"
         :draggable="widget.props?.draggable !== false"
         :show-fullscreen-btn="widget.props?.showFullscreenBtn !== false"
@@ -410,10 +413,10 @@ const wrapperStyle = computed(() => {
         </template>
         <template v-if="widget.props?.showFooter !== false" #footer>
           <el-button @click="dialogVisible = false">
-            {{ (widget.props?.cancelText as string) || '取消' }}
+            {{ (widget.props?.cancelText as string) || t('dialog.cancel') }}
           </el-button>
           <el-button type="primary" @click="dialogVisible = false">
-            {{ (widget.props?.confirmText as string) || '确定' }}
+            {{ (widget.props?.confirmText as string) || t('dialog.confirm') }}
           </el-button>
         </template>
       </AppDialog>

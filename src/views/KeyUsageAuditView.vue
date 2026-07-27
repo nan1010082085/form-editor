@@ -7,6 +7,7 @@
  */
 import { onMounted, ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from '@schema-platform/platform-shared'
 import {
   fetchKeyUsageLogs,
   fetchKeyUsageStatsByKey,
@@ -20,6 +21,8 @@ import type {
 import type { PaginatedResponse } from '@/types/api'
 import styles from './KeyUsageAuditView.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+
+const { t } = useI18n()
 
 // ── 状态 ──
 const activeTab = ref<'logs' | 'by-key' | 'by-workflow'>('logs')
@@ -90,7 +93,7 @@ async function loadLogs(): Promise<void> {
     pagination.value.total = result.total
     pagination.value.totalPages = result.totalPages
   } catch (e: unknown) {
-    ElMessage.error(e instanceof Error ? e.message : '加载使用日志失败')
+    ElMessage.error(e instanceof Error ? e.message : t('editor.keyUsageAudit.loadLogsFailed'))
   } finally {
     loading.value = false
   }
@@ -106,7 +109,7 @@ async function loadStatsByKey(): Promise<void> {
     }
     statsByKey.value = await fetchKeyUsageStatsByKey(params)
   } catch (e: unknown) {
-    ElMessage.error(e instanceof Error ? e.message : '加载统计数据失败')
+    ElMessage.error(e instanceof Error ? e.message : t('editor.keyUsageAudit.loadStatsFailed'))
   } finally {
     loading.value = false
   }
@@ -122,7 +125,7 @@ async function loadStatsByWorkflow(): Promise<void> {
     }
     statsByWorkflow.value = await fetchKeyUsageStatsByWorkflow(params)
   } catch (e: unknown) {
-    ElMessage.error(e instanceof Error ? e.message : '加载统计数据失败')
+    ElMessage.error(e instanceof Error ? e.message : t('editor.keyUsageAudit.loadStatsFailed'))
   } finally {
     loading.value = false
   }
@@ -195,13 +198,13 @@ function clearDateRange(): void {
       <div :class="styles.header">
         <div :class="styles.titleRow">
           <div>
-            <h1 :class="styles.title">Key 使用审计</h1>
-            <p :class="styles.subtitle">查看 API Key 的使用记录和统计信息</p>
+            <h1 :class="styles.title">{{ t('editor.keyUsageAudit.title') }}</h1>
+            <p :class="styles.subtitle">{{ t('editor.keyUsageAudit.subtitle') }}</p>
           </div>
           <div :class="styles.headerActions">
             <el-button @click="loadData">
               <AppIcon name="refresh" />
-              刷新
+              {{ t('editor.keyUsageAudit.refresh') }}
             </el-button>
           </div>
         </div>
@@ -212,13 +215,13 @@ function clearDateRange(): void {
             <el-date-picker
               v-model="dateRange"
               type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
+              :range-separator="t('editor.keyUsageAudit.dateRangeSeparator')"
+              :start-placeholder="t('editor.keyUsageAudit.dateRangeStart')"
+              :end-placeholder="t('editor.keyUsageAudit.dateRangeEnd')"
               :class="styles.dateRange"
               value-format="YYYY-MM-DD"
             />
-            <el-button v-if="dateRange" text @click="clearDateRange">清除日期</el-button>
+            <el-button v-if="dateRange" text @click="clearDateRange">{{ t('editor.keyUsageAudit.clearDate') }}</el-button>
           </div>
         </div>
       </div>
@@ -226,15 +229,15 @@ function clearDateRange(): void {
       <!-- Stats Cards -->
       <div :class="styles.statsCards">
         <div :class="styles.statCard">
-          <p :class="styles.statLabel">总请求数</p>
+          <p :class="styles.statLabel">{{ t('editor.keyUsageAudit.totalRequests') }}</p>
           <p :class="styles.statValue">{{ totalRequests.toLocaleString() }}</p>
         </div>
         <div :class="styles.statCard">
-          <p :class="styles.statLabel">成功率</p>
+          <p :class="styles.statLabel">{{ t('editor.keyUsageAudit.successRate') }}</p>
           <p :class="styles.statValue">{{ successRate }}%</p>
         </div>
         <div :class="styles.statCard">
-          <p :class="styles.statLabel">平均耗时</p>
+          <p :class="styles.statLabel">{{ t('editor.keyUsageAudit.avgDuration') }}</p>
           <p :class="styles.statValue">{{ formatDuration(avgDuration) }}</p>
         </div>
       </div>
@@ -242,9 +245,9 @@ function clearDateRange(): void {
       <!-- Tabs -->
       <div :class="styles.tabContainer">
         <el-tabs v-model="activeTab">
-          <el-tab-pane label="使用日志" name="logs" />
-          <el-tab-pane label="按 Key 统计" name="by-key" />
-          <el-tab-pane label="按工作流统计" name="by-workflow" />
+          <el-tab-pane :label="t('editor.keyUsageAudit.tabLogs')" name="logs" />
+          <el-tab-pane :label="t('editor.keyUsageAudit.tabByKey')" name="by-key" />
+          <el-tab-pane :label="t('editor.keyUsageAudit.tabByWorkflow')" name="by-workflow" />
         </el-tabs>
       </div>
 
@@ -259,36 +262,36 @@ function clearDateRange(): void {
           <div :class="styles.emptyIcon">
             <AppIcon name="document" :size="64" />
           </div>
-          <h2 :class="styles.emptyTitle">暂无使用记录</h2>
-          <p :class="styles.emptyDesc">API Key 被调用后将在此显示使用记录</p>
+          <h2 :class="styles.emptyTitle">{{ t('editor.keyUsageAudit.emptyLogTitle') }}</h2>
+          <p :class="styles.emptyDesc">{{ t('editor.keyUsageAudit.emptyLogDesc') }}</p>
         </div>
 
         <template v-else>
           <el-table :data="logs" stripe>
-            <el-table-column prop="keyName" label="Key 名称" min-width="120" show-overflow-tooltip />
-            <el-table-column prop="method" label="方法" width="80">
+            <el-table-column prop="keyName" :label="t('editor.keyUsageAudit.colKeyName')" min-width="120" show-overflow-tooltip />
+            <el-table-column prop="method" :label="t('editor.keyUsageAudit.colMethod')" width="80">
               <template #default="{ row }">
                 <el-tag :type="methodTagType(row.method)" size="small">{{ row.method }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="endpoint" label="接口" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="statusCode" label="状态码" width="80">
+            <el-table-column prop="endpoint" :label="t('editor.keyUsageAudit.colEndpoint')" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="statusCode" :label="t('editor.keyUsageAudit.colStatusCode')" width="80">
               <template #default="{ row }">
                 <span :class="statusCodeClass(row.statusCode)">{{ row.statusCode }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="duration" label="耗时" width="80">
+            <el-table-column prop="duration" :label="t('editor.keyUsageAudit.colDuration')" width="80">
               <template #default="{ row }">
                 {{ formatDuration(row.duration) }}
               </template>
             </el-table-column>
-            <el-table-column prop="workflowName" label="工作流" min-width="120" show-overflow-tooltip>
+            <el-table-column prop="workflowName" :label="t('editor.keyUsageAudit.colWorkflow')" min-width="120" show-overflow-tooltip>
               <template #default="{ row }">
                 {{ row.workflowName || '-' }}
               </template>
             </el-table-column>
             <el-table-column prop="ip" label="IP" width="130" />
-            <el-table-column prop="createdAt" label="时间" width="170">
+            <el-table-column prop="createdAt" :label="t('editor.keyUsageAudit.colTime')" width="170">
               <template #default="{ row }">
                 {{ formatDate(row.createdAt) }}
               </template>
@@ -313,34 +316,34 @@ function clearDateRange(): void {
           <div :class="styles.emptyIcon">
             <AppIcon name="key" :size="64" />
           </div>
-          <h2 :class="styles.emptyTitle">暂无统计数据</h2>
-          <p :class="styles.emptyDesc">API Key 被调用后将在此显示统计信息</p>
+          <h2 :class="styles.emptyTitle">{{ t('editor.keyUsageAudit.emptyStatsTitle') }}</h2>
+          <p :class="styles.emptyDesc">{{ t('editor.keyUsageAudit.emptyStatsDesc') }}</p>
         </div>
 
         <el-table v-else :data="statsByKey" stripe>
-          <el-table-column prop="keyName" label="Key 名称" min-width="150" show-overflow-tooltip />
-          <el-table-column prop="totalRequests" label="总请求" width="100" align="right" sortable />
-          <el-table-column prop="successRequests" label="成功" width="100" align="right" sortable>
+          <el-table-column prop="keyName" :label="t('editor.keyUsageAudit.colKeyName')" min-width="150" show-overflow-tooltip />
+          <el-table-column prop="totalRequests" :label="t('editor.keyUsageAudit.colTotalRequests')" width="100" align="right" sortable />
+          <el-table-column prop="successRequests" :label="t('editor.keyUsageAudit.colSuccess')" width="100" align="right" sortable>
             <template #default="{ row }">
               <span :class="styles.successText">{{ row.successRequests }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="failedRequests" label="失败" width="100" align="right" sortable>
+          <el-table-column prop="failedRequests" :label="t('editor.keyUsageAudit.colFailed')" width="100" align="right" sortable>
             <template #default="{ row }">
               <span :class="styles.errorText">{{ row.failedRequests }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="成功率" width="100" align="right">
+          <el-table-column :label="t('editor.keyUsageAudit.successRate')" width="100" align="right">
             <template #default="{ row }">
               {{ row.totalRequests > 0 ? Math.round((row.successRequests / row.totalRequests) * 100) : 0 }}%
             </template>
           </el-table-column>
-          <el-table-column prop="avgDuration" label="平均耗时" width="100" align="right">
+          <el-table-column prop="avgDuration" :label="t('editor.keyUsageAudit.avgDuration')" width="100" align="right">
             <template #default="{ row }">
               {{ formatDuration(row.avgDuration) }}
             </template>
           </el-table-column>
-          <el-table-column prop="lastUsedAt" label="最后使用" width="170">
+          <el-table-column prop="lastUsedAt" :label="t('editor.keyUsageAudit.colLastUsed')" width="170">
             <template #default="{ row }">
               {{ formatDate(row.lastUsedAt) }}
             </template>
@@ -354,35 +357,35 @@ function clearDateRange(): void {
           <div :class="styles.emptyIcon">
             <AppIcon name="connection" :size="64" />
           </div>
-          <h2 :class="styles.emptyTitle">暂无工作流统计数据</h2>
-          <p :class="styles.emptyDesc">通过工作流调用 API Key 后将在此显示统计信息</p>
+          <h2 :class="styles.emptyTitle">{{ t('editor.keyUsageAudit.emptyWorkflowTitle') }}</h2>
+          <p :class="styles.emptyDesc">{{ t('editor.keyUsageAudit.emptyWorkflowDesc') }}</p>
         </div>
 
         <el-table v-else :data="statsByWorkflow" stripe>
-          <el-table-column prop="workflowName" label="工作流" min-width="150" show-overflow-tooltip />
-          <el-table-column prop="keyName" label="Key 名称" min-width="120" show-overflow-tooltip />
-          <el-table-column prop="totalRequests" label="总请求" width="100" align="right" sortable />
-          <el-table-column prop="successRequests" label="成功" width="100" align="right" sortable>
+          <el-table-column prop="workflowName" :label="t('editor.keyUsageAudit.colWorkflow')" min-width="150" show-overflow-tooltip />
+          <el-table-column prop="keyName" :label="t('editor.keyUsageAudit.colKeyName')" min-width="120" show-overflow-tooltip />
+          <el-table-column prop="totalRequests" :label="t('editor.keyUsageAudit.colTotalRequests')" width="100" align="right" sortable />
+          <el-table-column prop="successRequests" :label="t('editor.keyUsageAudit.colSuccess')" width="100" align="right" sortable>
             <template #default="{ row }">
               <span :class="styles.successText">{{ row.successRequests }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="failedRequests" label="失败" width="100" align="right" sortable>
+          <el-table-column prop="failedRequests" :label="t('editor.keyUsageAudit.colFailed')" width="100" align="right" sortable>
             <template #default="{ row }">
               <span :class="styles.errorText">{{ row.failedRequests }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="成功率" width="100" align="right">
+          <el-table-column :label="t('editor.keyUsageAudit.successRate')" width="100" align="right">
             <template #default="{ row }">
               {{ row.totalRequests > 0 ? Math.round((row.successRequests / row.totalRequests) * 100) : 0 }}%
             </template>
           </el-table-column>
-          <el-table-column prop="avgDuration" label="平均耗时" width="100" align="right">
+          <el-table-column prop="avgDuration" :label="t('editor.keyUsageAudit.avgDuration')" width="100" align="right">
             <template #default="{ row }">
               {{ formatDuration(row.avgDuration) }}
             </template>
           </el-table-column>
-          <el-table-column prop="lastUsedAt" label="最后使用" width="170">
+          <el-table-column prop="lastUsedAt" :label="t('editor.keyUsageAudit.colLastUsed')" width="170">
             <template #default="{ row }">
               {{ formatDate(row.lastUsedAt) }}
             </template>

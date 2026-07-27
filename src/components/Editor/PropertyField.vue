@@ -9,6 +9,9 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { fetchRemoteOptions as apiFetchRemoteOptions } from '@/api/widgetApi'
 import styles from './PropertyField.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 interface SelectOption {
   label: string
@@ -127,7 +130,7 @@ function onJsonBlur() {
     emit('update', parsed)
     jsonError.value = ''
   } catch {
-    jsonError.value = 'JSON 格式不正确'
+    jsonError.value = t('editor.propertyField.jsonFormatError')
   }
 }
 </script>
@@ -192,7 +195,7 @@ function onJsonBlur() {
         v-else-if="type === 'remote-select'"
         :model-value="String(value ?? '')"
         :loading="remoteLoading"
-        :placeholder="props.placeholder || '请选择'"
+        :placeholder="props.placeholder || t('editor.common.selectPlaceholder')"
         size="small"
         style="width: 100%"
         filterable
@@ -213,7 +216,7 @@ function onJsonBlur() {
           v-model="jsonText"
           type="textarea"
           :rows="6"
-          placeholder="输入 JSON 数据"
+          :placeholder="t('editor.propertyField.jsonPlaceholder')"
           :class="[styles.jsonInput, jsonError ? styles.jsonInputError : '']"
           @focus="onJsonFocus"
           @blur="onJsonBlur"

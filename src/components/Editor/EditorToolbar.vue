@@ -13,9 +13,11 @@ import type { SchemaListItem } from '@/types/api'
 import type { InteractionMode } from '@/composables/useConstant'
 import { useApiStore } from '@/stores/api'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './EditorToolbar.module.scss'
 
 const router = useRouter()
+const { t } = useI18n()
 
 const props = defineProps<{
   mode: InteractionMode
@@ -68,19 +70,19 @@ const emit = defineEmits<{
 }>()
 
 // ---- Mode switcher ----
-const modeLabels: Record<InteractionMode, string> = {
-  'edit': '编辑',
-  'preview': '预览',
-  'publish-interactive': '发布(交互)',
-  'publish-readonly': '发布(只读)',
-}
+const modeLabels = computed<Record<InteractionMode, string>>(() => ({
+  'edit': t('editor.toolbar.modeEdit'),
+  'preview': t('editor.toolbar.modePreview'),
+  'publish-interactive': t('editor.mode.publishInteractive'),
+  'publish-readonly': t('editor.mode.publishReadonly'),
+}))
 
-const modeOptions: { value: InteractionMode; label: string; icon: string }[] = [
-  { value: 'edit', label: '编辑模式', icon: 'edit' },
-  { value: 'preview', label: '预览模式', icon: 'view' },
-  { value: 'publish-interactive', label: '发布(交互)', icon: 'monitor' },
-  { value: 'publish-readonly', label: '发布(只读)', icon: 'lock' },
-]
+const modeOptions = computed<{ value: InteractionMode; label: string; icon: string }[]>(() => [
+  { value: 'edit', label: t('editor.mode.edit'), icon: 'edit' },
+  { value: 'preview', label: t('editor.mode.preview'), icon: 'view' },
+  { value: 'publish-interactive', label: t('editor.mode.publishInteractive'), icon: 'monitor' },
+  { value: 'publish-readonly', label: t('editor.mode.publishReadonly'), icon: 'lock' },
+])
 
 // ---- Computed states ----
 const hasSelection = computed(() => props.selectedIndices.length > 0)
@@ -111,11 +113,11 @@ function handleImport() {
 function confirmImport() {
   try {
     const parsed = JSON.parse(importJson.value) as unknown
-    if (!Array.isArray(parsed)) { ElMessage.error('JSON 必须是数组'); return }
+    if (!Array.isArray(parsed)) { ElMessage.error(t('editor.toolbar.jsonMustBeArray')); return }
     emit('import', parsed as PartialWidget[])
     showImportDialog.value = false
-    ElMessage.success('Schema 导入成功')
-  } catch { ElMessage.error('JSON 格式错误') }
+    ElMessage.success(t('editor.toolbar.importSuccess'))
+  } catch { ElMessage.error(t('editor.toolbar.jsonFormatError')) }
 }
 
 // ---- Load from server ----
@@ -135,11 +137,11 @@ async function handleOpenLoadDialog() {
 async function handleLoadSchema(item: SchemaListItem) {
   const detail = await apiStore.fetchSchemaById(item.id)
   if (detail) {
-    if (!detail.json) { ElMessage.error('Schema 数据为空'); return }
+    if (!detail.json) { ElMessage.error(t('editor.toolbar.schemaDataEmpty')); return }
     const json = Array.isArray(detail.json) ? detail.json : (detail.json as any).widgets ?? []
     emit('load-schema', json)
     showLoadDialog.value = false
-    ElMessage.success(`Schema "${item.name}" 已加载`)
+    ElMessage.success(t('editor.toolbar.schemaLoaded', { name: item.name }))
   }
 }
 
@@ -199,31 +201,31 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
   <div :class="styles['editor-toolbar']">
     <!-- 左侧：返回 / 名称 / 面板切换 -->
     <div :class="styles['editor-toolbar__left']">
-      <el-tooltip content="返回列表" placement="bottom">
-        <button :class="styles['editor-toolbar__icon-btn']" title="返回列表" @click="goToPortal">
+      <el-tooltip :content="t('editor.toolbar.backToList')" placement="bottom">
+        <button :class="styles['editor-toolbar__icon-btn']" :title="t('editor.toolbar.backToList')" @click="goToPortal">
           <AppIcon name="back" :size="14" />
         </button>
       </el-tooltip>
       <div :class="styles['editor-toolbar__divider']" />
-      <span :class="styles['editor-toolbar__app-name']">表单编辑器</span>
+      <span :class="styles['editor-toolbar__app-name']">{{ t('editor.toolbar.appName') }}</span>
       <div :class="styles['editor-toolbar__divider']" />
       <input
         :value="schemaName"
         :class="styles['editor-toolbar__name-input']"
-        placeholder="未命名实例"
+        :placeholder="t('editor.toolbar.unnamedInstance')"
         @input="emit('update:schemaName', ($event.target as HTMLInputElement).value)"
       />
       <div :class="styles['editor-toolbar__divider']" />
       <button
         :class="[styles['editor-toolbar__icon-btn'], { [styles['editor-toolbar__icon-btn--active']]: leftPanelVisible }]"
-        title="部件面板"
+        :title="t('editor.toolbar.widgetPanel')"
         @click="emit('update:leftPanelVisible', !leftPanelVisible)"
       >
         <AppIcon name="grid" :size="16" />
       </button>
       <button
         :class="[styles['editor-toolbar__icon-btn'], { [styles['editor-toolbar__icon-btn--active']]: rightPanelVisible }]"
-        title="属性面板"
+        :title="t('editor.toolbar.propertyPanel')"
         @click="emit('update:rightPanelVisible', !rightPanelVisible)"
       >
         <AppIcon name="setting" :size="16" />
@@ -233,34 +235,34 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
     <!-- 中间：编辑操作按钮组（仅编辑模式显示） -->
     <div v-if="mode === 'edit'" :class="styles['editor-toolbar__center']">
       <div :class="styles['editor-toolbar__btn-group']">
-        <el-tooltip content="撤销 (Ctrl+Z)" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.undoTooltip')" placement="bottom">
           <button :class="styles['editor-toolbar__icon-btn']" :disabled="!canUndo" @click="handleUndo">
             <AppIcon name="refresh-left" />
           </button>
         </el-tooltip>
-        <el-tooltip content="重做 (Ctrl+Y)" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.redoTooltip')" placement="bottom">
           <button :class="styles['editor-toolbar__icon-btn']" :disabled="!canRedo" @click="handleRedo">
             <AppIcon name="refresh-right" />
           </button>
         </el-tooltip>
       </div>
       <div :class="styles['editor-toolbar__btn-group']">
-        <el-tooltip :content="batchLabel('复制 (Ctrl+C)')" placement="bottom">
+        <el-tooltip :content="batchLabel(t('editor.toolbar.copyTooltip'))" placement="bottom">
           <button :class="styles['editor-toolbar__icon-btn']" :disabled="!hasSelection" @click="handleCopy">
             <AppIcon name="copy-document" />
           </button>
         </el-tooltip>
-        <el-tooltip :content="batchLabel('删除 (Del)')" placement="bottom">
+        <el-tooltip :content="batchLabel(t('editor.toolbar.deleteTooltip'))" placement="bottom">
           <button :class="styles['editor-toolbar__icon-btn']" :disabled="!hasSelection" @click="handleDelete">
             <AppIcon name="delete" />
           </button>
         </el-tooltip>
-        <el-tooltip content="上移 (Ctrl+Up)" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.moveUpTooltip')" placement="bottom">
           <button :class="styles['editor-toolbar__icon-btn']" :disabled="!hasSelection || isFirstItem" @click="handleMoveUp">
             <AppIcon name="arrow-up" />
           </button>
         </el-tooltip>
-        <el-tooltip content="下移 (Ctrl+Down)" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.moveDownTooltip')" placement="bottom">
           <button :class="styles['editor-toolbar__icon-btn']" :disabled="!hasSelection || isLastItem" @click="handleMoveDown">
             <AppIcon name="arrow-down" />
           </button>
@@ -268,16 +270,16 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
       </div>
       <div :class="styles['editor-toolbar__btn-group']">
         <el-dropdown trigger="click" @command="handleMoreCommand">
-          <button :class="styles['editor-toolbar__icon-btn']" title="更多操作">
+          <button :class="styles['editor-toolbar__icon-btn']" :title="t('editor.toolbar.moreActions')">
             <AppIcon name="more-filled" />
           </button>
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item :disabled="!hasSelection" command="zindex-up">
-                上移一层 (Alt+↑)
+                {{ t('editor.toolbar.zindexUp') }}
               </el-dropdown-item>
               <el-dropdown-item :disabled="!hasSelection" command="zindex-down">
-                下移一层 (Alt+↓)
+                {{ t('editor.toolbar.zindexDown') }}
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -290,20 +292,20 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
           </button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="card">分组为卡片</el-dropdown-item>
-              <el-dropdown-item command="page">分组为页面</el-dropdown-item>
-              <el-dropdown-item command="toolbar">分组为工具栏</el-dropdown-item>
+              <el-dropdown-item command="card">{{ t('editor.toolbar.groupAsCard') }}</el-dropdown-item>
+              <el-dropdown-item command="page">{{ t('editor.toolbar.groupAsPage') }}</el-dropdown-item>
+              <el-dropdown-item command="toolbar">{{ t('editor.toolbar.groupAsToolbar') }}</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <el-tooltip content="取消分组" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.ungroup')" placement="bottom">
           <button :class="styles['editor-toolbar__icon-btn']" :disabled="!canUngroup" @click="handleUngroup">
             <AppIcon name="folder-remove" />
           </button>
         </el-tooltip>
       </div>
       <div :class="styles['editor-toolbar__btn-group']">
-        <el-tooltip content="校验 Schema" placement="bottom">
+        <el-tooltip :content="t('editor.toolbar.schemaValidation')" placement="bottom">
           <button :class="styles['editor-toolbar__icon-btn']" @click="emit('validate')">
             <AppIcon v-if="(validationErrorCount ?? 0) > 0" name="circle-close-filled" style="color: #e6a23c" />
             <AppIcon v-else name="circle-check-filled" style="color: #67c23a" />
@@ -349,7 +351,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
 
       <!-- 画布尺寸 -->
       <el-dropdown trigger="click" @command="(v: any) => emit('canvas-size-change', v)">
-        <button :class="styles['editor-toolbar__icon-btn']" title="画布尺寸">
+        <button :class="styles['editor-toolbar__icon-btn']" :title="t('editor.toolbar.canvasSize')">
           <AppIcon name="crop" />
         </button>
         <template #dropdown>
@@ -367,7 +369,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
       </el-dropdown>
 
       <!-- 缩略图开关 -->
-      <el-tooltip content="缩略图" placement="bottom">
+      <el-tooltip :content="t('editor.toolbar.thumbnail')" placement="bottom">
         <button
           :class="[styles['editor-toolbar__icon-btn'], { [styles['editor-toolbar__icon-btn--active']]: showThumbnail }]"
           @click="emit('toggle-thumbnail')"
@@ -378,20 +380,20 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
 
       <!-- 更多 -->
       <el-dropdown trigger="click" @command="handleMoreCommand">
-        <button :class="styles['editor-toolbar__icon-btn']" title="更多">
+        <button :class="styles['editor-toolbar__icon-btn']" :title="t('editor.common.more')">
           <AppIcon name="more-filled" />
         </button>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item command="load">
-              <AppIcon name="folder" />从服务器加载
+              <AppIcon name="folder" />{{ t('editor.toolbar.loadFromServer') }}
             </el-dropdown-item>
             <el-dropdown-item command="import-json">
-              <AppIcon name="upload" />导入 JSON
+              <AppIcon name="upload" />{{ t('editor.toolbar.importJson') }}
             </el-dropdown-item>
-            <el-dropdown-item command="import-response">导入响应</el-dropdown-item>
+            <el-dropdown-item command="import-response">{{ t('editor.toolbar.importResponse') }}</el-dropdown-item>
             <el-dropdown-item divided command="export-json">
-              <AppIcon name="download" />导出 JSON
+              <AppIcon name="download" />{{ t('editor.toolbar.exportJson') }}
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -403,21 +405,21 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
       <div :class="styles['editor-toolbar__mode-switcher']">
         <button
           :class="[styles['editor-toolbar__mode-btn'], { [styles['editor-toolbar__mode-btn--active']]: previewMode === 'desktop' }]"
-          title="桌面"
+          :title="t('editor.toolbar.desktop')"
           @click="emit('update:previewMode', 'desktop')"
         >
           <AppIcon name="monitor" :size="14" />
         </button>
         <button
           :class="[styles['editor-toolbar__mode-btn'], { [styles['editor-toolbar__mode-btn--active']]: previewMode === 'tablet' }]"
-          title="平板"
+          :title="t('editor.toolbar.tablet')"
           @click="emit('update:previewMode', 'tablet')"
         >
           <AppIcon name="iphone" :size="14" />
         </button>
         <button
           :class="[styles['editor-toolbar__mode-btn'], { [styles['editor-toolbar__mode-btn--active']]: previewMode === 'mobile' }]"
-          title="移动端"
+          :title="t('editor.toolbar.mobile')"
           @click="emit('update:previewMode', 'mobile')"
         >
           <AppIcon name="cellphone" :size="14" />
@@ -429,51 +431,51 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown) })
       <!-- 预览 -->
       <button :class="[styles['editor-toolbar__btn'], styles['editor-toolbar__btn--outline']]" @click="emit('preview')">
         <AppIcon name="view" />
-        <span>预览</span>
+        <span>{{ t('editor.toolbar.preview') }}</span>
       </button>
 
       <!-- 发布 -->
       <button :class="[styles['editor-toolbar__btn'], styles['editor-toolbar__btn--success']]" @click="emit('publish')">
         <AppIcon name="promotion" />
-        <span>发布</span>
+        <span>{{ t('editor.toolbar.publish') }}</span>
       </button>
 
       <!-- 保存 -->
       <button :class="[styles['editor-toolbar__btn'], styles['editor-toolbar__btn--primary']]" @click="emit('save-draft')">
-        <span>保存</span>
+        <span>{{ t('editor.toolbar.save') }}</span>
       </button>
     </div>
   </div>
 
   <!-- 从服务器加载弹窗 -->
-  <el-dialog v-model="showLoadDialog" title="从服务器加载 Schema" width="560px" :append-to-body="true">
+  <el-dialog v-model="showLoadDialog" :title="t('editor.toolbar.loadSchemaTitle')" width="560px" :append-to-body="true">
     <div v-loading="loadSchemaLoading">
       <el-table
         :data="loadSchemaList"
         height="300"
         @row-click="handleLoadSchema"
       >
-        <el-table-column prop="name" label="名称" />
-        <el-table-column prop="updatedAt" label="更新时间" width="180" />
+        <el-table-column prop="name" :label="t('editor.common.name')" />
+        <el-table-column prop="updatedAt" :label="t('editor.common.updatedAt')" width="180" />
       </el-table>
     </div>
     <p v-if="!loadSchemaLoading && loadSchemaList.length === 0"
       style="text-align:center; color:#909399; padding: 24px 0;">
-      服务器上未找到 Schema
+      {{ t('editor.toolbar.schemaNotFound') }}
     </p>
   </el-dialog>
 
   <!-- 导入弹窗 -->
-  <el-dialog v-model="showImportDialog" title="导入 JSON Schema" width="600px" :append-to-body="true">
+  <el-dialog v-model="showImportDialog" :title="t('editor.toolbar.importJsonTitle')" width="600px" :append-to-body="true">
     <el-input
       v-model="importJson"
       type="textarea"
       :rows="16"
-      placeholder="在此粘贴 PartialWidget[] JSON..."
+      :placeholder="t('editor.toolbar.importJsonPlaceholder')"
     />
     <template #footer>
-      <el-button @click="showImportDialog = false">取消</el-button>
-      <el-button type="primary" @click="confirmImport">导入</el-button>
+      <el-button @click="showImportDialog = false">{{ t('editor.common.cancel') }}</el-button>
+      <el-button type="primary" @click="confirmImport">{{ t('editor.common.import') }}</el-button>
     </template>
   </el-dialog>
 </template>

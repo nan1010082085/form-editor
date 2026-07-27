@@ -305,7 +305,7 @@ const eventContext: EventExecutionContext = {
     const widget = findWidgetInSchema(props.schema, target)
     if (widget?.type === 'dialog') {
       openDialog({
-        title: (widget.props?.title as string) || widget.label || '弹窗',
+        title: (widget.props?.title as string) || widget.label || t('dialog.defaultTitle'),
         width: (widget.props?.width as string) || '600px',
         schema: widget.children as PartialWidget[] | undefined,
       })
@@ -328,9 +328,9 @@ const eventContext: EventExecutionContext = {
     emit('action', { type: 'emit', eventName, eventPayload: payload } as SchemaAction)
   },
   confirm: async (message: string) => {
-    await ElMessageBox.confirm(message, '确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(message, t('confirm.title'), {
+      confirmButtonText: t('confirm.ok'),
+      cancelButtonText: t('confirm.cancel'),
       type: 'warning',
     })
   },
@@ -503,7 +503,7 @@ async function loadApiData(config: LoadApiConfig): Promise<void> {
       try {
         transformedData = await props.transformAfterLoad(rawData)
       } catch (err) {
-        const msg = err instanceof Error ? err.message : '数据转换失败'
+        const msg = err instanceof Error ? err.message : t('message.transformFailed')
         logger.warn('transformAfterLoad 转换失败，使用原始数据降级:', msg)
         // 降级：使用原始数据
         transformedData = applyFieldMap(rawData, config.fieldMap)
@@ -523,7 +523,7 @@ async function loadApiData(config: LoadApiConfig): Promise<void> {
     // 触发 onAfterLoad 钩子
     await executeAfterLoad(formData)
   } catch (err) {
-    const msg = err instanceof Error ? err.message : '数据加载失败'
+    const msg = err instanceof Error ? err.message : t('message.loadFailed')
     logger.error('loadApi:', msg)
     ElMessage.error(msg)
   } finally {
@@ -656,7 +656,7 @@ async function submit() {
     try {
       submitData = await props.transformBeforeSubmit(submitData)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '数据转换失败'
+      const msg = err instanceof Error ? err.message : t('message.transformFailed')
       logger.error('transformBeforeSubmit:', msg)
       ElMessage.error(msg)
       return
@@ -731,8 +731,8 @@ defineExpose({
           />
         </el-form>
         <template #footer>
-          <el-button @click="handleDialogCancel">取消</el-button>
-          <el-button type="primary" @click="handleDialogConfirm">确定</el-button>
+          <el-button @click="handleDialogCancel">{{ t('dialog.cancel') }}</el-button>
+          <el-button type="primary" @click="handleDialogConfirm">{{ t('dialog.confirm') }}</el-button>
         </template>
       </el-dialog>
     </div>

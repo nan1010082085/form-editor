@@ -21,6 +21,7 @@ import { useClipboard } from '../../composables/useClipboard'
 import { useDuplicateWidget } from '../../composables/useDuplicateWidget'
 import { useSnapshot } from '../../composables/useSnapshot'
 import { applyTemplate } from '../../utils/apiClient'
+import { useI18n } from '@schema-platform/platform-shared'
 import { viewportToCanvas, constrainToCanvasBounds } from '../../utils/coordinate'
 import { collectAllContainers } from '../../utils/collision'
 import type { Widget, SchemaType } from '../../widgets/base/types'
@@ -89,6 +90,7 @@ const editorStore = useEditorStore()
 const dragStore = useDragStore()
 const boardStore = useBoardStore()
 const { duplicateFromWidget } = useDuplicateWidget()
+const { t } = useI18n()
 
 const { startDragFromPanel, startDragOnCanvas, updateDrag, endDrag, cancelDrag } = useDrag()
 const { copy } = useClipboard()
@@ -155,7 +157,7 @@ function handleDeleteWidget(widget: Widget) {
 }
 
 function handleCopyId(id: string) {
-  copy(id, '已复制部件 ID')
+  copy(id, t('editor.overlay.copiedWidgetId'))
 }
 
 function handleOpenEvent(widget: Widget) { emit('openEvent', widget) }
@@ -561,9 +563,9 @@ async function handleTemplateDrop(templateId: string, clientX: number, clientY: 
     }
 
     editorStore.pushHistory([...widgetStore.widgets])
-    ElMessage.success(`已应用模板「${result.name}」`)
+    ElMessage.success(t('editor.overlay.templateApplied', { name: result.name }))
   } catch {
-    ElMessage.error('应用模板失败')
+    ElMessage.error(t('editor.overlay.templateApplyFailed'))
   }
 }
 </script>

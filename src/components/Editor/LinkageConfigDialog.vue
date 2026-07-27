@@ -8,6 +8,7 @@
  * - actions: SchemaEventAction[]（直接对接事件引擎）
  */
 import { ref, watch, computed } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { useWidgetOptions } from '@/composables/useWidgetOptions'
 import type {
   WidgetEvent,
@@ -21,6 +22,8 @@ import FlowPreview from '@/components/Editor/FlowPreview.vue'
 import type { FlowItem } from '@/components/Editor/FlowPreview.vue'
 import styles from './LinkageConfigDialog.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -80,20 +83,20 @@ watch(
 
 // ---- 选项常量 ----
 
-const actionTypeOptions: ActionTypeOption[] = [
-  { label: '打开弹窗', value: 'open-dialog' },
-  { label: '关闭弹窗', value: 'close-dialog' },
-  { label: '隐藏组件', value: 'hide' },
-  { label: '显示组件', value: 'visible' },
-  { label: '禁用组件', value: 'disabled' },
-  { label: '设置值', value: 'set-value' },
-  { label: '请求数据', value: 'fetch-data' },
-  { label: '设置变量', value: 'set-variable' },
-  { label: '触发事件', value: 'trigger-event' },
-  { label: '提交', value: 'submit' },
-  { label: '重置', value: 'reset' },
-  { label: '路由跳转', value: 'navigate' },
-]
+const actionTypeOptions = computed<ActionTypeOption[]>(() => [
+  { label: t('editor.linkageDialog.actionOpenDialog'), value: 'open-dialog' },
+  { label: t('editor.linkageDialog.actionCloseDialog'), value: 'close-dialog' },
+  { label: t('editor.linkageDialog.actionHide'), value: 'hide' },
+  { label: t('editor.linkageDialog.actionShow'), value: 'visible' },
+  { label: t('editor.linkageDialog.actionDisable'), value: 'disabled' },
+  { label: t('editor.linkageDialog.actionSetValue'), value: 'set-value' },
+  { label: t('editor.linkageDialog.actionFetchData'), value: 'fetch-data' },
+  { label: t('editor.linkageDialog.actionSetVariable'), value: 'set-variable' },
+  { label: t('editor.linkageDialog.actionTriggerEvent'), value: 'trigger-event' },
+  { label: t('editor.linkageDialog.actionSubmit'), value: 'submit' },
+  { label: t('editor.linkageDialog.actionReset'), value: 'reset' },
+  { label: t('editor.linkageDialog.actionNavigate'), value: 'navigate' },
+])
 
 // ---- 规则 CRUD ----
 
@@ -164,10 +167,10 @@ const flowItems = computed<FlowItem[]>(() =>
 
     return {
       type: 'trigger' as const,
-      label: '值变化',
+      label: t('editor.linkageDialog.triggerValueChange'),
       description: watchDesc || undefined,
       children: [
-        ...(rule.condition ? [{ type: 'condition' as const, label: '条件', description: rule.condition }] : []),
+        ...(rule.condition ? [{ type: 'condition' as const, label: t('editor.linkageDialog.condition'), description: rule.condition }] : []),
         ...rule.actions.map(a => ({
           type: 'action' as const,
           label: getActionLabel(a),
@@ -182,7 +185,7 @@ const flowItems = computed<FlowItem[]>(() =>
 <template>
   <AppDialog
     :model-value="visible"
-    title="规则配置"
+    :title="t('editor.linkageDialog.title')"
     width="1100px"
     @update:model-value="emit('update:visible', $event)"
   >
@@ -191,7 +194,7 @@ const flowItems = computed<FlowItem[]>(() =>
       <div :class="styles.form">
       <!-- 空状态 -->
       <div v-if="localRules.length === 0" :class="styles.empty">
-        暂无规则，点击下方按钮添加。
+        {{ t('editor.linkageDialog.emptyHint') }}
       </div>
 
       <!-- 规则列表 -->
@@ -201,7 +204,7 @@ const flowItems = computed<FlowItem[]>(() =>
         :class="styles.card"
       >
         <div :class="styles.cardHeader">
-          <span :class="styles.cardTitle">规则 <span :class="styles.cardNum">{{ ri + 1 }}</span></span>
+          <span :class="styles.cardTitle">{{ t('editor.linkageDialog.ruleLabel') }} <span :class="styles.cardNum">{{ ri + 1 }}</span></span>
           <el-button
             type="danger"
             size="small"
@@ -214,7 +217,7 @@ const flowItems = computed<FlowItem[]>(() =>
 
         <!-- watches（辅助配置，帮助用户理解触发来源） -->
         <div :class="styles.row">
-          <label :class="styles.label">监听</label>
+          <label :class="styles.label">{{ t('editor.linkageDialog.watch') }}</label>
           <div :class="styles.conditionArea">
             <div
               v-for="(w, wi) in rule.watches"
@@ -224,7 +227,7 @@ const flowItems = computed<FlowItem[]>(() =>
               <el-select
                 v-model="w.source"
                 filterable
-                placeholder="选择要监听的字段"
+                :placeholder="t('editor.linkageDialog.watchPlaceholder')"
                 style="flex: 1"
               >
                 <el-option
@@ -252,14 +255,14 @@ const flowItems = computed<FlowItem[]>(() =>
               @click="addWatch(ri)"
             >
               <AppIcon name="plus" />
-              添加监听
+              {{ t('editor.linkageDialog.addWatch') }}
             </el-button>
           </div>
         </div>
 
         <!-- condition -->
         <div :class="styles.row">
-          <label :class="styles.label">条件</label>
+          <label :class="styles.label">{{ t('editor.linkageDialog.condition') }}</label>
           <div :class="styles.conditionArea">
             <ConditionBuilder v-model="rule.condition" required />
           </div>
@@ -281,13 +284,13 @@ const flowItems = computed<FlowItem[]>(() =>
         @click="addRule"
       >
         <AppIcon name="plus" />
-        添加规则
+        {{ t('editor.linkageDialog.addRule') }}
       </el-button>
       </div>
 
       <!-- 右侧：流程预览 -->
       <div :class="styles.preview">
-        <div :class="styles.previewTitle">规则流预览</div>
+        <div :class="styles.previewTitle">{{ t('editor.linkageDialog.flowPreview') }}</div>
         <div :class="styles.previewBody">
           <FlowPreview :items="flowItems" />
         </div>
@@ -295,8 +298,8 @@ const flowItems = computed<FlowItem[]>(() =>
     </div>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleSave">保存</el-button>
+      <el-button @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
+      <el-button type="primary" @click="handleSave">{{ t('editor.common.save') }}</el-button>
     </template>
   </AppDialog>
 </template>

@@ -6,8 +6,9 @@
  * 支持 AND / OR 逻辑组合
  * 双向同步表达式字符串
  */
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useConditionReferences } from '@/composables/useConditionReferences'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './ConditionBuilder.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 
@@ -29,19 +30,20 @@ const emit = defineEmits<{
 
 // ---- 引用选项（字段 + 变量 + 暴露值） ----
 const { fieldRefs, variableRefs, exposedRefs } = useConditionReferences()
+const { t } = useI18n()
 
 // ---- 运算符选项 ----
-const operatorOptions = [
-  { label: '等于', value: '==', needsValue: true },
-  { label: '不等于', value: '!=', needsValue: true },
-  { label: '大于', value: '>', needsValue: true },
-  { label: '小于', value: '<', needsValue: true },
-  { label: '大于等于', value: '>=', needsValue: true },
-  { label: '小于等于', value: '<=', needsValue: true },
-  { label: '包含', value: 'includes', needsValue: true },
-  { label: '为真', value: 'truthy', needsValue: false },
-  { label: '为假', value: 'falsy', needsValue: false },
-]
+const operatorOptions = computed(() => [
+  { label: t('editor.conditionUi.opEqual'), value: '==', needsValue: true },
+  { label: t('editor.conditionUi.opNotEqual'), value: '!=', needsValue: true },
+  { label: t('editor.conditionUi.opGreater'), value: '>', needsValue: true },
+  { label: t('editor.conditionUi.opLess'), value: '<', needsValue: true },
+  { label: t('editor.conditionUi.opGreaterEqual'), value: '>=', needsValue: true },
+  { label: t('editor.conditionUi.opLessEqual'), value: '<=', needsValue: true },
+  { label: t('editor.conditionUi.opContains'), value: 'includes', needsValue: true },
+  { label: t('editor.conditionUi.opTruthy'), value: 'truthy', needsValue: false },
+  { label: t('editor.conditionUi.opFalsy'), value: 'falsy', needsValue: false },
+])
 
 // ---- 条件子句列表 ----
 const clauses = ref<ConditionClause[]>([])
@@ -105,7 +107,7 @@ function buildExpression(cls: ConditionClause[]): string {
   const parts: string[] = []
   for (const c of cls) {
     if (!c.field) continue
-    const op = operatorOptions.find(o => o.value === c.operator)
+    const op = operatorOptions.value.find(o => o.value === c.operator)
     if (!op) continue
 
     let expr: string
@@ -165,7 +167,7 @@ function updateClause(index: number, key: keyof ConditionClause, val: string) {
 }
 
 function needsValue(operator: string): boolean {
-  return operatorOptions.find(o => o.value === operator)?.needsValue ?? true
+  return operatorOptions.value.find(o => o.value === operator)?.needsValue ?? true
 }
 </script>
 
@@ -183,19 +185,19 @@ function needsValue(operator: string): boolean {
         :class="styles.logicSelect"
         @update:model-value="updateClause(ci, 'logic', $event)"
       >
-        <el-option label="且" value="&&" />
-        <el-option label="或" value="||" />
+        <el-option :label="t('editor.conditionUi.logicAnd')" value="&&" />
+        <el-option :label="t('editor.conditionUi.logicOr')" value="||" />
       </el-select>
 
       <!-- 字段选择（分组） -->
       <el-select
         :model-value="clause.field"
         filterable
-        placeholder="选择字段"
+        :placeholder="t('editor.conditionUi.selectField')"
         :class="styles.fieldSelect"
         @update:model-value="updateClause(ci, 'field', $event)"
       >
-        <el-option-group v-if="fieldRefs.length > 0" label="表单字段">
+        <el-option-group v-if="fieldRefs.length > 0" :label="t('editor.conditionUi.groupFormField')">
           <el-option
             v-for="opt in fieldRefs"
             :key="opt.value"
@@ -203,7 +205,7 @@ function needsValue(operator: string): boolean {
             :value="opt.value"
           />
         </el-option-group>
-        <el-option-group v-if="variableRefs.length > 0" label="变量">
+        <el-option-group v-if="variableRefs.length > 0" :label="t('editor.conditionUi.groupVariable')">
           <el-option
             v-for="opt in variableRefs"
             :key="opt.value"
@@ -211,7 +213,7 @@ function needsValue(operator: string): boolean {
             :value="opt.value"
           />
         </el-option-group>
-        <el-option-group v-if="exposedRefs.length > 0" label="组件暴露值">
+        <el-option-group v-if="exposedRefs.length > 0" :label="t('editor.conditionUi.groupExposed')">
           <el-option
             v-for="opt in exposedRefs"
             :key="opt.value"
@@ -239,7 +241,7 @@ function needsValue(operator: string): boolean {
       <el-input
         v-if="needsValue(clause.operator)"
         :model-value="clause.value"
-        placeholder="比较值"
+        :placeholder="t('editor.conditionUi.compareValue')"
         :class="styles.valueInput"
         @update:model-value="updateClause(ci, 'value', $event)"
       />
@@ -257,7 +259,7 @@ function needsValue(operator: string): boolean {
 
     <!-- 空状态 -->
     <div v-if="clauses.length === 0" :class="styles.empty">
-      {{ required ? '请添加条件' : '无条件，始终执行' }}
+      {{ required ? t('editor.conditionUi.emptyRequired') : t('editor.conditionUi.emptyOptional') }}
     </div>
 
     <!-- 添加条件 -->
@@ -268,12 +270,12 @@ function needsValue(operator: string): boolean {
       @click="addClause"
     >
       <AppIcon name="plus"  />
-      添加条件
+      {{ t('editor.conditionUi.addCondition') }}
     </el-button>
 
     <!-- 表达式预览 -->
     <div v-if="clauses.length > 0" :class="styles.preview">
-      <span :class="styles.previewLabel">表达式:</span>
+      <span :class="styles.previewLabel">{{ t('editor.conditionUi.expressionLabel') }}</span>
       <code :class="styles.previewCode">{{ modelValue || '...' }}</code>
     </div>
   </div>

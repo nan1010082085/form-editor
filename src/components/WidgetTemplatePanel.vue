@@ -10,13 +10,16 @@
  *
  * 状态由 useTemplateStore 管理，本组件只做渲染和交互。
  */
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTemplateStore } from '@/stores/template'
 import type { TemplateCategory } from '@/api/schemaApi'
 import type { Widget } from '@/widgets/base/types'
 import styles from './WidgetTemplatePanel.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'apply-template': [widgets: Record<string, unknown>[]]
@@ -30,28 +33,28 @@ const templateStore = useTemplateStore()
 
 // ---- Category options ----
 
-const categoryOptions: Array<{ label: string; value: string }> = [
-  { label: '全部分类', value: '' },
-  { label: '表单', value: 'form' },
-  { label: '布局', value: 'layout' },
-  { label: '表格', value: 'table' },
-  { label: '搜索', value: 'search' },
-  { label: '图表', value: 'chart' },
-  { label: '业务', value: 'business' },
-  { label: '报表', value: 'report' },
-  { label: '其他', value: 'other' },
-]
+const categoryOptions = computed(() => [
+  { label: t('editor.templatePanelEditor.categoryAll'), value: '' },
+  { label: t('editor.templatePanelEditor.categoryForm'), value: 'form' },
+  { label: t('editor.templatePanelEditor.categoryLayout'), value: 'layout' },
+  { label: t('editor.templatePanelEditor.categoryTable'), value: 'table' },
+  { label: t('editor.templatePanelEditor.categorySearch'), value: 'search' },
+  { label: t('editor.templatePanelEditor.categoryChart'), value: 'chart' },
+  { label: t('editor.templatePanelEditor.categoryBusiness'), value: 'business' },
+  { label: t('editor.templatePanelEditor.categoryReport'), value: 'report' },
+  { label: t('editor.templatePanelEditor.categoryOther'), value: 'other' },
+])
 
-const categoryLabelMap: Record<string, string> = {
-  form: '表单',
-  layout: '布局',
-  table: '表格',
-  search: '搜索',
-  chart: '图表',
-  business: '业务',
-  report: '报表',
-  other: '其他',
-}
+const categoryLabelMap = computed(() => ({
+  form: t('editor.templatePanelEditor.categoryForm'),
+  layout: t('editor.templatePanelEditor.categoryLayout'),
+  table: t('editor.templatePanelEditor.categoryTable'),
+  search: t('editor.templatePanelEditor.categorySearch'),
+  chart: t('editor.templatePanelEditor.categoryChart'),
+  business: t('editor.templatePanelEditor.categoryBusiness'),
+  report: t('editor.templatePanelEditor.categoryReport'),
+  other: t('editor.templatePanelEditor.categoryOther'),
+}))
 
 // ---- Search debounce ----
 
@@ -80,9 +83,9 @@ function handlePageChange(newPage: number) {
 async function handleApply(templateId: string, templateName: string) {
   try {
     await ElMessageBox.confirm(
-      `确认应用模板「${templateName}」？模板内容将添加到画布。`,
-      '应用模板',
-      { confirmButtonText: '应用', cancelButtonText: '取消' },
+      t('editor.templatePanelEditor.applyConfirm', { name: templateName }),
+      t('editor.templatePanelEditor.applyTitle'),
+      { confirmButtonText: t('editor.templatePanelEditor.apply'), cancelButtonText: t('editor.common.cancel') },
     )
   } catch {
     return
@@ -91,9 +94,9 @@ async function handleApply(templateId: string, templateName: string) {
   try {
     const widgets = await templateStore.applyTemplateById(templateId)
     emit('apply-template', widgets)
-    ElMessage.success(`已应用模板「${templateName}」`)
+    ElMessage.success(t('editor.templatePanelEditor.applySuccess', { name: templateName }))
   } catch {
-    ElMessage.error('应用模板失败')
+    ElMessage.error(t('editor.templatePanelEditor.applyFailed'))
   }
 }
 
@@ -102,9 +105,9 @@ async function handleApply(templateId: string, templateName: string) {
 async function handleDelete(templateId: string, templateName: string) {
   try {
     await ElMessageBox.confirm(
-      `确认删除模板「${templateName}」？此操作不可撤销。`,
-      '删除模板',
-      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
+      t('editor.templatePanelEditor.deleteConfirm', { name: templateName }),
+      t('editor.templatePanelEditor.deleteTitle'),
+      { confirmButtonText: t('editor.common.delete'), cancelButtonText: t('editor.common.cancel'), type: 'warning' },
     )
   } catch {
     return
@@ -112,9 +115,9 @@ async function handleDelete(templateId: string, templateName: string) {
 
   try {
     await templateStore.removeTemplate(templateId)
-    ElMessage.success('已删除模板')
+    ElMessage.success(t('editor.templatePanelEditor.deleted'))
   } catch {
-    ElMessage.error('删除模板失败')
+    ElMessage.error(t('editor.templatePanelEditor.deleteFailed'))
   }
 }
 
@@ -154,11 +157,11 @@ function removeTag(index: number) {
 
 async function handleSaveTemplate() {
   if (!saveForm.value.name.trim()) {
-    ElMessage.warning('请输入模板名称')
+    ElMessage.warning(t('editor.templatePanelEditor.nameRequired'))
     return
   }
   if (!props.currentWidgets || props.currentWidgets.length === 0) {
-    ElMessage.warning('画布为空，无法保存模板')
+    ElMessage.warning(t('editor.templatePanelEditor.canvasEmpty'))
     return
   }
 
@@ -170,10 +173,10 @@ async function handleSaveTemplate() {
       widgets: props.currentWidgets as unknown as Record<string, unknown>[],
       tags: saveForm.value.tags,
     })
-    ElMessage.success('模板已保存')
+    ElMessage.success(t('editor.templatePanelEditor.saved'))
     showSaveDialog.value = false
   } catch {
-    ElMessage.error('保存模板失败')
+    ElMessage.error(t('editor.templatePanelEditor.saveFailed'))
   }
 }
 
@@ -192,7 +195,7 @@ onMounted(() => {
         <el-input
           :model-value="templateStore.searchKeyword"
           :class="styles['search-input']"
-          placeholder="搜索模板..."
+          :placeholder="t('editor.templatePanelEditor.searchPlaceholder')"
           clearable
           size="small"
           @input="handleSearchChange"
@@ -208,14 +211,14 @@ onMounted(() => {
           @click="openSaveDialog"
         >
           <AppIcon name="plus" />
-          保存
+          {{ t('editor.templatePanelEditor.save') }}
         </el-button>
       </div>
       <div :class="styles['filter-row']">
         <el-select
           :model-value="templateStore.selectedCategory"
           :class="styles['filter-select']"
-          placeholder="分类"
+          :placeholder="t('editor.templatePanelEditor.category')"
           size="small"
           clearable
           @change="handleCategoryChange"
@@ -232,12 +235,12 @@ onMounted(() => {
 
     <!-- List -->
     <div :class="styles.list">
-      <div v-if="templateStore.loading" :class="styles.loading">加载中...</div>
+      <div v-if="templateStore.loading" :class="styles.loading">{{ t('editor.common.loading') }}</div>
       <div v-else-if="templateStore.error" :class="styles.empty">
         {{ templateStore.error }}
       </div>
       <div v-else-if="templateStore.templates.length === 0" :class="styles.empty">
-        {{ templateStore.searchKeyword || templateStore.selectedCategory ? '未找到匹配的模板' : '暂无模板' }}
+        {{ templateStore.searchKeyword || templateStore.selectedCategory ? t('editor.templatePanelEditor.noMatch') : t('editor.templatePanelEditor.empty') }}
       </div>
       <div v-else :class="styles['card-grid']">
         <div
@@ -265,19 +268,19 @@ onMounted(() => {
             <span :class="styles['card-category']">
               {{ categoryLabelMap[tpl.category] || tpl.category }}
             </span>
-            <span v-if="tpl.isBuiltin" :class="styles['card-builtin']">内置</span>
-            <span :class="styles['card-usage']">{{ tpl.usageCount }} 次使用</span>
+            <span v-if="tpl.isBuiltin" :class="styles['card-builtin']">{{ t('editor.templatePanelEditor.builtin') }}</span>
+            <span :class="styles['card-usage']">{{ t('editor.templatePanelEditor.usageCount', { count: tpl.usageCount }) }}</span>
           </div>
           <div v-if="tpl.tags.length > 0" :class="styles['card-tags']">
             <span v-for="tag in tpl.tags" :key="tag" :class="styles['card-tag']">{{ tag }}</span>
           </div>
           <div :class="styles['card-actions']" @click.stop>
-            <el-tooltip content="使用模板" placement="top" :show-after="300">
+            <el-tooltip :content="t('editor.templatePanelEditor.useTemplate')" placement="top" :show-after="300">
               <el-button size="small" text type="primary" @click="handleApply(tpl.id, tpl.name)">
                 <AppIcon name="plus" />
               </el-button>
             </el-tooltip>
-            <el-tooltip v-if="!tpl.isBuiltin" content="删除" placement="top" :show-after="300">
+            <el-tooltip v-if="!tpl.isBuiltin" :content="t('editor.common.delete')" placement="top" :show-after="300">
               <el-button size="small" text type="danger" @click="handleDelete(tpl.id, tpl.name)">
                 <AppIcon name="delete" />
               </el-button>
@@ -302,31 +305,31 @@ onMounted(() => {
     <!-- Save template dialog -->
     <el-dialog
       v-model="showSaveDialog"
-      title="保存为模板"
+      :title="t('editor.templatePanelEditor.saveTitle')"
       width="400px"
       :close-on-click-modal="false"
       destroy-on-close
     >
       <div :class="styles['save-form']">
-        <el-form-item label="模板名称" required>
+        <el-form-item :label="t('editor.templatePanelEditor.name')" required>
           <el-input
             v-model="saveForm.name"
-            placeholder="请输入模板名称"
+            :placeholder="t('editor.templatePanelEditor.namePlaceholder')"
             maxlength="100"
             show-word-limit
           />
         </el-form-item>
-        <el-form-item label="描述">
+        <el-form-item :label="t('editor.templatePanelEditor.description')">
           <el-input
             v-model="saveForm.description"
             type="textarea"
-            placeholder="请输入模板描述"
+            :placeholder="t('editor.templatePanelEditor.descriptionPlaceholder')"
             :rows="2"
             maxlength="500"
             show-word-limit
           />
         </el-form-item>
-        <el-form-item label="分类">
+        <el-form-item :label="t('editor.templatePanelEditor.category')">
           <el-select v-model="saveForm.category" style="width: 100%">
             <el-option
               v-for="opt in categoryOptions.filter(o => o.value)"
@@ -336,16 +339,16 @@ onMounted(() => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="标签">
+        <el-form-item :label="t('editor.templatePanelEditor.tags')">
           <div :class="styles['tag-input-row']">
             <el-input
               v-model="tagInput"
               :class="styles['tag-input']"
-              placeholder="输入标签后回车"
+              :placeholder="t('editor.templatePanelEditor.tagPlaceholder')"
               size="small"
               @keyup.enter="addTag"
             />
-            <el-button size="small" @click="addTag">添加</el-button>
+            <el-button size="small" @click="addTag">{{ t('editor.templatePanelEditor.add') }}</el-button>
           </div>
           <div v-if="saveForm.tags.length > 0" style="margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap;">
             <el-tag
@@ -361,8 +364,8 @@ onMounted(() => {
         </el-form-item>
       </div>
       <template #footer>
-        <el-button @click="showSaveDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleSaveTemplate">保存</el-button>
+        <el-button @click="showSaveDialog = false">{{ t('editor.common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSaveTemplate">{{ t('editor.common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

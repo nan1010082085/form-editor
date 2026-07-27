@@ -8,8 +8,11 @@
  * - 中央矩形实时预览圆角效果
  */
 import { ref, computed } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './BorderRadiusEditor.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   value?: Record<string, string>
@@ -105,7 +108,7 @@ const previewStyle = computed(() => {
       </div>
 
       <!-- Link toggle -->
-      <el-tooltip :content="linked ? '解除链接' : '链接四角'" placement="top" :show-after="300">
+      <el-tooltip :content="linked ? t('editor.borderEditor.unlinkTooltip') : t('editor.borderEditor.linkTooltip')" placement="top" :show-after="300">
         <button
           :class="[styles.linkBtn, linked && styles.linkBtnActive]"
           @click="toggleLinked"
@@ -118,7 +121,7 @@ const previewStyle = computed(() => {
     <!-- 链接模式：单个输入 -->
     <div v-if="linked" :class="styles.controls">
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">圆角</label>
+        <label :class="styles.controlLabel">{{ t('editor.borderRadiusEditor.radius') }}</label>
         <el-input-number
           :model-value="linkedValue"
           :min="0"
@@ -134,7 +137,7 @@ const previewStyle = computed(() => {
     <!-- 解除链接：4 个独立输入 -->
     <div v-else :class="styles.controlsGrid">
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">左上</label>
+        <label :class="styles.gridLabel">{{ t('editor.borderRadiusEditor.topLeft') }}</label>
         <el-input-number
           :model-value="tlVal"
           :min="0"
@@ -146,7 +149,7 @@ const previewStyle = computed(() => {
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">右上</label>
+        <label :class="styles.gridLabel">{{ t('editor.borderRadiusEditor.topRight') }}</label>
         <el-input-number
           :model-value="trVal"
           :min="0"
@@ -158,7 +161,7 @@ const previewStyle = computed(() => {
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">右下</label>
+        <label :class="styles.gridLabel">{{ t('editor.borderRadiusEditor.bottomRight') }}</label>
         <el-input-number
           :model-value="brVal"
           :min="0"
@@ -170,7 +173,7 @@ const previewStyle = computed(() => {
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">左下</label>
+        <label :class="styles.gridLabel">{{ t('editor.borderRadiusEditor.bottomLeft') }}</label>
         <el-input-number
           :model-value="blVal"
           :min="0"

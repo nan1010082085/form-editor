@@ -9,6 +9,9 @@ import { ref, watch } from 'vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
 import styles from './RequestConfigDialog.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 interface RequestConfig {
   apiUrl: string
@@ -110,7 +113,7 @@ function handleClose() {
 <template>
   <AppDialog
     :model-value="visible"
-    title="API 请求配置"
+    :title="t('editor.api.requestConfig')"
     width="560px"
     @update:model-value="emit('update:visible', $event)"
   >
@@ -118,7 +121,7 @@ function handleClose() {
       <!-- URL -->
       <!-- URL -->
       <div :class="styles.row">
-        <label :class="styles.label">请求地址</label>
+        <label :class="styles.label">{{ t('editor.api.requestUrl') }}</label>
         <el-input
           v-model="localConfig.apiUrl"
           size="small"
@@ -128,7 +131,7 @@ function handleClose() {
 
       <!-- Method -->
       <div :class="styles.row">
-        <label :class="styles.label">请求方法</label>
+        <label :class="styles.label">{{ t('editor.api.method') }}</label>
         <el-select
           v-model="localConfig.apiMethod"
           size="small"
@@ -146,7 +149,7 @@ function handleClose() {
       <!-- Headers -->
       <div :class="styles.section">
         <div :class="styles.sectionHeader">
-          <span :class="styles.sectionTitle">请求头 (Headers)</span>
+          <span :class="styles.sectionTitle">{{ t('editor.api.headers') }}</span>
           <el-button
             type="primary"
             text
@@ -154,7 +157,7 @@ function handleClose() {
             @click="addHeader"
           >
             <AppIcon name="plus" />
-            添加
+            {{ t('editor.common.add') }}
           </el-button>
         </div>
 
@@ -188,18 +191,18 @@ function handleClose() {
 
       <!-- Response Data Path -->
       <div :class="styles.row">
-        <label :class="styles.label">数据路径</label>
+        <label :class="styles.label">{{ t('editor.api.dataPath') }}</label>
         <el-input
           v-model="localConfig.responseDataPath"
           size="small"
-          placeholder="data.list (点号分隔)"
+          :placeholder="t('editor.api.dataPathPlaceholder')"
         />
       </div>
     </div>
 
     <template #footer>
-      <el-button size="small" @click="handleClose">取消</el-button>
-      <el-button type="primary" size="small" @click="handleSave">保存</el-button>
+      <el-button size="small" @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
+      <el-button type="primary" size="small" @click="handleSave">{{ t('editor.common.save') }}</el-button>
     </template>
   </AppDialog>
 </template>

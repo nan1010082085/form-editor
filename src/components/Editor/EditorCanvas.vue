@@ -33,8 +33,11 @@ import { useSnapshot } from '../../composables/useSnapshot'
 import { EDITOR_CONTEXTMENU_KEY } from './editorContextKeys'
 import { useFlexCanvasDropEnabled } from '../../composables/useFlexCanvasDrop'
 import { useDuplicateWidget } from '../../composables/useDuplicateWidget'
+import { useI18n } from '@schema-platform/platform-shared'
 import styles from './EditorCanvas.module.scss'
 import rendererStyles from '../WidgetRenderer/style.module.scss'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   previewBreakpoint?: PreviewBreakpoint
@@ -232,9 +235,9 @@ const previewEventContext: EventExecutionContext = {
     }
   },
   confirm: (message: string) => {
-    return ElMessageBox.confirm(message, '确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    return ElMessageBox.confirm(message, t('editor.canvas.confirmTitle'), {
+      confirmButtonText: t('editor.common.confirm'),
+      cancelButtonText: t('editor.common.cancel'),
       type: 'warning',
     }).then(() => {})
   },
@@ -294,7 +297,7 @@ function handleDeleteWidget(widget: Widget) {
 }
 
 function handleCopyId(id: string) {
-  void copyToClipboard(id, '已复制部件 ID')
+  void copyToClipboard(id, t('editor.canvas.copiedWidgetId'))
 }
 
 function handleBringToFront(widget: Widget) {
@@ -367,8 +370,8 @@ function handleCanvasClick() {
         v-if="showFlexEmpty"
         :class="styles.flexEmpty"
       >
-        <span :class="styles.flexEmptyTitle">Flex 页面画布为空</span>
-        <span>从左侧组件面板拖入部件，或切换「页面模板」快速创建</span>
+        <span :class="styles.flexEmptyTitle">{{ t('editor.canvas.emptyFlex') }}</span>
+        <span>{{ t('editor.canvas.emptyFlexHint') }}</span>
       </div>
       <WidgetRenderer
         v-if="isFlexLayout"

@@ -8,6 +8,9 @@
 import type { TableColumn } from '../../widgets/table/config'
 import styles from './TableColumnsEditor.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   columns: TableColumn[]
@@ -18,9 +21,9 @@ const emit = defineEmits<{
 }>()
 
 const fixedOptions = [
-  { label: '无', value: undefined as string | undefined },
-  { label: '左', value: 'left' as const },
-  { label: '右', value: 'right' as const },
+  { label: t('editor.columnsEditor.fixedNone'), value: undefined as string | undefined },
+  { label: t('editor.columnsEditor.fixedLeft'), value: 'left' as const },
+  { label: t('editor.columnsEditor.fixedRight'), value: 'right' as const },
 ]
 
 function addColumn() {
@@ -62,7 +65,7 @@ function updateColumn<K extends keyof TableColumn>(index: number, field: K, valu
 <template>
   <div :class="styles.editor">
     <div v-if="columns.length === 0" :class="styles.empty">
-      未配置列。
+      {{ t('editor.columnsEditor.emptyHint') }}
     </div>
 
     <div
@@ -71,7 +74,7 @@ function updateColumn<K extends keyof TableColumn>(index: number, field: K, valu
       :class="styles.item"
     >
       <div :class="styles.itemHeader">
-        <span :class="styles.itemTitle">列 {{ idx + 1 }}</span>
+        <span :class="styles.itemTitle">{{ t('editor.columnsEditor.columnTitle', { index: idx + 1 }) }}</span>
         <div :class="styles.itemActions">
           <el-button
             size="small"
@@ -101,65 +104,65 @@ function updateColumn<K extends keyof TableColumn>(index: number, field: K, valu
       </div>
 
       <div :class="styles.field">
-        <label :class="styles.label">字段名</label>
+        <label :class="styles.label">{{ t('editor.columnsEditor.fieldName') }}</label>
         <el-input
           :model-value="col.prop"
           size="small"
-          placeholder="字段名"
+          :placeholder="t('editor.columnsEditor.fieldName')"
           @update:model-value="updateColumn(idx, 'prop', $event)"
         />
       </div>
 
       <div :class="styles.field">
-        <label :class="styles.label">标签</label>
+        <label :class="styles.label">{{ t('editor.columnsEditor.label') }}</label>
         <el-input
           :model-value="col.label"
           size="small"
-          placeholder="显示标签"
+          :placeholder="t('editor.columnsEditor.labelPlaceholder')"
           @update:model-value="updateColumn(idx, 'label', $event)"
         />
       </div>
 
       <div :class="styles.field">
-        <label :class="styles.label">宽度模式</label>
+        <label :class="styles.label">{{ t('editor.columnsEditor.widthMode') }}</label>
         <el-switch
           :model-value="col.width === 'auto'"
-          active-text="自动撑满"
-          inactive-text="固定宽度"
+          :active-text="t('editor.columnsEditor.widthAuto')"
+          :inactive-text="t('editor.columnsEditor.widthFixed')"
           @update:model-value="(v: boolean) => updateColumn(idx, 'width', v ? 'auto' : undefined)"
         />
       </div>
 
       <div v-if="col.width !== 'auto'" :class="styles.field">
-        <label :class="styles.label">宽度 (px)</label>
+        <label :class="styles.label">{{ t('editor.columnsEditor.width') }} (px)</label>
         <el-input-number
           :model-value="col.width"
           size="small"
           controls-position="right"
           :min="0"
           :max="2000"
-          placeholder="列宽度"
+          :placeholder="t('editor.columnsEditor.widthPlaceholder')"
           style="width: 100%"
           @update:model-value="updateColumn(idx, 'width', $event ?? undefined)"
         />
       </div>
 
       <div :class="styles.field">
-        <label :class="styles.label">最小宽度 (px)</label>
+        <label :class="styles.label">{{ t('editor.columnsEditor.minWidth') }} (px)</label>
         <el-input-number
           :model-value="col.minWidth"
           size="small"
           controls-position="right"
           :min="0"
           :max="2000"
-          placeholder="最小列宽"
+          :placeholder="t('editor.columnsEditor.minWidthPlaceholder')"
           style="width: 100%"
           @update:model-value="updateColumn(idx, 'minWidth', $event ?? undefined)"
         />
       </div>
 
       <div :class="styles.field">
-        <label :class="styles.label">固定列</label>
+        <label :class="styles.label">{{ t('editor.columnsEditor.fixedColumn') }}</label>
         <el-select
           :model-value="col.fixed"
           size="small"
@@ -184,7 +187,7 @@ function updateColumn<K extends keyof TableColumn>(index: number, field: K, valu
       @click="addColumn"
     >
       <AppIcon name="plus" />
-      添加列
+      {{ t('editor.columnsEditor.addColumn') }}
     </el-button>
   </div>
 </template>

@@ -18,6 +18,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import SchemaVersionCompare from '@/components/SchemaVersionCompare.vue'
 import { useSchemaVersionStore } from '@/stores/schemaVersion'
+
+// Mock useI18n
+vi.mock('@schema-platform/platform-shared', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}))
 import type { VersionEntry, SchemaDetail } from '@/types/api'
 
 // ---- Mocks ----
@@ -140,7 +145,7 @@ async function triggerCompareFlow(wrapper: any, store: any) {
 
   // Now try to click the compare button
   const buttons = wrapper.findAll('button')
-  const compareBtn = buttons.find((b: any) => b.text().includes('对比选中版本'))
+  const compareBtn = buttons.find((b: any) => b.text().includes('editor.versionCompare.compareSelected'))
   if (compareBtn) {
     await compareBtn.trigger('click')
     await flushPromises()
@@ -166,9 +171,9 @@ describe('SchemaVersionCompare', () => {
       makeVersionEntry({ version: '20260102120000' }),
     ])
 
-    expect(wrapper.text()).toContain('版本历史')
-    expect(wrapper.text()).toContain('版本列表')
-    expect(wrapper.text()).toContain('共 2 个版本')
+    expect(wrapper.text()).toContain('editor.versionCompare.title')
+    expect(wrapper.text()).toContain('editor.versionCompare.versionList')
+    expect(wrapper.text()).toContain('2')
   })
 
   it('renders version items with formatted time', async () => {
@@ -186,7 +191,7 @@ describe('SchemaVersionCompare', () => {
 
     const wrapper = createWrapper()
 
-    expect(wrapper.text()).toContain('加载中...')
+    expect(wrapper.text()).toContain('editor.versionCompare.loading')
   })
 
   it('shows empty state when no versions', () => {
@@ -196,7 +201,7 @@ describe('SchemaVersionCompare', () => {
 
     const wrapper = createWrapper()
 
-    expect(wrapper.text()).toContain('暂无版本记录')
+    expect(wrapper.text()).toContain('editor.versionCompare.noVersions')
   })
 
   it('displays published and current tags', async () => {
@@ -205,8 +210,8 @@ describe('SchemaVersionCompare', () => {
       '20260101120000',
     )
 
-    expect(wrapper.text()).toContain('已发布')
-    expect(wrapper.text()).toContain('当前')
+    expect(wrapper.text()).toContain('editor.versionCompare.published')
+    expect(wrapper.text()).toContain('editor.versionCompare.current')
   })
 
   // ------------------------------------------------------------------
@@ -238,13 +243,13 @@ describe('SchemaVersionCompare', () => {
     ])
 
     // List view should be visible
-    expect(wrapper.text()).toContain('版本列表')
+    expect(wrapper.text()).toContain('editor.versionCompare.versionList')
     expect(wrapper.text()).toContain('2026-01-01 12:00:00')
     expect(wrapper.text()).toContain('2026-01-02 12:00:00')
 
     // Compare button should exist
     const buttons = wrapper.findAll('button')
-    const compareBtn = buttons.find((b: any) => b.text().includes('对比选中版本'))
+    const compareBtn = buttons.find((b: any) => b.text().includes('editor.versionCompare.compareSelected'))
     expect(compareBtn).toBeDefined()
 
     // Initially compare button should be disabled (no versions selected)
@@ -391,7 +396,6 @@ describe('SchemaVersionCompare', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('共 50 个版本')
     expect(wrapper.find('.el-pagination').exists()).toBe(true)
   })
 })

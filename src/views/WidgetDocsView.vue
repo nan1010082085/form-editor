@@ -4,13 +4,16 @@
  *
  * 后续补充部件文档时再实现。
  */
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 </script>
 
 <template>
   <div :class="$style.placeholder">
     <div :class="$style.content">
-      <h2 :class="$style.title">部件文档</h2>
-      <p :class="$style.desc">文档建设中...</p>
+      <h2 :class="$style.title">{{ t('editor.widgetDocs.title') }}</h2>
+      <p :class="$style.desc">{{ t('editor.widgetDocs.desc') }}</p>
     </div>
   </div>
 </template>

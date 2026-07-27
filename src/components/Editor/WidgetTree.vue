@@ -16,6 +16,9 @@ import { useAllContainerTypes } from '../../composables/useConstant'
 import { scrollToWidget, scrollTreeNodeIntoView } from '../../utils/editorScroll'
 import styles from './WidgetTree.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const widgetStore = useWidgetStore()
 const editorStore = useEditorStore()
@@ -110,7 +113,7 @@ function getIcon(type: string): string {
 <template>
   <div :class="styles.tree" style="overflow: auto; height: 100%;">
     <div v-if="treeData.length === 0" :class="styles.empty">
-      暂无部件
+      {{ t('editor.schemaTree.emptyHint') }}
     </div>
     <el-tree
       v-else
@@ -140,7 +143,7 @@ function getIcon(type: string): string {
           <span v-else-if="data.tabKey" :class="styles.tabKey">{{ data.tabKey }}</span>
 
           <!-- 列索引 -->
-          <span v-else-if="data.colIndex != null" :class="styles.colIndex">列 {{ data.colIndex + 1 }}</span>
+          <span v-else-if="data.colIndex != null" :class="styles.colIndex">{{ t('editor.schemaTree.colLabel') }} {{ data.colIndex + 1 }}</span>
         </div>
       </template>
     </el-tree>

@@ -5,12 +5,15 @@
  * 展示 Schema 的历史版本列表，标记发布版本，支持加载和发布特定版本。
  */
 import { ref, watch } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { fetchVersions, publishSchema, deleteVersion } from '@/api/schemaApi'
 import type { VersionEntry } from '@/types/api'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
 import styles from './VersionHistoryDialog.module.scss'
+
+const { t, locale } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -45,7 +48,7 @@ async function loadVersions(page = 1) {
     versions.value = res.items ?? []
     total.value = res.total ?? 0
   } catch {
-    ElMessage.error('加载版本历史失败')
+    ElMessage.error(t('editor.versionHistory.loadFailed'))
   } finally {
     loading.value = false
   }
@@ -70,14 +73,14 @@ async function handlePublishVersion(version: string) {
   try {
     const result = await publishSchema(props.id, version)
     if (result) {
-      ElMessage.success(`版本 ${version} 发布成功`)
+      ElMessage.success(t('editor.versionHistory.publishSuccess', { version }))
       emit('published')
       loadVersions(currentPage.value)
     } else {
-      ElMessage.error('发布失败')
+      ElMessage.error(t('editor.versionHistory.publishFailed'))
     }
   } catch {
-    ElMessage.error('发布失败')
+    ElMessage.error(t('editor.versionHistory.publishFailed'))
   } finally {
     publishingVersion.value = null
   }
@@ -87,9 +90,9 @@ async function handleDeleteVersion(version: string) {
   if (!props.id) return
   try {
     await ElMessageBox.confirm(
-      `确认删除版本 ${formatVersion(version)}？删除后不可恢复。`,
-      '删除确认',
-      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
+      t('editor.versionHistory.deleteConfirmMessage', { version: formatVersion(version) }),
+      t('editor.versionHistory.deleteConfirmTitle'),
+      { confirmButtonText: t('editor.versionHistory.delete'), cancelButtonText: t('editor.common.cancel'), type: 'warning' },
     )
   } catch {
     return
@@ -97,10 +100,10 @@ async function handleDeleteVersion(version: string) {
   deletingVersion.value = version
   try {
     await deleteVersion(props.id, version)
-    ElMessage.success('已删除')
+    ElMessage.success(t('editor.versionHistory.deleted'))
     loadVersions(currentPage.value)
   } catch {
-    ElMessage.error('删除失败')
+    ElMessage.error(t('editor.versionHistory.deleteFailed'))
   } finally {
     deletingVersion.value = null
   }
@@ -112,7 +115,7 @@ function formatVersion(v: string) {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleString('zh-CN')
+  return new Date(d).toLocaleString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 }
 
 function tableRowClassName({ row }: { row: VersionEntry }) {
@@ -125,16 +128,16 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
   <AppDialog
     :model-value="visible"
     @update:model-value="emit('update:visible', $event)"
-    :title="`版本历史 — ${schemaName || ''}`"
+    :title="t('editor.versionHistory.title', { name: schemaName || '' })"
     width="700px"
   >
     <div v-if="loading" :class="styles['version-history__loading']">
       <AppIcon name="loading" :class="styles['version-history__spinning']" />
-      <span>加载中...</span>
+      <span>{{ t('editor.versionHistory.loading') }}</span>
     </div>
 
     <div v-else-if="versions.length === 0" :class="styles['version-history__empty']">
-      暂无版本记录
+      {{ t('editor.versionHistory.noVersions') }}
     </div>
 
     <template v-else>
@@ -145,7 +148,7 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
         :row-class-name="tableRowClassName"
         row-key="version"
       >
-        <el-table-column prop="version" label="版本号" min-width="200" show-overflow-tooltip>
+        <el-table-column prop="version" :label="t('editor.versionHistory.versionColumn')" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
             <span :class="{ [styles['version-history__current']]: row.version === currentVersion, [styles['version-history__published']]: row.published }">
               {{ formatVersion(row.version) }}
@@ -153,23 +156,23 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
           </template>
         </el-table-column>
 
-        <el-table-column prop="status" label="状态" width="120" show-overflow-tooltip>
+        <el-table-column prop="status" :label="t('editor.versionHistory.statusColumn')" width="120" show-overflow-tooltip>
           <template #default="{ row }">
             <div :class="styles['version-history__status-cell']">
-              <el-tag v-if="row.version === currentVersion" type="primary" size="small" effect="plain">当前</el-tag>
-              <el-tag v-if="row.published" type="success" size="small">已发布</el-tag>
-              <el-tag v-if="!row.published && row.version !== currentVersion" type="info" size="small" effect="plain">草稿</el-tag>
+              <el-tag v-if="row.version === currentVersion" type="primary" size="small" effect="plain">{{ t('editor.versionHistory.statusCurrent') }}</el-tag>
+              <el-tag v-if="row.published" type="success" size="small">{{ t('editor.versionHistory.statusPublished') }}</el-tag>
+              <el-tag v-if="!row.published && row.version !== currentVersion" type="info" size="small" effect="plain">{{ t('editor.versionHistory.statusDraft') }}</el-tag>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column prop="createdAt" label="创建时间" width="180" show-overflow-tooltip>
+        <el-table-column prop="createdAt" :label="t('editor.versionHistory.createdAtColumn')" width="180" show-overflow-tooltip>
           <template #default="{ row }">
             {{ formatDate(row.createdAt) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="200" align="center" fixed="right">
+        <el-table-column :label="t('editor.versionHistory.actionsColumn')" width="200" align="center" fixed="right">
           <template #default="{ row }">
             <el-button
               v-if="row.version !== currentVersion"
@@ -178,7 +181,7 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
               size="small"
               @click="handleLoadVersion(row.version)"
             >
-              加载
+              {{ t('editor.versionHistory.load') }}
             </el-button>
             <el-button
               v-if="!row.published"
@@ -188,7 +191,7 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
               :loading="publishingVersion === row.version"
               @click="handlePublishVersion(row.version)"
             >
-              发布
+              {{ t('editor.versionHistory.publish') }}
             </el-button>
             <el-button
               v-if="row.version !== currentVersion"
@@ -198,7 +201,7 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
               :loading="deletingVersion === row.version"
               @click="handleDeleteVersion(row.version)"
             >
-              删除
+              {{ t('editor.versionHistory.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -217,7 +220,7 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
     </template>
 
     <template #footer>
-      <el-button @click="emit('update:visible', false)">关闭</el-button>
+      <el-button @click="emit('update:visible', false)">{{ t('editor.common.close') }}</el-button>
     </template>
   </AppDialog>
 </template>

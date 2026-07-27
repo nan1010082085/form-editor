@@ -6,6 +6,7 @@
  */
 import { onMounted, ref, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from '@schema-platform/platform-shared'
 import { useDataLoading } from '@schema-platform/platform-shared/utils/useDataLoading'
 import { fetchSchemas } from '@/api/schemaApi'
 import {
@@ -20,6 +21,8 @@ import {
 import type { PaginatedResponse, SchemaListItem } from '@/types/api'
 import styles from './SubmissionListView.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+
+const { t } = useI18n()
 
 // ── 表单列表 ──
 const schemas = ref<SchemaListItem[]>([])
@@ -39,12 +42,12 @@ const activeStatus = ref('')
 const selectedRows = ref<SubmissionItem[]>([])
 const hasSelection = computed(() => selectedRows.value.length > 0)
 
-const statusOptions = [
-  { label: '全部状态', value: '' },
-  { label: '已提交', value: 'submitted' },
-  { label: '已通过', value: 'approved' },
-  { label: '已驳回', value: 'rejected' },
-]
+const statusOptions = computed(() => [
+  { label: t('editor.submissionView.allStatus'), value: '' },
+  { label: t('editor.submissionView.statusSubmitted'), value: 'submitted' },
+  { label: t('editor.submissionView.statusApproved'), value: 'approved' },
+  { label: t('editor.submissionView.statusRejected'), value: 'rejected' },
+])
 
 // ── 当前选中的 schema 名称 ──
 const selectedSchemaName = computed(() => {
@@ -108,13 +111,13 @@ function handlePageChange(p: number) {
 // ── 删除 ──
 async function handleDelete(item: SubmissionItem) {
   try {
-    await ElMessageBox.confirm('确认删除此条提交数据？删除后不可恢复。', '删除确认', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('editor.submissionView.deleteConfirm'), t('editor.submissionView.deleteConfirmTitle'), {
+      confirmButtonText: t('editor.common.delete'),
+      cancelButtonText: t('editor.common.cancel'),
       type: 'warning',
     })
     await deleteSubmission(selectedSchemaId.value, item.id)
-    ElMessage.success('已删除')
+    ElMessage.success(t('editor.submissionView.deleted'))
     await loadSubmissions()
   } catch {
     // 用户取消，不做处理
@@ -125,13 +128,13 @@ async function handleDelete(item: SubmissionItem) {
 async function handleBatchDelete() {
   const ids = selectedRows.value.map((r) => r.id)
   try {
-    await ElMessageBox.confirm(`确认删除选中的 ${ids.length} 条提交数据？删除后不可恢复。`, '批量删除确认', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('editor.submissionView.batchDeleteConfirm', { count: ids.length }), t('editor.submissionView.batchDeleteConfirmTitle'), {
+      confirmButtonText: t('editor.common.delete'),
+      cancelButtonText: t('editor.common.cancel'),
       type: 'warning',
     })
     const result = await batchDeleteSubmissions(selectedSchemaId.value, ids)
-    ElMessage.success(`已删除 ${result.deletedCount} 条数据`)
+    ElMessage.success(t('editor.submissionView.batchDeleted', { count: result.deletedCount }))
     selectedRows.value = []
     await loadSubmissions()
   } catch {
@@ -143,13 +146,13 @@ async function handleBatchDelete() {
 async function handleBatchApprove() {
   const ids = selectedRows.value.map((r) => r.id)
   try {
-    await ElMessageBox.confirm(`确认通过选中的 ${ids.length} 条提交数据？`, '批量审批确认', {
-      confirmButtonText: '通过',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('editor.submissionView.batchApproveConfirm', { count: ids.length }), t('editor.submissionView.batchApproveConfirmTitle'), {
+      confirmButtonText: t('editor.submissionView.statusApproved'),
+      cancelButtonText: t('editor.common.cancel'),
       type: 'warning',
     })
     const result = await batchUpdateSubmissionsStatus(selectedSchemaId.value, ids, 'approved')
-    ElMessage.success(`已更新 ${result.modifiedCount} 条数据状态`)
+    ElMessage.success(t('editor.submissionView.batchApproved', { count: result.modifiedCount }))
     selectedRows.value = []
     await loadSubmissions()
   } catch {
@@ -176,9 +179,9 @@ async function handleExport(format: ExportFormat) {
     a.download = `submissions-${selectedSchemaName.value || selectedSchemaId.value}.${FORMAT_EXTENSIONS[format]}`
     a.click()
     URL.revokeObjectURL(url)
-    ElMessage.success(`导出 ${FORMAT_LABELS[format]} 成功`)
+    ElMessage.success(t('editor.submissionView.exportSuccess', { format: FORMAT_LABELS[format] }))
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : '导出失败')
+    ElMessage.error(err instanceof Error ? err.message : t('editor.submissionView.exportFailed'))
   }
 }
 
@@ -188,7 +191,11 @@ function formatDate(d: string): string {
 }
 
 function statusLabel(status: string): string {
-  const map: Record<string, string> = { submitted: '已提交', approved: '已通过', rejected: '已驳回' }
+  const map: Record<string, string> = {
+    submitted: t('editor.submissionView.statusSubmitted'),
+    approved: t('editor.submissionView.statusApproved'),
+    rejected: t('editor.submissionView.statusRejected'),
+  }
   return map[status] ?? status
 }
 
@@ -223,30 +230,30 @@ function dataKeys(item: SubmissionItem): string[] {
       <div :class="styles.header">
         <div :class="styles.titleRow">
           <div>
-            <h1 :class="styles.title">表单数据</h1>
-            <p :class="styles.subtitle">查看和管理表单提交数据</p>
+            <h1 :class="styles.title">{{ t('editor.submissionView.title') }}</h1>
+            <p :class="styles.subtitle">{{ t('editor.submissionView.subtitle') }}</p>
           </div>
           <div :class="styles.headerActions">
             <template v-if="hasSelection">
               <el-button type="danger" @click="handleBatchDelete">
                 <AppIcon name="delete" class="el-icon--left" />
-                批量删除 ({{ selectedRows.length }})
+                {{ t('editor.submissionView.batchDelete', { count: selectedRows.length }) }}
               </el-button>
               <el-button type="success" @click="handleBatchApprove">
                 <AppIcon name="check" class="el-icon--left" />
-                批量通过 ({{ selectedRows.length }})
+                {{ t('editor.submissionView.batchApprove', { count: selectedRows.length }) }}
               </el-button>
               <el-divider direction="vertical" />
             </template>
             <el-dropdown :disabled="!selectedSchemaId || total === 0" @command="handleExport">
               <el-button :disabled="!selectedSchemaId || total === 0">
                 <AppIcon name="arrow-down" class="el-icon--left" />
-                导出
+                {{ t('editor.submissionView.exportButton') }}
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="csv">导出 CSV</el-dropdown-item>
-                  <el-dropdown-item command="xlsx">导出 Excel</el-dropdown-item>
+                  <el-dropdown-item command="csv">{{ t('editor.submissionView.exportCsv') }}</el-dropdown-item>
+                  <el-dropdown-item command="xlsx">{{ t('editor.submissionView.exportExcel') }}</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -258,7 +265,7 @@ function dataKeys(item: SubmissionItem): string[] {
           <div :class="styles.toolbarLeft">
             <el-select
               v-model="selectedSchemaId"
-              placeholder="选择表单"
+              :placeholder="t('editor.submissionView.selectForm')"
               filterable
               :class="styles.schemaSelect"
             >
@@ -286,8 +293,8 @@ function dataKeys(item: SubmissionItem): string[] {
         <div :class="styles.emptyIcon">
           <AppIcon name="document" :size="64" />
         </div>
-        <h2 :class="styles.emptyTitle">请选择表单</h2>
-        <p :class="styles.emptyDesc">从上方下拉框选择一个表单来查看提交数据</p>
+        <h2 :class="styles.emptyTitle">{{ t('editor.submissionView.selectFormTitle') }}</h2>
+        <p :class="styles.emptyDesc">{{ t('editor.submissionView.selectFormDesc') }}</p>
       </div>
 
       <!-- Loading -->
@@ -300,8 +307,8 @@ function dataKeys(item: SubmissionItem): string[] {
         <div :class="styles.emptyIcon">
           <AppIcon name="search" :size="64" />
         </div>
-        <h2 :class="styles.emptyTitle">暂无提交数据</h2>
-        <p :class="styles.emptyDesc">该表单还没有收到任何提交</p>
+        <h2 :class="styles.emptyTitle">{{ t('editor.submissionView.emptyTitle') }}</h2>
+        <p :class="styles.emptyDesc">{{ t('editor.submissionView.emptyDesc') }}</p>
       </div>
 
       <!-- Table -->
@@ -314,7 +321,7 @@ function dataKeys(item: SubmissionItem): string[] {
         >
           <el-table-column type="selection" width="55" />
           <el-table-column prop="id" label="ID" width="280" show-overflow-tooltip />
-          <el-table-column prop="data" label="提交数据" min-width="300">
+          <el-table-column prop="data" :label="t('editor.submissionView.colData')" min-width="300">
             <template #default="{ row }">
               <el-tooltip
                 :content="dataKeys(row).map(key => `${key}: ${typeof row.data[key] === 'object' ? JSON.stringify(row.data[key]) : String(row.data[key] ?? '')}`).join('\n')"
@@ -325,7 +332,7 @@ function dataKeys(item: SubmissionItem): string[] {
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
+          <el-table-column prop="status" :label="t('editor.common.status')" width="100">
             <template #default="{ row }">
               <div :class="styles.statusCell">
                 <span :class="[styles.statusDot, styles[`statusDot${row.status.charAt(0).toUpperCase()}${row.status.slice(1)}`]]" />
@@ -333,19 +340,19 @@ function dataKeys(item: SubmissionItem): string[] {
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="submitterId" label="提交者" width="280" show-overflow-tooltip>
+          <el-table-column prop="submitterId" :label="t('editor.submissionView.colSubmitter')" width="280" show-overflow-tooltip>
             <template #default="{ row }">
               {{ row.submitterId ?? '-' }}
             </template>
           </el-table-column>
-          <el-table-column prop="createdAt" label="提交时间" width="170">
+          <el-table-column prop="createdAt" :label="t('editor.submissionView.colSubmitTime')" width="170">
             <template #default="{ row }">
               {{ formatDate(row.createdAt) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
+          <el-table-column :label="t('editor.common.actions')" width="100" fixed="right">
             <template #default="{ row }">
-              <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
+              <el-button type="danger" link size="small" @click="handleDelete(row)">{{ t('editor.common.delete') }}</el-button>
             </template>
           </el-table-column>
         </el-table>

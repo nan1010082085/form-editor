@@ -73,12 +73,12 @@ function emitChange() {
 }
 
 const presetGradients = [
-  { label: '默认', value: 'linear-gradient(180deg, #409eff, #53a8ff)' },
-  { label: '日落', value: 'linear-gradient(180deg, #ff6b6b, #ffa07a)' },
-  { label: '森林', value: 'linear-gradient(180deg, #56ab2f, #a8e063)' },
-  { label: '深海', value: 'linear-gradient(180deg, #2c3e50, #3498db)' },
-  { label: '紫罗兰', value: 'linear-gradient(180deg, #8e2de2, #4a00e0)' },
-  { label: '暗夜', value: 'linear-gradient(180deg, #0f0c29, #302b63, #24243e)' },
+  { label: t('editor.backgroundEditor.presetDefault'), value: 'linear-gradient(180deg, #409eff, #53a8ff)' },
+  { label: t('editor.backgroundEditor.presetSunset'), value: 'linear-gradient(180deg, #ff6b6b, #ffa07a)' },
+  { label: t('editor.backgroundEditor.presetForest'), value: 'linear-gradient(180deg, #56ab2f, #a8e063)' },
+  { label: t('editor.backgroundEditor.presetOcean'), value: 'linear-gradient(180deg, #2c3e50, #3498db)' },
+  { label: t('editor.backgroundEditor.presetViolet'), value: 'linear-gradient(180deg, #8e2de2, #4a00e0)' },
+  { label: t('editor.backgroundEditor.presetDark'), value: 'linear-gradient(180deg, #0f0c29, #302b63, #24243e)' },
 ]
 </script>
 
@@ -86,10 +86,10 @@ const presetGradients = [
   <div :class="$style.root">
     <div :class="$style.row">
       <el-select v-model="bgType" size="small" @change="emitChange">
-        <el-option label="无" value="none" />
-        <el-option label="纯色" value="color" />
-        <el-option label="渐变" value="gradient" />
-        <el-option label="图片" value="image" />
+        <el-option :label="t('editor.backgroundEditor.bgNone')" value="none" />
+        <el-option :label="t('editor.backgroundEditor.bgColor')" value="color" />
+        <el-option :label="t('editor.backgroundEditor.bgGradient')" value="gradient" />
+        <el-option :label="t('editor.backgroundEditor.bgImage')" value="image" />
       </el-select>
     </div>
 
@@ -112,13 +112,13 @@ const presetGradients = [
         />
       </div>
       <div :class="$style.row">
-        <label>起始</label>
+        <label>{{ t('editor.backgroundEditor.startColor') }}</label>
         <el-color-picker v-model="gradientStart" size="small" @change="emitChange" />
-        <label>结束</label>
+        <label>{{ t('editor.backgroundEditor.endColor') }}</label>
         <el-color-picker v-model="gradientEnd" size="small" @change="emitChange" />
       </div>
       <div :class="$style.row">
-        <label>角度</label>
+        <label>{{ t('editor.backgroundEditor.angle') }}</label>
         <el-slider v-model="gradientAngle" :min="0" :max="360" size="small" style="flex:1" @change="emitChange" />
         <span :class="$style.angleVal">{{ gradientAngle }}°</span>
       </div>
@@ -129,18 +129,18 @@ const presetGradients = [
         <el-input v-model="bgImage" size="small" placeholder="url(...)" @change="emitChange" />
       </div>
       <div :class="$style.row">
-        <label>尺寸</label>
+        <label>{{ t('editor.backgroundEditor.size') }}</label>
         <el-select v-model="bgSize" size="small" @change="emitChange">
-          <el-option label="覆盖" value="cover" />
-          <el-option label="包含" value="contain" />
-          <el-option label="原始" value="auto" />
+          <el-option :label="t('editor.backgroundEditor.sizeCover')" value="cover" />
+          <el-option :label="t('editor.backgroundEditor.sizeContain')" value="contain" />
+          <el-option :label="t('editor.backgroundEditor.sizeAuto')" value="auto" />
         </el-select>
-        <label>重复</label>
+        <label>{{ t('editor.backgroundEditor.repeat') }}</label>
         <el-select v-model="bgRepeat" size="small" @change="emitChange">
-          <el-option label="不重复" value="no-repeat" />
-          <el-option label="重复" value="repeat" />
-          <el-option label="水平" value="repeat-x" />
-          <el-option label="垂直" value="repeat-y" />
+          <el-option :label="t('editor.backgroundEditor.repeatNone')" value="no-repeat" />
+          <el-option :label="t('editor.backgroundEditor.repeat')" value="repeat" />
+          <el-option :label="t('editor.backgroundEditor.repeatHorizontal')" value="repeat-x" />
+          <el-option :label="t('editor.backgroundEditor.repeatVertical')" value="repeat-y" />
         </el-select>
       </div>
     </template>

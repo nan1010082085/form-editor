@@ -4,8 +4,9 @@
  *
  * Flow: paste JSON (or fetch from URL) -> parse -> preview inferences -> override types -> generate schema.
  */
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from '@schema-platform/platform-shared'
 import { apiClient } from '@/utils/apiClient'
 import {
   inferFieldsFromJson,
@@ -19,6 +20,7 @@ const emit = defineEmits<{
   'import': [schema: PartialWidget[]]
 }>()
 
+const { t } = useI18n()
 const visible = ref(false)
 const jsonText = ref('')
 const parseError = ref('')
@@ -32,20 +34,20 @@ const fetchError = ref('')
 const inputMode = ref<'paste' | 'url'>('paste')
 
 /** SchemaType options for override dropdown */
-const schemaTypeOptions: { label: string; value: SchemaType }[] = [
-  { label: '输入框', value: 'input' },
-  { label: '数字', value: 'number' },
-  { label: '下拉选择', value: 'select' },
-  { label: '单选', value: 'radio' },
-  { label: '复选框', value: 'checkbox' },
-  { label: '日期', value: 'date' },
-  { label: '文本域', value: 'textarea' },
-  { label: '富文本', value: 'richtext' },
-  { label: '上传', value: 'upload' },
-  { label: '表格', value: 'table' },
-  { label: '穿梭框', value: 'transfer' },
-  { label: '卡片 (嵌套)', value: 'card' },
-]
+const schemaTypeOptions = computed(() => [
+  { label: t('editor.jsonImporter.typeInput'), value: 'input' as SchemaType },
+  { label: t('editor.jsonImporter.typeNumber'), value: 'number' as SchemaType },
+  { label: t('editor.jsonImporter.typeSelect'), value: 'select' as SchemaType },
+  { label: t('editor.jsonImporter.typeRadio'), value: 'radio' as SchemaType },
+  { label: t('editor.jsonImporter.typeCheckbox'), value: 'checkbox' as SchemaType },
+  { label: t('editor.jsonImporter.typeDate'), value: 'date' as SchemaType },
+  { label: t('editor.jsonImporter.typeTextarea'), value: 'textarea' as SchemaType },
+  { label: t('editor.jsonImporter.typeRichtext'), value: 'richtext' as SchemaType },
+  { label: t('editor.jsonImporter.typeUpload'), value: 'upload' as SchemaType },
+  { label: t('editor.jsonImporter.typeTable'), value: 'table' as SchemaType },
+  { label: t('editor.jsonImporter.typeTransfer'), value: 'transfer' as SchemaType },
+  { label: t('editor.jsonImporter.typeCard'), value: 'card' as SchemaType },
+])
 
 function open() {
   jsonText.value = ''
@@ -63,7 +65,7 @@ function handleParse() {
   inferences.value = []
 
   if (!jsonText.value.trim()) {
-    parseError.value = '请粘贴 JSON 响应。'
+    parseError.value = t('editor.jsonImporter.parsePasteHint')
     return
   }
 
@@ -71,13 +73,13 @@ function handleParse() {
     const parsed = JSON.parse(jsonText.value) as unknown
     const result = inferFieldsFromJson(parsed)
     if (result.length === 0) {
-      parseError.value = '无法从此 JSON 推断任何字段。请确保它包含带有属性的对象。'
+      parseError.value = t('editor.jsonImporter.inferFailHint')
       return
     }
     inferences.value = result
     step.value = 'preview'
   } catch {
-    parseError.value = '无效的 JSON 格式。'
+    parseError.value = t('editor.jsonImporter.invalidJson')
   }
 }
 
@@ -109,14 +111,14 @@ async function handleFetchFromUrl() {
 
     const result = inferFieldsFromJson(dataSource)
     if (result.length === 0) {
-      fetchError.value = '无法从响应中推断任何字段。请确保它返回带有属性的对象或数组。'
+      fetchError.value = t('editor.jsonImporter.inferFromUrlFail')
       return
     }
     inferences.value = result
     step.value = 'preview'
-    ElMessage.success(`获取并分析了 ${result.length} 个字段`)
+    ElMessage.success(t('editor.jsonImporter.fetchAnalyzed', { count: result.length }))
   } catch (e: unknown) {
-    fetchError.value = e instanceof Error ? e.message : '请求失败'
+    fetchError.value = e instanceof Error ? e.message : t('editor.jsonImporter.requestFailed')
   } finally {
     fetching.value = false
   }
@@ -132,7 +134,7 @@ function handleGenerate() {
   const schema = fieldInferencesToSchema(inferences.value)
   emit('import', schema)
   visible.value = false
-  ElMessage.success(`生成了 ${schema.length} 个 schema 项`)
+  ElMessage.success(t('editor.jsonImporter.schemaGenerated', { count: schema.length }))
 }
 
 function handleBack() {
@@ -145,7 +147,7 @@ defineExpose({ open })
 <template>
   <el-dialog
     :model-value="visible"
-    title="从 JSON 导入"
+    :title="t('editor.jsonImporter.dialogTitle')"
     width="700px"
     :close-on-click-modal="false"
     :append-to-body="true"
@@ -160,13 +162,13 @@ defineExpose({ open })
           :class="[styles['json-importer__mode-tab'], { [styles['json-importer__mode-tab--active']]: inputMode === 'paste' }]"
           @click="inputMode = 'paste'"
         >
-          粘贴 JSON
+          {{ t('editor.jsonImporter.pasteJson') }}
         </button>
         <button
           :class="[styles['json-importer__mode-tab'], { [styles['json-importer__mode-tab--active']]: inputMode === 'url' }]"
           @click="inputMode = 'url'"
         >
-          从 URL 获取
+          {{ t('editor.jsonImporter.fetchFromUrl') }}
         </button>
       </div>
 
@@ -176,13 +178,7 @@ defineExpose({ open })
           v-model="jsonText"
           type="textarea"
           :rows="14"
-          placeholder='在此粘贴 API 响应 JSON, 例如:
-{
-  "user_name": "John",
-  "age": 30,
-  "is_active": true,
-  "created_at": "2024-01-15T10:30:00"
-}'
+          :placeholder="t('editor.jsonImporter.pastePlaceholder')"
         />
         <div v-if="parseError" :class="styles['json-importer__error']">{{ parseError }}</div>
       </template>
@@ -194,7 +190,7 @@ defineExpose({ open })
             <el-input
               v-model="fetchUrl"
               size="small"
-              placeholder="/api/list 或 https://example.com/api/data"
+              :placeholder="t('editor.jsonImporter.urlPlaceholder')"
               @keyup.enter="handleFetchFromUrl"
             />
             <el-button
@@ -203,12 +199,12 @@ defineExpose({ open })
               :loading="fetching"
               @click="handleFetchFromUrl"
             >
-              获取
+              {{ t('editor.jsonImporter.fetch') }}
             </el-button>
           </div>
           <div v-if="fetchError" :class="styles['json-importer__error']">{{ fetchError }}</div>
           <div v-if="jsonText" :class="styles['json-importer__fetched-preview']">
-            <label :class="styles['json-importer__label']">获取的响应:</label>
+            <label :class="styles['json-importer__label']">{{ t('editor.jsonImporter.fetchedResponse') }}</label>
             <el-input
               :model-value="jsonText"
               type="textarea"
@@ -223,12 +219,12 @@ defineExpose({ open })
     <!-- Step 2: Preview & Override -->
     <div v-else :class="styles['json-importer__preview']">
       <p :class="styles['json-importer__summary']">
-        {{ inferences.length }} 个字段被检测到。如需要可覆盖推断的类型。
+        {{ t('editor.jsonImporter.fieldsDetected', { count: inferences.length }) }}
       </p>
       <el-table :data="inferences" border size="small" max-height="400">
-        <el-table-column prop="field" label="字段名" min-width="140" />
-        <el-table-column prop="label" label="标签" min-width="120" />
-        <el-table-column label="类型" width="160">
+        <el-table-column prop="field" :label="t('editor.jsonImporter.colFieldName')" min-width="140" />
+        <el-table-column prop="label" :label="t('editor.jsonImporter.colLabel')" min-width="120" />
+        <el-table-column :label="t('editor.jsonImporter.colType')" width="160">
           <template #default="{ row, $index }">
             <el-select
               :model-value="row.type"
@@ -245,7 +241,7 @@ defineExpose({ open })
             </el-select>
           </template>
         </el-table-column>
-        <el-table-column label="示例值" min-width="160">
+        <el-table-column :label="t('editor.jsonImporter.colSample')" min-width="160">
           <template #default="{ row }">
             <span :class="styles['json-importer__sample']">
               {{ typeof row.sample === 'object' ? JSON.stringify(row.sample) : String(row.sample ?? '') }}
@@ -256,13 +252,13 @@ defineExpose({ open })
     </div>
 
     <template #footer>
-      <el-button @click="visible = false">取消</el-button>
+      <el-button @click="visible = false">{{ t('editor.jsonImporter.cancel') }}</el-button>
       <template v-if="step === 'input' && inputMode === 'paste'">
-        <el-button type="primary" @click="handleParse">解析</el-button>
+        <el-button type="primary" @click="handleParse">{{ t('editor.jsonImporter.parse') }}</el-button>
       </template>
       <template v-else-if="step === 'preview'">
-        <el-button @click="handleBack">返回</el-button>
-        <el-button type="primary" @click="handleGenerate">生成 Schema</el-button>
+        <el-button @click="handleBack">{{ t('editor.jsonImporter.back') }}</el-button>
+        <el-button type="primary" @click="handleGenerate">{{ t('editor.jsonImporter.generateSchema') }}</el-button>
       </template>
     </template>
   </el-dialog>

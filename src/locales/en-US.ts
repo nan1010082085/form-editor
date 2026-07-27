@@ -36,6 +36,21 @@ const enUS: Record<string, string> = {
   // ---- Loading / Error ----
   'message.loadFailed': 'Failed to load data',
   'message.transformFailed': 'Data transformation failed',
+
+  // ---- Dialog ----
+  'dialog.defaultTitle': 'Dialog',
+  'dialog.cancel': 'Cancel',
+  'dialog.confirm': 'OK',
+
+  // ---- Confirm ----
+  'confirm.title': 'Confirm',
+  'confirm.ok': 'OK',
+  'confirm.cancel': 'Cancel',
+
+  // ---- Version Compare ----
+  'versionCompare.newWidget': 'New widget',
+  'versionCompare.deleted': 'Deleted',
+  'versionCompare.positionChanged': 'Position changed',
 }
 
 export default enUS

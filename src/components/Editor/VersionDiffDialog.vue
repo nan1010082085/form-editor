@@ -10,12 +10,15 @@
  * - 加载历史版本到画布
  */
 import { ref, watch } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import { fetchVersions, fetchVersion } from '@/api/schemaApi'
 import type { VersionEntry } from '@/types/api'
 import type { Widget } from '@/widgets/base/types'
 import { diffSchema } from '@/utils/schemaDiff'
 import type { DiffResult } from '@/utils/schemaDiff'
 import styles from './VersionDiffDialog.module.scss'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -104,7 +107,7 @@ const badgeLabels: Record<string, string> = {
 
 // ---- 截断显示值 ----
 function truncateValue(val: unknown, maxLen = 60): string {
-  if (val === null || val === undefined) return '空'
+  if (val === null || val === undefined) return t('editor.versionDiff.emptyValue')
   const str = typeof val === 'object' ? JSON.stringify(val) : String(val)
   return str.length > maxLen ? str.slice(0, maxLen) + '...' : str
 }
@@ -135,7 +138,7 @@ watch(
 <template>
   <el-dialog
     :model-value="visible"
-    title="版本对比"
+    :title="t('editor.versionDiff.title')"
     width="900px"
     :close-on-click-modal="false"
     :append-to-body="true"
@@ -144,10 +147,10 @@ watch(
   >
     <!-- 顶部版本选择器 -->
     <div :class="styles['version-selectors']">
-      <span :class="styles['version-selectors__label']">旧版本</span>
+      <span :class="styles['version-selectors__label']">{{ t('editor.versionDiff.oldVersion') }}</span>
       <el-select
         v-model="leftVersion"
-        placeholder="选择旧版本"
+        :placeholder="t('editor.versionDiff.selectOldVersion')"
         :loading="versionLoading"
         size="small"
         style="width: 200px"
@@ -161,10 +164,10 @@ watch(
         />
       </el-select>
       <span :class="styles['version-selectors__arrow']">→</span>
-      <span :class="styles['version-selectors__label']">新版本</span>
+      <span :class="styles['version-selectors__label']">{{ t('editor.versionDiff.newVersion') }}</span>
       <el-select
         v-model="rightVersion"
-        placeholder="选择新版本"
+        :placeholder="t('editor.versionDiff.selectNewVersion')"
         :loading="versionLoading"
         size="small"
         style="width: 200px"
@@ -184,29 +187,29 @@ watch(
         :disabled="!leftVersion || !rightVersion || leftVersion === rightVersion"
         @click="performDiff"
       >
-        对比
+        {{ t('editor.versionDiff.compare') }}
       </el-button>
     </div>
 
     <!-- 差异统计 -->
     <div v-if="diffResult" :class="styles['diff-summary']">
-      <span :class="styles['diff-summary__text']">差异：</span>
+      <span :class="styles['diff-summary__text']">{{ t('editor.versionDiff.diffLabel') }}</span>
       <span
         v-if="diffResult.added.length"
         :class="[styles['diff-summary__count'], styles['diff-summary__added']]"
-      >+{{ diffResult.added.length }} 新增</span>
+      >{{ t('editor.versionDiff.addedCount', { count: diffResult.added.length }) }}</span>
       <span
         v-if="diffResult.removed.length"
         :class="[styles['diff-summary__count'], styles['diff-summary__removed']]"
-      >-{{ diffResult.removed.length }} 删除</span>
+      >{{ t('editor.versionDiff.removedCount', { count: diffResult.removed.length }) }}</span>
       <span
         v-if="diffResult.modified.length"
         :class="[styles['diff-summary__count'], styles['diff-summary__modified']]"
-      >~{{ diffResult.modified.length }} 修改</span>
+      >{{ t('editor.versionDiff.modifiedCount', { count: diffResult.modified.length }) }}</span>
       <span
         v-if="diffResult.moved.length"
         :class="[styles['diff-summary__count'], styles['diff-summary__moved']]"
-      >M{{ diffResult.moved.length }} 移动</span>
+      >{{ t('editor.versionDiff.movedCount', { count: diffResult.moved.length }) }}</span>
     </div>
 
     <!-- 对比主体 -->
@@ -214,14 +217,14 @@ watch(
       <!-- 左栏：旧版本 -->
       <div :class="styles['diff-panel']">
         <div :class="styles['diff-panel__header']">
-          <span :class="styles['diff-panel__title']">旧版本 {{ formatVersion(leftVersion) }}</span>
+          <span :class="styles['diff-panel__title']">{{ t('editor.versionDiff.oldVersionTitle', { version: formatVersion(leftVersion) }) }}</span>
           <el-button
             v-if="leftVersion"
             size="small"
             link
             type="primary"
             @click="handleLoadVersion(leftVersion)"
-          >加载此版本</el-button>
+          >{{ t('editor.versionDiff.loadThisVersion') }}</el-button>
         </div>
         <div :class="styles['diff-panel__scroll']">
           <template v-if="diffResult">
@@ -275,23 +278,23 @@ watch(
             <div
               v-if="!diffResult.removed.length && !diffResult.modified.length && !diffResult.moved.length"
               :class="styles['diff-panel__empty']"
-            >无差异</div>
+            >{{ t('editor.versionDiff.noDiff') }}</div>
           </template>
-          <div v-else-if="!diffLoading" :class="styles['diff-panel__empty']">点击"对比"查看差异</div>
+          <div v-else-if="!diffLoading" :class="styles['diff-panel__empty']">{{ t('editor.versionDiff.clickCompareHint') }}</div>
         </div>
       </div>
 
       <!-- 右栏：新版本 -->
       <div :class="styles['diff-panel']">
         <div :class="styles['diff-panel__header']">
-          <span :class="styles['diff-panel__title']">新版本 {{ formatVersion(rightVersion) }}</span>
+          <span :class="styles['diff-panel__title']">{{ t('editor.versionDiff.newVersionTitle', { version: formatVersion(rightVersion) }) }}</span>
           <el-button
             v-if="rightVersion"
             size="small"
             link
             type="primary"
             @click="handleLoadVersion(rightVersion)"
-          >加载此版本</el-button>
+          >{{ t('editor.versionDiff.loadThisVersion') }}</el-button>
         </div>
         <div :class="styles['diff-panel__scroll']">
           <template v-if="diffResult">
@@ -345,16 +348,16 @@ watch(
             <div
               v-if="!diffResult.added.length && !diffResult.modified.length && !diffResult.moved.length"
               :class="styles['diff-panel__empty']"
-            >无差异</div>
+            >{{ t('editor.versionDiff.noDiff') }}</div>
           </template>
-          <div v-else-if="!diffLoading" :class="styles['diff-panel__empty']">点击"对比"查看差异</div>
+          <div v-else-if="!diffLoading" :class="styles['diff-panel__empty']">{{ t('editor.versionDiff.clickCompareHint') }}</div>
         </div>
       </div>
     </div>
 
     <!-- 底部 -->
     <template #footer>
-      <el-button @click="emit('update:visible', false)">关闭</el-button>
+      <el-button @click="emit('update:visible', false)">{{ t('editor.common.close') }}</el-button>
     </template>
   </el-dialog>
 </template>

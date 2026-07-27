@@ -10,6 +10,9 @@
 import { ref, computed } from 'vue'
 import styles from './SpacingEditor.module.scss'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { useI18n } from '@schema-platform/platform-shared'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   /** 'margin' 或 'padding' */
@@ -118,7 +121,7 @@ function toggleLinked() {
       </div>
 
       <!-- Link toggle -->
-      <el-tooltip :content="linked ? '解除链接' : '链接四边'" placement="top" :show-after="300">
+      <el-tooltip :content="linked ? t('editor.spacingEditor.unlink') : t('editor.spacingEditor.linkFour')" placement="top" :show-after="300">
         <button
           :class="[styles.linkBtn, linked && styles.linkBtnActive]"
           @click="toggleLinked"
@@ -131,7 +134,7 @@ function toggleLinked() {
     <!-- 链接模式：单个输入 -->
     <div v-if="linked" :class="styles.controls">
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">数值</label>
+        <label :class="styles.controlLabel">{{ t('editor.spacingEditor.value') }}</label>
         <el-input-number
           :model-value="linkedValue"
           :min="0"
@@ -147,7 +150,7 @@ function toggleLinked() {
     <!-- 解除链接：4 个独立输入 -->
     <div v-else :class="styles.controlsGrid">
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">上</label>
+        <label :class="styles.gridLabel">{{ t('editor.spacingEditor.top') }}</label>
         <el-input-number
           :model-value="topVal"
           :min="0"
@@ -159,7 +162,7 @@ function toggleLinked() {
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">右</label>
+        <label :class="styles.gridLabel">{{ t('editor.spacingEditor.right') }}</label>
         <el-input-number
           :model-value="rightVal"
           :min="0"
@@ -171,7 +174,7 @@ function toggleLinked() {
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">下</label>
+        <label :class="styles.gridLabel">{{ t('editor.spacingEditor.bottom') }}</label>
         <el-input-number
           :model-value="bottomVal"
           :min="0"
@@ -183,7 +186,7 @@ function toggleLinked() {
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">左</label>
+        <label :class="styles.gridLabel">{{ t('editor.spacingEditor.left') }}</label>
         <el-input-number
           :model-value="leftVal"
           :min="0"

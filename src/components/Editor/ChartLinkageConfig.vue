@@ -10,6 +10,7 @@
  * - 钻取字段和标签（drilldown 专用）
  */
 import { computed } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import type {
   ChartLinkageRule,
   ChartLinkageTrigger,
@@ -19,6 +20,8 @@ import type {
 import { generateComponentId } from '@/composables/useIdGenerate'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import styles from './ChartLinkageConfig.module.scss'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   rules: ChartLinkageRule[]
@@ -59,18 +62,18 @@ function isChartType(type: string): boolean {
 }
 
 /** 触发方式选项 */
-const triggerOptions: { label: string; value: ChartLinkageTrigger }[] = [
-  { label: '点击', value: 'click' },
-  { label: '选中', value: 'select' },
-  { label: '悬停', value: 'hover' },
-]
+const triggerOptions = computed<{ label: string; value: ChartLinkageTrigger }[]>(() => [
+  { label: t('editor.chartLinkage.triggerClick'), value: 'click' },
+  { label: t('editor.chartLinkage.triggerSelect'), value: 'select' },
+  { label: t('editor.chartLinkage.triggerHover'), value: 'hover' },
+])
 
 /** 动作类型选项 */
-const actionOptions: { label: string; value: ChartLinkageAction }[] = [
-  { label: '筛选', value: 'filter' },
-  { label: '钻取', value: 'drilldown' },
-  { label: '高亮', value: 'highlight' },
-]
+const actionOptions = computed<{ label: string; value: ChartLinkageAction }[]>(() => [
+  { label: t('editor.chartLinkage.actionFilter'), value: 'filter' },
+  { label: t('editor.chartLinkage.actionDrilldown'), value: 'drilldown' },
+  { label: t('editor.chartLinkage.actionHighlight'), value: 'highlight' },
+])
 
 /** 图表 Widget 选项 */
 const targetWidgetOptions = computed(() =>
@@ -162,7 +165,7 @@ function getMappingEntries(mapping: Record<string, string>) {
 <template>
   <div :class="styles['chart-linkage-config']">
     <div v-if="rules.length === 0" :class="styles['chart-linkage-config__empty']">
-      未配置图表联动规则。
+      {{ t('editor.chartLinkage.emptyHint') }}
     </div>
 
     <div
@@ -171,7 +174,7 @@ function getMappingEntries(mapping: Record<string, string>) {
       :class="styles['chart-linkage-config__item']"
     >
       <div :class="styles['chart-linkage-config__item-header']">
-        <span :class="styles['chart-linkage-config__item-title']">规则 {{ idx + 1 }}</span>
+        <span :class="styles['chart-linkage-config__item-title']">{{ t('editor.chartLinkage.ruleTitle', { index: idx + 1 }) }}</span>
         <el-button
           type="danger"
           link
@@ -184,7 +187,7 @@ function getMappingEntries(mapping: Record<string, string>) {
 
       <!-- 触发方式 -->
       <div :class="styles['chart-linkage-config__field']">
-        <label :class="styles['chart-linkage-config__label']">触发方式</label>
+        <label :class="styles['chart-linkage-config__label']">{{ t('editor.chartLinkage.triggerType') }}</label>
         <el-select
           :model-value="rule.trigger"
           size="small"
@@ -202,14 +205,14 @@ function getMappingEntries(mapping: Record<string, string>) {
 
       <!-- 目标图表 -->
       <div :class="styles['chart-linkage-config__field']">
-        <label :class="styles['chart-linkage-config__label']">目标图表</label>
+        <label :class="styles['chart-linkage-config__label']">{{ t('editor.chartLinkage.targetChart') }}</label>
         <el-select
           :model-value="rule.targetWidgetIds"
           size="small"
           multiple
           filterable
           style="width: 100%"
-          placeholder="选择要联动的目标图表"
+          :placeholder="t('editor.chartLinkage.targetChartPlaceholder')"
           @update:model-value="updateRule(idx, 'targetWidgetIds', $event as string[])"
         >
           <el-option
@@ -223,7 +226,7 @@ function getMappingEntries(mapping: Record<string, string>) {
 
       <!-- 联动动作 -->
       <div :class="styles['chart-linkage-config__field']">
-        <label :class="styles['chart-linkage-config__label']">联动动作</label>
+        <label :class="styles['chart-linkage-config__label']">{{ t('editor.chartLinkage.linkageAction') }}</label>
         <el-select
           :model-value="rule.action"
           size="small"
@@ -241,32 +244,32 @@ function getMappingEntries(mapping: Record<string, string>) {
 
       <!-- 钻取字段（drilldown 专用） -->
       <div v-if="rule.action === 'drilldown'" :class="styles['chart-linkage-config__field']">
-        <label :class="styles['chart-linkage-config__label']">钻取维度字段</label>
+        <label :class="styles['chart-linkage-config__label']">{{ t('editor.chartLinkage.drilldownField') }}</label>
         <el-input
           :model-value="rule.drilldownField ?? ''"
           size="small"
-          placeholder="如: category"
+          :placeholder="t('editor.chartLinkage.drilldownFieldPlaceholder')"
           @update:model-value="updateRule(idx, 'drilldownField', $event || undefined)"
         />
       </div>
 
       <!-- 钻取标签（drilldown 专用） -->
       <div v-if="rule.action === 'drilldown'" :class="styles['chart-linkage-config__field']">
-        <label :class="styles['chart-linkage-config__label']">钻取层级标签</label>
+        <label :class="styles['chart-linkage-config__label']">{{ t('editor.chartLinkage.drilldownLabel') }}</label>
         <el-input
           :model-value="rule.drilldownLabel ?? ''"
           size="small"
-          placeholder="如: 产品类别"
+          :placeholder="t('editor.chartLinkage.drilldownLabelPlaceholder')"
           @update:model-value="updateRule(idx, 'drilldownLabel', $event || undefined)"
         />
       </div>
 
       <!-- 参数映射 -->
       <div :class="styles['chart-linkage-config__field']">
-        <label :class="styles['chart-linkage-config__label']">参数映射</label>
+        <label :class="styles['chart-linkage-config__label']">{{ t('editor.chartLinkage.paramMapping') }}</label>
         <div :class="styles['chart-linkage-config__param-section']">
           <div :class="styles['chart-linkage-config__param-header']">
-            <span :class="styles['chart-linkage-config__param-title']">源字段 → 目标字段</span>
+            <span :class="styles['chart-linkage-config__param-title']">{{ t('editor.chartLinkage.sourceMapping') }}</span>
             <el-button
               type="primary"
               link
@@ -274,7 +277,7 @@ function getMappingEntries(mapping: Record<string, string>) {
               @click="addParamMapping(idx)"
             >
               <AppIcon name="plus" />
-              添加
+              {{ t('editor.common.add') }}
             </el-button>
           </div>
 
@@ -286,7 +289,7 @@ function getMappingEntries(mapping: Record<string, string>) {
             <el-input
               :model-value="sourceKey"
               size="small"
-              placeholder="源字段"
+              :placeholder="t('editor.chartLinkage.sourceField')"
               style="flex: 1"
               @update:model-value="updateMappingSource(idx, sourceKey, $event)"
             />
@@ -294,7 +297,7 @@ function getMappingEntries(mapping: Record<string, string>) {
             <el-input
               :model-value="targetVal"
               size="small"
-              placeholder="目标字段"
+              :placeholder="t('editor.chartLinkage.targetField')"
               style="flex: 1"
               @update:model-value="updateMappingTarget(idx, sourceKey, $event)"
             />
@@ -312,7 +315,7 @@ function getMappingEntries(mapping: Record<string, string>) {
             v-if="getMappingEntries(rule.paramMapping).length === 0"
             style="text-align: center; color: #909399; font-size: 11px; padding: 4px 0;"
           >
-            点击"添加"配置参数映射
+            {{ t('editor.chartLinkage.addMappingHint') }}
           </div>
         </div>
       </div>
@@ -326,7 +329,7 @@ function getMappingEntries(mapping: Record<string, string>) {
       @click="addRule"
     >
       <AppIcon name="plus" />
-      添加联动规则
+      {{ t('editor.chartLinkage.addRule') }}
     </el-button>
   </div>
 </template>

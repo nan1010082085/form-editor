@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from '@schema-platform/platform-shared'
 import type { CrudFormFieldSchema } from '@/widgets/crud-list-page/config'
 import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
 import styles from './SearchFieldsEditor.module.scss'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   fields: CrudFormFieldSchema[]
@@ -11,15 +15,15 @@ const emit = defineEmits<{
   'update:fields': [fields: CrudFormFieldSchema[]]
 }>()
 
-const typeOptions = [
-  { label: '输入框', value: 'input' as const },
-  { label: '多行文本', value: 'textarea' as const },
-  { label: '数字', value: 'number' as const },
-  { label: '下拉选择', value: 'select' as const },
-  { label: '单选', value: 'radio' as const },
-  { label: '开关', value: 'switch' as const },
-  { label: '日期', value: 'date' as const },
-]
+const typeOptions = computed(() => [
+  { label: t('editor.crudFormFieldsEditor.typeInput'), value: 'input' as const },
+  { label: t('editor.crudFormFieldsEditor.typeTextarea'), value: 'textarea' as const },
+  { label: t('editor.crudFormFieldsEditor.typeNumber'), value: 'number' as const },
+  { label: t('editor.crudFormFieldsEditor.typeSelect'), value: 'select' as const },
+  { label: t('editor.crudFormFieldsEditor.typeRadio'), value: 'radio' as const },
+  { label: t('editor.crudFormFieldsEditor.typeSwitch'), value: 'switch' as const },
+  { label: t('editor.crudFormFieldsEditor.typeDate'), value: 'date' as const },
+])
 
 const OPTION_TYPES = ['select', 'radio'] as const
 
@@ -90,7 +94,7 @@ function optionsToText(options?: Array<{ label: string; value: string | number }
 <template>
   <div :class="styles['search-fields-editor']">
     <div v-if="fields.length === 0" :class="styles['search-fields-editor__empty']">
-      未配置表单字段。
+      {{ t('editor.crudFormFieldsEditor.emptyHint') }}
     </div>
 
     <div
@@ -99,7 +103,7 @@ function optionsToText(options?: Array<{ label: string; value: string | number }
       :class="styles['search-fields-editor__item']"
     >
       <div :class="styles['search-fields-editor__item-header']">
-        <span :class="styles['search-fields-editor__item-title']">字段 {{ idx + 1 }}</span>
+        <span :class="styles['search-fields-editor__item-title']">{{ t('editor.crudFormFieldsEditor.fieldTitle', { index: idx + 1 }) }}</span>
         <div :class="styles['search-fields-editor__item-actions']">
           <el-button size="small" text :disabled="idx === 0" @click="moveUp(idx)">
             <AppIcon name="arrow-up" />
@@ -114,7 +118,7 @@ function optionsToText(options?: Array<{ label: string; value: string | number }
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">类型</label>
+        <label :class="styles['search-fields-editor__label']">{{ t('editor.crudFormFieldsEditor.type') }}</label>
         <el-select
           :model-value="field.type ?? 'input'"
           size="small"
@@ -126,27 +130,27 @@ function optionsToText(options?: Array<{ label: string; value: string | number }
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">字段</label>
+        <label :class="styles['search-fields-editor__label']">{{ t('editor.crudFormFieldsEditor.field') }}</label>
         <el-input
           :model-value="field.field"
           size="small"
-          placeholder="字段名"
+          :placeholder="t('editor.crudFormFieldsEditor.fieldPlaceholder')"
           @update:model-value="updateField(idx, 'field', $event)"
         />
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">标签</label>
+        <label :class="styles['search-fields-editor__label']">{{ t('editor.crudFormFieldsEditor.label') }}</label>
         <el-input
           :model-value="field.label"
           size="small"
-          placeholder="显示标签"
+          :placeholder="t('editor.crudFormFieldsEditor.labelPlaceholder')"
           @update:model-value="updateField(idx, 'label', $event)"
         />
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">栅格 (1-24)</label>
+        <label :class="styles['search-fields-editor__label']">{{ t('editor.crudFormFieldsEditor.span') }}</label>
         <el-input-number
           :model-value="field.span ?? 24"
           :min="1"
@@ -159,35 +163,35 @@ function optionsToText(options?: Array<{ label: string; value: string | number }
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">占位符</label>
+        <label :class="styles['search-fields-editor__label']">{{ t('editor.crudFormFieldsEditor.placeholder') }}</label>
         <el-input
           :model-value="field.placeholder ?? ''"
           size="small"
-          placeholder="占位符文本"
+          :placeholder="t('editor.crudFormFieldsEditor.placeholderPlaceholder')"
           @update:model-value="updateField(idx, 'placeholder', $event || undefined)"
         />
       </div>
 
       <template v-if="needsOptions(field.type)">
         <div :class="styles['search-fields-editor__field']">
-          <label :class="styles['search-fields-editor__label']">选项 (label=value, 每行一个)</label>
+          <label :class="styles['search-fields-editor__label']">{{ t('editor.crudFormFieldsEditor.options') }}</label>
           <el-input
             type="textarea"
             :model-value="optionsToText(field.options)"
             :rows="3"
-            placeholder="选项A=opt_a&#10;选项B=opt_b"
+            :placeholder="t('editor.crudFormFieldsEditor.optionsPlaceholder')"
             @update:model-value="updateField(idx, 'options', parseOptionsText($event))"
           />
         </div>
       </template>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">默认值</label>
+        <label :class="styles['search-fields-editor__label']">{{ t('editor.crudFormFieldsEditor.defaultValue') }}</label>
         <el-input
           v-if="field.type !== 'switch'"
           :model-value="String(field.defaultValue ?? '')"
           size="small"
-          placeholder="默认值"
+          :placeholder="t('editor.crudFormFieldsEditor.defaultValuePlaceholder')"
           @update:model-value="updateField(idx, 'defaultValue', $event)"
         />
         <el-switch
@@ -202,26 +206,26 @@ function optionsToText(options?: Array<{ label: string; value: string | number }
           :model-value="field.required ?? false"
           @update:model-value="updateField(idx, 'required', $event)"
         >
-          必填
+          {{ t('editor.crudFormFieldsEditor.required') }}
         </el-checkbox>
         <el-checkbox
           :model-value="field.hiddenOnCreate ?? false"
           @update:model-value="updateField(idx, 'hiddenOnCreate', $event)"
         >
-          新增时隐藏
+          {{ t('editor.crudFormFieldsEditor.hiddenOnCreate') }}
         </el-checkbox>
         <el-checkbox
           :model-value="field.hiddenOnEdit ?? false"
           @update:model-value="updateField(idx, 'hiddenOnEdit', $event)"
         >
-          编辑时隐藏
+          {{ t('editor.crudFormFieldsEditor.hiddenOnEdit') }}
         </el-checkbox>
       </div>
     </div>
 
     <el-button type="primary" size="small" style="width: 100%; margin-top: 8px" @click="addField">
       <AppIcon name="plus" style="margin-right: 4px" />
-      添加表单字段
+      {{ t('editor.crudFormFieldsEditor.addFieldText') }}
     </el-button>
   </div>
 </template>

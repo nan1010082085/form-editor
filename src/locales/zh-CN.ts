@@ -36,6 +36,21 @@ const zhCN: Record<string, string> = {
   // ---- 加载/错误 ----
   'message.loadFailed': '数据加载失败',
   'message.transformFailed': '数据转换失败',
+
+  // ---- 弹窗 ----
+  'dialog.defaultTitle': '弹窗',
+  'dialog.cancel': '取消',
+  'dialog.confirm': '确定',
+
+  // ---- 确认 ----
+  'confirm.title': '确认',
+  'confirm.ok': '确定',
+  'confirm.cancel': '取消',
+
+  // ---- 版本对比 ----
+  'versionCompare.newWidget': '新增部件',
+  'versionCompare.deleted': '已删除',
+  'versionCompare.positionChanged': '位置变更',
 }
 
 export default zhCN
