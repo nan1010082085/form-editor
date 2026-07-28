@@ -13,8 +13,8 @@
  * <el-button v-permission="['flow:design', 'flow:approve']">操作</el-button>
  * ```
  */
-import type { Directive, DirectiveBinding } from 'vue'
-import { useAppStore } from '@/stores/app'
+import type { Directive, DirectiveBinding } from "vue";
+import { useAppStore } from "@/stores/app";
 
 /**
  * 检查用户是否拥有指定权限
@@ -23,49 +23,49 @@ import { useAppStore } from '@/stores/app'
  * @returns 是否拥有权限
  */
 function checkPermission(value: string | string[]): boolean {
-  const appStore = useAppStore()
-  const userPerms = appStore.userContext.permissions ?? []
+  const appStore = useAppStore();
+  const userPerms = appStore.userContext.permissions ?? [];
 
-  if (typeof value === 'string') {
-    return userPerms.includes(value)
+  if (typeof value === "string") {
+    return userPerms.includes(value);
   }
 
   if (Array.isArray(value)) {
-    return value.some((code) => userPerms.includes(code))
+    return value.some((code) => userPerms.includes(code));
   }
 
-  return false
+  return false;
 }
 
 /**
  * 将原始值标准化为权限码数组
  */
 function normalizeValue(value: string | string[]): string[] {
-  if (typeof value === 'string') return [value]
-  if (Array.isArray(value)) return value
-  return []
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value;
+  return [];
 }
 
 export const permissionDirective: Directive<HTMLElement, string | string[]> = {
   mounted(el: HTMLElement, binding: DirectiveBinding<string | string[]>) {
     if (!checkPermission(binding.value)) {
-      el.parentNode?.removeChild(el)
+      el.parentNode?.removeChild(el);
     }
   },
   updated(el: HTMLElement, binding: DirectiveBinding<string | string[]>) {
-    const oldValue = normalizeValue(binding.oldValue ?? [])
-    const newValue = normalizeValue(binding.value)
+    const oldValue = normalizeValue(binding.oldValue ?? []);
+    const newValue = normalizeValue(binding.value);
 
     // 值未变化时跳过
     if (
       oldValue.length === newValue.length &&
       oldValue.every((v, i) => v === newValue[i])
     ) {
-      return
+      return;
     }
 
     if (!checkPermission(binding.value)) {
-      el.parentNode?.removeChild(el)
+      el.parentNode?.removeChild(el);
     }
   },
-}
+};

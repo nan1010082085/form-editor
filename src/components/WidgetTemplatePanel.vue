@@ -10,72 +10,75 @@
  *
  * 状态由 useTemplateStore 管理，本组件只做渲染和交互。
  */
-import { ref, computed, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { useTemplateStore } from '@/stores/template'
-import type { TemplateCategory } from '@/api/schemaApi'
-import type { Widget } from '@/widgets/base/types'
-import styles from './WidgetTemplatePanel.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { ref, computed, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { useTemplateStore } from "@/stores/template";
+import type { TemplateCategory } from "@/api/schemaApi";
+import type { Widget } from "@/widgets/base/types";
+import styles from "./WidgetTemplatePanel.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const emit = defineEmits<{
-  'apply-template': [widgets: Record<string, unknown>[]]
-}>()
+  "apply-template": [widgets: Record<string, unknown>[]];
+}>();
 
 const props = defineProps<{
-  currentWidgets?: Widget[]
-}>()
+  currentWidgets?: Widget[];
+}>();
 
-const templateStore = useTemplateStore()
+const templateStore = useTemplateStore();
 
 // ---- Category options ----
 
 const categoryOptions = computed(() => [
-  { label: t('editor.templatePanelEditor.categoryAll'), value: '' },
-  { label: t('editor.templatePanelEditor.categoryForm'), value: 'form' },
-  { label: t('editor.templatePanelEditor.categoryLayout'), value: 'layout' },
-  { label: t('editor.templatePanelEditor.categoryTable'), value: 'table' },
-  { label: t('editor.templatePanelEditor.categorySearch'), value: 'search' },
-  { label: t('editor.templatePanelEditor.categoryChart'), value: 'chart' },
-  { label: t('editor.templatePanelEditor.categoryBusiness'), value: 'business' },
-  { label: t('editor.templatePanelEditor.categoryReport'), value: 'report' },
-  { label: t('editor.templatePanelEditor.categoryOther'), value: 'other' },
-])
+  { label: t("editor.templatePanelEditor.categoryAll"), value: "" },
+  { label: t("editor.templatePanelEditor.categoryForm"), value: "form" },
+  { label: t("editor.templatePanelEditor.categoryLayout"), value: "layout" },
+  { label: t("editor.templatePanelEditor.categoryTable"), value: "table" },
+  { label: t("editor.templatePanelEditor.categorySearch"), value: "search" },
+  { label: t("editor.templatePanelEditor.categoryChart"), value: "chart" },
+  {
+    label: t("editor.templatePanelEditor.categoryBusiness"),
+    value: "business",
+  },
+  { label: t("editor.templatePanelEditor.categoryReport"), value: "report" },
+  { label: t("editor.templatePanelEditor.categoryOther"), value: "other" },
+]);
 
 const categoryLabelMap = computed(() => ({
-  form: t('editor.templatePanelEditor.categoryForm'),
-  layout: t('editor.templatePanelEditor.categoryLayout'),
-  table: t('editor.templatePanelEditor.categoryTable'),
-  search: t('editor.templatePanelEditor.categorySearch'),
-  chart: t('editor.templatePanelEditor.categoryChart'),
-  business: t('editor.templatePanelEditor.categoryBusiness'),
-  report: t('editor.templatePanelEditor.categoryReport'),
-  other: t('editor.templatePanelEditor.categoryOther'),
-}))
+  form: t("editor.templatePanelEditor.categoryForm"),
+  layout: t("editor.templatePanelEditor.categoryLayout"),
+  table: t("editor.templatePanelEditor.categoryTable"),
+  search: t("editor.templatePanelEditor.categorySearch"),
+  chart: t("editor.templatePanelEditor.categoryChart"),
+  business: t("editor.templatePanelEditor.categoryBusiness"),
+  report: t("editor.templatePanelEditor.categoryReport"),
+  other: t("editor.templatePanelEditor.categoryOther"),
+}));
 
 // ---- Search debounce ----
 
-let searchTimer: ReturnType<typeof setTimeout> | null = null
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 function handleSearchChange(value: string) {
-  if (searchTimer) clearTimeout(searchTimer)
+  if (searchTimer) clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
-    templateStore.setSearch(value)
-    templateStore.loadTemplates()
-  }, 300)
+    templateStore.setSearch(value);
+    templateStore.loadTemplates();
+  }, 300);
 }
 
 function handleCategoryChange(category: string) {
-  templateStore.setCategory(category)
-  templateStore.loadTemplates()
+  templateStore.setCategory(category);
+  templateStore.loadTemplates();
 }
 
 function handlePageChange(newPage: number) {
-  templateStore.setPage(newPage)
-  templateStore.loadTemplates()
+  templateStore.setPage(newPage);
+  templateStore.loadTemplates();
 }
 
 // ---- Apply template ----
@@ -83,20 +86,25 @@ function handlePageChange(newPage: number) {
 async function handleApply(templateId: string, templateName: string) {
   try {
     await ElMessageBox.confirm(
-      t('editor.templatePanelEditor.applyConfirm', { name: templateName }),
-      t('editor.templatePanelEditor.applyTitle'),
-      { confirmButtonText: t('editor.templatePanelEditor.apply'), cancelButtonText: t('editor.common.cancel') },
-    )
+      t("editor.templatePanelEditor.applyConfirm", { name: templateName }),
+      t("editor.templatePanelEditor.applyTitle"),
+      {
+        confirmButtonText: t("editor.templatePanelEditor.apply"),
+        cancelButtonText: t("editor.common.cancel"),
+      },
+    );
   } catch {
-    return
+    return;
   }
 
   try {
-    const widgets = await templateStore.applyTemplateById(templateId)
-    emit('apply-template', widgets)
-    ElMessage.success(t('editor.templatePanelEditor.applySuccess', { name: templateName }))
+    const widgets = await templateStore.applyTemplateById(templateId);
+    emit("apply-template", widgets);
+    ElMessage.success(
+      t("editor.templatePanelEditor.applySuccess", { name: templateName }),
+    );
   } catch {
-    ElMessage.error(t('editor.templatePanelEditor.applyFailed'))
+    ElMessage.error(t("editor.templatePanelEditor.applyFailed"));
   }
 }
 
@@ -105,64 +113,68 @@ async function handleApply(templateId: string, templateName: string) {
 async function handleDelete(templateId: string, templateName: string) {
   try {
     await ElMessageBox.confirm(
-      t('editor.templatePanelEditor.deleteConfirm', { name: templateName }),
-      t('editor.templatePanelEditor.deleteTitle'),
-      { confirmButtonText: t('editor.common.delete'), cancelButtonText: t('editor.common.cancel'), type: 'warning' },
-    )
+      t("editor.templatePanelEditor.deleteConfirm", { name: templateName }),
+      t("editor.templatePanelEditor.deleteTitle"),
+      {
+        confirmButtonText: t("editor.common.delete"),
+        cancelButtonText: t("editor.common.cancel"),
+        type: "warning",
+      },
+    );
   } catch {
-    return
+    return;
   }
 
   try {
-    await templateStore.removeTemplate(templateId)
-    ElMessage.success(t('editor.templatePanelEditor.deleted'))
+    await templateStore.removeTemplate(templateId);
+    ElMessage.success(t("editor.templatePanelEditor.deleted"));
   } catch {
-    ElMessage.error(t('editor.templatePanelEditor.deleteFailed'))
+    ElMessage.error(t("editor.templatePanelEditor.deleteFailed"));
   }
 }
 
 // ---- Save as template ----
 
-const showSaveDialog = ref(false)
+const showSaveDialog = ref(false);
 const saveForm = ref({
-  name: '',
-  description: '',
-  category: 'other' as TemplateCategory,
+  name: "",
+  description: "",
+  category: "other" as TemplateCategory,
   tags: [] as string[],
-})
-const tagInput = ref('')
+});
+const tagInput = ref("");
 
 function openSaveDialog() {
   saveForm.value = {
-    name: '',
-    description: '',
-    category: 'other',
+    name: "",
+    description: "",
+    category: "other",
     tags: [],
-  }
-  tagInput.value = ''
-  showSaveDialog.value = true
+  };
+  tagInput.value = "";
+  showSaveDialog.value = true;
 }
 
 function addTag() {
-  const tag = tagInput.value.trim()
+  const tag = tagInput.value.trim();
   if (tag && !saveForm.value.tags.includes(tag)) {
-    saveForm.value.tags.push(tag)
+    saveForm.value.tags.push(tag);
   }
-  tagInput.value = ''
+  tagInput.value = "";
 }
 
 function removeTag(index: number) {
-  saveForm.value.tags.splice(index, 1)
+  saveForm.value.tags.splice(index, 1);
 }
 
 async function handleSaveTemplate() {
   if (!saveForm.value.name.trim()) {
-    ElMessage.warning(t('editor.templatePanelEditor.nameRequired'))
-    return
+    ElMessage.warning(t("editor.templatePanelEditor.nameRequired"));
+    return;
   }
   if (!props.currentWidgets || props.currentWidgets.length === 0) {
-    ElMessage.warning(t('editor.templatePanelEditor.canvasEmpty'))
-    return
+    ElMessage.warning(t("editor.templatePanelEditor.canvasEmpty"));
+    return;
   }
 
   try {
@@ -172,19 +184,19 @@ async function handleSaveTemplate() {
       category: saveForm.value.category,
       widgets: props.currentWidgets as unknown as Record<string, unknown>[],
       tags: saveForm.value.tags,
-    })
-    ElMessage.success(t('editor.templatePanelEditor.saved'))
-    showSaveDialog.value = false
+    });
+    ElMessage.success(t("editor.templatePanelEditor.saved"));
+    showSaveDialog.value = false;
   } catch {
-    ElMessage.error(t('editor.templatePanelEditor.saveFailed'))
+    ElMessage.error(t("editor.templatePanelEditor.saveFailed"));
   }
 }
 
 // ---- Init ----
 
 onMounted(() => {
-  templateStore.loadTemplates()
-})
+  templateStore.loadTemplates();
+});
 </script>
 
 <template>
@@ -201,7 +213,7 @@ onMounted(() => {
           @input="handleSearchChange"
         >
           <template #prefix>
-            <AppIcon name="search"  />
+            <AppIcon name="search" />
           </template>
         </el-input>
         <el-button
@@ -211,7 +223,7 @@ onMounted(() => {
           @click="openSaveDialog"
         >
           <AppIcon name="plus" />
-          {{ t('editor.templatePanelEditor.save') }}
+          {{ t("editor.templatePanelEditor.save") }}
         </el-button>
       </div>
       <div :class="styles['filter-row']">
@@ -235,12 +247,21 @@ onMounted(() => {
 
     <!-- List -->
     <div :class="styles.list">
-      <div v-if="templateStore.loading" :class="styles.loading">{{ t('editor.common.loading') }}</div>
+      <div v-if="templateStore.loading" :class="styles.loading">
+        {{ t("editor.common.loading") }}
+      </div>
       <div v-else-if="templateStore.error" :class="styles.empty">
         {{ templateStore.error }}
       </div>
-      <div v-else-if="templateStore.templates.length === 0" :class="styles.empty">
-        {{ templateStore.searchKeyword || templateStore.selectedCategory ? t('editor.templatePanelEditor.noMatch') : t('editor.templatePanelEditor.empty') }}
+      <div
+        v-else-if="templateStore.templates.length === 0"
+        :class="styles.empty"
+      >
+        {{
+          templateStore.searchKeyword || templateStore.selectedCategory
+            ? t("editor.templatePanelEditor.noMatch")
+            : t("editor.templatePanelEditor.empty")
+        }}
       </div>
       <div v-else :class="styles['card-grid']">
         <div
@@ -268,20 +289,50 @@ onMounted(() => {
             <span :class="styles['card-category']">
               {{ categoryLabelMap[tpl.category] || tpl.category }}
             </span>
-            <span v-if="tpl.isBuiltin" :class="styles['card-builtin']">{{ t('editor.templatePanelEditor.builtin') }}</span>
-            <span :class="styles['card-usage']">{{ t('editor.templatePanelEditor.usageCount', { count: tpl.usageCount }) }}</span>
+            <span v-if="tpl.isBuiltin" :class="styles['card-builtin']">{{
+              t("editor.templatePanelEditor.builtin")
+            }}</span>
+            <span :class="styles['card-usage']">{{
+              t("editor.templatePanelEditor.usageCount", {
+                count: tpl.usageCount,
+              })
+            }}</span>
           </div>
           <div v-if="tpl.tags.length > 0" :class="styles['card-tags']">
-            <span v-for="tag in tpl.tags" :key="tag" :class="styles['card-tag']">{{ tag }}</span>
+            <span
+              v-for="tag in tpl.tags"
+              :key="tag"
+              :class="styles['card-tag']"
+              >{{ tag }}</span
+            >
           </div>
           <div :class="styles['card-actions']" @click.stop>
-            <el-tooltip :content="t('editor.templatePanelEditor.useTemplate')" placement="top" :show-after="300">
-              <el-button size="small" text type="primary" @click="handleApply(tpl.id, tpl.name)">
+            <el-tooltip
+              :content="t('editor.templatePanelEditor.useTemplate')"
+              placement="top"
+              :show-after="300"
+            >
+              <el-button
+                size="small"
+                text
+                type="primary"
+                @click="handleApply(tpl.id, tpl.name)"
+              >
                 <AppIcon name="plus" />
               </el-button>
             </el-tooltip>
-            <el-tooltip v-if="!tpl.isBuiltin" :content="t('editor.common.delete')" placement="top" :show-after="300">
-              <el-button size="small" text type="danger" @click="handleDelete(tpl.id, tpl.name)">
+            <el-tooltip
+              v-if="!tpl.isBuiltin"
+              :content="t('editor.common.delete')"
+              placement="top"
+              :show-after="300"
+            >
+              <el-button
+                size="small"
+                text
+                type="danger"
+                @click="handleDelete(tpl.id, tpl.name)"
+              >
                 <AppIcon name="delete" />
               </el-button>
             </el-tooltip>
@@ -291,7 +342,10 @@ onMounted(() => {
     </div>
 
     <!-- Pagination -->
-    <div v-if="templateStore.total > templateStore.pageSize" :class="styles.pagination">
+    <div
+      v-if="templateStore.total > templateStore.pageSize"
+      :class="styles.pagination"
+    >
       <el-pagination
         :current-page="templateStore.page"
         :page-size="templateStore.pageSize"
@@ -323,7 +377,9 @@ onMounted(() => {
           <el-input
             v-model="saveForm.description"
             type="textarea"
-            :placeholder="t('editor.templatePanelEditor.descriptionPlaceholder')"
+            :placeholder="
+              t('editor.templatePanelEditor.descriptionPlaceholder')
+            "
             :rows="2"
             maxlength="500"
             show-word-limit
@@ -332,7 +388,7 @@ onMounted(() => {
         <el-form-item :label="t('editor.templatePanelEditor.category')">
           <el-select v-model="saveForm.category" style="width: 100%">
             <el-option
-              v-for="opt in categoryOptions.filter(o => o.value)"
+              v-for="opt in categoryOptions.filter((o) => o.value)"
               :key="opt.value"
               :label="opt.label"
               :value="opt.value"
@@ -348,9 +404,14 @@ onMounted(() => {
               size="small"
               @keyup.enter="addTag"
             />
-            <el-button size="small" @click="addTag">{{ t('editor.templatePanelEditor.add') }}</el-button>
+            <el-button size="small" @click="addTag">{{
+              t("editor.templatePanelEditor.add")
+            }}</el-button>
           </div>
-          <div v-if="saveForm.tags.length > 0" style="margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap;">
+          <div
+            v-if="saveForm.tags.length > 0"
+            style="margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap"
+          >
             <el-tag
               v-for="(tag, idx) in saveForm.tags"
               :key="idx"
@@ -364,8 +425,12 @@ onMounted(() => {
         </el-form-item>
       </div>
       <template #footer>
-        <el-button @click="showSaveDialog = false">{{ t('editor.common.cancel') }}</el-button>
-        <el-button type="primary" @click="handleSaveTemplate">{{ t('editor.common.save') }}</el-button>
+        <el-button @click="showSaveDialog = false">{{
+          t("editor.common.cancel")
+        }}</el-button>
+        <el-button type="primary" @click="handleSaveTemplate">{{
+          t("editor.common.save")
+        }}</el-button>
       </template>
     </el-dialog>
   </div>

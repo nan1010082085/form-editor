@@ -12,10 +12,13 @@
  * - String expression hooks compile and execute correctly
  * - Exception in hook does not block form operations
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { reactive, nextTick } from 'vue'
-import { useLifecycle } from '@/composables/useLifecycle'
-import type { FormLifecycleConfig, FormData } from '@/components/WidgetRenderer/types'
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { reactive, nextTick } from "vue";
+import { useLifecycle } from "@/composables/useLifecycle";
+import type {
+  FormLifecycleConfig,
+  FormData,
+} from "@/components/WidgetRenderer/types";
 
 /**
  * Helper: mount useLifecycle with the given config and formData.
@@ -29,235 +32,241 @@ function createLifecycleFixture(
   lifecycle: FormLifecycleConfig | undefined,
   initialData: FormData = {},
 ) {
-  const formData = reactive<FormData>({ ...initialData })
-  const result = useLifecycle(lifecycle, formData)
-  return { formData, ...result }
+  const formData = reactive<FormData>({ ...initialData });
+  const result = useLifecycle(lifecycle, formData);
+  return { formData, ...result };
 }
 
-describe('useLifecycle', () => {
+describe("useLifecycle", () => {
   beforeEach(() => {
-    vi.useFakeTimers()
-  })
+    vi.useFakeTimers();
+  });
 
   afterEach(() => {
-    vi.useRealTimers()
-  })
+    vi.useRealTimers();
+  });
 
   // ---------- onBeforeSubmit ----------
 
-  describe('onBeforeSubmit', () => {
-    it('returns true when no hook is configured', async () => {
-      const { executeBeforeSubmit } = createLifecycleFixture(undefined)
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(true)
-    })
+  describe("onBeforeSubmit", () => {
+    it("returns true when no hook is configured", async () => {
+      const { executeBeforeSubmit } = createLifecycleFixture(undefined);
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(true);
+    });
 
-    it('returns true when hook returns true', async () => {
+    it("returns true when hook returns true", async () => {
       const { executeBeforeSubmit } = createLifecycleFixture({
         onBeforeSubmit: () => true,
-      })
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(true)
-    })
+      });
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(true);
+    });
 
-    it('returns false when hook returns false to block submit', async () => {
+    it("returns false when hook returns false to block submit", async () => {
       const { executeBeforeSubmit } = createLifecycleFixture({
         onBeforeSubmit: () => false,
-      })
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(false)
-    })
+      });
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(false);
+    });
 
-    it('returns false when async hook resolves false', async () => {
+    it("returns false when async hook resolves false", async () => {
       const { executeBeforeSubmit } = createLifecycleFixture({
         onBeforeSubmit: async () => {
-          await Promise.resolve()
-          return false
+          await Promise.resolve();
+          return false;
         },
-      })
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(false)
-    })
+      });
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(false);
+    });
 
-    it('returns true when async hook resolves true', async () => {
+    it("returns true when async hook resolves true", async () => {
       const { executeBeforeSubmit } = createLifecycleFixture({
         onBeforeSubmit: async () => {
-          await Promise.resolve()
-          return true
+          await Promise.resolve();
+          return true;
         },
-      })
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(true)
-    })
+      });
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(true);
+    });
 
-    it('receives formData as argument', async () => {
-      let receivedData: FormData | undefined
+    it("receives formData as argument", async () => {
+      let receivedData: FormData | undefined;
       const { executeBeforeSubmit } = createLifecycleFixture(
         {
           onBeforeSubmit: (data: FormData) => {
-            receivedData = data
-            return true
+            receivedData = data;
+            return true;
           },
         },
-        { name: 'test' },
-      )
-      await executeBeforeSubmit()
-      expect(receivedData).toBeDefined()
-      expect(receivedData!.name).toBe('test')
-    })
+        { name: "test" },
+      );
+      await executeBeforeSubmit();
+      expect(receivedData).toBeDefined();
+      expect(receivedData!.name).toBe("test");
+    });
 
-    it('allows submit when hook throws (defaults to true)', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    it("allows submit when hook throws (defaults to true)", async () => {
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
       const { executeBeforeSubmit } = createLifecycleFixture({
         onBeforeSubmit: () => {
-          throw new Error('hook error')
+          throw new Error("hook error");
         },
-      })
-      const result = await executeBeforeSubmit()
+      });
+      const result = await executeBeforeSubmit();
       // Exception is caught, defaults to allowing submit
-      expect(result).toBe(true)
-      consoleSpy.mockRestore()
-    })
-  })
+      expect(result).toBe(true);
+      consoleSpy.mockRestore();
+    });
+  });
 
   // ---------- onAfterLoad ----------
 
-  describe('onAfterLoad', () => {
-    it('does nothing when no hook is configured', async () => {
-      const { executeAfterLoad } = createLifecycleFixture(undefined)
+  describe("onAfterLoad", () => {
+    it("does nothing when no hook is configured", async () => {
+      const { executeAfterLoad } = createLifecycleFixture(undefined);
       // Should not throw
-      await executeAfterLoad({ name: 'loaded' })
-    })
+      await executeAfterLoad({ name: "loaded" });
+    });
 
-    it('calls hook with the provided data', async () => {
-      let receivedData: FormData | undefined
+    it("calls hook with the provided data", async () => {
+      let receivedData: FormData | undefined;
       const { executeAfterLoad } = createLifecycleFixture({
         onAfterLoad: (data: FormData) => {
-          receivedData = data
+          receivedData = data;
         },
-      })
-      await executeAfterLoad({ age: 25 })
-      expect(receivedData).toEqual({ age: 25 })
-    })
+      });
+      await executeAfterLoad({ age: 25 });
+      expect(receivedData).toEqual({ age: 25 });
+    });
 
-    it('handles async hook', async () => {
-      let called = false
+    it("handles async hook", async () => {
+      let called = false;
       const { executeAfterLoad } = createLifecycleFixture({
         onAfterLoad: async () => {
-          await Promise.resolve()
-          called = true
+          await Promise.resolve();
+          called = true;
         },
-      })
-      await executeAfterLoad({})
-      expect(called).toBe(true)
-    })
+      });
+      await executeAfterLoad({});
+      expect(called).toBe(true);
+    });
 
-    it('catches exception without blocking', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    it("catches exception without blocking", async () => {
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
       const { executeAfterLoad } = createLifecycleFixture({
         onAfterLoad: () => {
-          throw new Error('load hook error')
+          throw new Error("load hook error");
         },
-      })
+      });
       // Should not throw
-      await executeAfterLoad({})
-      expect(consoleSpy).toHaveBeenCalled()
-      consoleSpy.mockRestore()
-    })
-  })
+      await executeAfterLoad({});
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+  });
 
   // ---------- string expression hooks ----------
 
-  describe('string expression hooks', () => {
-    it('executes onBeforeSubmit as string expression', async () => {
+  describe("string expression hooks", () => {
+    it("executes onBeforeSubmit as string expression", async () => {
       const { executeBeforeSubmit } = createLifecycleFixture(
         {
           onBeforeSubmit: 'return formData.name === "admin"',
         },
-        { name: 'admin' },
-      )
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(true)
-    })
+        { name: "admin" },
+      );
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(true);
+    });
 
-    it('executes onBeforeSubmit string expression returning false', async () => {
+    it("executes onBeforeSubmit string expression returning false", async () => {
       const { executeBeforeSubmit } = createLifecycleFixture(
         {
           onBeforeSubmit: 'return formData.name === "admin"',
         },
-        { name: 'guest' },
-      )
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(false)
-    })
+        { name: "guest" },
+      );
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(false);
+    });
 
-    it('catches invalid string expression compilation', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    it("catches invalid string expression compilation", async () => {
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
       const { executeBeforeSubmit } = createLifecycleFixture({
-        onBeforeSubmit: 'invalid syntax {{{',
-      })
+        onBeforeSubmit: "invalid syntax {{{",
+      });
       // Compilation fails, but hook returns undefined (not false),
       // so executeBeforeSubmit defaults to true
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(true)
-      consoleSpy.mockRestore()
-    })
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(true);
+      consoleSpy.mockRestore();
+    });
 
-    it('executes onAfterLoad as string expression', async () => {
-      let sideEffect = ''
+    it("executes onAfterLoad as string expression", async () => {
+      let sideEffect = "";
       // String expressions can't easily set external vars in sandbox,
       // but we can verify it runs without error
       const { executeAfterLoad } = createLifecycleFixture({
-        onAfterLoad: 'void 0', // no-op expression
-      })
-      await executeAfterLoad({})
+        onAfterLoad: "void 0", // no-op expression
+      });
+      await executeAfterLoad({});
       // No error means success
-      expect(sideEffect).toBe('')
-    })
-  })
+      expect(sideEffect).toBe("");
+    });
+  });
 
   // ---------- function condition (onBeforeSubmit) ----------
 
-  describe('function condition', () => {
-    it('evaluates function condition returning true', async () => {
+  describe("function condition", () => {
+    it("evaluates function condition returning true", async () => {
       const { executeBeforeSubmit } = createLifecycleFixture(
         {
           onBeforeSubmit: (formData: FormData) => {
-            return typeof formData.age === 'number' && formData.age >= 18
+            return typeof formData.age === "number" && formData.age >= 18;
           },
         },
         { age: 20 },
-      )
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(true)
-    })
+      );
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(true);
+    });
 
-    it('evaluates function condition returning false', async () => {
+    it("evaluates function condition returning false", async () => {
       const { executeBeforeSubmit } = createLifecycleFixture(
         {
           onBeforeSubmit: (formData: FormData) => {
-            return typeof formData.age === 'number' && formData.age >= 18
+            return typeof formData.age === "number" && formData.age >= 18;
           },
         },
         { age: 15 },
-      )
-      const result = await executeBeforeSubmit()
-      expect(result).toBe(false)
-    })
-  })
+      );
+      const result = await executeBeforeSubmit();
+      expect(result).toBe(false);
+    });
+  });
 
   // ---------- executeBeforeSubmit with no hook ----------
 
-  describe('no hook configured', () => {
-    it('executeBeforeSubmit returns true by default', async () => {
-      const { executeBeforeSubmit } = createLifecycleFixture({})
-      expect(await executeBeforeSubmit()).toBe(true)
-    })
+  describe("no hook configured", () => {
+    it("executeBeforeSubmit returns true by default", async () => {
+      const { executeBeforeSubmit } = createLifecycleFixture({});
+      expect(await executeBeforeSubmit()).toBe(true);
+    });
 
-    it('executeAfterLoad is a no-op', async () => {
-      const { executeAfterLoad } = createLifecycleFixture({})
+    it("executeAfterLoad is a no-op", async () => {
+      const { executeAfterLoad } = createLifecycleFixture({});
       // Should complete without error
-      await executeAfterLoad({ any: 'data' })
-    })
-  })
-})
+      await executeAfterLoad({ any: "data" });
+    });
+  });
+});

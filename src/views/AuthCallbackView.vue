@@ -6,49 +6,56 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { SSOClient, resolveSsoRedirectUri } from '@schema-platform/platform-shared/utils/sso'
-import { persistSSOClientId, startTokenRefreshSchedule, bootstrapAuthSession } from '@schema-platform/platform-shared/utils/authSession'
-import { useAuthStore } from '@schema-platform/platform-shared/utils/stores/authStore'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import {
+  SSOClient,
+  resolveSsoRedirectUri,
+} from "@schema-platform/platform-shared/utils/sso";
+import {
+  persistSSOClientId,
+  startTokenRefreshSchedule,
+  bootstrapAuthSession,
+} from "@schema-platform/platform-shared/utils/authSession";
+import { useAuthStore } from "@schema-platform/platform-shared/utils/stores/authStore";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
-const router = useRouter()
-const route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
 onMounted(async () => {
-  const origin = window.location.origin
-  const clientId = 'editor'
-  persistSSOClientId(clientId)
+  const origin = window.location.origin;
+  const clientId = "editor";
+  persistSSOClientId(clientId);
   const client = new SSOClient({
     clientId,
     redirectUri: resolveSsoRedirectUri(origin),
     ssoBaseUrl: origin,
-  })
+  });
 
   try {
-    const tokens = await client.handleCallback()
-    const authStore = useAuthStore()
-    authStore.setTokens(tokens.accessToken, tokens.refreshToken)
+    const tokens = await client.handleCallback();
+    const authStore = useAuthStore();
+    authStore.setTokens(tokens.accessToken, tokens.refreshToken);
     // Fetch user info after getting tokens
-    await bootstrapAuthSession()
-    startTokenRefreshSchedule(tokens.expiresIn)
+    await bootstrapAuthSession();
+    startTokenRefreshSchedule(tokens.expiresIn);
 
-    let redirect = route.query.redirect as string | undefined
+    let redirect = route.query.redirect as string | undefined;
 
     // 避免路径重复：如果 redirect 以 router base 开头，去掉 base 前缀
     if (redirect) {
-      const base = import.meta.env.BASE_URL || '/'
-      if (base !== '/' && redirect.startsWith(base)) {
-        redirect = '/' + redirect.slice(base.length)
+      const base = import.meta.env.BASE_URL || "/";
+      if (base !== "/" && redirect.startsWith(base)) {
+        redirect = "/" + redirect.slice(base.length);
       }
     }
 
-    await router.replace(redirect || '/')
+    await router.replace(redirect || "/");
   } catch {
-    await router.replace({ name: 'not-found' })
+    await router.replace({ name: "not-found" });
   }
-})
+});
 </script>
 
 <style module>
@@ -66,8 +73,12 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .text {

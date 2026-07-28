@@ -11,87 +11,91 @@
  *
  * 变化频率最高，独立管理，与 Widget 数据和编辑器状态解耦。
  */
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { defineStore } from "pinia";
+import { ref } from "vue";
 
 // ================================================================
 // 类型定义
 // ================================================================
 
 interface GuideLine {
-  type: 'horizontal' | 'vertical'
-  position: number
-  start: number
-  end: number
+  type: "horizontal" | "vertical";
+  position: number;
+  start: number;
+  end: number;
 }
 
 /** 放置预览线 — 指示新组件将被插入的位置 */
 export interface DropPreviewLine {
   /** 预览线方向 */
-  orientation: 'horizontal' | 'vertical'
+  orientation: "horizontal" | "vertical";
   /** 预览线位置（画布坐标） */
-  position: number
+  position: number;
   /** 预览线起始点 */
-  start: number
+  start: number;
   /** 预览线结束点 */
-  end: number
+  end: number;
   /** 目标容器 ID（null 表示根级） */
-  targetContainerId: string | null
+  targetContainerId: string | null;
 }
 
-export type { GuideLine }
+export type { GuideLine };
 
-export const useDragStore = defineStore('drag', () => {
+export const useDragStore = defineStore("drag", () => {
   // ================================================================
   // 拖拽状态
   // ================================================================
 
-  const isDragging = ref(false)
-  const dragSource = ref<'panel' | 'canvas' | null>(null)
-  const dragWidgetId = ref<string | null>(null)
-  const dragWidgetType = ref<string | null>(null)
+  const isDragging = ref(false);
+  const dragSource = ref<"panel" | "canvas" | null>(null);
+  const dragWidgetId = ref<string | null>(null);
+  const dragWidgetType = ref<string | null>(null);
 
   // ================================================================
   // 拖拽位置
   // ================================================================
 
-  const dragX = ref(0)
-  const dragY = ref(0)
-  const dragDeltaX = ref(0)
-  const dragDeltaY = ref(0)
+  const dragX = ref(0);
+  const dragY = ref(0);
+  const dragDeltaX = ref(0);
+  const dragDeltaY = ref(0);
 
   // 拖拽起点（用于 delta 计算，实现实时跟随）
-  const initialCursorX = ref(0)
-  const initialCursorY = ref(0)
-  const initialWidgetX = ref(0)
-  const initialWidgetY = ref(0)
+  const initialCursorX = ref(0);
+  const initialCursorY = ref(0);
+  const initialWidgetX = ref(0);
+  const initialWidgetY = ref(0);
 
   // ================================================================
   // 碰撞状态
   // ================================================================
 
-  const hoveredContainerId = ref<string | null>(null)
-  const isInContainer = ref(false)
+  const hoveredContainerId = ref<string | null>(null);
+  const isInContainer = ref(false);
 
   // ================================================================
   // 辅助线
   // ================================================================
 
-  const guideLines = ref<GuideLine[]>([])
-  const snapX = ref<number | null>(null)
-  const snapY = ref<number | null>(null)
+  const guideLines = ref<GuideLine[]>([]);
+  const snapX = ref<number | null>(null);
+  const snapY = ref<number | null>(null);
 
   // ================================================================
   // 放置预览线
   // ================================================================
 
-  const dropPreviewLine = ref<DropPreviewLine | null>(null)
+  const dropPreviewLine = ref<DropPreviewLine | null>(null);
 
   // ================================================================
   // 原始位置快照（取消拖拽时恢复）
   // ================================================================
 
-  const originalPosition = ref<{ x: number; y: number; parentId: string | null } | null>(null)
+  const originalPosition = ref<{
+    x: number;
+    y: number;
+    parentId: string | null;
+  } | null>(null);
 
   // ================================================================
   // 方法
@@ -105,40 +109,45 @@ export const useDragStore = defineStore('drag', () => {
    * @param type   - 组件类型（panel 拖入时必传）
    */
   function startDrag(
-    source: 'panel' | 'canvas',
+    source: "panel" | "canvas",
     id?: string,
     type?: string,
     opts?: {
-      cursorX?: number
-      cursorY?: number
-      widgetX?: number
-      widgetY?: number
-      originalX?: number
-      originalY?: number
-      originalParentId?: string | null
+      cursorX?: number;
+      cursorY?: number;
+      widgetX?: number;
+      widgetY?: number;
+      originalX?: number;
+      originalY?: number;
+      originalParentId?: string | null;
     },
   ): void {
-    isDragging.value = true
-    dragSource.value = source
-    dragWidgetId.value = id ?? null
-    dragWidgetType.value = type ?? null
-    dragX.value = 0
-    dragY.value = 0
-    dragDeltaX.value = 0
-    dragDeltaY.value = 0
-    initialCursorX.value = opts?.cursorX ?? 0
-    initialCursorY.value = opts?.cursorY ?? 0
-    initialWidgetX.value = opts?.widgetX ?? 0
-    initialWidgetY.value = opts?.widgetY ?? 0
-    hoveredContainerId.value = null
-    isInContainer.value = false
-    guideLines.value = []
-    snapX.value = null
-    snapY.value = null
-    dropPreviewLine.value = null
-    originalPosition.value = opts?.originalX !== undefined
-      ? { x: opts.originalX, y: opts.originalY!, parentId: opts.originalParentId ?? null }
-      : null
+    isDragging.value = true;
+    dragSource.value = source;
+    dragWidgetId.value = id ?? null;
+    dragWidgetType.value = type ?? null;
+    dragX.value = 0;
+    dragY.value = 0;
+    dragDeltaX.value = 0;
+    dragDeltaY.value = 0;
+    initialCursorX.value = opts?.cursorX ?? 0;
+    initialCursorY.value = opts?.cursorY ?? 0;
+    initialWidgetX.value = opts?.widgetX ?? 0;
+    initialWidgetY.value = opts?.widgetY ?? 0;
+    hoveredContainerId.value = null;
+    isInContainer.value = false;
+    guideLines.value = [];
+    snapX.value = null;
+    snapY.value = null;
+    dropPreviewLine.value = null;
+    originalPosition.value =
+      opts?.originalX !== undefined
+        ? {
+            x: opts.originalX,
+            y: opts.originalY!,
+            parentId: opts.originalParentId ?? null,
+          }
+        : null;
   }
 
   /**
@@ -148,10 +157,10 @@ export const useDragStore = defineStore('drag', () => {
    * @param y - 当前鼠标 Y 坐标
    */
   function updateDragPosition(x: number, y: number): void {
-    dragDeltaX.value = x - dragX.value
-    dragDeltaY.value = y - dragY.value
-    dragX.value = x
-    dragY.value = y
+    dragDeltaX.value = x - dragX.value;
+    dragDeltaY.value = y - dragY.value;
+    dragX.value = x;
+    dragY.value = y;
   }
 
   /**
@@ -160,15 +169,15 @@ export const useDragStore = defineStore('drag', () => {
    * @param containerId - 鼠标悬停的容器 ID，不在容器内时传 null
    */
   function updateCollision(containerId: string | null): void {
-    hoveredContainerId.value = containerId
-    isInContainer.value = containerId !== null
+    hoveredContainerId.value = containerId;
+    isInContainer.value = containerId !== null;
   }
 
   /**
    * 更新辅助线。
    */
   function updateGuideLines(lines: GuideLine[]): void {
-    guideLines.value = lines
+    guideLines.value = lines;
   }
 
   /**
@@ -178,40 +187,40 @@ export const useDragStore = defineStore('drag', () => {
    * @param y - 吸附 Y 坐标，不吸附时传 null
    */
   function updateSnap(x: number | null, y: number | null): void {
-    snapX.value = x
-    snapY.value = y
+    snapX.value = x;
+    snapY.value = y;
   }
 
   /**
    * 更新放置预览线。
    */
   function updateDropPreviewLine(line: DropPreviewLine | null): void {
-    dropPreviewLine.value = line
+    dropPreviewLine.value = line;
   }
 
   /**
    * 结束拖拽，重置所有状态。
    */
   function endDrag(): void {
-    isDragging.value = false
-    dragSource.value = null
-    dragWidgetId.value = null
-    dragWidgetType.value = null
-    dragX.value = 0
-    dragY.value = 0
-    dragDeltaX.value = 0
-    dragDeltaY.value = 0
-    initialCursorX.value = 0
-    initialCursorY.value = 0
-    initialWidgetX.value = 0
-    initialWidgetY.value = 0
-    hoveredContainerId.value = null
-    isInContainer.value = false
-    guideLines.value = []
-    snapX.value = null
-    snapY.value = null
-    dropPreviewLine.value = null
-    originalPosition.value = null
+    isDragging.value = false;
+    dragSource.value = null;
+    dragWidgetId.value = null;
+    dragWidgetType.value = null;
+    dragX.value = 0;
+    dragY.value = 0;
+    dragDeltaX.value = 0;
+    dragDeltaY.value = 0;
+    initialCursorX.value = 0;
+    initialCursorY.value = 0;
+    initialWidgetX.value = 0;
+    initialWidgetY.value = 0;
+    hoveredContainerId.value = null;
+    isInContainer.value = false;
+    guideLines.value = [];
+    snapX.value = null;
+    snapY.value = null;
+    dropPreviewLine.value = null;
+    originalPosition.value = null;
   }
 
   // ================================================================
@@ -253,5 +262,5 @@ export const useDragStore = defineStore('drag', () => {
     updateSnap,
     updateDropPreviewLine,
     endDrag,
-  }
-})
+  };
+});

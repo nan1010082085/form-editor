@@ -1,52 +1,62 @@
 <script setup lang="ts">
-import { inject, computed, ref, onMounted } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useI18n } from '@schema-platform/platform-shared'
-import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
-import { calendarMock } from './mock'
-import styles from './style.module.scss'
+import { inject, computed, ref, onMounted } from "vue";
+import { widgetDataKey } from "../base/types";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useI18n } from "@schema-platform/platform-shared";
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from "../base/widgetMock";
+import { calendarMock } from "./mock";
+import styles from "./style.module.scss";
 
 interface CalendarEvent {
-  date: string
-  title: string
-  type?: string
+  date: string;
+  title: string;
+  type?: string;
 }
 
-const widgetData = inject(widgetDataKey)!
-const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
-const { t } = useI18n()
+const widgetData = inject(widgetDataKey)!;
+const surface = inject(WIDGET_SURFACE_KEY, "runtime" as WidgetSurface);
+const { t } = useI18n();
 
-const events = ref<CalendarEvent[]>([])
-const selectedDate = ref(new Date())
+const events = ref<CalendarEvent[]>([]);
+const selectedDate = ref(new Date());
 
-useExposeWidget(() => ({ get events() { return events.value } }))
+useExposeWidget(() => ({
+  get events() {
+    return events.value;
+  },
+}));
 
-const title = computed(() => (widgetData.value.props?.title as string) || t('editor.calendar.defaultTitle'))
+const title = computed(
+  () =>
+    (widgetData.value.props?.title as string) ||
+    t("editor.calendar.defaultTitle"),
+);
 
 const eventsByDate = computed(() => {
-  const map = new Map<string, CalendarEvent[]>()
+  const map = new Map<string, CalendarEvent[]>();
   for (const ev of events.value) {
-    const list = map.get(ev.date) ?? []
-    list.push(ev)
-    map.set(ev.date, list)
+    const list = map.get(ev.date) ?? [];
+    list.push(ev);
+    map.set(ev.date, list);
   }
-  return map
-})
+  return map;
+});
 
 function dayEvents(date: Date): CalendarEvent[] {
-  const key = date.toISOString().slice(0, 10)
-  return eventsByDate.value.get(key) ?? []
+  const key = date.toISOString().slice(0, 10);
+  return eventsByDate.value.get(key) ?? [];
 }
 
 onMounted(() => {
-  const staticData = widgetData.value.props?.staticData as CalendarEvent[] | undefined
+  const staticData = widgetData.value.props?.staticData as
+    | CalendarEvent[]
+    | undefined;
   if (staticData?.length) {
-    events.value = staticData
-  } else if (surface === 'editor') {
-    events.value = calendarMock.staticData.events
+    events.value = staticData;
+  } else if (surface === "editor") {
+    events.value = calendarMock.staticData.events;
   }
-})
+});
 </script>
 
 <template>
@@ -55,9 +65,15 @@ onMounted(() => {
     <el-calendar v-model="selectedDate">
       <template #date-cell="{ data }">
         <div :class="styles.cell">
-          <span>{{ data.day.split('-').slice(2).join('-') }}</span>
+          <span>{{ data.day.split("-").slice(2).join("-") }}</span>
           <ul v-if="dayEvents(data.date).length" :class="styles.dots">
-            <li v-for="(ev, i) in dayEvents(data.date).slice(0, 2)" :key="i" :title="ev.title">•</li>
+            <li
+              v-for="(ev, i) in dayEvents(data.date).slice(0, 2)"
+              :key="i"
+              :title="ev.title"
+            >
+              •
+            </li>
           </ul>
         </div>
       </template>

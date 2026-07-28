@@ -1,92 +1,99 @@
 <script setup lang="ts">
-import { inject, computed, ref, onMounted, watch, type ComputedRef } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { fetchApprovalLogs, type ApprovalLogItem } from '@/api/flowApi'
-import { resolveWidgetUrl } from '@/utils/resolveWidgetUrl'
-import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
-import { flowTimelineMock } from './mock'
-import styles from './style.module.scss'
+import { inject, computed, ref, onMounted, watch, type ComputedRef } from "vue";
+import { widgetDataKey } from "../base/types";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { fetchApprovalLogs, type ApprovalLogItem } from "@/api/flowApi";
+import { resolveWidgetUrl } from "@/utils/resolveWidgetUrl";
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from "../base/widgetMock";
+import { flowTimelineMock } from "./mock";
+import styles from "./style.module.scss";
 
-const widgetData = inject(widgetDataKey)!
+const widgetData = inject(widgetDataKey)!;
 const variablesContext = inject<ComputedRef<Record<string, unknown>>>(
-  'variablesContext',
+  "variablesContext",
   computed(() => ({})),
-)
-const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
+);
+const surface = inject(WIDGET_SURFACE_KEY, "runtime" as WidgetSurface);
 
-const logs = ref<ApprovalLogItem[]>([])
-const loading = ref(false)
+const logs = ref<ApprovalLogItem[]>([]);
+const loading = ref(false);
 
 useExposeWidget(() => ({
-  get logs() { return logs.value },
-  get loading() { return loading.value },
-}))
+  get logs() {
+    return logs.value;
+  },
+  get loading() {
+    return loading.value;
+  },
+}));
 
-const title = computed(() => (widgetData.value.props?.title as string) || '审批记录')
+const title = computed(
+  () => (widgetData.value.props?.title as string) || "审批记录",
+);
 
 function resolveInstanceId(): string {
-  const fixed = widgetData.value.props?.instanceId as string | undefined
+  const fixed = widgetData.value.props?.instanceId as string | undefined;
   if (fixed) {
-    return resolveWidgetUrl(fixed, variablesContext.value)
+    return resolveWidgetUrl(fixed, variablesContext.value);
   }
-  const varName = (widgetData.value.props?.instanceIdVariable as string) || 'flowInstanceId'
-  const val = variablesContext.value[varName]
-  return val != null ? String(val) : ''
+  const varName =
+    (widgetData.value.props?.instanceIdVariable as string) || "flowInstanceId";
+  const val = variablesContext.value[varName];
+  return val != null ? String(val) : "";
 }
 
 const ACTION_LABEL: Record<string, string> = {
-  approve: '通过',
-  reject: '驳回',
-  claim: '认领',
-  delegate: '委派',
-  comment: '评论',
-  'reject-to-node': '驳回到节点',
-}
+  approve: "通过",
+  reject: "驳回",
+  claim: "认领",
+  delegate: "委派",
+  comment: "评论",
+  "reject-to-node": "驳回到节点",
+};
 
-const ACTION_TYPE: Record<string, '' | 'success' | 'danger' | 'warning'> = {
-  approve: 'success',
-  reject: 'danger',
-  claim: '',
-  delegate: 'warning',
-  'reject-to-node': 'danger',
-}
+const ACTION_TYPE: Record<string, "" | "success" | "danger" | "warning"> = {
+  approve: "success",
+  reject: "danger",
+  claim: "",
+  delegate: "warning",
+  "reject-to-node": "danger",
+};
 
 function actionLabel(action: string): string {
-  return ACTION_LABEL[action] ?? action
+  return ACTION_LABEL[action] ?? action;
 }
 
-function actionType(action: string): '' | 'success' | 'danger' | 'warning' {
-  return ACTION_TYPE[action] ?? ''
+function actionType(action: string): "" | "success" | "danger" | "warning" {
+  return ACTION_TYPE[action] ?? "";
 }
 
 function formatTime(iso: string): string {
-  return new Date(iso).toLocaleString('zh-CN')
+  return new Date(iso).toLocaleString("zh-CN");
 }
 
 async function loadLogs() {
-  const instanceId = resolveInstanceId()
+  const instanceId = resolveInstanceId();
   if (!instanceId) {
-    if (surface === 'editor') {
-      logs.value = flowTimelineMock.staticData.logs
+    if (surface === "editor") {
+      logs.value = flowTimelineMock.staticData.logs;
     }
-    return
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
   try {
-    logs.value = await fetchApprovalLogs(instanceId)
+    logs.value = await fetchApprovalLogs(instanceId);
   } catch (err) {
-    console.error('[FgFlowTimeline] load failed:', err)
-    logs.value = []
+    console.error("[FgFlowTimeline] load failed:", err);
+    logs.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-onMounted(loadLogs)
-watch(variablesContext, loadLogs, { deep: true })
-watch(() => widgetData.value.props?.instanceId, loadLogs)
+onMounted(loadLogs);
+watch(variablesContext, loadLogs, { deep: true });
+watch(() => widgetData.value.props?.instanceId, loadLogs);
 </script>
 
 <template>
@@ -97,12 +104,16 @@ watch(() => widgetData.value.props?.instanceId, loadLogs)
     <ul v-else :class="styles.list">
       <li v-for="log in logs" :key="log.id" :class="styles.item">
         <div :class="styles.header">
-          <el-tag :type="actionType(log.action)" size="small">{{ actionLabel(log.action) }}</el-tag>
+          <el-tag :type="actionType(log.action)" size="small">{{
+            actionLabel(log.action)
+          }}</el-tag>
           <span :class="styles.node">{{ log.nodeName }}</span>
         </div>
         <div :class="styles.body">
           <span :class="styles.operator">{{ log.operator }}</span>
-          <span v-if="log.comment" :class="styles.comment">{{ log.comment }}</span>
+          <span v-if="log.comment" :class="styles.comment">{{
+            log.comment
+          }}</span>
         </div>
         <div :class="styles.time">{{ formatTime(log.createdAt) }}</div>
       </li>

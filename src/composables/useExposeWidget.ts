@@ -19,31 +19,41 @@
  * }))
  * ```
  */
-import { inject, onMounted, onUnmounted, type ComputedRef } from 'vue'
-import { widgetDataKey } from '@/widgets/base/types'
-import type { Widget } from '@/widgets/base/types'
-import { useLogger } from '@/composables/useLogger'
+import { inject, onMounted, onUnmounted, type ComputedRef } from "vue";
+import { widgetDataKey } from "@/widgets/base/types";
+import type { Widget } from "@/widgets/base/types";
+import { useLogger } from "@/composables/useLogger";
 
-const logger = useLogger('Exposed')
+const logger = useLogger("Exposed");
 
-type ExposeFactory = (widgetData: ComputedRef<Widget>) => Record<string, unknown>
+type ExposeFactory = (
+  widgetData: ComputedRef<Widget>,
+) => Record<string, unknown>;
 
 export function useExposeWidget(stateFactory: ExposeFactory) {
-  const widgetData = inject(widgetDataKey)
-  const register = inject<((id: string, state: Record<string, unknown>) => void) | null>('registerExposed', null)
-  const unregister = inject<((id: string) => void) | null>('unregisterExposed', null)
+  const widgetData = inject(widgetDataKey);
+  const register = inject<
+    ((id: string, state: Record<string, unknown>) => void) | null
+  >("registerExposed", null);
+  const unregister = inject<((id: string) => void) | null>(
+    "unregisterExposed",
+    null,
+  );
 
-  if (!widgetData || !register || !unregister) return
+  if (!widgetData || !register || !unregister) return;
 
-  const state = stateFactory(widgetData)
+  const state = stateFactory(widgetData);
 
   onMounted(() => {
-    register(widgetData.value.id, state)
-    logger.info(`registered: ${widgetData.value.id} (${widgetData.value.type})`, Object.keys(state))
-  })
+    register(widgetData.value.id, state);
+    logger.info(
+      `registered: ${widgetData.value.id} (${widgetData.value.type})`,
+      Object.keys(state),
+    );
+  });
 
   onUnmounted(() => {
-    logger.info(`unregistered: ${widgetData.value.id}`)
-    unregister(widgetData.value.id)
-  })
+    logger.info(`unregistered: ${widgetData.value.id}`);
+    unregister(widgetData.value.id);
+  });
 }

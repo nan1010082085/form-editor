@@ -1,14 +1,14 @@
-import * as echarts from 'echarts/core'
-import { BarChart } from 'echarts/charts'
-import { LineChart } from 'echarts/charts'
-import { PieChart } from 'echarts/charts'
-import { ScatterChart } from 'echarts/charts'
-import { RadarChart } from 'echarts/charts'
-import { GaugeChart } from 'echarts/charts'
-import { HeatmapChart } from 'echarts/charts'
-import { FunnelChart } from 'echarts/charts'
-import { CandlestickChart } from 'echarts/charts'
-import { MapChart } from 'echarts/charts'
+import * as echarts from "echarts/core";
+import { BarChart } from "echarts/charts";
+import { LineChart } from "echarts/charts";
+import { PieChart } from "echarts/charts";
+import { ScatterChart } from "echarts/charts";
+import { RadarChart } from "echarts/charts";
+import { GaugeChart } from "echarts/charts";
+import { HeatmapChart } from "echarts/charts";
+import { FunnelChart } from "echarts/charts";
+import { CandlestickChart } from "echarts/charts";
+import { MapChart } from "echarts/charts";
 import {
   GridComponent,
   TooltipComponent,
@@ -19,17 +19,31 @@ import {
   VisualMapComponent,
   ToolboxComponent,
   GeoComponent,
-} from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
+} from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
 
 echarts.use([
-  BarChart, LineChart, PieChart, ScatterChart, RadarChart,
-  GaugeChart, HeatmapChart, FunnelChart, CandlestickChart, MapChart,
-  GridComponent, TooltipComponent, LegendComponent, TitleComponent,
-  DatasetComponent, TransformComponent, VisualMapComponent, ToolboxComponent,
+  BarChart,
+  LineChart,
+  PieChart,
+  ScatterChart,
+  RadarChart,
+  GaugeChart,
+  HeatmapChart,
+  FunnelChart,
+  CandlestickChart,
+  MapChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  TitleComponent,
+  DatasetComponent,
+  TransformComponent,
+  VisualMapComponent,
+  ToolboxComponent,
   GeoComponent,
   CanvasRenderer,
-])
+]);
 
-export { echarts }
-export type { EChartsType } from 'echarts/core'
+export { echarts };
+export type { EChartsType } from "echarts/core";

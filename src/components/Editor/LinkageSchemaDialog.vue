@@ -5,44 +5,44 @@
  * 写入 widget.linkages，运行时由 useLinkage 消费。
  * 与 LinkageConfigDialog（WidgetEvent[] → rules）区分。
  */
-import { ref, watch, computed } from 'vue'
-import type { SchemaLinkage } from '@/components/WidgetRenderer/types'
-import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
-import LinkageConfig from './LinkageConfig.vue'
-import { useWidgetOptions } from '@/composables/useWidgetOptions'
+import { ref, watch, computed } from "vue";
+import type { SchemaLinkage } from "@/components/WidgetRenderer/types";
+import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
+import LinkageConfig from "./LinkageConfig.vue";
+import { useWidgetOptions } from "@/composables/useWidgetOptions";
 
 const props = defineProps<{
-  visible: boolean
-  linkages: SchemaLinkage[]
-}>()
+  visible: boolean;
+  linkages: SchemaLinkage[];
+}>();
 
 const emit = defineEmits<{
-  'update:visible': [val: boolean]
-  save: [linkages: SchemaLinkage[]]
-}>()
+  "update:visible": [val: boolean];
+  save: [linkages: SchemaLinkage[]];
+}>();
 
-const { widgetOptions } = useWidgetOptions()
+const { widgetOptions } = useWidgetOptions();
 
-const availableFields = computed(() => widgetOptions.value.map((o) => o.value))
+const availableFields = computed(() => widgetOptions.value.map((o) => o.value));
 
-const localLinkages = ref<SchemaLinkage[]>([])
+const localLinkages = ref<SchemaLinkage[]>([]);
 
 watch(
   () => props.visible,
   (open) => {
     if (open) {
-      localLinkages.value = JSON.parse(JSON.stringify(props.linkages ?? []))
+      localLinkages.value = JSON.parse(JSON.stringify(props.linkages ?? []));
     }
   },
-)
+);
 
 function handleSave() {
-  emit('save', localLinkages.value)
-  emit('update:visible', false)
+  emit("save", localLinkages.value);
+  emit("update:visible", false);
 }
 
 function handleClose() {
-  emit('update:visible', false)
+  emit("update:visible", false);
 }
 </script>
 

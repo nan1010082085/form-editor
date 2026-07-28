@@ -4,24 +4,32 @@
  * 消除项目中的魔法数字/字符串，统一引用。
  * 容器类型从 registry 动态获取，支持新增部件自动适配。
  */
-import { computed } from 'vue'
-import type { SchemaType } from '@/components/WidgetRenderer/types'
-import { getAllWidgets, type WidgetRegistryItem } from '@/widgets/registry'
+import { computed, type ComputedRef } from "vue";
+import type { SchemaType } from "@/components/WidgetRenderer/types";
+import { getAllWidgets, type WidgetRegistryItem } from "@/widgets/registry";
 
 /**
  * 静态容器类型集合（用于非组件上下文，如工具函数、碰撞检测等）
  * 当 registry 未初始化时作为 fallback。
  */
-export const LAYOUT_CONTAINER_TYPES: ReadonlySet<SchemaType> = new Set<SchemaType>([
-  'form', 'card', 'tabs', 'dialog',
-  'single-col', 'double-col', 'triple-col', 'quad-col', 'row-container',
-])
+export const LAYOUT_CONTAINER_TYPES: ReadonlySet<SchemaType> =
+  new Set<SchemaType>([
+    "form",
+    "card",
+    "tabs",
+    "dialog",
+    "single-col",
+    "double-col",
+    "triple-col",
+    "quad-col",
+    "row-container",
+  ]);
 
 /** 编辑历史最大快照数 */
-export const MAX_HISTORY_SIZE = 30
+export const MAX_HISTORY_SIZE = 30;
 
 /** 组件 ID Hash 长度 */
-export const ID_HASH_LENGTH = 5
+export const ID_HASH_LENGTH = 5;
 
 /**
  * 从 registry 动态获取容器类型集合
@@ -29,42 +37,51 @@ export const ID_HASH_LENGTH = 5
  * 当 registry 为空时 fallback 到 LAYOUT_CONTAINER_TYPES
  */
 function getContainerTypesFromRegistry(): Set<SchemaType> {
-  const types = new Set<SchemaType>()
+  const types = new Set<SchemaType>();
   for (const item of getAllWidgets()) {
-    if (item.group === 'container' || item.group === 'layout') {
-      types.add(item.type)
+    if (item.group === "container" || item.group === "layout") {
+      types.add(item.type);
     }
   }
   if (types.size === 0) {
-    return new Set(LAYOUT_CONTAINER_TYPES)
+    return new Set(LAYOUT_CONTAINER_TYPES);
   }
-  return types
+  return types;
 }
 
 /** 可容纳子节点的布局容器类型（动态） */
-export function useLayoutContainerTypes(): ReadonlySet<SchemaType> {
-  return computed(() => getContainerTypesFromRegistry())
+export function useLayoutContainerTypes(): ComputedRef<
+  ReadonlySet<SchemaType>
+> {
+  return computed(() => getContainerTypesFromRegistry());
 }
 
 /** 编辑器中可接受拖放的容器类型（动态） */
-export function useEditableContainerTypes(): ReadonlySet<SchemaType> {
-  return computed(() => getContainerTypesFromRegistry())
+export function useEditableContainerTypes(): ComputedRef<
+  ReadonlySet<SchemaType>
+> {
+  return computed(() => getContainerTypesFromRegistry());
 }
 
 /** 交互模式 */
-export const INTERACTION_MODES = ['edit', 'preview', 'publish-interactive', 'publish-readonly'] as const
+export const INTERACTION_MODES = [
+  "edit",
+  "preview",
+  "publish-interactive",
+  "publish-readonly",
+] as const;
 
-export type InteractionMode = (typeof INTERACTION_MODES)[number]
+export type InteractionMode = (typeof INTERACTION_MODES)[number];
 
 /** 布局编辑模式 — 控制画布渲染和 widget 面板行为 */
-export const LAYOUT_EDIT_MODES = ['free', 'flex'] as const
-export type LayoutEditMode = (typeof LAYOUT_EDIT_MODES)[number]
+export const LAYOUT_EDIT_MODES = ["free", "flex"] as const;
+export type LayoutEditMode = (typeof LAYOUT_EDIT_MODES)[number];
 
 /**
  * 判断组件类型是否为可嵌套容器（动态）
  */
 export function canNest(type: SchemaType): boolean {
-  return getContainerTypesFromRegistry().has(type)
+  return getContainerTypesFromRegistry().has(type);
 }
 
 /**
@@ -72,88 +89,128 @@ export function canNest(type: SchemaType): boolean {
  * 注意：此函数每次调用都会遍历所有 widgets，建议在非频繁调用场景使用
  */
 export function useAllContainerTypes(): Set<SchemaType> {
-  return getContainerTypesFromRegistry()
+  return getContainerTypesFromRegistry();
 }
 
 /** 布局/容器组件（layout + container 分组，动态） */
-export function useLayoutTypes(): ReadonlySet<SchemaType> {
+export function useLayoutTypes(): ComputedRef<ReadonlySet<SchemaType>> {
   return computed(() => {
-    const types = new Set<SchemaType>()
+    const types = new Set<SchemaType>();
     for (const item of getAllWidgets()) {
-      if (item.group === 'layout' || item.group === 'container') {
-        types.add(item.type)
+      if (item.group === "layout" || item.group === "container") {
+        types.add(item.type);
       }
     }
-    return types
-  })
+    return types;
+  });
 }
 
 /** 静态基础类型 fallback（registry 未初始化时） */
 const FALLBACK_BASIC_TYPES = new Set<SchemaType>([
-  'input', 'select', 'number', 'radio', 'checkbox', 'date', 'textarea', 'switch', 'slider',
-  'title', 'divider', 'spacer', 'toolbar-buttons', 'button',
-  'table', 'richtext', 'upload', 'banner', 'date-time-slot', 'time-picker',
-  'file-list', 'transfer', 'cascader', 'rate', 'color-picker', 'tag-input', 'autocomplete',
-  'descriptions', 'advanced-table', 'tree-table', 'statistic', 'permission-tree',
-  'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
-  'line-chart', 'area-chart',
-  'pie-chart', 'donut-chart',
-  'scatter-chart', 'bubble-chart',
-  'radar', 'filled-radar',
-  'gauge', 'multi-gauge',
-  'heatmap',
-  'funnel', 'compare-funnel',
-  'candlestick',
-])
+  "input",
+  "select",
+  "number",
+  "radio",
+  "checkbox",
+  "date",
+  "textarea",
+  "switch",
+  "slider",
+  "title",
+  "divider",
+  "spacer",
+  "toolbar-buttons",
+  "button",
+  "table",
+  "richtext",
+  "upload",
+  "banner",
+  "date-time-slot",
+  "time-picker",
+  "file-list",
+  "transfer",
+  "cascader",
+  "rate",
+  "color-picker",
+  "tag-input",
+  "autocomplete",
+  "descriptions",
+  "advanced-table",
+  "tree-table",
+  "statistic",
+  "permission-tree",
+  "bar-chart",
+  "stacked-bar-chart",
+  "horizontal-bar-chart",
+  "line-chart",
+  "area-chart",
+  "pie-chart",
+  "donut-chart",
+  "scatter-chart",
+  "bubble-chart",
+  "radar",
+  "filled-radar",
+  "gauge",
+  "multi-gauge",
+  "heatmap",
+  "funnel",
+  "compare-funnel",
+  "candlestick",
+]);
 
 /** 静态业务类型 fallback（registry 未初始化时） */
 const FALLBACK_BUSINESS_TYPES = new Set<SchemaType>([
-  'approval-user-picker', 'approval-role-picker', 'approval-comment',
-  'user-management', 'role-management', 'user-selector',
-])
+  "approval-user-picker",
+  "approval-role-picker",
+  "approval-comment",
+  "user-management",
+  "role-management",
+  "user-selector",
+]);
 
 /** 表单控件 + 操作 + 展示 + 表格（动态） */
-export function useBasicTypes(): ReadonlySet<SchemaType> {
+export function useBasicTypes(): ComputedRef<ReadonlySet<SchemaType>> {
   return computed(() => {
-    const types = new Set<SchemaType>()
+    const types = new Set<SchemaType>();
     for (const item of getAllWidgets()) {
-      if (['form', 'action', 'static', 'table'].includes(item.group)) {
-        types.add(item.type)
+      if (["form", "action", "static", "table"].includes(item.group)) {
+        types.add(item.type);
       }
     }
     if (types.size === 0) {
-      return FALLBACK_BASIC_TYPES
+      return FALLBACK_BASIC_TYPES;
     }
-    return types
-  })
+    return types;
+  });
 }
 
 /** 业务组件（business 分组，动态） */
-export function useBusinessTypes(): ReadonlySet<SchemaType> {
+export function useBusinessTypes(): ComputedRef<ReadonlySet<SchemaType>> {
   return computed(() => {
-    const types = new Set<SchemaType>()
+    const types = new Set<SchemaType>();
     for (const item of getAllWidgets()) {
-      if (item.group === 'business') {
-        types.add(item.type)
+      if (item.group === "business") {
+        types.add(item.type);
       }
     }
     if (types.size === 0) {
-      return FALLBACK_BUSINESS_TYPES
+      return FALLBACK_BUSINESS_TYPES;
     }
-    return types
-  })
+    return types;
+  });
 }
 
 /**
  * 获取指定分组的所有组件类型
  */
-export function useTypesByGroup(group: WidgetRegistryItem['group']): Set<SchemaType> {
-  const types = new Set<SchemaType>()
+export function useTypesByGroup(
+  group: WidgetRegistryItem["group"],
+): Set<SchemaType> {
+  const types = new Set<SchemaType>();
   for (const item of getAllWidgets()) {
     if (item.group === group) {
-      types.add(item.type)
+      types.add(item.type);
     }
   }
-  return types
+  return types;
 }
-

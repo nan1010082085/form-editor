@@ -1,114 +1,129 @@
-import 'element-plus/dist/index.css'
-import '@schema-platform/platform-shared/styles/theme.scss'
-import '@schema-platform/platform-shared/styles/css-variables.scss'
-import '@/styles/variables.scss'
-import '@/styles/widget-animations.scss'
+import "element-plus/dist/index.css";
+import "@schema-platform/platform-shared/styles/theme.scss";
+import "@schema-platform/platform-shared/styles/css-variables.scss";
+import "@/styles/variables.scss";
+import "@/styles/widget-animations.scss";
 
-import { createApp, type App } from 'vue'
-import { createPinia } from 'pinia'
-import { renderWithQiankun, qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
-import { setupElementPlus } from '@schema-platform/platform-shared/config/element'
-import { createI18n } from '@schema-platform/platform-shared'
-import { reportError } from '@schema-platform/platform-shared'
-import editorZhCN from '@/locales/editor-zh-CN'
-import editorEnUS from '@/locales/editor-en-US'
-import { initCapabilityPlatformAuth, resolveAuthToken } from '@schema-platform/platform-shared/utils/authSession'
-import { initQiankunProps, initQiankunShellProps } from '@schema-platform/platform-shared/qiankun'
-import { editorLog } from '@schema-platform/platform-shared/utils/logger'
-import AppRoot from './App.vue'
-import { createEditorRouter } from './router'
-import { configureApiClient } from './utils/apiClient'
-import { registerAllWidgets } from './widgets'
-import { permissionDirective } from './directives/permission'
+import { createApp, type App } from "vue";
+import { createPinia } from "pinia";
+import {
+  renderWithQiankun,
+  qiankunWindow,
+} from "vite-plugin-qiankun/dist/helper";
+import { setupElementPlus } from "@schema-platform/platform-shared/config/element";
+import { reportError } from "@schema-platform/platform-shared";
+import { i18n } from "@/locales";
+import {
+  initCapabilityPlatformAuth,
+  resolveAuthToken,
+} from "@schema-platform/platform-shared/utils/authSession";
+import {
+  initQiankunProps,
+  initQiankunShellProps,
+} from "@schema-platform/platform-shared/qiankun";
+import { editorLog } from "@schema-platform/platform-shared/utils/logger";
+import AppRoot from "./App.vue";
+import { createEditorRouter } from "./router";
+import { configureApiClient } from "./utils/apiClient";
+import { registerAllWidgets } from "./widgets";
+import { permissionDirective } from "./directives/permission";
 
-let app: App | null = null
-let router: ReturnType<typeof createEditorRouter> | null = null
+let app: App | null = null;
+let router: ReturnType<typeof createEditorRouter> | null = null;
 
-let currentRouteBase: string | undefined
-let widgetsRegistered = false
+let currentRouteBase: string | undefined;
+let widgetsRegistered = false;
 
 function render() {
   if (!widgetsRegistered) {
-    registerAllWidgets()
-    widgetsRegistered = true
+    registerAllWidgets();
+    widgetsRegistered = true;
   }
 
-  router = createEditorRouter(currentRouteBase)
-  app = createApp(AppRoot)
-  const pinia = createPinia()
-  app.use(pinia)
-  app.use(createI18n({ messages: { 'zh-CN': editorZhCN, 'en-US': editorEnUS } }))
-  app.use(router)
+  router = createEditorRouter(currentRouteBase);
+  app = createApp(AppRoot);
+  const pinia = createPinia();
+  app.use(pinia);
+  app.use(i18n);
+  app.use(router);
   app.config.errorHandler = (err, _instance, info) => {
-    console.error('[GlobalError]', err, info)
-    void reportError(err instanceof Error ? err : String(err), { info })
-  }
-  app.directive('permission', permissionDirective)
+    console.error("[GlobalError]", err, info);
+    void reportError(err instanceof Error ? err : String(err), { info });
+  };
+  app.directive("permission", permissionDirective);
   // /perf 是公开压测页，跳过 auth bootstrap（避免 401 触发跳登录）
-  const isPerfRoute = window.location.pathname.endsWith('/perf')
-  initCapabilityPlatformAuth(isPerfRoute ? { bootstrap: false } : {})
-  setupElementPlus(app)
+  const isPerfRoute = window.location.pathname.endsWith("/perf");
+  initCapabilityPlatformAuth(isPerfRoute ? { bootstrap: false } : {});
+  setupElementPlus(app);
   configureApiClient({
     baseUrl: import.meta.env.VITE_API_BASE_URL as string | undefined,
-    getToken: () => resolveAuthToken() ?? '',
-    useMock: import.meta.env.VITE_USE_MOCK === 'true',
-  })
+    getToken: () => resolveAuthToken() ?? "",
+    useMock: import.meta.env.VITE_USE_MOCK === "true",
+  });
 
-  const mountEl = document.getElementById('editor-app')
-  if (!mountEl) throw new Error('[editor] #editor-app not found')
-  app.mount(mountEl)
+  const mountEl = document.getElementById("editor-app");
+  if (!mountEl) throw new Error("[editor] #editor-app not found");
+  app.mount(mountEl);
 }
 
 renderWithQiankun({
   bootstrap() {
-    editorLog.lifecycle('bootstrap')
+    editorLog.lifecycle("bootstrap");
   },
   mount(props) {
-    editorLog.lifecycle('mount start')
-    mounted = true
+    editorLog.lifecycle("mount start");
+    mounted = true;
 
-    document.getElementById('loading')?.remove()
+    document.getElementById("loading")?.remove();
 
-    if (typeof props.onGlobalStateChange === 'function' && typeof props.setGlobalState === 'function') {
-      initQiankunProps(props as Parameters<typeof initQiankunProps>[0])
+    if (
+      typeof props.onGlobalStateChange === "function" &&
+      typeof props.setGlobalState === "function"
+    ) {
+      initQiankunProps(props as Parameters<typeof initQiankunProps>[0]);
     }
-    initQiankunShellProps(props)
+    initQiankunShellProps(props);
 
-    const getToken = props.getToken as (() => string) | undefined
-    const token = getToken ? getToken() : (props.token as string)
-    if (token) localStorage.setItem('sfp_access_token', token)
+    const getToken = props.getToken as (() => string) | undefined;
+    const token = getToken ? getToken() : (props.token as string);
+    if (token) localStorage.setItem("sfp_access_token", token);
 
-    const getRouteBase = props.getRouteBase as (() => string) | undefined
+    const getRouteBase = props.getRouteBase as (() => string) | undefined;
     if (getRouteBase) {
-      currentRouteBase = getRouteBase()
+      currentRouteBase = getRouteBase();
     }
 
-    render()
-    editorLog.lifecycle('mount done')
+    render();
+    editorLog.lifecycle("mount done");
   },
   unmount() {
-    editorLog.lifecycle('unmount')
+    editorLog.lifecycle("unmount");
     if (app) {
-      app.unmount()
-      app = null
-      router = null
+      app.unmount();
+      app = null;
+      router = null;
     }
   },
-})
+  update() {
+    editorLog.lifecycle("update");
+  },
+});
 
 // Standalone mode detection:
 // vite-plugin-qiankun's useDevMode sets __POWERED_BY_QIANKUN__=true in dev,
 // even when running standalone. Use a 500ms fallback — if qiankun doesn't
 // call mount() within 500ms, treat as standalone and render directly.
-let mounted = false
+let mounted = false;
 if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
-  render()
-  mounted = true
+  render();
+  mounted = true;
 } else {
   setTimeout(() => {
     if (!mounted) {
-      editorLog.lifecycle('standalone fallback: qiankun mount() not called within 500ms')
-      render()
+      editorLog.lifecycle(
+        "standalone fallback: qiankun mount() not called within 500ms",
+      );
+      render();
     }
-  }, 500)
+  }, 500);
 }

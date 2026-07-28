@@ -1,3 +1,3 @@
-export { FgUpload } from '../upload'
-export { createUploadWidget } from '../upload'
-export { uploadConfig } from '../upload'
+export { FgUpload } from "../upload";
+export { createUploadWidget } from "../upload";
+export { uploadConfig } from "../upload";

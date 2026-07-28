@@ -6,8 +6,8 @@ export function resolveWidgetUrl(
   variables: Record<string, unknown> = {},
 ): string {
   return url.replace(/\{\{(?:variables\.)?(\w+)\}\}/g, (_, name: string) => {
-    const val = variables[name]
-    if (val === undefined || val === null) return ''
-    return encodeURIComponent(String(val))
-  })
+    const val = variables[name];
+    if (val === undefined || val === null) return "";
+    return encodeURIComponent(String(val));
+  });
 }

@@ -2,13 +2,18 @@
 
 // ---------- 字体系统 ----------
 // 字体族（公共组件/UI 统一以微软雅黑为主；`variables.less` 由 build/emit-variables-less.mjs 自本文件生成，勿手改）
-$font-family-base: 'Microsoft YaHei', '微软雅黑', 'PingFang SC', 'Hiragino Sans GB', 'Helvetica Neue', Helvetica, Arial,
-  sans-serif;
-$font-family-semibold: 'Microsoft YaHei', '微软雅黑', 'Microsoft YaHei Semibold', 'MicrosoftYaHeiSemibold', 'PingFang SC',
-  sans-serif;
+$font-family-base:
+  "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB",
+  "Helvetica Neue", Helvetica, Arial, sans-serif;
+$font-family-semibold:
+  "Microsoft YaHei", "微软雅黑", "Microsoft YaHei Semibold",
+  "MicrosoftYaHeiSemibold", "PingFang SC", sans-serif;
 /** 原小标宋等置于回退末位，缺字时再用；正文仍以雅黑为主 */
-$font-family-special: 'Microsoft YaHei', '微软雅黑', 'PingFang SC', 'PingFangSC-Regular', 'FZXBSJW-GB1-0', sans-serif;
-$font-family-number: 'Microsoft YaHei', '微软雅黑', 'DIN Alternate', Arial, sans-serif;
+$font-family-special:
+  "Microsoft YaHei", "微软雅黑", "PingFang SC", "PingFangSC-Regular",
+  "FZXBSJW-GB1-0", sans-serif;
+$font-family-number:
+  "Microsoft YaHei", "微软雅黑", "DIN Alternate", Arial, sans-serif;
 $font-family-mono: Consolas, Monaco, monospace; // 等宽/代码字体
 
 // 字体大小（固定 px 档位）
@@ -34,42 +39,42 @@ $line-height-relaxed: 1.75;
 
 // ---------- 颜色系统（对齐共享样式/flow） ----------
 // 主色系
-$color-primary: #0060A2;
-$color-primary-hover: #4581E9;
-$color-primary-light: #4581E9;
-$color-primary-lighter: #EEF5FF;
-$color-primary-dark: #0060A2;
-$color-primary-bg-light: #EEF5FF;
-$color-primary-dialog-header: #0060A2;
-$color-primary-active: #0060A2;
+$color-primary: #0060a2;
+$color-primary-hover: #4581e9;
+$color-primary-light: #4581e9;
+$color-primary-lighter: #eef5ff;
+$color-primary-dark: #0060a2;
+$color-primary-bg-light: #eef5ff;
+$color-primary-dialog-header: #0060a2;
+$color-primary-active: #0060a2;
 
 // 功能色 - 成功
-$color-success: #26A036;
-$color-success-light: #36B37E;
+$color-success: #26a036;
+$color-success-light: #36b37e;
 $color-success-bg: rgba(82, 196, 26, 0.1);
 
 // 功能色 - 警告
-$color-warning: #F09700;
-$color-warning-alt: #FF7D00;
-$color-warning-light: #FF6010;
+$color-warning: #f09700;
+$color-warning-alt: #ff7d00;
+$color-warning-light: #ff6010;
 $color-warning-bg: rgba(255, 191, 0, 0.1);
 
 // 功能色 - 危险/错误
-$color-danger: #E50113;
-$color-danger-alt: #C4040F;
-$color-danger-light: #FF6B55;
+$color-danger: #e50113;
+$color-danger-alt: #c4040f;
+$color-danger-light: #ff6b55;
 $color-danger-bg: rgba(255, 1, 1, 0.08);
-$color-urge: #FF3B30;
-$color-urge-border: #FFABA6;
+$color-urge: #ff3b30;
+$color-urge-border: #ffaba6;
 
 // 功能色 - 信息
-$color-info: #4581E9;
-$color-info-light: #E5EFF6;
+$color-info: #4581e9;
+$color-info-light: #e5eff6;
 $color-info-bg: rgba(22, 119, 255, 0.08);
 
 // 功能色 - 链接变体
-$color-link-file: #2071D5;
-$color-link-view: #015FA1;
+$color-link-file: #2071d5;
+$color-link-view: #015fa1;
 
 // 中性色 - 文字
 $text-color-title: #303133;
@@ -77,55 +82,55 @@ $text-color-primary: #333333;
 $text-color-regular: #606266;
 $text-color-secondary: #666666;
 $text-color-muted: #909399;
-$text-color-placeholder: #969FA8;
-$text-color-disabled: #C0C4CC;
-$text-color-inverse: #FFFFFF;
+$text-color-placeholder: #969fa8;
+$text-color-disabled: #c0c4cc;
+$text-color-inverse: #ffffff;
 
 // 中性色 - 背景
-$bg-color-white: #FFFFFF;
-$bg-color-page: #F5F6FA;
-$bg-color-gray-light: #FAFAFA;
-$bg-color-gray: #F5F7FA;
-$bg-color-gray-dark: #E4E7ED;
-$bg-color-gray-darker: #E8E8E8;
-$bg-color-surface: #FAFBFC;
-$bg-color-canvas-dot: #D0D5DD;
-$bg-color-blue-light: #EEF5FF;
-$bg-color-blue-lighter: #EEF5FF;
-$bg-color-blue-table: #F5F7FA;
-$bg-color-hover: #E5EFF6;
-$bg-color-stripe: #FAFAFA;
+$bg-color-white: #ffffff;
+$bg-color-page: #f5f6fa;
+$bg-color-gray-light: #fafafa;
+$bg-color-gray: #f5f7fa;
+$bg-color-gray-dark: #e4e7ed;
+$bg-color-gray-darker: #e8e8e8;
+$bg-color-surface: #fafbfc;
+$bg-color-canvas-dot: #d0d5dd;
+$bg-color-blue-light: #eef5ff;
+$bg-color-blue-lighter: #eef5ff;
+$bg-color-blue-table: #f5f7fa;
+$bg-color-hover: #e5eff6;
+$bg-color-stripe: #fafafa;
 
 // 中性色 - 边框
-$border-color-base: #D5DDE3;
-$border-color-light: #EBEDF3;
-$border-color-light-alt: #EBEDF3;
-$border-color-medium: #D5DDE3;
-$border-color-dark: #D5DDE3;
-$border-color-detail: #D5DDE3;
-$border-color-detailBg: #F5F7FA;
+$border-color-base: #d5dde3;
+$border-color-light: #ebedf3;
+$border-color-light-alt: #ebedf3;
+$border-color-medium: #d5dde3;
+$border-color-dark: #d5dde3;
+$border-color-detail: #d5dde3;
+$border-color-detailBg: #f5f7fa;
 
-$input-border-default: #EBEDF3;
-$input-border-hover: #4581E9;
-$input-border-focus: #1369C1;
-$input-border-disabled: #E0E0E6;
-$input-bg-disabled: #E0E0E6;
-$input-border-error: #C4040F;
-$menu-hover-bg: #EEF5FF;
+$input-border-default: #ebedf3;
+$input-border-hover: #4581e9;
+$input-border-focus: #1369c1;
+$input-border-disabled: #e0e0e6;
+$input-bg-disabled: #e0e0e6;
+$input-border-error: #c4040f;
+$menu-hover-bg: #eef5ff;
 
 // 表格相关颜色
-$tableHover: #F5F7FA;
-$tableBackground: #0060A2;
-$rouBackground: #FAFAFA;
+$tableHover: #f5f7fa;
+$tableBackground: #0060a2;
+$rouBackground: #fafafa;
 
 // 状态/标签色
-$color-pending: #FFBF00;
-$color-approved: #52C41A;
-$color-rejected: #FF6010;
+$color-pending: #ffbf00;
+$color-approved: #52c41a;
+$color-rejected: #ff6010;
 $color-draft: #909399;
-$color-link: #2071D5;
-$color-link-hover: #015FA1;
-$color-cbcbcb: #E4E7ED;
+$color-link: #2071d5;
+$color-link-hover: #015fa1;
+$color-cbcbcb: #e4e7ed;
 
 // 阴影
 $shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -376,7 +381,6 @@ $calendar-cell-width: 40px;
   --color-primary-dialog-header: #{$color-primary-dialog-header};
   --color-primary-active: #{$color-primary-active};
   --color-primary-rgb: 0, 82, 217; // 用于 rgba() 场景
-  
 
   // 功能色 - 成功
   --color-success: #{$color-success};
@@ -615,7 +619,7 @@ $fg-bg-disabled: #f3f4f6;
 $fg-bg-menu-hover: #f2f3ff;
 
 // ---- 字体 ----
-$fg-font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+$fg-font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
 $fg-font-size-title-lg: 22px;
 $fg-font-size-title: 18px;
 $fg-font-size-body: 16px;

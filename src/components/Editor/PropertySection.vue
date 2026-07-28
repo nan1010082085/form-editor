@@ -3,21 +3,27 @@
  * PropertySection -- Collapsible panel section for the property panel.
  * Wraps content in an el-collapse-item.
  */
-import { ref, watch } from 'vue'
-import styles from './PropertySection.module.scss'
+import { ref, watch } from "vue";
+import styles from "./PropertySection.module.scss";
 
-const props = withDefaults(defineProps<{
-  title: string
-  defaultOpen?: boolean
-}>(), {
-  defaultOpen: true,
-})
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    defaultOpen?: boolean;
+  }>(),
+  {
+    defaultOpen: true,
+  },
+);
 
-const activeNames = ref<string[]>(props.defaultOpen ? ['section'] : [])
+const activeNames = ref<string[]>(props.defaultOpen ? ["section"] : []);
 
-watch(() => props.defaultOpen, (val) => {
-  activeNames.value = val ? ['section'] : []
-})
+watch(
+  () => props.defaultOpen,
+  (val) => {
+    activeNames.value = val ? ["section"] : [];
+  },
+);
 </script>
 
 <template>

@@ -1,3 +1,3 @@
-export { FgNumber } from '../number'
-export { createNumberWidget } from '../number'
-export { numberConfig } from '../number'
+export { FgNumber } from "../number";
+export { createNumberWidget } from "../number";
+export { numberConfig } from "../number";

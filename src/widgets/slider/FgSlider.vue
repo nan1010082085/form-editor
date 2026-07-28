@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue'
-import { widgetDataKey, widgetStyleKey } from '../base/types'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import styles from './style.module.scss'
+import { inject, computed } from "vue";
+import { widgetDataKey, widgetStyleKey } from "../base/types";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import styles from "./style.module.scss";
 
-const widgetData = inject(widgetDataKey)!
-const widgetStyle = inject(widgetStyleKey)!
-const { isDisabled } = useWidgetRenderState()
+const widgetData = inject(widgetDataKey)!;
+const widgetStyle = inject(widgetStyleKey)!;
+const { isDisabled } = useWidgetRenderState();
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 
 const dynamicStyle = computed(() => ({
   fontSize: widgetStyle.value?.fontSize as string,
-}))
+}));
 </script>
 
 <template>

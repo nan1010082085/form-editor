@@ -1,6 +1,6 @@
 // 数据源对话框统一样式令牌
 // 所有数据源相关的 dialog 组件必须使用这些令牌确保一致性
-@use '../../styles/editor-ui-tokens' as *;
+@use "../../styles/editor-ui-tokens" as *;
 
 // ---- 表单布局 ----
 $datasource-label-width: 60px !default;

@@ -41,9 +41,19 @@
 }
 
 /* 节点类型颜色 */
-.trigger .dot { background: var(--color-primary); }
-.condition .dot { background: var(--color-warning); border-radius: 2px; transform: rotate(45deg); width: 8px; height: 8px; }
-.action .dot { background: var(--color-success); }
+.trigger .dot {
+  background: var(--color-primary);
+}
+.condition .dot {
+  background: var(--color-warning);
+  border-radius: 2px;
+  transform: rotate(45deg);
+  width: 8px;
+  height: 8px;
+}
+.action .dot {
+  background: var(--color-success);
+}
 
 /* ---- 右侧内容 ---- */
 .content {

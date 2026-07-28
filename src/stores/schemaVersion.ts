@@ -12,113 +12,120 @@
  * - 异步操作用 loading/error 模式管理
  * - 与 apiClient 解耦：调用 apiClient 中已有的版本 API
  */
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import type { VersionEntry, SchemaDetail } from '@/types/api'
-import type { DiffResult } from '@/utils/schemaDiff'
-import { ApiError } from '@/utils/apiClient'
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import type { VersionEntry, SchemaDetail } from "@/types/api";
+import type { DiffResult } from "@/utils/schemaDiff";
+import { ApiError } from "@/utils/apiClient";
 import {
   fetchVersions as apiFetchVersions,
   fetchVersion as apiFetchVersion,
   deleteVersion as apiDeleteVersion,
-} from '@/utils/apiClient'
-import { diffSchema, getDiffSummary } from '@/utils/schemaDiff'
-import { parseSchemaJson } from '@/utils/parseSchemaJson'
+} from "@/utils/apiClient";
+import { diffSchema, getDiffSummary } from "@/utils/schemaDiff";
+import { parseSchemaJson } from "@/utils/parseSchemaJson";
 
-export const useSchemaVersionStore = defineStore('schemaVersion', () => {
+export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   // ================================================================
   // 状态
   // ================================================================
 
   /** 版本列表 */
-  const versions = ref<VersionEntry[]>([])
+  const versions = ref<VersionEntry[]>([]);
 
   /** 当前版本号 */
-  const currentVersion = ref('')
+  const currentVersion = ref("");
 
   /** editId — 版本查询主键 */
-  const editId = ref('')
+  const editId = ref("");
 
   /** 加载中标志 */
-  const loading = ref(false)
+  const loading = ref(false);
 
   /** 最近一次错误信息 */
-  const error = ref('')
+  const error = ref("");
 
   /** 分页 */
-  const page = ref(1)
-  const pageSize = ref(20)
-  const total = ref(0)
+  const page = ref(1);
+  const pageSize = ref(20);
+  const total = ref(0);
 
   /** 选中对比的两个版本 */
-  const compareLeft = ref<string>('')
-  const compareRight = ref<string>('')
+  const compareLeft = ref<string>("");
+  const compareRight = ref<string>("");
 
   /** 对比的两个版本详情 */
-  const leftDetail = ref<SchemaDetail | null>(null)
-  const rightDetail = ref<SchemaDetail | null>(null)
+  const leftDetail = ref<SchemaDetail | null>(null);
+  const rightDetail = ref<SchemaDetail | null>(null);
 
   /** diff 结果 */
-  const diffResult = ref<DiffResult | null>(null)
+  const diffResult = ref<DiffResult | null>(null);
 
   /** 对比详情加载中 */
-  const compareLoading = ref(false)
+  const compareLoading = ref(false);
 
   // ================================================================
   // 计算属性
   // ================================================================
 
-  const hasVersions = computed(() => versions.value.length > 0)
+  const hasVersions = computed(() => versions.value.length > 0);
 
-  const isEmpty = computed(() => !loading.value && versions.value.length === 0)
+  const isEmpty = computed(() => !loading.value && versions.value.length === 0);
 
-  const hasError = computed(() => error.value !== '')
+  const hasError = computed(() => error.value !== "");
 
   /** 是否已选中两个版本 */
-  const canCompare = computed(() => !!compareLeft.value && !!compareRight.value)
+  const canCompare = computed(
+    () => !!compareLeft.value && !!compareRight.value,
+  );
 
   /** diff 摘要 */
   const diffSummary = computed(() => {
-    if (!diffResult.value) return ''
-    return getDiffSummary(diffResult.value)
-  })
+    if (!diffResult.value) return "";
+    return getDiffSummary(diffResult.value);
+  });
 
   /** 是否有差异 */
   const hasDiff = computed(() => {
-    if (!diffResult.value) return false
-    const { added, removed, modified, moved } = diffResult.value
-    return added.length > 0 || removed.length > 0 || modified.length > 0 || moved.length > 0
-  })
+    if (!diffResult.value) return false;
+    const { added, removed, modified, moved } = diffResult.value;
+    return (
+      added.length > 0 ||
+      removed.length > 0 ||
+      modified.length > 0 ||
+      moved.length > 0
+    );
+  });
 
   // ================================================================
   // 内部工具
   // ================================================================
 
   function setError(message: string): void {
-    error.value = message
-    loading.value = false
+    error.value = message;
+    loading.value = false;
   }
 
   function clearError(): void {
-    error.value = ''
+    error.value = "";
   }
 
   async function withLoading<T>(fn: () => Promise<T>): Promise<T | null> {
-    loading.value = true
-    clearError()
+    loading.value = true;
+    clearError();
     try {
-      return await fn()
+      return await fn();
     } catch (e: unknown) {
       if (e instanceof ApiError) {
-        setError(e.message)
+        setError(e.message);
       } else if (e instanceof Error) {
-        setError(e.message)
+        setError(e.message);
       } else {
-        setError('An unexpected error occurred')
+        setError("An unexpected error occurred");
       }
-      return null
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
@@ -129,28 +136,31 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
   /**
    * 设置当前 editId 并加载版本列表。
    */
-  async function init(editIdParam: string, currentVersionParam?: string): Promise<void> {
-    editId.value = editIdParam
+  async function init(
+    editIdParam: string,
+    currentVersionParam?: string,
+  ): Promise<void> {
+    editId.value = editIdParam;
     if (currentVersionParam) {
-      currentVersion.value = currentVersionParam
+      currentVersion.value = currentVersionParam;
     }
-    await loadVersions(1)
+    await loadVersions(1);
   }
 
   /**
    * 加载版本列表。
    */
   async function loadVersions(targetPage = 1): Promise<void> {
-    if (!editId.value) return
+    if (!editId.value) return;
 
     const result = await withLoading(() =>
       apiFetchVersions(editId.value, targetPage, pageSize.value),
-    )
+    );
 
     if (result) {
-      versions.value = result.items
-      total.value = result.total ?? 0
-      page.value = targetPage
+      versions.value = result.items;
+      total.value = result.total ?? 0;
+      page.value = targetPage;
     }
   }
 
@@ -158,7 +168,7 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
    * 翻页。
    */
   async function goToPage(targetPage: number): Promise<void> {
-    await loadVersions(targetPage)
+    await loadVersions(targetPage);
   }
 
   // ================================================================
@@ -168,25 +178,25 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
   /**
    * 选择要对比的版本。
    */
-  function selectForCompare(version: string, side: 'left' | 'right'): void {
-    if (side === 'left') {
-      compareLeft.value = version
+  function selectForCompare(version: string, side: "left" | "right"): void {
+    if (side === "left") {
+      compareLeft.value = version;
     } else {
-      compareRight.value = version
+      compareRight.value = version;
     }
     // 自动清空旧的 diff 结果
-    diffResult.value = null
+    diffResult.value = null;
   }
 
   /**
    * 清除选择。
    */
   function clearCompare(): void {
-    compareLeft.value = ''
-    compareRight.value = ''
-    leftDetail.value = null
-    rightDetail.value = null
-    diffResult.value = null
+    compareLeft.value = "";
+    compareRight.value = "";
+    leftDetail.value = null;
+    rightDetail.value = null;
+    diffResult.value = null;
   }
 
   /**
@@ -194,37 +204,37 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
    * 加载两个版本的完整 Schema，然后调用 diffSchema 计算差异。
    */
   async function executeCompare(): Promise<boolean> {
-    if (!compareLeft.value || !compareRight.value) return false
-    if (!editId.value) return false
+    if (!compareLeft.value || !compareRight.value) return false;
+    if (!editId.value) return false;
 
-    compareLoading.value = true
-    clearError()
+    compareLoading.value = true;
+    clearError();
 
     try {
       const [left, right] = await Promise.all([
         apiFetchVersion(editId.value, compareLeft.value),
         apiFetchVersion(editId.value, compareRight.value),
-      ])
+      ]);
 
-      leftDetail.value = left
-      rightDetail.value = right
+      leftDetail.value = left;
+      rightDetail.value = right;
 
-      const { widgets: leftWidgets } = parseSchemaJson(left.json)
-      const { widgets: rightWidgets } = parseSchemaJson(right.json)
+      const { widgets: leftWidgets } = parseSchemaJson(left.json);
+      const { widgets: rightWidgets } = parseSchemaJson(right.json);
 
-      diffResult.value = diffSchema(leftWidgets, rightWidgets)
-      return true
+      diffResult.value = diffSchema(leftWidgets, rightWidgets);
+      return true;
     } catch (e: unknown) {
       if (e instanceof ApiError) {
-        setError(e.message)
+        setError(e.message);
       } else if (e instanceof Error) {
-        setError(e.message)
+        setError(e.message);
       } else {
-        setError('对比失败')
+        setError("对比失败");
       }
-      return false
+      return false;
     } finally {
-      compareLoading.value = false
+      compareLoading.value = false;
     }
   }
 
@@ -236,18 +246,20 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
    * 回滚到指定版本（加载该版本的 Schema）。
    * 返回该版本的 SchemaDetail，调用方负责将其写入 WidgetStore。
    */
-  async function rollbackToVersion(version: string): Promise<SchemaDetail | null> {
-    if (!editId.value) return null
+  async function rollbackToVersion(
+    version: string,
+  ): Promise<SchemaDetail | null> {
+    if (!editId.value) return null;
 
     const result = await withLoading(() =>
       apiFetchVersion(editId.value, version),
-    )
+    );
 
     if (result) {
-      currentVersion.value = version
+      currentVersion.value = version;
     }
 
-    return result
+    return result;
   }
 
   // ================================================================
@@ -258,32 +270,32 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
    * 删除指定版本。
    */
   async function removeVersion(version: string): Promise<boolean> {
-    if (!editId.value) return false
+    if (!editId.value) return false;
 
-    loading.value = true
-    clearError()
+    loading.value = true;
+    clearError();
     try {
-      await apiDeleteVersion(editId.value, version)
+      await apiDeleteVersion(editId.value, version);
 
       // 从列表中移除
-      versions.value = versions.value.filter((v) => v.version !== version)
-      total.value = Math.max(0, total.value - 1)
+      versions.value = versions.value.filter((v) => v.version !== version);
+      total.value = Math.max(0, total.value - 1);
 
       // 如果删的是对比中的版本，清除对比状态
-      if (compareLeft.value === version) compareLeft.value = ''
-      if (compareRight.value === version) compareRight.value = ''
+      if (compareLeft.value === version) compareLeft.value = "";
+      if (compareRight.value === version) compareRight.value = "";
 
-      loading.value = false
-      return true
+      loading.value = false;
+      return true;
     } catch (e: unknown) {
       if (e instanceof ApiError) {
-        setError(e.message)
+        setError(e.message);
       } else if (e instanceof Error) {
-        setError(e.message)
+        setError(e.message);
       } else {
-        setError('An unexpected error occurred')
+        setError("An unexpected error occurred");
       }
-      return false
+      return false;
     }
   }
 
@@ -296,18 +308,18 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
    * 返回 JSON 字符串，调用方负责下载。
    */
   async function exportVersion(version: string): Promise<string | null> {
-    if (!editId.value) return null
+    if (!editId.value) return null;
 
     try {
-      const detail = await apiFetchVersion(editId.value, version)
-      return JSON.stringify(detail.json, null, 2)
+      const detail = await apiFetchVersion(editId.value, version);
+      return JSON.stringify(detail.json, null, 2);
     } catch (e: unknown) {
       if (e instanceof ApiError) {
-        setError(e.message)
+        setError(e.message);
       } else if (e instanceof Error) {
-        setError(e.message)
+        setError(e.message);
       }
-      return null
+      return null;
     }
   }
 
@@ -316,19 +328,19 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
   // ================================================================
 
   function reset(): void {
-    versions.value = []
-    currentVersion.value = ''
-    editId.value = ''
-    page.value = 1
-    total.value = 0
-    compareLeft.value = ''
-    compareRight.value = ''
-    leftDetail.value = null
-    rightDetail.value = null
-    diffResult.value = null
-    compareLoading.value = false
-    loading.value = false
-    error.value = ''
+    versions.value = [];
+    currentVersion.value = "";
+    editId.value = "";
+    page.value = 1;
+    total.value = 0;
+    compareLeft.value = "";
+    compareRight.value = "";
+    leftDetail.value = null;
+    rightDetail.value = null;
+    diffResult.value = null;
+    compareLoading.value = false;
+    loading.value = false;
+    error.value = "";
   }
 
   return {
@@ -366,5 +378,5 @@ export const useSchemaVersionStore = defineStore('schemaVersion', () => {
     exportVersion,
     reset,
     clearError,
-  }
-})
+  };
+});

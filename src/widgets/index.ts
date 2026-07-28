@@ -1,601 +1,1224 @@
-import { registerWidget } from './registry'
-import { FgForm, createFormWidget, formConfig } from './form'
-import { FgCard, createCardWidget, cardConfig } from './card'
-import { FgTabs, createTabsWidget, tabsConfig } from './tabs'
-import { FgDialog, createDialogWidget, dialogConfig } from './dialog'
-import { FgMicroAppContainer, microAppContainerConfig } from './micro-app-container'
-import { FgInput, createInputWidget, inputConfig } from './input'
-import { FgSelect, createSelectWidget, selectConfig } from './select'
-import { FgNumber, createNumberWidget, numberConfig } from './number'
-import { FgRadio, createRadioWidget, radioConfig } from './radio'
-import { FgCheckbox, createCheckboxWidget, checkboxConfig } from './checkbox'
-import { FgDate, createDateWidget, dateConfig } from './date'
-import { FgTextarea, createTextareaWidget, textareaConfig } from './textarea'
-import { FgTitle, createTitleWidget, titleConfig } from './title'
-import { FgDivider, createDividerWidget, dividerConfig } from './divider'
-import { FgSpacer, createSpacerWidget, spacerConfig } from './spacer'
-import { FgToolbarButtons, createToolbarButtonsWidget, toolbarButtonsConfig } from './toolbar-buttons'
-import { FgButton, createButtonWidget, buttonConfig } from './button'
-import { FgFilterBar, filterBarConfig, createFilterBarWidget } from './filter-bar'
-import { FgSubForm, subFormConfig, createSubFormWidget } from './sub-form'
-import { FgProgressBar, progressBarConfig, createProgressBarWidget } from './progress-bar'
-import { FgRankList, rankListConfig, createRankListWidget } from './rank-list'
-import { FgComparisonCard, comparisonCardConfig, createComparisonCardWidget } from './comparison-card'
-import { FgRealtimeClock, realtimeClockConfig, createRealtimeClockWidget } from './realtime-clock'
-import { FgMarqueeText, marqueeTextConfig, createMarqueeTextWidget } from './marquee-text'
-import { FgTabContainer, tabContainerConfig, createTabContainerWidget } from './tab-container'
-import { FgFormSteps, formStepsConfig, createFormStepsWidget } from './form-steps'
-import { FgConditionBuilder, conditionBuilderConfig, createConditionBuilderWidget } from './condition-builder'
-import { FgTreemap, treemapConfig, createTreemapWidget } from './treemap'
-import { FgTable, createTableWidget, tableConfig } from './table'
-import { FgRichtext, createRichtextWidget, richtextConfig } from './richtext'
-import { FgUpload, createUploadWidget, uploadConfig } from './upload'
-import { FgBanner, createBannerWidget, bannerConfig } from './banner'
-import { FgTreeLayout, createTreeLayoutWidget, treeLayoutConfig } from './tree-layout'
-import { FgDateTimeSlot, createDateTimeSlotWidget, dateTimeSlotConfig } from './date-time-slot'
-import { FgTimePicker, createTimePickerWidget, timePickerConfig } from './time-picker'
-import { FgCascader, createCascaderWidget, cascaderConfig } from './cascader'
-import { FgColorPicker, createColorPickerWidget, colorPickerConfig } from './color-picker'
-import { FgTagInput, createTagInputWidget, tagInputConfig } from './tag-input'
-import { FgAutocomplete, createAutocompleteWidget, autocompleteConfig } from './autocomplete'
-import { FgFileList, createFileListWidget, fileListConfig } from './file-list'
-import { FgDescriptions, createDescriptionsWidget, descriptionsConfig } from './descriptions'
-import { FgTransfer, createTransferWidget, transferConfig } from './transfer'
-import { FgSwitch, createSwitchWidget, switchConfig } from './switch'
-import { FgSlider, createSliderWidget, sliderConfig } from './slider'
-import { FgRate, createRateWidget, rateConfig } from './rate'
-import { FgAdvancedTable, createAdvancedTableWidget, advancedTableConfig } from './advanced-table'
-import { FgTreeTable, createTreeTableWidget, treeTableConfig } from './tree-table'
-import { FgBarChart, createBarChartWidget, barChartConfig } from './bar-chart'
-import { FgLineChart, createLineChartWidget, lineChartConfig } from './line-chart'
-import { FgPieChart, createPieChartWidget, pieChartConfig } from './pie-chart'
-import { FgScatterChart, createScatterChartWidget, scatterChartConfig } from './scatter-chart'
-import { FgRadar, createRadarWidget, radarConfig } from './radar'
-import { FgGauge, createGaugeWidget, gaugeConfig } from './gauge'
-import { FgHeatmap, createHeatmapWidget, heatmapConfig } from './heatmap'
-import { FgFunnel, createFunnelWidget, funnelConfig } from './funnel'
-import { FgCandlestick, createCandlestickWidget, candlestickConfig } from './candlestick'
+import { registerWidget } from "./registry";
+import { FgForm, createFormWidget, formConfig } from "./form";
+import { FgCard, createCardWidget, cardConfig } from "./card";
+import { FgTabs, createTabsWidget, tabsConfig } from "./tabs";
+import { FgDialog, createDialogWidget, dialogConfig } from "./dialog";
+import {
+  FgMicroAppContainer,
+  microAppContainerConfig,
+} from "./micro-app-container";
+import { FgInput, createInputWidget, inputConfig } from "./input";
+import { FgSelect, createSelectWidget, selectConfig } from "./select";
+import { FgNumber, createNumberWidget, numberConfig } from "./number";
+import { FgRadio, createRadioWidget, radioConfig } from "./radio";
+import { FgCheckbox, createCheckboxWidget, checkboxConfig } from "./checkbox";
+import { FgDate, createDateWidget, dateConfig } from "./date";
+import { FgTextarea, createTextareaWidget, textareaConfig } from "./textarea";
+import { FgTitle, createTitleWidget, titleConfig } from "./title";
+import { FgDivider, createDividerWidget, dividerConfig } from "./divider";
+import { FgSpacer, createSpacerWidget, spacerConfig } from "./spacer";
+import {
+  FgToolbarButtons,
+  createToolbarButtonsWidget,
+  toolbarButtonsConfig,
+} from "./toolbar-buttons";
+import { FgButton, createButtonWidget, buttonConfig } from "./button";
+import {
+  FgFilterBar,
+  filterBarConfig,
+  createFilterBarWidget,
+} from "./filter-bar";
+import { FgSubForm, subFormConfig, createSubFormWidget } from "./sub-form";
+import {
+  FgProgressBar,
+  progressBarConfig,
+  createProgressBarWidget,
+} from "./progress-bar";
+import { FgRankList, rankListConfig, createRankListWidget } from "./rank-list";
+import {
+  FgComparisonCard,
+  comparisonCardConfig,
+  createComparisonCardWidget,
+} from "./comparison-card";
+import {
+  FgRealtimeClock,
+  realtimeClockConfig,
+  createRealtimeClockWidget,
+} from "./realtime-clock";
+import {
+  FgMarqueeText,
+  marqueeTextConfig,
+  createMarqueeTextWidget,
+} from "./marquee-text";
+import {
+  FgTabContainer,
+  tabContainerConfig,
+  createTabContainerWidget,
+} from "./tab-container";
+import {
+  FgFormSteps,
+  formStepsConfig,
+  createFormStepsWidget,
+} from "./form-steps";
+import {
+  FgConditionBuilder,
+  conditionBuilderConfig,
+  createConditionBuilderWidget,
+} from "./condition-builder";
+import { FgTreemap, treemapConfig, createTreemapWidget } from "./treemap";
+import { FgTable, createTableWidget, tableConfig } from "./table";
+import { FgRichtext, createRichtextWidget, richtextConfig } from "./richtext";
+import { FgUpload, createUploadWidget, uploadConfig } from "./upload";
+import { FgBanner, createBannerWidget, bannerConfig } from "./banner";
+import {
+  FgTreeLayout,
+  createTreeLayoutWidget,
+  treeLayoutConfig,
+} from "./tree-layout";
+import {
+  FgDateTimeSlot,
+  createDateTimeSlotWidget,
+  dateTimeSlotConfig,
+} from "./date-time-slot";
+import {
+  FgTimePicker,
+  createTimePickerWidget,
+  timePickerConfig,
+} from "./time-picker";
+import { FgCascader, createCascaderWidget, cascaderConfig } from "./cascader";
+import {
+  FgColorPicker,
+  createColorPickerWidget,
+  colorPickerConfig,
+} from "./color-picker";
+import { FgTagInput, createTagInputWidget, tagInputConfig } from "./tag-input";
+import {
+  FgAutocomplete,
+  createAutocompleteWidget,
+  autocompleteConfig,
+} from "./autocomplete";
+import { FgFileList, createFileListWidget, fileListConfig } from "./file-list";
+import {
+  FgDescriptions,
+  createDescriptionsWidget,
+  descriptionsConfig,
+} from "./descriptions";
+import { FgTransfer, createTransferWidget, transferConfig } from "./transfer";
+import { FgSwitch, createSwitchWidget, switchConfig } from "./switch";
+import { FgSlider, createSliderWidget, sliderConfig } from "./slider";
+import { FgRate, createRateWidget, rateConfig } from "./rate";
+import {
+  FgAdvancedTable,
+  createAdvancedTableWidget,
+  advancedTableConfig,
+} from "./advanced-table";
+import {
+  FgTreeTable,
+  createTreeTableWidget,
+  treeTableConfig,
+} from "./tree-table";
+import { FgBarChart, createBarChartWidget, barChartConfig } from "./bar-chart";
+import {
+  FgLineChart,
+  createLineChartWidget,
+  lineChartConfig,
+} from "./line-chart";
+import { FgPieChart, createPieChartWidget, pieChartConfig } from "./pie-chart";
+import {
+  FgScatterChart,
+  createScatterChartWidget,
+  scatterChartConfig,
+} from "./scatter-chart";
+import { FgRadar, createRadarWidget, radarConfig } from "./radar";
+import { FgGauge, createGaugeWidget, gaugeConfig } from "./gauge";
+import { FgHeatmap, createHeatmapWidget, heatmapConfig } from "./heatmap";
+import { FgFunnel, createFunnelWidget, funnelConfig } from "./funnel";
+import {
+  FgCandlestick,
+  createCandlestickWidget,
+  candlestickConfig,
+} from "./candlestick";
 // 图表变体
-import { FgStackedBarChart, createStackedBarChartWidget, stackedBarChartConfig } from './bar-chart/stacked'
-import { FgHorizontalBarChart, createHorizontalBarChartWidget, horizontalBarChartConfig } from './bar-chart/horizontal'
-import { FgAreaChart, createAreaChartWidget, areaChartConfig } from './line-chart/area'
-import { FgDonutChart, createDonutChartWidget, donutChartConfig } from './pie-chart/donut'
-import { FgBubbleChart, createBubbleChartWidget, bubbleChartConfig } from './scatter-chart/bubble'
-import { FgFilledRadar, createFilledRadarWidget, filledRadarConfig } from './radar/filled'
-import { FgMultiGauge, createMultiGaugeWidget, multiGaugeConfig } from './gauge/multi'
-import { FgCompareFunnel, createCompareFunnelWidget, compareFunnelConfig } from './funnel/compare'
-import { FgStatistic, createStatisticWidget, statisticConfig } from './statistic'
-import { FgSingleCol, createSingleColWidget, singleColConfig } from './single-col'
-import { FgDoubleCol, createDoubleColWidget, doubleColConfig } from './double-col'
-import { FgTripleCol, createTripleColWidget, tripleColConfig } from './triple-col'
-import { FgQuadCol, createQuadColWidget, quadColConfig } from './quad-col'
-import { FgRowContainer, createRowContainerWidget, rowContainerConfig } from './row-container'
-import { FgApprovalUserPicker, createApprovalUserPickerWidget, approvalUserPickerConfig } from './approval-user-picker'
-import { FgApprovalRolePicker, createApprovalRolePickerWidget, approvalRolePickerConfig } from './approval-role-picker'
-import { FgApprovalComment, createApprovalCommentWidget, approvalCommentConfig } from './approval-comment'
-import { FgIconPicker, createIconPickerWidget, iconPickerConfig } from './icon-picker'
-import { FgIframe, iframeConfig } from './iframe'
-import { FgMicroApp, microAppConfig } from './micro-app'
-import { FgPermissionTree, createPermissionTreeWidget, permissionTreeConfig } from './permission-tree'
-import { FgRoleManagement, createRoleManagementWidget, roleManagementConfig } from './role-management'
-import { FgTreeSelect, createTreeSelectWidget, treeSelectConfig } from './tree-select'
-import { FgUserManagement, createUserManagementWidget, userManagementConfig } from './user-management'
-import { FgCrudListPage, createCrudListPageWidget, crudListPageConfig } from './crud-list-page'
-import { FgUserSelector, createUserSelectorWidget, userSelectorConfig } from './user-selector'
-import { FgFlowTimeline, createFlowTimelineWidget, flowTimelineConfig } from './flow-timeline'
-import { FgFlowTaskActions, createFlowTaskActionsWidget, flowTaskActionsConfig } from './flow-task-actions'
-import { FgCalendar, createCalendarWidget, calendarConfig } from './calendar'
-import { FgKanban, createKanbanWidget, kanbanConfig } from './kanban'
-import { FgAdhocQuery, createAdhocQueryWidget, adhocQueryConfig } from './adhoc-query'
-import { FgNotification, createNotificationWidget, notificationConfig } from './notification'
-import { FgDynamicDetailTable, createDynamicDetailTableWidget, dynamicDetailTableConfig } from './dynamic-detail-table'
-import { FgComplianceChecklist, createComplianceChecklistWidget, complianceChecklistConfig } from './compliance-checklist'
-import { FgQrScanner, createQrScannerWidget, qrScannerConfig } from './qr-scanner'
-import { FgAutoRefresh, createAutoRefreshWidget, autoRefreshConfig } from './auto-refresh'
-import { FgMap, createMapWidget, mapConfig } from './map'
+import {
+  FgStackedBarChart,
+  createStackedBarChartWidget,
+  stackedBarChartConfig,
+} from "./bar-chart/stacked";
+import {
+  FgHorizontalBarChart,
+  createHorizontalBarChartWidget,
+  horizontalBarChartConfig,
+} from "./bar-chart/horizontal";
+import {
+  FgAreaChart,
+  createAreaChartWidget,
+  areaChartConfig,
+} from "./line-chart/area";
+import {
+  FgDonutChart,
+  createDonutChartWidget,
+  donutChartConfig,
+} from "./pie-chart/donut";
+import {
+  FgBubbleChart,
+  createBubbleChartWidget,
+  bubbleChartConfig,
+} from "./scatter-chart/bubble";
+import {
+  FgFilledRadar,
+  createFilledRadarWidget,
+  filledRadarConfig,
+} from "./radar/filled";
+import {
+  FgMultiGauge,
+  createMultiGaugeWidget,
+  multiGaugeConfig,
+} from "./gauge/multi";
+import {
+  FgCompareFunnel,
+  createCompareFunnelWidget,
+  compareFunnelConfig,
+} from "./funnel/compare";
+import {
+  FgStatistic,
+  createStatisticWidget,
+  statisticConfig,
+} from "./statistic";
+import {
+  FgSingleCol,
+  createSingleColWidget,
+  singleColConfig,
+} from "./single-col";
+import {
+  FgDoubleCol,
+  createDoubleColWidget,
+  doubleColConfig,
+} from "./double-col";
+import {
+  FgTripleCol,
+  createTripleColWidget,
+  tripleColConfig,
+} from "./triple-col";
+import { FgQuadCol, createQuadColWidget, quadColConfig } from "./quad-col";
+import {
+  FgRowContainer,
+  createRowContainerWidget,
+  rowContainerConfig,
+} from "./row-container";
+import {
+  FgApprovalUserPicker,
+  createApprovalUserPickerWidget,
+  approvalUserPickerConfig,
+} from "./approval-user-picker";
+import {
+  FgApprovalRolePicker,
+  createApprovalRolePickerWidget,
+  approvalRolePickerConfig,
+} from "./approval-role-picker";
+import {
+  FgApprovalComment,
+  createApprovalCommentWidget,
+  approvalCommentConfig,
+} from "./approval-comment";
+import {
+  FgIconPicker,
+  createIconPickerWidget,
+  iconPickerConfig,
+} from "./icon-picker";
+import { FgIframe, iframeConfig } from "./iframe";
+import { FgMicroApp, microAppConfig } from "./micro-app";
+import {
+  FgPermissionTree,
+  createPermissionTreeWidget,
+  permissionTreeConfig,
+} from "./permission-tree";
+import {
+  FgRoleManagement,
+  createRoleManagementWidget,
+  roleManagementConfig,
+} from "./role-management";
+import {
+  FgTreeSelect,
+  createTreeSelectWidget,
+  treeSelectConfig,
+} from "./tree-select";
+import {
+  FgUserManagement,
+  createUserManagementWidget,
+  userManagementConfig,
+} from "./user-management";
+import {
+  FgCrudListPage,
+  createCrudListPageWidget,
+  crudListPageConfig,
+} from "./crud-list-page";
+import {
+  FgUserSelector,
+  createUserSelectorWidget,
+  userSelectorConfig,
+} from "./user-selector";
+import {
+  FgFlowTimeline,
+  createFlowTimelineWidget,
+  flowTimelineConfig,
+} from "./flow-timeline";
+import {
+  FgFlowTaskActions,
+  createFlowTaskActionsWidget,
+  flowTaskActionsConfig,
+} from "./flow-task-actions";
+import { FgCalendar, createCalendarWidget, calendarConfig } from "./calendar";
+import { FgKanban, createKanbanWidget, kanbanConfig } from "./kanban";
+import {
+  FgAdhocQuery,
+  createAdhocQueryWidget,
+  adhocQueryConfig,
+} from "./adhoc-query";
+import {
+  FgNotification,
+  createNotificationWidget,
+  notificationConfig,
+} from "./notification";
+import {
+  FgDynamicDetailTable,
+  createDynamicDetailTableWidget,
+  dynamicDetailTableConfig,
+} from "./dynamic-detail-table";
+import {
+  FgComplianceChecklist,
+  createComplianceChecklistWidget,
+  complianceChecklistConfig,
+} from "./compliance-checklist";
+import {
+  FgQrScanner,
+  createQrScannerWidget,
+  qrScannerConfig,
+} from "./qr-scanner";
+import {
+  FgAutoRefresh,
+  createAutoRefreshWidget,
+  autoRefreshConfig,
+} from "./auto-refresh";
+import { FgMap, createMapWidget, mapConfig } from "./map";
 
 export function registerAllWidgets() {
   // Layout widgets (结构布局)
   registerWidget({
     name: cardConfig.name,
     displayName: cardConfig.displayName,
-    type: 'card',
-    group: 'layout',
+    type: "card",
+    group: "layout",
     component: FgCard,
     create: createCardWidget,
     config: cardConfig,
-  })
+  });
 
   registerWidget({
     name: tabsConfig.name,
     displayName: tabsConfig.displayName,
-    type: 'tabs',
-    group: 'layout',
+    type: "tabs",
+    group: "layout",
     component: FgTabs,
     create: createTabsWidget,
     config: tabsConfig,
-  })
+  });
 
   registerWidget({
     name: singleColConfig.name,
     displayName: singleColConfig.displayName,
-    type: 'single-col',
-    group: 'layout',
+    type: "single-col",
+    group: "layout",
     component: FgSingleCol,
     create: createSingleColWidget,
     config: singleColConfig,
-  })
+  });
 
   registerWidget({
     name: doubleColConfig.name,
     displayName: doubleColConfig.displayName,
-    type: 'double-col',
-    group: 'layout',
+    type: "double-col",
+    group: "layout",
     component: FgDoubleCol,
     create: createDoubleColWidget,
     config: doubleColConfig,
-  })
+  });
 
   registerWidget({
     name: tripleColConfig.name,
     displayName: tripleColConfig.displayName,
-    type: 'triple-col',
-    group: 'layout',
+    type: "triple-col",
+    group: "layout",
     component: FgTripleCol,
     create: createTripleColWidget,
     config: tripleColConfig,
-  })
+  });
 
   registerWidget({
     name: quadColConfig.name,
     displayName: quadColConfig.displayName,
-    type: 'quad-col',
-    group: 'layout',
+    type: "quad-col",
+    group: "layout",
     component: FgQuadCol,
     create: createQuadColWidget,
     config: quadColConfig,
-  })
+  });
 
   registerWidget({
     name: rowContainerConfig.name,
     displayName: rowContainerConfig.displayName,
-    type: 'row-container',
-    group: 'layout',
+    type: "row-container",
+    group: "layout",
     component: FgRowContainer,
     create: createRowContainerWidget,
     config: rowContainerConfig,
-  })
+  });
 
   registerWidget({
     name: dividerConfig.name,
     displayName: dividerConfig.displayName,
-    type: 'divider',
-    group: 'layout',
+    type: "divider",
+    group: "layout",
     component: FgDivider,
     create: createDividerWidget,
     config: dividerConfig,
-  })
+  });
 
   registerWidget({
     name: spacerConfig.name,
     displayName: spacerConfig.displayName,
-    type: 'spacer',
-    group: 'layout',
+    type: "spacer",
+    group: "layout",
     component: FgSpacer,
     create: createSpacerWidget,
     config: spacerConfig,
-  })
+  });
 
   // Container widgets (容器)
   registerWidget({
     name: formConfig.name,
     displayName: formConfig.displayName,
-    type: 'form',
-    group: 'container',
+    type: "form",
+    group: "container",
     component: FgForm,
     create: createFormWidget,
     config: formConfig,
-  })
+  });
 
   registerWidget({
     name: dialogConfig.name,
     displayName: dialogConfig.displayName,
-    type: 'dialog',
-    group: 'container',
+    type: "dialog",
+    group: "container",
     component: FgDialog,
     create: createDialogWidget,
     config: dialogConfig,
-  })
+  });
 
   registerWidget({
     name: microAppContainerConfig.name,
     displayName: microAppContainerConfig.displayName,
-    type: 'micro-app-container',
-    group: 'container',
+    type: "micro-app-container",
+    group: "container",
     component: FgMicroAppContainer,
     create: (id: string) => ({
       id,
-      type: 'micro-app-container',
+      type: "micro-app-container",
       name: microAppContainerConfig.name,
       label: microAppContainerConfig.displayName,
       props: { ...microAppContainerConfig.defaultProps },
       position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
     }),
     config: microAppContainerConfig,
-  })
+  });
 
   // Form widgets (表单控件)
   registerWidget({
     name: inputConfig.name,
     displayName: inputConfig.displayName,
-    type: 'input',
-    group: 'form',
+    type: "input",
+    group: "form",
     component: FgInput,
     create: createInputWidget,
     config: inputConfig,
-  })
+  });
 
   registerWidget({
     name: selectConfig.name,
     displayName: selectConfig.displayName,
-    type: 'select',
-    group: 'form',
+    type: "select",
+    group: "form",
     component: FgSelect,
     create: createSelectWidget,
     config: selectConfig,
-  })
+  });
 
   registerWidget({
     name: numberConfig.name,
     displayName: numberConfig.displayName,
-    type: 'number',
-    group: 'form',
+    type: "number",
+    group: "form",
     component: FgNumber,
     create: createNumberWidget,
     config: numberConfig,
-  })
+  });
 
   registerWidget({
     name: radioConfig.name,
     displayName: radioConfig.displayName,
-    type: 'radio',
-    group: 'form',
+    type: "radio",
+    group: "form",
     component: FgRadio,
     create: createRadioWidget,
     config: radioConfig,
-  })
+  });
 
   registerWidget({
     name: checkboxConfig.name,
     displayName: checkboxConfig.displayName,
-    type: 'checkbox',
-    group: 'form',
+    type: "checkbox",
+    group: "form",
     component: FgCheckbox,
     create: createCheckboxWidget,
     config: checkboxConfig,
-  })
+  });
 
   registerWidget({
     name: dateConfig.name,
     displayName: dateConfig.displayName,
-    type: 'date',
-    group: 'form',
+    type: "date",
+    group: "form",
     component: FgDate,
     create: createDateWidget,
     config: dateConfig,
-  })
+  });
 
   registerWidget({
     name: textareaConfig.name,
     displayName: textareaConfig.displayName,
-    type: 'textarea',
-    group: 'form',
+    type: "textarea",
+    group: "form",
     component: FgTextarea,
     create: createTextareaWidget,
     config: textareaConfig,
-  })
+  });
 
   registerWidget({
     name: switchConfig.name,
     displayName: switchConfig.displayName,
-    type: 'switch',
-    group: 'form',
+    type: "switch",
+    group: "form",
     component: FgSwitch,
     create: createSwitchWidget,
     config: switchConfig,
-  })
+  });
 
   registerWidget({
     name: sliderConfig.name,
     displayName: sliderConfig.displayName,
-    type: 'slider',
-    group: 'form',
+    type: "slider",
+    group: "form",
     component: FgSlider,
     create: createSliderWidget,
     config: sliderConfig,
-  })
+  });
 
   registerWidget({
     name: rateConfig.name,
     displayName: rateConfig.displayName,
-    type: 'rate',
-    group: 'form',
+    type: "rate",
+    group: "form",
     component: FgRate,
     create: createRateWidget,
     config: rateConfig,
-  })
+  });
 
-  registerWidget({ name: richtextConfig.name, displayName: richtextConfig.displayName, type: 'richtext', group: 'form', component: FgRichtext, create: createRichtextWidget, config: richtextConfig })
-  registerWidget({ name: uploadConfig.name, displayName: uploadConfig.displayName, type: 'upload', group: 'form', component: FgUpload, create: createUploadWidget, config: uploadConfig })
-  registerWidget({ name: dateTimeSlotConfig.name, displayName: dateTimeSlotConfig.displayName, type: 'date-time-slot', group: 'form', component: FgDateTimeSlot, create: createDateTimeSlotWidget, config: dateTimeSlotConfig })
+  registerWidget({
+    name: richtextConfig.name,
+    displayName: richtextConfig.displayName,
+    type: "richtext",
+    group: "form",
+    component: FgRichtext,
+    create: createRichtextWidget,
+    config: richtextConfig,
+  });
+  registerWidget({
+    name: uploadConfig.name,
+    displayName: uploadConfig.displayName,
+    type: "upload",
+    group: "form",
+    component: FgUpload,
+    create: createUploadWidget,
+    config: uploadConfig,
+  });
+  registerWidget({
+    name: dateTimeSlotConfig.name,
+    displayName: dateTimeSlotConfig.displayName,
+    type: "date-time-slot",
+    group: "form",
+    component: FgDateTimeSlot,
+    create: createDateTimeSlotWidget,
+    config: dateTimeSlotConfig,
+  });
 
   registerWidget({
     name: timePickerConfig.name,
     displayName: timePickerConfig.displayName,
-    type: 'time-picker',
-    group: 'form',
+    type: "time-picker",
+    group: "form",
     component: FgTimePicker,
     create: createTimePickerWidget,
     config: timePickerConfig,
-  })
+  });
 
-  registerWidget({ name: cascaderConfig.name, displayName: cascaderConfig.displayName, type: 'cascader', group: 'form', component: FgCascader, create: createCascaderWidget, config: cascaderConfig })
+  registerWidget({
+    name: cascaderConfig.name,
+    displayName: cascaderConfig.displayName,
+    type: "cascader",
+    group: "form",
+    component: FgCascader,
+    create: createCascaderWidget,
+    config: cascaderConfig,
+  });
 
-  registerWidget({ name: colorPickerConfig.name, displayName: colorPickerConfig.displayName, type: 'color-picker', group: 'form', component: FgColorPicker, create: createColorPickerWidget, config: colorPickerConfig })
+  registerWidget({
+    name: colorPickerConfig.name,
+    displayName: colorPickerConfig.displayName,
+    type: "color-picker",
+    group: "form",
+    component: FgColorPicker,
+    create: createColorPickerWidget,
+    config: colorPickerConfig,
+  });
 
-  registerWidget({ name: tagInputConfig.name, displayName: tagInputConfig.displayName, type: 'tag-input', group: 'form', component: FgTagInput, create: createTagInputWidget, config: tagInputConfig })
+  registerWidget({
+    name: tagInputConfig.name,
+    displayName: tagInputConfig.displayName,
+    type: "tag-input",
+    group: "form",
+    component: FgTagInput,
+    create: createTagInputWidget,
+    config: tagInputConfig,
+  });
 
-  registerWidget({ name: autocompleteConfig.name, displayName: autocompleteConfig.displayName, type: 'autocomplete', group: 'form', component: FgAutocomplete, create: createAutocompleteWidget, config: autocompleteConfig })
+  registerWidget({
+    name: autocompleteConfig.name,
+    displayName: autocompleteConfig.displayName,
+    type: "autocomplete",
+    group: "form",
+    component: FgAutocomplete,
+    create: createAutocompleteWidget,
+    config: autocompleteConfig,
+  });
 
   // Static widgets (静态展示)
   registerWidget({
     name: titleConfig.name,
     displayName: titleConfig.displayName,
-    type: 'title',
-    group: 'static',
+    type: "title",
+    group: "static",
     component: FgTitle,
     create: createTitleWidget,
     config: titleConfig,
-  })
+  });
 
   registerWidget({
     name: bannerConfig.name,
     displayName: bannerConfig.displayName,
-    type: 'banner',
-    group: 'static',
+    type: "banner",
+    group: "static",
     component: FgBanner,
     create: createBannerWidget,
     config: bannerConfig,
-  })
+  });
 
   registerWidget({
     name: statisticConfig.name,
     displayName: statisticConfig.displayName,
-    type: 'statistic',
-    group: 'static',
+    type: "statistic",
+    group: "static",
     component: FgStatistic,
     create: createStatisticWidget,
     config: statisticConfig,
-  })
+  });
 
   // Action widgets (操作按钮)
   registerWidget({
     name: toolbarButtonsConfig.name,
     displayName: toolbarButtonsConfig.displayName,
-    type: 'toolbar-buttons',
-    group: 'action',
+    type: "toolbar-buttons",
+    group: "action",
     component: FgToolbarButtons,
     create: createToolbarButtonsWidget,
     config: toolbarButtonsConfig,
-  })
+  });
 
   registerWidget({
     name: buttonConfig.name,
     displayName: buttonConfig.displayName,
-    type: 'button',
-    group: 'action',
+    type: "button",
+    group: "action",
     component: FgButton,
     create: createButtonWidget,
     config: buttonConfig,
-  })
+  });
 
   registerWidget({
     name: filterBarConfig.name,
     displayName: filterBarConfig.displayName,
-    type: 'filter-bar',
-    group: 'action',
+    type: "filter-bar",
+    group: "action",
     component: FgFilterBar,
     create: createFilterBarWidget,
     config: filterBarConfig,
-  })
+  });
 
   registerWidget({
     name: subFormConfig.name,
     displayName: subFormConfig.displayName,
-    type: 'sub-form',
-    group: 'form',
+    type: "sub-form",
+    group: "form",
     component: FgSubForm,
     create: createSubFormWidget,
     config: subFormConfig,
-  })
+  });
 
   registerWidget({
     name: progressBarConfig.name,
     displayName: progressBarConfig.displayName,
-    type: 'progress-bar',
-    group: 'chart',
+    type: "progress-bar",
+    group: "chart",
     component: FgProgressBar,
     create: createProgressBarWidget,
     config: progressBarConfig,
-  })
+  });
 
   registerWidget({
     name: rankListConfig.name,
     displayName: rankListConfig.displayName,
-    type: 'rank-list',
-    group: 'static',
+    type: "rank-list",
+    group: "static",
     component: FgRankList,
     create: createRankListWidget,
     config: rankListConfig,
-  })
+  });
 
   registerWidget({
     name: comparisonCardConfig.name,
     displayName: comparisonCardConfig.displayName,
-    type: 'comparison-card',
-    group: 'static',
+    type: "comparison-card",
+    group: "static",
     component: FgComparisonCard,
     create: createComparisonCardWidget,
     config: comparisonCardConfig,
-  })
+  });
 
   registerWidget({
     name: realtimeClockConfig.name,
     displayName: realtimeClockConfig.displayName,
-    type: 'realtime-clock',
-    group: 'static',
+    type: "realtime-clock",
+    group: "static",
     component: FgRealtimeClock,
     create: createRealtimeClockWidget,
     config: realtimeClockConfig,
-  })
+  });
 
   registerWidget({
     name: marqueeTextConfig.name,
     displayName: marqueeTextConfig.displayName,
-    type: 'marquee-text',
-    group: 'static',
+    type: "marquee-text",
+    group: "static",
     component: FgMarqueeText,
     create: createMarqueeTextWidget,
     config: marqueeTextConfig,
-  })
+  });
 
   registerWidget({
     name: tabContainerConfig.name,
     displayName: tabContainerConfig.displayName,
-    type: 'tab-container',
-    group: 'layout',
+    type: "tab-container",
+    group: "layout",
     component: FgTabContainer,
     create: createTabContainerWidget,
     config: tabContainerConfig,
-  })
+  });
 
   registerWidget({
     name: formStepsConfig.name,
     displayName: formStepsConfig.displayName,
-    type: 'form-steps',
-    group: 'layout',
+    type: "form-steps",
+    group: "layout",
     component: FgFormSteps,
     create: createFormStepsWidget,
     config: formStepsConfig,
-  })
+  });
 
   registerWidget({
     name: conditionBuilderConfig.name,
     displayName: conditionBuilderConfig.displayName,
-    type: 'condition-builder',
-    group: 'form',
+    type: "condition-builder",
+    group: "form",
     component: FgConditionBuilder,
     create: createConditionBuilderWidget,
     config: conditionBuilderConfig,
-  })
+  });
 
   registerWidget({
     name: treemapConfig.name,
     displayName: treemapConfig.displayName,
-    type: 'treemap',
-    group: 'chart',
+    type: "treemap",
+    group: "chart",
     component: FgTreemap,
     create: createTreemapWidget,
     config: treemapConfig,
-  })
+  });
 
   // Business widgets (业务组件)
-  registerWidget({ name: treeLayoutConfig.name, displayName: treeLayoutConfig.displayName, type: 'tree-layout', group: 'layout', component: FgTreeLayout, create: createTreeLayoutWidget, config: treeLayoutConfig })
-  registerWidget({ name: fileListConfig.name, displayName: fileListConfig.displayName, type: 'file-list', group: 'form', component: FgFileList, create: createFileListWidget, config: fileListConfig })
-  registerWidget({ name: transferConfig.name, displayName: transferConfig.displayName, type: 'transfer', group: 'form', component: FgTransfer, create: createTransferWidget, config: transferConfig })
-  registerWidget({ name: descriptionsConfig.name, displayName: descriptionsConfig.displayName, type: 'descriptions', group: 'static', component: FgDescriptions, create: createDescriptionsWidget, config: descriptionsConfig })
+  registerWidget({
+    name: treeLayoutConfig.name,
+    displayName: treeLayoutConfig.displayName,
+    type: "tree-layout",
+    group: "layout",
+    component: FgTreeLayout,
+    create: createTreeLayoutWidget,
+    config: treeLayoutConfig,
+  });
+  registerWidget({
+    name: fileListConfig.name,
+    displayName: fileListConfig.displayName,
+    type: "file-list",
+    group: "form",
+    component: FgFileList,
+    create: createFileListWidget,
+    config: fileListConfig,
+  });
+  registerWidget({
+    name: transferConfig.name,
+    displayName: transferConfig.displayName,
+    type: "transfer",
+    group: "form",
+    component: FgTransfer,
+    create: createTransferWidget,
+    config: transferConfig,
+  });
+  registerWidget({
+    name: descriptionsConfig.name,
+    displayName: descriptionsConfig.displayName,
+    type: "descriptions",
+    group: "static",
+    component: FgDescriptions,
+    create: createDescriptionsWidget,
+    config: descriptionsConfig,
+  });
 
   // Flow approval widgets (审批专用)
-  registerWidget({ name: approvalUserPickerConfig.name, displayName: approvalUserPickerConfig.displayName, type: 'approval-user-picker', group: 'business', component: FgApprovalUserPicker, create: createApprovalUserPickerWidget, config: approvalUserPickerConfig })
-  registerWidget({ name: approvalRolePickerConfig.name, displayName: approvalRolePickerConfig.displayName, type: 'approval-role-picker', group: 'business', component: FgApprovalRolePicker, create: createApprovalRolePickerWidget, config: approvalRolePickerConfig })
-  registerWidget({ name: approvalCommentConfig.name, displayName: approvalCommentConfig.displayName, type: 'approval-comment', group: 'business', component: FgApprovalComment, create: createApprovalCommentWidget, config: approvalCommentConfig })
+  registerWidget({
+    name: approvalUserPickerConfig.name,
+    displayName: approvalUserPickerConfig.displayName,
+    type: "approval-user-picker",
+    group: "business",
+    component: FgApprovalUserPicker,
+    create: createApprovalUserPickerWidget,
+    config: approvalUserPickerConfig,
+  });
+  registerWidget({
+    name: approvalRolePickerConfig.name,
+    displayName: approvalRolePickerConfig.displayName,
+    type: "approval-role-picker",
+    group: "business",
+    component: FgApprovalRolePicker,
+    create: createApprovalRolePickerWidget,
+    config: approvalRolePickerConfig,
+  });
+  registerWidget({
+    name: approvalCommentConfig.name,
+    displayName: approvalCommentConfig.displayName,
+    type: "approval-comment",
+    group: "business",
+    component: FgApprovalComment,
+    create: createApprovalCommentWidget,
+    config: approvalCommentConfig,
+  });
 
   // Table widgets (表格)
-  registerWidget({ name: tableConfig.name, displayName: tableConfig.displayName, type: 'table', group: 'table', component: FgTable, create: createTableWidget, config: tableConfig })
-  registerWidget({ name: advancedTableConfig.name, displayName: advancedTableConfig.displayName, type: 'advanced-table', group: 'table', component: FgAdvancedTable, create: createAdvancedTableWidget, config: advancedTableConfig })
-  registerWidget({ name: crudListPageConfig.name, displayName: crudListPageConfig.displayName, type: 'crud-list-page', group: 'business', component: FgCrudListPage, create: createCrudListPageWidget, config: crudListPageConfig })
-  registerWidget({ name: treeTableConfig.name, displayName: treeTableConfig.displayName, type: 'tree-table', group: 'table', component: FgTreeTable, create: createTreeTableWidget, config: treeTableConfig })
+  registerWidget({
+    name: tableConfig.name,
+    displayName: tableConfig.displayName,
+    type: "table",
+    group: "table",
+    component: FgTable,
+    create: createTableWidget,
+    config: tableConfig,
+  });
+  registerWidget({
+    name: advancedTableConfig.name,
+    displayName: advancedTableConfig.displayName,
+    type: "advanced-table",
+    group: "table",
+    component: FgAdvancedTable,
+    create: createAdvancedTableWidget,
+    config: advancedTableConfig,
+  });
+  registerWidget({
+    name: crudListPageConfig.name,
+    displayName: crudListPageConfig.displayName,
+    type: "crud-list-page",
+    group: "business",
+    component: FgCrudListPage,
+    create: createCrudListPageWidget,
+    config: crudListPageConfig,
+  });
+  registerWidget({
+    name: treeTableConfig.name,
+    displayName: treeTableConfig.displayName,
+    type: "tree-table",
+    group: "table",
+    component: FgTreeTable,
+    create: createTreeTableWidget,
+    config: treeTableConfig,
+  });
 
   // Chart widgets (图表)
-  registerWidget({ name: barChartConfig.name, displayName: barChartConfig.displayName, type: 'bar-chart', group: 'chart', component: FgBarChart, create: createBarChartWidget, config: barChartConfig })
-  registerWidget({ name: stackedBarChartConfig.name, displayName: stackedBarChartConfig.displayName, type: 'stacked-bar-chart', group: 'chart', component: FgStackedBarChart, create: createStackedBarChartWidget, config: stackedBarChartConfig })
-  registerWidget({ name: horizontalBarChartConfig.name, displayName: horizontalBarChartConfig.displayName, type: 'horizontal-bar-chart', group: 'chart', component: FgHorizontalBarChart, create: createHorizontalBarChartWidget, config: horizontalBarChartConfig })
-  registerWidget({ name: lineChartConfig.name, displayName: lineChartConfig.displayName, type: 'line-chart', group: 'chart', component: FgLineChart, create: createLineChartWidget, config: lineChartConfig })
-  registerWidget({ name: areaChartConfig.name, displayName: areaChartConfig.displayName, type: 'area-chart', group: 'chart', component: FgAreaChart, create: createAreaChartWidget, config: areaChartConfig })
-  registerWidget({ name: pieChartConfig.name, displayName: pieChartConfig.displayName, type: 'pie-chart', group: 'chart', component: FgPieChart, create: createPieChartWidget, config: pieChartConfig })
-  registerWidget({ name: donutChartConfig.name, displayName: donutChartConfig.displayName, type: 'donut-chart', group: 'chart', component: FgDonutChart, create: createDonutChartWidget, config: donutChartConfig })
-  registerWidget({ name: scatterChartConfig.name, displayName: scatterChartConfig.displayName, type: 'scatter-chart', group: 'chart', component: FgScatterChart, create: createScatterChartWidget, config: scatterChartConfig })
-  registerWidget({ name: bubbleChartConfig.name, displayName: bubbleChartConfig.displayName, type: 'bubble-chart', group: 'chart', component: FgBubbleChart, create: createBubbleChartWidget, config: bubbleChartConfig })
-  registerWidget({ name: radarConfig.name, displayName: radarConfig.displayName, type: 'radar', group: 'chart', component: FgRadar, create: createRadarWidget, config: radarConfig })
-  registerWidget({ name: filledRadarConfig.name, displayName: filledRadarConfig.displayName, type: 'filled-radar', group: 'chart', component: FgFilledRadar, create: createFilledRadarWidget, config: filledRadarConfig })
-  registerWidget({ name: gaugeConfig.name, displayName: gaugeConfig.displayName, type: 'gauge', group: 'chart', component: FgGauge, create: createGaugeWidget, config: gaugeConfig })
-  registerWidget({ name: multiGaugeConfig.name, displayName: multiGaugeConfig.displayName, type: 'multi-gauge', group: 'chart', component: FgMultiGauge, create: createMultiGaugeWidget, config: multiGaugeConfig })
-  registerWidget({ name: heatmapConfig.name, displayName: heatmapConfig.displayName, type: 'heatmap', group: 'chart', component: FgHeatmap, create: createHeatmapWidget, config: heatmapConfig })
-  registerWidget({ name: funnelConfig.name, displayName: funnelConfig.displayName, type: 'funnel', group: 'chart', component: FgFunnel, create: createFunnelWidget, config: funnelConfig })
-  registerWidget({ name: compareFunnelConfig.name, displayName: compareFunnelConfig.displayName, type: 'compare-funnel', group: 'chart', component: FgCompareFunnel, create: createCompareFunnelWidget, config: compareFunnelConfig })
-  registerWidget({ name: candlestickConfig.name, displayName: candlestickConfig.displayName, type: 'candlestick', group: 'chart', component: FgCandlestick, create: createCandlestickWidget, config: candlestickConfig })
-  registerWidget({ name: mapConfig.name, displayName: mapConfig.displayName, type: 'map', group: 'chart', component: FgMap, create: createMapWidget, config: mapConfig })
+  registerWidget({
+    name: barChartConfig.name,
+    displayName: barChartConfig.displayName,
+    type: "bar-chart",
+    group: "chart",
+    component: FgBarChart,
+    create: createBarChartWidget,
+    config: barChartConfig,
+  });
+  registerWidget({
+    name: stackedBarChartConfig.name,
+    displayName: stackedBarChartConfig.displayName,
+    type: "stacked-bar-chart",
+    group: "chart",
+    component: FgStackedBarChart,
+    create: createStackedBarChartWidget,
+    config: stackedBarChartConfig,
+  });
+  registerWidget({
+    name: horizontalBarChartConfig.name,
+    displayName: horizontalBarChartConfig.displayName,
+    type: "horizontal-bar-chart",
+    group: "chart",
+    component: FgHorizontalBarChart,
+    create: createHorizontalBarChartWidget,
+    config: horizontalBarChartConfig,
+  });
+  registerWidget({
+    name: lineChartConfig.name,
+    displayName: lineChartConfig.displayName,
+    type: "line-chart",
+    group: "chart",
+    component: FgLineChart,
+    create: createLineChartWidget,
+    config: lineChartConfig,
+  });
+  registerWidget({
+    name: areaChartConfig.name,
+    displayName: areaChartConfig.displayName,
+    type: "area-chart",
+    group: "chart",
+    component: FgAreaChart,
+    create: createAreaChartWidget,
+    config: areaChartConfig,
+  });
+  registerWidget({
+    name: pieChartConfig.name,
+    displayName: pieChartConfig.displayName,
+    type: "pie-chart",
+    group: "chart",
+    component: FgPieChart,
+    create: createPieChartWidget,
+    config: pieChartConfig,
+  });
+  registerWidget({
+    name: donutChartConfig.name,
+    displayName: donutChartConfig.displayName,
+    type: "donut-chart",
+    group: "chart",
+    component: FgDonutChart,
+    create: createDonutChartWidget,
+    config: donutChartConfig,
+  });
+  registerWidget({
+    name: scatterChartConfig.name,
+    displayName: scatterChartConfig.displayName,
+    type: "scatter-chart",
+    group: "chart",
+    component: FgScatterChart,
+    create: createScatterChartWidget,
+    config: scatterChartConfig,
+  });
+  registerWidget({
+    name: bubbleChartConfig.name,
+    displayName: bubbleChartConfig.displayName,
+    type: "bubble-chart",
+    group: "chart",
+    component: FgBubbleChart,
+    create: createBubbleChartWidget,
+    config: bubbleChartConfig,
+  });
+  registerWidget({
+    name: radarConfig.name,
+    displayName: radarConfig.displayName,
+    type: "radar",
+    group: "chart",
+    component: FgRadar,
+    create: createRadarWidget,
+    config: radarConfig,
+  });
+  registerWidget({
+    name: filledRadarConfig.name,
+    displayName: filledRadarConfig.displayName,
+    type: "filled-radar",
+    group: "chart",
+    component: FgFilledRadar,
+    create: createFilledRadarWidget,
+    config: filledRadarConfig,
+  });
+  registerWidget({
+    name: gaugeConfig.name,
+    displayName: gaugeConfig.displayName,
+    type: "gauge",
+    group: "chart",
+    component: FgGauge,
+    create: createGaugeWidget,
+    config: gaugeConfig,
+  });
+  registerWidget({
+    name: multiGaugeConfig.name,
+    displayName: multiGaugeConfig.displayName,
+    type: "multi-gauge",
+    group: "chart",
+    component: FgMultiGauge,
+    create: createMultiGaugeWidget,
+    config: multiGaugeConfig,
+  });
+  registerWidget({
+    name: heatmapConfig.name,
+    displayName: heatmapConfig.displayName,
+    type: "heatmap",
+    group: "chart",
+    component: FgHeatmap,
+    create: createHeatmapWidget,
+    config: heatmapConfig,
+  });
+  registerWidget({
+    name: funnelConfig.name,
+    displayName: funnelConfig.displayName,
+    type: "funnel",
+    group: "chart",
+    component: FgFunnel,
+    create: createFunnelWidget,
+    config: funnelConfig,
+  });
+  registerWidget({
+    name: compareFunnelConfig.name,
+    displayName: compareFunnelConfig.displayName,
+    type: "compare-funnel",
+    group: "chart",
+    component: FgCompareFunnel,
+    create: createCompareFunnelWidget,
+    config: compareFunnelConfig,
+  });
+  registerWidget({
+    name: candlestickConfig.name,
+    displayName: candlestickConfig.displayName,
+    type: "candlestick",
+    group: "chart",
+    component: FgCandlestick,
+    create: createCandlestickWidget,
+    config: candlestickConfig,
+  });
+  registerWidget({
+    name: mapConfig.name,
+    displayName: mapConfig.displayName,
+    type: "map",
+    group: "chart",
+    component: FgMap,
+    create: createMapWidget,
+    config: mapConfig,
+  });
 
   // Extended business widgets (扩展业务组件)
-  registerWidget({ name: iconPickerConfig.name, displayName: iconPickerConfig.displayName, type: 'icon-picker', group: 'form', component: FgIconPicker, create: createIconPickerWidget, config: iconPickerConfig })
-  registerWidget({ name: treeSelectConfig.name, displayName: treeSelectConfig.displayName, type: 'tree-select', group: 'form', component: FgTreeSelect, create: createTreeSelectWidget, config: treeSelectConfig })
+  registerWidget({
+    name: iconPickerConfig.name,
+    displayName: iconPickerConfig.displayName,
+    type: "icon-picker",
+    group: "form",
+    component: FgIconPicker,
+    create: createIconPickerWidget,
+    config: iconPickerConfig,
+  });
+  registerWidget({
+    name: treeSelectConfig.name,
+    displayName: treeSelectConfig.displayName,
+    type: "tree-select",
+    group: "form",
+    component: FgTreeSelect,
+    create: createTreeSelectWidget,
+    config: treeSelectConfig,
+  });
 
   registerWidget({
     name: iframeConfig.name,
     displayName: iframeConfig.displayName,
-    type: 'iframe',
-    group: 'container',
+    type: "iframe",
+    group: "container",
     component: FgIframe,
     create: (id: string) => ({
       id,
-      type: 'iframe',
+      type: "iframe",
       name: iframeConfig.name,
       label: iframeConfig.displayName,
       props: { ...iframeConfig.defaultProps },
       position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
     }),
     config: iframeConfig,
-  })
+  });
 
   registerWidget({
     name: microAppConfig.name,
     displayName: microAppConfig.displayName,
-    type: 'micro-app',
-    group: 'container',
+    type: "micro-app",
+    group: "container",
     component: FgMicroApp,
     create: (id: string) => ({
       id,
-      type: 'micro-app',
+      type: "micro-app",
       name: microAppConfig.name,
       label: microAppConfig.displayName,
       props: { ...microAppConfig.defaultProps },
       position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
     }),
     config: microAppConfig,
-  })
+  });
 
-  registerWidget({ name: permissionTreeConfig.name, displayName: permissionTreeConfig.displayName, type: 'permission-tree', group: 'form', component: FgPermissionTree, create: createPermissionTreeWidget, config: permissionTreeConfig })
-  registerWidget({ name: roleManagementConfig.name, displayName: roleManagementConfig.displayName, type: 'role-management', group: 'business', component: FgRoleManagement, create: createRoleManagementWidget, config: roleManagementConfig })
-  registerWidget({ name: userManagementConfig.name, displayName: userManagementConfig.displayName, type: 'user-management', group: 'business', component: FgUserManagement, create: createUserManagementWidget, config: userManagementConfig })
-  registerWidget({ name: flowTimelineConfig.name, displayName: flowTimelineConfig.displayName, type: 'flow-timeline', group: 'business', component: FgFlowTimeline, create: createFlowTimelineWidget, config: flowTimelineConfig })
-  registerWidget({ name: flowTaskActionsConfig.name, displayName: flowTaskActionsConfig.displayName, type: 'flow-task-actions', group: 'business', component: FgFlowTaskActions, create: createFlowTaskActionsWidget, config: flowTaskActionsConfig })
-  registerWidget({ name: calendarConfig.name, displayName: calendarConfig.displayName, type: 'calendar', group: 'business', component: FgCalendar, create: createCalendarWidget, config: calendarConfig })
-  registerWidget({ name: kanbanConfig.name, displayName: kanbanConfig.displayName, type: 'kanban', group: 'business', component: FgKanban, create: createKanbanWidget, config: kanbanConfig })
-  registerWidget({ name: adhocQueryConfig.name, displayName: adhocQueryConfig.displayName, type: 'adhoc-query', group: 'business', component: FgAdhocQuery, create: createAdhocQueryWidget, config: adhocQueryConfig })
-  registerWidget({ name: notificationConfig.name, displayName: notificationConfig.displayName, type: 'notification', group: 'business', component: FgNotification, create: createNotificationWidget, config: notificationConfig })
-  registerWidget({ name: autoRefreshConfig.name, displayName: autoRefreshConfig.displayName, type: 'auto-refresh', group: 'business', component: FgAutoRefresh, create: createAutoRefreshWidget, config: autoRefreshConfig })
-  registerWidget({ name: dynamicDetailTableConfig.name, displayName: dynamicDetailTableConfig.displayName, type: 'dynamic-detail-table', group: 'form', component: FgDynamicDetailTable, create: createDynamicDetailTableWidget, config: dynamicDetailTableConfig })
-  registerWidget({ name: complianceChecklistConfig.name, displayName: complianceChecklistConfig.displayName, type: 'compliance-checklist', group: 'business', component: FgComplianceChecklist, create: createComplianceChecklistWidget, config: complianceChecklistConfig })
-  registerWidget({ name: qrScannerConfig.name, displayName: qrScannerConfig.displayName, type: 'qr-scanner', group: 'form', component: FgQrScanner, create: createQrScannerWidget, config: qrScannerConfig })
-  registerWidget({ name: userSelectorConfig.name, displayName: userSelectorConfig.displayName, type: 'user-selector', group: 'business', component: FgUserSelector, create: createUserSelectorWidget, config: userSelectorConfig })
+  registerWidget({
+    name: permissionTreeConfig.name,
+    displayName: permissionTreeConfig.displayName,
+    type: "permission-tree",
+    group: "form",
+    component: FgPermissionTree,
+    create: createPermissionTreeWidget,
+    config: permissionTreeConfig,
+  });
+  registerWidget({
+    name: roleManagementConfig.name,
+    displayName: roleManagementConfig.displayName,
+    type: "role-management",
+    group: "business",
+    component: FgRoleManagement,
+    create: createRoleManagementWidget,
+    config: roleManagementConfig,
+  });
+  registerWidget({
+    name: userManagementConfig.name,
+    displayName: userManagementConfig.displayName,
+    type: "user-management",
+    group: "business",
+    component: FgUserManagement,
+    create: createUserManagementWidget,
+    config: userManagementConfig,
+  });
+  registerWidget({
+    name: flowTimelineConfig.name,
+    displayName: flowTimelineConfig.displayName,
+    type: "flow-timeline",
+    group: "business",
+    component: FgFlowTimeline,
+    create: createFlowTimelineWidget,
+    config: flowTimelineConfig,
+  });
+  registerWidget({
+    name: flowTaskActionsConfig.name,
+    displayName: flowTaskActionsConfig.displayName,
+    type: "flow-task-actions",
+    group: "business",
+    component: FgFlowTaskActions,
+    create: createFlowTaskActionsWidget,
+    config: flowTaskActionsConfig,
+  });
+  registerWidget({
+    name: calendarConfig.name,
+    displayName: calendarConfig.displayName,
+    type: "calendar",
+    group: "business",
+    component: FgCalendar,
+    create: createCalendarWidget,
+    config: calendarConfig,
+  });
+  registerWidget({
+    name: kanbanConfig.name,
+    displayName: kanbanConfig.displayName,
+    type: "kanban",
+    group: "business",
+    component: FgKanban,
+    create: createKanbanWidget,
+    config: kanbanConfig,
+  });
+  registerWidget({
+    name: adhocQueryConfig.name,
+    displayName: adhocQueryConfig.displayName,
+    type: "adhoc-query",
+    group: "business",
+    component: FgAdhocQuery,
+    create: createAdhocQueryWidget,
+    config: adhocQueryConfig,
+  });
+  registerWidget({
+    name: notificationConfig.name,
+    displayName: notificationConfig.displayName,
+    type: "notification",
+    group: "business",
+    component: FgNotification,
+    create: createNotificationWidget,
+    config: notificationConfig,
+  });
+  registerWidget({
+    name: autoRefreshConfig.name,
+    displayName: autoRefreshConfig.displayName,
+    type: "auto-refresh",
+    group: "business",
+    component: FgAutoRefresh,
+    create: createAutoRefreshWidget,
+    config: autoRefreshConfig,
+  });
+  registerWidget({
+    name: dynamicDetailTableConfig.name,
+    displayName: dynamicDetailTableConfig.displayName,
+    type: "dynamic-detail-table",
+    group: "form",
+    component: FgDynamicDetailTable,
+    create: createDynamicDetailTableWidget,
+    config: dynamicDetailTableConfig,
+  });
+  registerWidget({
+    name: complianceChecklistConfig.name,
+    displayName: complianceChecklistConfig.displayName,
+    type: "compliance-checklist",
+    group: "business",
+    component: FgComplianceChecklist,
+    create: createComplianceChecklistWidget,
+    config: complianceChecklistConfig,
+  });
+  registerWidget({
+    name: qrScannerConfig.name,
+    displayName: qrScannerConfig.displayName,
+    type: "qr-scanner",
+    group: "form",
+    component: FgQrScanner,
+    create: createQrScannerWidget,
+    config: qrScannerConfig,
+  });
+  registerWidget({
+    name: userSelectorConfig.name,
+    displayName: userSelectorConfig.displayName,
+    type: "user-selector",
+    group: "business",
+    component: FgUserSelector,
+    create: createUserSelectorWidget,
+    config: userSelectorConfig,
+  });
 }

@@ -1,3 +1,3 @@
-export { default as FgUpload } from './FgUpload.vue'
-export { createUploadWidget } from './schema'
-export { uploadConfig } from './config'
+export { default as FgUpload } from "./FgUpload.vue";
+export { createUploadWidget } from "./schema";
+export { uploadConfig } from "./config";

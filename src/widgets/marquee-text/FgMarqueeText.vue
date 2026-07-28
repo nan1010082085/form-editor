@@ -4,49 +4,61 @@
  *
  * 水平滚动文本，支持数据源驱动和自定义速度。
  */
-import { inject, ref, computed, onMounted, onUnmounted } from 'vue'
-import { widgetDataKey, widgetStyleKey } from '../base/types'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './style.module.scss'
+import { inject, ref, computed } from "vue";
+import { widgetDataKey, widgetStyleKey } from "../base/types";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./style.module.scss";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const widgetStyle = inject(widgetStyleKey, ref({}))
+const widgetData = inject(widgetDataKey)!;
+const widgetStyle = inject(widgetStyleKey, ref({}));
 
-const text = computed(() => (widgetData.value.props?.text as string) ?? t('editor.marqueeText.defaultText'))
-const speed = computed(() => (widgetData.value.props?.speed as number) ?? 50)
-const direction = computed(() => (widgetData.value.props?.direction as string) ?? 'left')
-const pauseOnHover = computed(() => widgetData.value.props?.pauseOnHover !== false)
-const loop = computed(() => widgetData.value.props?.loop !== false)
+const text = computed(
+  () =>
+    (widgetData.value.props?.text as string) ??
+    t("editor.marqueeText.defaultText"),
+);
+const speed = computed(() => (widgetData.value.props?.speed as number) ?? 50);
+const direction = computed(
+  () => (widgetData.value.props?.direction as string) ?? "left",
+);
+const pauseOnHover = computed(
+  () => widgetData.value.props?.pauseOnHover !== false,
+);
+const loop = computed(() => widgetData.value.props?.loop !== false);
 
-const isPaused = ref(false)
-const containerRef = ref<HTMLElement>()
-const contentRef = ref<HTMLElement>()
+const isPaused = ref(false);
+const containerRef = ref<HTMLElement>();
+const contentRef = ref<HTMLElement>();
 
 function handleMouseEnter() {
-  if (pauseOnHover.value) isPaused.value = true
+  if (pauseOnHover.value) isPaused.value = true;
 }
 
 function handleMouseLeave() {
-  isPaused.value = false
+  isPaused.value = false;
 }
 
 const animationStyle = computed(() => {
-  const duration = Math.max(5, text.value.length / (speed.value / 10))
+  const duration = Math.max(5, text.value.length / (speed.value / 10));
   return {
     animationDuration: `${duration}s`,
-    animationDirection: direction.value === 'right' ? 'reverse' : 'normal',
-    animationIterationCount: loop.value ? 'infinite' : '1',
-    animationPlayState: isPaused.value ? 'paused' : 'running',
-  }
-})
+    animationDirection: direction.value === "right" ? "reverse" : "normal",
+    animationIterationCount: loop.value ? "infinite" : "1",
+    animationPlayState: isPaused.value ? "paused" : "running",
+  };
+});
 
 useExposeWidget(() => ({
-  pause() { isPaused.value = true },
-  resume() { isPaused.value = false },
-}))
+  pause() {
+    isPaused.value = true;
+  },
+  resume() {
+    isPaused.value = false;
+  },
+}));
 </script>
 
 <template>

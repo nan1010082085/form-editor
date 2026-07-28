@@ -1,36 +1,42 @@
 <script setup lang="ts">
-import type { KanbanColumn } from '@/widgets/kanban/config'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import styles from './SearchFieldsEditor.module.scss'
+import type { KanbanColumn } from "@/widgets/kanban/config";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import styles from "./SearchFieldsEditor.module.scss";
 
 const props = defineProps<{
-  columns: KanbanColumn[]
-}>()
+  columns: KanbanColumn[];
+}>();
 
 const emit = defineEmits<{
-  'update:columns': [columns: KanbanColumn[]]
-}>()
+  "update:columns": [columns: KanbanColumn[]];
+}>();
 
 function addColumn() {
-  emit('update:columns', [...props.columns, { key: '', title: '', status: '' }])
+  emit("update:columns", [
+    ...props.columns,
+    { key: "", title: "", status: "" },
+  ]);
 }
 
 function removeColumn(index: number) {
-  emit('update:columns', props.columns.filter((_, i) => i !== index))
+  emit(
+    "update:columns",
+    props.columns.filter((_, i) => i !== index),
+  );
 }
 
 function moveUp(index: number) {
-  if (index === 0) return
-  const updated = [...props.columns]
-  ;[updated[index - 1], updated[index]] = [updated[index], updated[index - 1]]
-  emit('update:columns', updated)
+  if (index === 0) return;
+  const updated = [...props.columns];
+  [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+  emit("update:columns", updated);
 }
 
 function moveDown(index: number) {
-  if (index >= props.columns.length - 1) return
-  const updated = [...props.columns]
-  ;[updated[index], updated[index + 1]] = [updated[index + 1], updated[index]]
-  emit('update:columns', updated)
+  if (index >= props.columns.length - 1) return;
+  const updated = [...props.columns];
+  [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+  emit("update:columns", updated);
 }
 
 function updateColumn<K extends keyof KanbanColumn>(
@@ -39,15 +45,20 @@ function updateColumn<K extends keyof KanbanColumn>(
   value: KanbanColumn[K],
 ) {
   emit(
-    'update:columns',
-    props.columns.map((col, i) => (i === index ? { ...col, [key]: value } : col)),
-  )
+    "update:columns",
+    props.columns.map((col, i) =>
+      i === index ? { ...col, [key]: value } : col,
+    ),
+  );
 }
 </script>
 
 <template>
   <div :class="styles['search-fields-editor']">
-    <div v-if="columns.length === 0" :class="styles['search-fields-editor__empty']">
+    <div
+      v-if="columns.length === 0"
+      :class="styles['search-fields-editor__empty']"
+    >
       未配置看板列。
     </div>
 
@@ -57,12 +68,24 @@ function updateColumn<K extends keyof KanbanColumn>(
       :class="styles['search-fields-editor__item']"
     >
       <div :class="styles['search-fields-editor__item-header']">
-        <span :class="styles['search-fields-editor__item-title']">列 {{ idx + 1 }}</span>
+        <span :class="styles['search-fields-editor__item-title']"
+          >列 {{ idx + 1 }}</span
+        >
         <div :class="styles['search-fields-editor__item-actions']">
-          <el-button size="small" text :disabled="idx === 0" @click="moveUp(idx)">
+          <el-button
+            size="small"
+            text
+            :disabled="idx === 0"
+            @click="moveUp(idx)"
+          >
             <AppIcon name="arrow-up" />
           </el-button>
-          <el-button size="small" text :disabled="idx === columns.length - 1" @click="moveDown(idx)">
+          <el-button
+            size="small"
+            text
+            :disabled="idx === columns.length - 1"
+            @click="moveDown(idx)"
+          >
             <AppIcon name="arrow-down" />
           </el-button>
           <el-button size="small" type="danger" text @click="removeColumn(idx)">
@@ -102,7 +125,12 @@ function updateColumn<K extends keyof KanbanColumn>(
       </div>
     </div>
 
-    <el-button type="primary" size="small" style="width: 100%; margin-top: 8px" @click="addColumn">
+    <el-button
+      type="primary"
+      size="small"
+      style="width: 100%; margin-top: 8px"
+      @click="addColumn"
+    >
       <AppIcon name="plus" style="margin-right: 4px" />
       添加列
     </el-button>

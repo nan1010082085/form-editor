@@ -1,15 +1,15 @@
-import { publicSchema } from '../base/publicSchema'
-import { formConfig } from './config'
-import type { Widget } from '../base/types'
+import { publicSchema } from "../base/publicSchema";
+import { formConfig } from "./config";
+import type { Widget } from "../base/types";
 
 export function createFormWidget(id: string): Widget {
   return {
-    ...publicSchema(id, 'form'),
+    ...publicSchema(id, "form"),
     name: formConfig.name,
     label: formConfig.displayName,
-    position: { x: 0, y: 0, w: 100, wUnit: '%', h: 600, zIndex: 1 },
+    position: { x: 0, y: 0, w: 100, wUnit: "%", h: 600, zIndex: 1 },
     style: { ...formConfig.defaultStyle },
     props: { ...formConfig.defaultProps },
     children: [],
-  }
+  };
 }

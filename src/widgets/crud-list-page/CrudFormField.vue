@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { CrudFormFieldSchema } from './config'
+import { computed } from "vue";
+import type { CrudFormFieldSchema } from "./config";
 
 const props = defineProps<{
-  field: CrudFormFieldSchema
-  modelValue: unknown
-}>()
+  field: CrudFormFieldSchema;
+  modelValue: unknown;
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: unknown]
-}>()
+  "update:modelValue": [value: unknown];
+}>();
 
 const value = computed({
   get: () => props.modelValue,
-  set: (v) => emit('update:modelValue', v),
-})
+  set: (v) => emit("update:modelValue", v),
+});
 </script>
 
 <template>
@@ -51,10 +51,7 @@ const value = computed({
       :value="opt.value"
     />
   </el-select>
-  <el-radio-group
-    v-else-if="field.type === 'radio'"
-    v-model="value"
-  >
+  <el-radio-group v-else-if="field.type === 'radio'" v-model="value">
     <el-radio
       v-for="opt in field.options ?? []"
       :key="String(opt.value)"
@@ -63,10 +60,7 @@ const value = computed({
       {{ opt.label }}
     </el-radio>
   </el-radio-group>
-  <el-switch
-    v-else-if="field.type === 'switch'"
-    v-model="value as boolean"
-  />
+  <el-switch v-else-if="field.type === 'switch'" v-model="value as boolean" />
   <el-date-picker
     v-else-if="field.type === 'date'"
     v-model="value as string"

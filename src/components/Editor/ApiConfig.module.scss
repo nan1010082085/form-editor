@@ -1,4 +1,4 @@
-@use 'datasource-dialog-tokens' as *;
+@use "datasource-dialog-tokens" as *;
 
 .root {
   height: 100%;
@@ -93,7 +93,7 @@
 }
 
 .previewCode {
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 11px;
   line-height: 1.4;
   background: var(--bg-color-gray);
@@ -135,7 +135,7 @@
 
 .optionValue {
   color: var(--text-color-placeholder);
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 10px;
 }
 
@@ -152,7 +152,7 @@
 }
 
 .suggestion code {
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
   background: rgba(var(--color-primary-rgb), 0.1);
   padding: 1px 4px;
   border-radius: 2px;
@@ -171,7 +171,7 @@
 }
 
 .suggestionError code {
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
   background: rgba(245, 108, 108, 0.1);
   padding: 1px 4px;
   border-radius: 2px;

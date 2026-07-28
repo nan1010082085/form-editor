@@ -5,88 +5,100 @@
  * 支持 name, code, status, maxUsers, features 字段。
  * 编辑模式下传入 initialData 预填表单。
  */
-import { ref, watch, computed } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useTenantStore } from '@/stores/tenant'
-import type { TenantItem, TenantStatus, TenantCreatePayload, TenantUpdatePayload } from '@/types/tenant'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './TenantFormDialog.module.scss'
+import { ref, watch, computed } from "vue";
+import { ElMessage } from "element-plus";
+import { useTenantStore } from "@/stores/tenant";
+import type {
+  TenantItem,
+  TenantStatus,
+  TenantCreatePayload,
+  TenantUpdatePayload,
+} from "@/types/tenant";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./TenantFormDialog.module.scss";
 
 const props = defineProps<{
-  visible: boolean
-  initialData?: TenantItem | null
-}>()
+  visible: boolean;
+  initialData?: TenantItem | null;
+}>();
 
 const emit = defineEmits<{
-  'update:visible': [value: boolean]
-  saved: []
-}>()
+  "update:visible": [value: boolean];
+  saved: [];
+}>();
 
-const tenantStore = useTenantStore()
-const { t } = useI18n()
+const tenantStore = useTenantStore();
+const { t } = useI18n();
 
-const isEditing = computed(() => !!props.initialData)
-const dialogTitle = computed(() => isEditing.value ? t('editor.tenantForm.editTitle') : t('editor.tenantForm.createTitle'))
-const submitting = ref(false)
+const isEditing = computed(() => !!props.initialData);
+const dialogTitle = computed(() =>
+  isEditing.value
+    ? t("editor.tenantForm.editTitle")
+    : t("editor.tenantForm.createTitle"),
+);
+const submitting = ref(false);
 
 const form = ref({
-  name: '',
-  code: '',
-  status: 'active' as TenantStatus,
+  name: "",
+  code: "",
+  status: "active" as TenantStatus,
   maxUsers: 100,
   features: [] as string[],
-})
+});
 
-const featuresInput = ref('')
+const featuresInput = ref("");
 
-watch(() => props.visible, (val) => {
-  if (val) {
-    if (props.initialData) {
-      form.value = {
-        name: props.initialData.name,
-        code: props.initialData.code,
-        status: props.initialData.status,
-        maxUsers: props.initialData.config.maxUsers,
-        features: [...props.initialData.config.features],
+watch(
+  () => props.visible,
+  (val) => {
+    if (val) {
+      if (props.initialData) {
+        form.value = {
+          name: props.initialData.name,
+          code: props.initialData.code,
+          status: props.initialData.status,
+          maxUsers: props.initialData.config.maxUsers,
+          features: [...props.initialData.config.features],
+        };
+        featuresInput.value = props.initialData.config.features.join(", ");
+      } else {
+        form.value = {
+          name: "",
+          code: "",
+          status: "active",
+          maxUsers: 100,
+          features: [],
+        };
+        featuresInput.value = "";
       }
-      featuresInput.value = props.initialData.config.features.join(', ')
-    } else {
-      form.value = {
-        name: '',
-        code: '',
-        status: 'active',
-        maxUsers: 100,
-        features: [],
-      }
-      featuresInput.value = ''
     }
-  }
-})
+  },
+);
 
 function parseFeatures(): string[] {
   return featuresInput.value
-    .split(',')
+    .split(",")
     .map((s) => s.trim())
-    .filter(Boolean)
+    .filter(Boolean);
 }
 
 async function handleSubmit() {
   if (!form.value.name.trim()) {
-    ElMessage.warning(t('editor.tenantForm.nameRequired'))
-    return
+    ElMessage.warning(t("editor.tenantForm.nameRequired"));
+    return;
   }
   if (!form.value.code.trim()) {
-    ElMessage.warning(t('editor.tenantForm.codeRequired'))
-    return
+    ElMessage.warning(t("editor.tenantForm.codeRequired"));
+    return;
   }
   if (!/^[a-zA-Z0-9_-]+$/.test(form.value.code)) {
-    ElMessage.warning(t('editor.tenantForm.codePattern'))
-    return
+    ElMessage.warning(t("editor.tenantForm.codePattern"));
+    return;
   }
 
-  const features = parseFeatures()
+  const features = parseFeatures();
 
-  submitting.value = true
+  submitting.value = true;
   try {
     if (isEditing.value && props.initialData) {
       const payload: TenantUpdatePayload = {
@@ -97,14 +109,19 @@ async function handleSubmit() {
           maxUsers: form.value.maxUsers,
           features,
         },
-      }
-      const result = await tenantStore.updateTenant(props.initialData.id, payload)
+      };
+      const result = await tenantStore.updateTenant(
+        props.initialData.id,
+        payload,
+      );
       if (result) {
-        ElMessage.success(t('editor.tenantForm.updateSuccess'))
-        emit('update:visible', false)
-        emit('saved')
+        ElMessage.success(t("editor.tenantForm.updateSuccess"));
+        emit("update:visible", false);
+        emit("saved");
       } else {
-        ElMessage.error(tenantStore.error || t('editor.tenantForm.updateFailed'))
+        ElMessage.error(
+          tenantStore.error || t("editor.tenantForm.updateFailed"),
+        );
       }
     } else {
       const payload: TenantCreatePayload = {
@@ -115,23 +132,25 @@ async function handleSubmit() {
           maxUsers: form.value.maxUsers,
           features,
         },
-      }
-      const result = await tenantStore.createTenant(payload)
+      };
+      const result = await tenantStore.createTenant(payload);
       if (result) {
-        ElMessage.success(t('editor.tenantForm.createSuccess'))
-        emit('update:visible', false)
-        emit('saved')
+        ElMessage.success(t("editor.tenantForm.createSuccess"));
+        emit("update:visible", false);
+        emit("saved");
       } else {
-        ElMessage.error(tenantStore.error || t('editor.tenantForm.createFailed'))
+        ElMessage.error(
+          tenantStore.error || t("editor.tenantForm.createFailed"),
+        );
       }
     }
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 
 function handleClose() {
-  emit('update:visible', false)
+  emit("update:visible", false);
 }
 </script>
 
@@ -166,9 +185,18 @@ function handleClose() {
 
       <el-form-item :label="t('editor.tenantForm.fieldStatus')">
         <el-select v-model="form.status" :class="styles.fullWidth">
-          <el-option :label="t('editor.tenantForm.statusActive')" value="active" />
-          <el-option :label="t('editor.tenantForm.statusInactive')" value="inactive" />
-          <el-option :label="t('editor.tenantForm.statusSuspended')" value="suspended" />
+          <el-option
+            :label="t('editor.tenantForm.statusActive')"
+            value="active"
+          />
+          <el-option
+            :label="t('editor.tenantForm.statusInactive')"
+            value="inactive"
+          />
+          <el-option
+            :label="t('editor.tenantForm.statusSuspended')"
+            value="suspended"
+          />
         </el-select>
       </el-form-item>
 
@@ -188,16 +216,22 @@ function handleClose() {
           :placeholder="t('editor.tenantForm.featuresPlaceholder')"
         />
         <div :class="styles.featuresHint">
-          {{ t('editor.tenantForm.featuresHint') }}
+          {{ t("editor.tenantForm.featuresHint") }}
         </div>
       </el-form-item>
     </el-form>
 
     <template #footer>
       <div :class="styles.footer">
-        <el-button @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
+        <el-button @click="handleClose">{{
+          t("editor.common.cancel")
+        }}</el-button>
         <el-button type="primary" :loading="submitting" @click="handleSubmit">
-          {{ isEditing ? t('editor.tenantForm.saveBtn') : t('editor.tenantForm.createBtn') }}
+          {{
+            isEditing
+              ? t("editor.tenantForm.saveBtn")
+              : t("editor.tenantForm.createBtn")
+          }}
         </el-button>
       </div>
     </template>

@@ -7,113 +7,154 @@
  * - 点击节点选中对应画布部件
  * - 双向同步选中状态
  */
-import { computed, ref, watch, nextTick } from 'vue'
-import { useWidgetStore } from '../../stores/widget'
-import { useEditorStore } from '../../stores/editor'
-import type { Widget } from '../../widgets/base/types'
-import { getWidget } from '../../widgets/registry'
-import { useAllContainerTypes } from '../../composables/useConstant'
-import { scrollToWidget, scrollTreeNodeIntoView } from '../../utils/editorScroll'
-import styles from './WidgetTree.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { computed, ref, watch, nextTick } from "vue";
+import { useWidgetStore } from "../../stores/widget";
+import { useEditorStore } from "../../stores/editor";
+import type { Widget } from "../../widgets/base/types";
+import { getWidgetDisplayName } from "../../widgets/registry";
+import { useAllContainerTypes } from "../../composables/useConstant";
+import {
+  scrollToWidget,
+  scrollTreeNodeIntoView,
+} from "../../utils/editorScroll";
+import styles from "./WidgetTree.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetStore = useWidgetStore()
-const editorStore = useEditorStore()
+const widgetStore = useWidgetStore();
+const editorStore = useEditorStore();
 
 // ---- 树节点类型 ----
 
 interface TreeNode {
-  id: string
-  label: string
-  type: string
-  tabKey?: string
-  colIndex?: number
-  isContainer: boolean
-  children: TreeNode[]
-  widget: Widget
+  id: string;
+  label: string;
+  type: string;
+  tabKey?: string;
+  colIndex?: number;
+  isContainer: boolean;
+  children: TreeNode[];
+  widget: Widget;
 }
 
 // ---- 构建树 ----
 
 function buildTree(widgets: Widget[]): TreeNode[] {
-  const containerTypes = useAllContainerTypes()
-  return widgets.map(w => ({
+  const containerTypes = useAllContainerTypes();
+  return widgets.map((w) => ({
     id: w.id,
-    label: w.label || getWidget(w.type)?.displayName || w.type,
+    label: w.label || getWidgetDisplayName(w.type, t) || w.type,
     type: w.type,
     tabKey: w.tabKey,
     colIndex: w.colIndex,
     isContainer: containerTypes.has(w.type),
     children: w.children?.length ? buildTree(w.children) : [],
     widget: w,
-  }))
+  }));
 }
 
-const treeData = computed(() => buildTree(widgetStore.widgets))
+const treeData = computed(() => buildTree(widgetStore.widgets));
 
 // ---- 展开状态（由 el-tree default-expand-all 管理） ----
 
-const treeRef = ref()
+const treeRef = ref();
 
 // ---- 选中 ----
 
-const selectedId = computed(() => editorStore.selectedId || '')
+const selectedId = computed(() => editorStore.selectedId || "");
 
 function handleNodeClick(node: TreeNode) {
-  editorStore.select(node.id)
-  nextTick(() => scrollToWidget(node.id))
+  editorStore.select(node.id);
+  nextTick(() => scrollToWidget(node.id));
 }
 
 watch(selectedId, (id) => {
-  if (!id) return
+  if (!id) return;
   nextTick(() => {
-    treeRef.value?.setCurrentKey(id)
-    scrollTreeNodeIntoView(treeRef.value?.$el as HTMLElement | undefined, id)
-  })
-})
+    treeRef.value?.setCurrentKey(id);
+    scrollTreeNodeIntoView(treeRef.value?.$el as HTMLElement | undefined, id);
+  });
+});
 
 // ---- 类型图标 ----
 
 const TYPE_ICONS: Record<string, string> = {
-  form: 'document', card: 'notebook', tabs: 'menu', dialog: 'chat-dot-round',
-  'single-col': 'grid', 'double-col': 'grid', 'triple-col': 'grid', 'quad-col': 'grid',
-  input: 'edit', select: 'arrow-down', number: 'sort', radio: 'circle-check', checkbox: 'check',
-  date: 'calendar', textarea: 'edit-pen', title: 'document',
-  divider: 'minus', spacer: 'rank', 'toolbar-buttons': 'set-up', table: 'grid', button: 'click',
+  form: "document",
+  card: "notebook",
+  tabs: "menu",
+  dialog: "chat-dot-round",
+  "single-col": "grid",
+  "double-col": "grid",
+  "triple-col": "grid",
+  "quad-col": "grid",
+  input: "edit",
+  select: "arrow-down",
+  number: "sort",
+  radio: "circle-check",
+  checkbox: "check",
+  date: "calendar",
+  textarea: "edit-pen",
+  title: "document",
+  divider: "minus",
+  spacer: "rank",
+  "toolbar-buttons": "set-up",
+  table: "grid",
+  button: "click",
   // 图表部件
-  'bar-chart': 'data-board', 'stacked-bar-chart': 'data-board', 'horizontal-bar-chart': 'data-board',
-  'line-chart': 'trend-charts', 'area-chart': 'trend-charts',
-  'pie-chart': 'pie-chart', 'donut-chart': 'pie-chart',
-  'scatter-chart': 'aim', 'bubble-chart': 'aim',
-  'gauge': 'odometer', 'multi-gauge': 'odometer',
-  'funnel': 'sort', 'compare-funnel': 'sort',
-  'heatmap': 'grid', 'radar': 'cpu', 'filled-radar': 'cpu',
-  'candlestick': 'data-line',
-  'advanced-table': 'grid', 'crud-list-page': 'grid', 'tree-table': 'grid',
-  'user-management': 'user', 'role-management': 'user-filled',
-  'flow-timeline': 'clock', 'flow-task-actions': 'circle-check',
-  kanban: 'menu', calendar: 'calendar', notification: 'bell',
-  'compliance-checklist': 'list', 'qr-scanner': 'full-screen',
-  'adhoc-query': 'search', 'auto-refresh': 'refresh',
-  'user-selector': 'user', 'icon-picker': 'picture',
-  'tree-select': 'menu', 'permission-tree': 'menu',
-  'dynamic-detail-table': 'grid', iframe: 'link',
-  'micro-app': 'connection', 'micro-app-container': 'monitor',
-  statistic: 'data-analysis', descriptions: 'document',
-}
+  "bar-chart": "data-board",
+  "stacked-bar-chart": "data-board",
+  "horizontal-bar-chart": "data-board",
+  "line-chart": "trend-charts",
+  "area-chart": "trend-charts",
+  "pie-chart": "pie-chart",
+  "donut-chart": "pie-chart",
+  "scatter-chart": "aim",
+  "bubble-chart": "aim",
+  gauge: "odometer",
+  "multi-gauge": "odometer",
+  funnel: "sort",
+  "compare-funnel": "sort",
+  heatmap: "grid",
+  radar: "cpu",
+  "filled-radar": "cpu",
+  candlestick: "data-line",
+  "advanced-table": "grid",
+  "crud-list-page": "grid",
+  "tree-table": "grid",
+  "user-management": "user",
+  "role-management": "user-filled",
+  "flow-timeline": "clock",
+  "flow-task-actions": "circle-check",
+  kanban: "menu",
+  calendar: "calendar",
+  notification: "bell",
+  "compliance-checklist": "list",
+  "qr-scanner": "full-screen",
+  "adhoc-query": "search",
+  "auto-refresh": "refresh",
+  "user-selector": "user",
+  "icon-picker": "picture",
+  "tree-select": "menu",
+  "permission-tree": "menu",
+  "dynamic-detail-table": "grid",
+  iframe: "link",
+  "micro-app": "connection",
+  "micro-app-container": "monitor",
+  statistic: "data-analysis",
+  descriptions: "document",
+};
 
 function getIcon(type: string): string {
-  return TYPE_ICONS[type] ?? 'document'
+  return TYPE_ICONS[type] ?? "document";
 }
 </script>
 
 <template>
-  <div :class="styles.tree" style="overflow: auto; height: 100%;">
+  <div :class="styles.tree" style="overflow: auto; height: 100%">
     <div v-if="treeData.length === 0" :class="styles.empty">
-      {{ t('editor.schemaTree.emptyHint') }}
+      {{ t("editor.schemaTree.emptyHint") }}
     </div>
     <el-tree
       v-else
@@ -127,26 +168,31 @@ function getIcon(type: string): string {
       @node-click="handleNodeClick"
     >
       <template #default="{ data }">
-        <div
-          :class="styles.node"
-        >
+        <div :class="styles.node">
           <!-- 图标 -->
-          <span :class="styles.icon"><AppIcon :name="getIcon(data.type)" :size="14" /></span>
+          <span :class="styles.icon"
+            ><AppIcon :name="getIcon(data.type)" :size="14"
+          /></span>
 
           <!-- 类型标签 -->
           <span :class="styles.badge">{{ data.label }}</span>
 
           <!-- 字段名 -->
-          <span v-if="data.widget.field" :class="styles.field">{{ data.widget.field }}</span>
+          <span v-if="data.widget.field" :class="styles.field">{{
+            data.widget.field
+          }}</span>
 
           <!-- 页签标识 -->
-          <span v-else-if="data.tabKey" :class="styles.tabKey">{{ data.tabKey }}</span>
+          <span v-else-if="data.tabKey" :class="styles.tabKey">{{
+            data.tabKey
+          }}</span>
 
           <!-- 列索引 -->
-          <span v-else-if="data.colIndex != null" :class="styles.colIndex">{{ t('editor.schemaTree.colLabel') }} {{ data.colIndex + 1 }}</span>
+          <span v-else-if="data.colIndex != null" :class="styles.colIndex"
+            >{{ t("editor.schemaTree.colLabel") }} {{ data.colIndex + 1 }}</span
+          >
         </div>
       </template>
     </el-tree>
   </div>
 </template>
-

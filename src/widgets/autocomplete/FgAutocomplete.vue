@@ -1,38 +1,45 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
-import { useI18n } from '@schema-platform/platform-shared'
+import { inject, computed, ref } from "vue";
+import { widgetDataKey } from "../base/types";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const { isDisabled } = useWidgetRenderState()
-const { controlStyle: dynamicStyle } = useWidgetControlSize(32)
+const widgetData = inject(widgetDataKey)!;
+const { isDisabled } = useWidgetRenderState();
+const { controlStyle: dynamicStyle } = useWidgetControlSize(32);
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 
-const autocompleteRef = ref<{ $el?: HTMLElement }>()
+const autocompleteRef = ref<{ $el?: HTMLElement }>();
 
 function forwardNativeChange() {
-  autocompleteRef.value?.$el?.dispatchEvent(new Event('change', { bubbles: true }))
+  autocompleteRef.value?.$el?.dispatchEvent(
+    new Event("change", { bubbles: true }),
+  );
 }
 
-const suggestions = computed(() =>
-  (widgetData.value.props?.suggestions as { value: string }[]) || []
-)
+const suggestions = computed(
+  () => (widgetData.value.props?.suggestions as { value: string }[]) || [],
+);
 
-function fetchSuggestions(queryString: string, callback: (suggestions: { value: string }[]) => void) {
+function fetchSuggestions(
+  queryString: string,
+  callback: (suggestions: { value: string }[]) => void,
+) {
   const results = queryString
-    ? suggestions.value.filter(item =>
-        item.value.toLowerCase().includes(queryString.toLowerCase())
+    ? suggestions.value.filter((item) =>
+        item.value.toLowerCase().includes(queryString.toLowerCase()),
       )
-    : suggestions.value
-  callback(results)
+    : suggestions.value;
+  callback(results);
 }
 </script>
 
@@ -41,7 +48,10 @@ function fetchSuggestions(queryString: string, callback: (suggestions: { value: 
     ref="autocompleteRef"
     v-model="widgetData.defaultValue as string"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || t('editor.autocomplete.placeholder')"
+    :placeholder="
+      (widgetData.props?.placeholder as string) ||
+      t('editor.autocomplete.placeholder')
+    "
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :fetch-suggestions="fetchSuggestions"

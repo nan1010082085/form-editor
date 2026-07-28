@@ -1,30 +1,33 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { FormFieldValue, SearchFieldSchema } from '@/components/WidgetRenderer/types'
-import { useDynamicOptions } from '@/composables/useDynamicOptions'
+import { computed } from "vue";
+import type {
+  FormFieldValue,
+  SearchFieldSchema,
+} from "@/components/WidgetRenderer/types";
+import { useDynamicOptions } from "@/composables/useDynamicOptions";
 
 const props = defineProps<{
-  field: SearchFieldSchema
-  modelValue: FormFieldValue
-}>()
+  field: SearchFieldSchema;
+  modelValue: FormFieldValue;
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: FormFieldValue]
-}>()
+  "update:modelValue": [value: FormFieldValue];
+}>();
 
 const value = computed({
   get: () => props.modelValue,
-  set: (v) => emit('update:modelValue', v),
-})
+  set: (v) => emit("update:modelValue", v),
+});
 
-const { options: dynamicOptions } = useDynamicOptions(() => props.field.api)
+const { options: dynamicOptions } = useDynamicOptions(() => props.field.api);
 
 const selectOptions = computed(() => {
-  if (props.field.api) return dynamicOptions.value
-  return props.field.options ?? []
-})
+  if (props.field.api) return dynamicOptions.value;
+  return props.field.options ?? [];
+});
 
-const fieldProps = computed(() => props.field.props ?? {})
+const fieldProps = computed(() => props.field.props ?? {});
 </script>
 
 <template>

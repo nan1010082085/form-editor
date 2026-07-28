@@ -1,5 +1,5 @@
-export * from '../base/types'
-export * from '../base/publicSchema'
+export * from "../base/types";
+export * from "../base/publicSchema";
 export {
   registerWidget,
   getWidget,
@@ -7,4 +7,4 @@ export {
   getWidgetsByGroup,
   getComponentMap,
   createWidget,
-} from '../registry'
+} from "../registry";

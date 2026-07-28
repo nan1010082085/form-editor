@@ -15,52 +15,62 @@
  * - fg:submit       触发表单提交
  * - fg:reset        重置表单
  */
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { WidgetRenderer } from '@/components/WidgetRenderer'
-import type { FormData } from '@/components/WidgetRenderer'
-import type { PartialWidget, CanvasConfig } from '@/widgets/base/types'
-import type { PublishedSchemaItem } from '@/types/api'
-import { useAppStore } from '@/stores/app'
-import { fetchPublishedSchema, fetchPublishedByPublishId, fetchPublishedByCode } from '@/api/schemaApi'
-import { sendToHost } from '@/microapp/bridge'
-import { registerAllWidgets } from '@/widgets'
-import { buildContentFrameStyle, resolveRendererLayout } from '@/utils/boardTemplates'
-import { useCanvasScale } from '@/composables/useCanvasScale'
-import styles from './PublishView.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { useRoute } from "vue-router";
+import { WidgetRenderer } from "@/components/WidgetRenderer";
+import type { FormData } from "@/components/WidgetRenderer";
+import type { PartialWidget, CanvasConfig } from "@/widgets/base/types";
+import type { PublishedSchemaItem } from "@/types/api";
+import { useAppStore } from "@/stores/app";
+import {
+  fetchPublishedSchema,
+  fetchPublishedByPublishId,
+  fetchPublishedByCode,
+} from "@/api/schemaApi";
+import { sendToHost } from "@/microapp/bridge";
+import { registerAllWidgets } from "@/widgets";
+import {
+  buildContentFrameStyle,
+  resolveRendererLayout,
+} from "@/utils/boardTemplates";
+import { useCanvasScale } from "@/composables/useCanvasScale";
+import styles from "./PublishView.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-registerAllWidgets()
+registerAllWidgets();
 
-const route = useRoute()
-const formRef = ref<InstanceType<typeof WidgetRenderer>>()
-const appStore = useAppStore()
-const { t } = useI18n()
+const route = useRoute();
+const formRef = ref<InstanceType<typeof WidgetRenderer>>();
+const appStore = useAppStore();
+const { t } = useI18n();
 
-const schema = ref<PartialWidget[]>([])
-const canvasConfig = ref<Partial<CanvasConfig>>({})
-const boardVariables = ref<Record<string, unknown>>({})
-const loading = ref(true)
-const error = ref('')
-const schemaName = ref('')
-const loadedPublishId = ref('')
+const schema = ref<PartialWidget[]>([]);
+const canvasConfig = ref<Partial<CanvasConfig>>({});
+const boardVariables = ref<Record<string, unknown>>({});
+const loading = ref(true);
+const error = ref("");
+const schemaName = ref("");
+const loadedPublishId = ref("");
 
 // ---- 表单模式状态（由宿主通过 fg:set-mode 设置） ----
-const formMode = ref<'edit' | 'view' | 'partial'>('edit')
-const editableFields = ref<string[] | undefined>(undefined)
-const readonlyFields = ref<string[] | undefined>(undefined)
+const formMode = ref<"edit" | "view" | "partial">("edit");
+const editableFields = ref<string[] | undefined>(undefined);
+const readonlyFields = ref<string[] | undefined>(undefined);
 
 /** 是否全局只读（view 模式 / URL interaction=readonly） */
-const isReadonly = computed(() => formMode.value === 'view')
+const isReadonly = computed(() => formMode.value === "view");
 
 /** URL ?interaction=readonly|interactive 切换发布态交互 */
 function applyInteractionFromQuery() {
-  const interaction = route.query.interaction as string | undefined
-  if (interaction === 'readonly' || interaction === 'publish-readonly') {
-    formMode.value = 'view'
-  } else if (interaction === 'interactive' || interaction === 'publish-interactive') {
-    formMode.value = 'edit'
+  const interaction = route.query.interaction as string | undefined;
+  if (interaction === "readonly" || interaction === "publish-readonly") {
+    formMode.value = "view";
+  } else if (
+    interaction === "interactive" ||
+    interaction === "publish-interactive"
+  ) {
+    formMode.value = "edit";
   }
 }
 
@@ -68,161 +78,193 @@ watch(
   () => route.query.interaction,
   () => applyInteractionFromQuery(),
   { immediate: true },
-)
+);
 
 function togglePublishInteraction() {
-  formMode.value = formMode.value === 'view' ? 'edit' : 'view'
+  formMode.value = formMode.value === "view" ? "edit" : "view";
 }
 
 const schemaRouteKey = computed(() => {
-  const codeParam = route.params.schemaCode as string | undefined
-  if (codeParam) return `code:${codeParam}`
-  const id = route.query.id as string | undefined
-  if (id) return `id:${id}`
-  const codeQuery = route.query.schemaCode as string | undefined
-  if (codeQuery) return `code:${codeQuery}`
-  return ''
-})
-const context = computed(() => appStore.formGridContext)
+  const codeParam = route.params.schemaCode as string | undefined;
+  if (codeParam) return `code:${codeParam}`;
+  const id = route.query.id as string | undefined;
+  if (id) return `id:${id}`;
+  const codeQuery = route.query.schemaCode as string | undefined;
+  if (codeQuery) return `code:${codeQuery}`;
+  return "";
+});
+const context = computed(() => appStore.formGridContext);
 
-const rendererLayout = computed(() => resolveRendererLayout(canvasConfig.value))
-const contentFrameStyle = computed(() => buildContentFrameStyle(canvasConfig.value))
-const isFlexLayout = computed(() => canvasConfig.value.layoutMode === 'flex')
+const rendererLayout = computed(() =>
+  resolveRendererLayout(canvasConfig.value),
+);
+const contentFrameStyle = computed(() =>
+  buildContentFrameStyle(canvasConfig.value),
+);
+const isFlexLayout = computed(() => canvasConfig.value.layoutMode === "flex");
 
 // ---- 多分辨率自适应 ----
-const scaleContainerRef = ref<HTMLElement | null>(null)
-const canvasScaleWidth = computed(() => canvasConfig.value.width ?? 1920)
-const canvasScaleHeight = computed(() => canvasConfig.value.height ?? 1080)
-const canvasScaleMode = computed(() => canvasConfig.value.scaleMode ?? 'contain')
+const scaleContainerRef = ref<HTMLElement | null>(null);
+const canvasScaleWidth = computed(() => canvasConfig.value.width ?? 1920);
+const canvasScaleHeight = computed(() => canvasConfig.value.height ?? 1080);
+const canvasScaleMode = computed(
+  () => canvasConfig.value.scaleMode ?? "contain",
+);
 
 const { canvasStyle: adaptiveCanvasStyle } = useCanvasScale({
   canvasWidth: canvasScaleWidth,
   canvasHeight: canvasScaleHeight,
   containerRef: scaleContainerRef,
   scaleMode: canvasScaleMode,
-})
+});
 
 /** A-08 — 可选 AI 侧边栏（query.aiSidebar=1 或 board 变量 enableAiSidebar） */
 const showAiSidebar = computed(() => {
-  if (route.query.aiSidebar === '1' || route.query.aiSidebar === 'true') return true
-  return boardVariables.value.enableAiSidebar === true || boardVariables.value.enableAiSidebar === 'true'
-})
+  if (route.query.aiSidebar === "1" || route.query.aiSidebar === "true")
+    return true;
+  return (
+    boardVariables.value.enableAiSidebar === true ||
+    boardVariables.value.enableAiSidebar === "true"
+  );
+});
 
 const aiSidebarUrl = computed(() => {
-  const ctx = (route.query.context as string) || (boardVariables.value.aiContext as string) || 'business'
-  return `/app/ai/sidebar?context=${encodeURIComponent(ctx)}`
-})
+  const ctx =
+    (route.query.context as string) ||
+    (boardVariables.value.aiContext as string) ||
+    "business";
+  return `/app/ai/sidebar?context=${encodeURIComponent(ctx)}`;
+});
 
 /** 将 URL query 映射到画布变量（E-23） */
-function buildQueryVariables(query: Record<string, unknown>): Record<string, unknown> {
-  const vars: Record<string, unknown> = {}
+function buildQueryVariables(
+  query: Record<string, unknown>,
+): Record<string, unknown> {
+  const vars: Record<string, unknown> = {};
   const aliasMap: Record<string, string> = {
-    recordId: 'recordId',
-    submissionId: 'recordId',
-    mode: 'mode',
-    flowDef: 'flowDefinitionId',
-    flowDefinitionId: 'flowDefinitionId',
-  }
+    recordId: "recordId",
+    submissionId: "recordId",
+    mode: "mode",
+    flowDef: "flowDefinitionId",
+    flowDefinitionId: "flowDefinitionId",
+  };
   for (const [key, target] of Object.entries(aliasMap)) {
-    const val = query[key]
-    if (val !== undefined && val !== null && val !== '') {
-      vars[target] = Array.isArray(val) ? val[0] : val
+    const val = query[key];
+    if (val !== undefined && val !== null && val !== "") {
+      vars[target] = Array.isArray(val) ? val[0] : val;
     }
   }
   for (const [key, val] of Object.entries(query)) {
-    if (key.startsWith('var.')) {
-      vars[key.slice(4)] = Array.isArray(val) ? val[0] : val
+    if (key.startsWith("var.")) {
+      vars[key.slice(4)] = Array.isArray(val) ? val[0] : val;
     }
-    if (['flowInstanceId', 'taskId'].includes(key) && val !== undefined && val !== null && val !== '') {
-      vars[key] = Array.isArray(val) ? val[0] : val
+    if (
+      ["flowInstanceId", "taskId"].includes(key) &&
+      val !== undefined &&
+      val !== null &&
+      val !== ""
+    ) {
+      vars[key] = Array.isArray(val) ? val[0] : val;
     }
   }
-  return vars
+  return vars;
 }
 
 /** 将 board.variables 数组转为运行时 map */
 function boardVariablesToMap(
   variables?: Array<{ name: string; defaultValue?: unknown }>,
 ): Record<string, unknown> {
-  const map: Record<string, unknown> = {}
-  if (!variables?.length) return map
+  const map: Record<string, unknown> = {};
+  if (!variables?.length) return map;
   for (const v of variables) {
-    if (v.name) map[v.name] = v.defaultValue
+    if (v.name) map[v.name] = v.defaultValue;
   }
-  return map
+  return map;
 }
 
 async function loadSchemaByCode(code: string) {
-  loading.value = true
-  error.value = ''
-  schema.value = []
-  schemaName.value = ''
-  boardVariables.value = {}
+  loading.value = true;
+  error.value = "";
+  schema.value = [];
+  schemaName.value = "";
+  boardVariables.value = {};
 
   try {
-    const publishedSchema = await fetchPublishedByCode(code)
+    const publishedSchema = await fetchPublishedByCode(code);
     if (!publishedSchema) {
-      error.value = t('editor.publishView.schemaNotFoundByCode', { code })
-      return
+      error.value = t("editor.publishView.schemaNotFoundByCode", { code });
+      return;
     }
-    applyPublishedSchema(publishedSchema)
+    applyPublishedSchema(publishedSchema);
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : t('editor.publishView.loadFailed')
+    error.value =
+      err instanceof Error ? err.message : t("editor.publishView.loadFailed");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function applyPublishedSchema(publishedSchema: PublishedSchemaItem) {
-  loadedPublishId.value = publishedSchema.publishId
-  const raw = publishedSchema.json
+  loadedPublishId.value = publishedSchema.publishId;
+  const raw = publishedSchema.json;
   if (Array.isArray(raw)) {
-    schema.value = raw
-    boardVariables.value = buildQueryVariables(route.query as Record<string, unknown>)
+    schema.value = raw;
+    boardVariables.value = buildQueryVariables(
+      route.query as Record<string, unknown>,
+    );
   } else {
-    schema.value = raw?.widgets ?? []
-    canvasConfig.value = raw?.board?.canvas ?? {}
+    schema.value = raw?.widgets ?? [];
+    canvasConfig.value = raw?.board?.canvas ?? {};
     boardVariables.value = {
-      ...boardVariablesToMap(raw?.board?.variables),
+      ...boardVariablesToMap(
+        raw?.board?.variables as
+          | Array<{ name: string; defaultValue?: unknown }>
+          | undefined,
+      ),
       ...buildQueryVariables(route.query as Record<string, unknown>),
-    }
+    };
   }
-  schemaName.value = publishedSchema.name
+  schemaName.value = publishedSchema.name;
 }
 
 async function loadSchema(id: string) {
-  loading.value = true
-  error.value = ''
-  schema.value = []
-  schemaName.value = ''
-  boardVariables.value = {}
+  loading.value = true;
+  error.value = "";
+  schema.value = [];
+  schemaName.value = "";
+  boardVariables.value = {};
 
   try {
     // 优先按 publishId 查找，找不到再按 sourceId 查找
-    let publishedSchema = await fetchPublishedByPublishId(id)
+    let publishedSchema = await fetchPublishedByPublishId(id);
     if (!publishedSchema) {
-      publishedSchema = await fetchPublishedSchema(id)
+      publishedSchema = await fetchPublishedSchema(id);
     }
     if (!publishedSchema) {
-      error.value = t('editor.publishView.schemaNotFoundById', { id })
-      return
+      error.value = t("editor.publishView.schemaNotFoundById", { id });
+      return;
     }
-    applyPublishedSchema(publishedSchema)
+    applyPublishedSchema(publishedSchema);
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : t('editor.publishView.loadFailed')
+    error.value =
+      err instanceof Error ? err.message : t("editor.publishView.loadFailed");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-watch(schemaRouteKey, (key) => {
-  if (!key) return
-  if (key.startsWith('code:')) {
-    loadSchemaByCode(key.slice(5))
-  } else if (key.startsWith('id:')) {
-    loadSchema(key.slice(3))
-  }
-}, { immediate: true })
+watch(
+  schemaRouteKey,
+  (key) => {
+    if (!key) return;
+    if (key.startsWith("code:")) {
+      loadSchemaByCode(key.slice(5));
+    } else if (key.startsWith("id:")) {
+      loadSchema(key.slice(3));
+    }
+  },
+  { immediate: true },
+);
 
 watch(
   () => route.query,
@@ -230,10 +272,10 @@ watch(
     boardVariables.value = {
       ...boardVariables.value,
       ...buildQueryVariables(query as Record<string, unknown>),
-    }
+    };
   },
   { deep: true },
-)
+);
 
 // ---- postMessage 通信（iframe 嵌入场景） ----
 
@@ -243,96 +285,139 @@ function sendResponse(type: string, payload: unknown, requestId?: string) {
     type,
     id: loadedPublishId.value,
     requestId,
-    ...(typeof payload === 'object' && payload !== null ? payload : { payload }),
-  })
+    ...(typeof payload === "object" && payload !== null
+      ? payload
+      : { payload }),
+  });
 }
 
 function handleMessage(event: MessageEvent) {
-  const data = event.data
-  if (!data || typeof data !== 'object') return
-  const requestId = data.requestId as string | undefined
+  const data = event.data;
+  if (!data || typeof data !== "object") return;
+  const requestId = data.requestId as string | undefined;
 
   switch (data.type) {
-    case 'fg:set-mode':
-      if (data.mode) formMode.value = data.mode as 'edit' | 'view' | 'partial'
-      if (data.editableFields !== undefined) editableFields.value = data.editableFields as string[]
-      if (data.readonlyFields !== undefined) readonlyFields.value = data.readonlyFields as string[]
-      break
+    case "fg:set-mode":
+      if (data.mode) formMode.value = data.mode as "edit" | "view" | "partial";
+      if (data.editableFields !== undefined)
+        editableFields.value = data.editableFields as string[];
+      if (data.readonlyFields !== undefined)
+        readonlyFields.value = data.readonlyFields as string[];
+      break;
 
-    case 'fg:set-context':
-      if (data.user) appStore.updateRequestContext(data.user)
-      if (data.request) appStore.updateRequestContext(data.request)
-      if (data.global) appStore.updateGlobalContext(data.global)
-      break
+    case "fg:set-context":
+      if (data.user) appStore.updateRequestContext(data.user);
+      if (data.request) appStore.updateRequestContext(data.request);
+      if (data.global) appStore.updateGlobalContext(data.global);
+      break;
 
-    case 'fg:set-schema':
-      if (data.schema) schema.value = data.schema
-      break
+    case "fg:set-schema":
+      if (data.schema) schema.value = data.schema;
+      break;
 
-    case 'fg:set-data':
-      if (data.data && formRef.value) formRef.value.setFormData(data.data)
-      break
+    case "fg:set-data":
+      if (data.data && formRef.value) formRef.value.setFormData(data.data);
+      break;
 
-    case 'fg:get-data':
+    case "fg:get-data":
       if (formRef.value) {
-        sendResponse('fg:data-response', { data: formRef.value.getFormData() }, requestId)
+        sendResponse(
+          "fg:data-response",
+          { data: formRef.value.getFormData() },
+          requestId,
+        );
       }
-      break
+      break;
 
-    case 'fg:validate':
-      formRef.value?.validate().then(() => {
-        sendResponse('fg:validate-response', { valid: true }, requestId)
-      }).catch(() => {
-        sendResponse('fg:validate-response', { valid: false }, requestId)
-      })
-      break
+    case "fg:validate":
+      formRef.value
+        ?.validate()
+        .then(() => {
+          sendResponse("fg:validate-response", { valid: true }, requestId);
+        })
+        .catch(() => {
+          sendResponse("fg:validate-response", { valid: false }, requestId);
+        });
+      break;
 
-    case 'fg:submit':
-      formRef.value?.submit()
-      break
+    case "fg:submit":
+      formRef.value?.submit();
+      break;
 
-    case 'fg:reset':
-      formRef.value?.resetFields()
-      break
+    case "fg:reset":
+      formRef.value?.resetFields();
+      break;
   }
 }
 
 function handleSubmit(data: FormData) {
   sendToHost({
-    type: 'fg:submit',
+    type: "fg:submit",
     id: loadedPublishId.value,
     data,
-  })
+  });
 }
 
-onMounted(() => window.addEventListener('message', handleMessage))
-onUnmounted(() => window.removeEventListener('message', handleMessage))
+onMounted(() => window.addEventListener("message", handleMessage));
+onUnmounted(() => window.removeEventListener("message", handleMessage));
 </script>
 
 <template>
   <div :class="styles['fg-renderer']">
     <div v-if="loading" :class="styles['fg-renderer__loading']">
       <AppIcon name="loading" :class="styles['loading-spinner']" :size="24" />
-      <span>{{ t('editor.publishView.loading') }}</span>
+      <span>{{ t("editor.publishView.loading") }}</span>
     </div>
 
     <div v-else-if="error" :class="styles['fg-renderer__error']">
-      <AppIcon name="circle-close-filled" :size="48" color="var(--el-color-danger)" />
+      <AppIcon
+        name="circle-close-filled"
+        :size="48"
+        color="var(--el-color-danger)"
+      />
       <p>{{ error }}</p>
     </div>
 
     <div
       v-else
       ref="scaleContainerRef"
-      :class="[styles['fg-renderer'], showAiSidebar && styles['fg-renderer--with-sidebar'], isFlexLayout && styles['fg-renderer--flex']]"
+      :class="[
+        styles['fg-renderer'],
+        showAiSidebar && styles['fg-renderer--with-sidebar'],
+        isFlexLayout && styles['fg-renderer--flex'],
+      ]"
     >
       <div
-        v-if="route.query.showModeToggle === '1' || route.query.showModeToggle === 'true'"
-        style="position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,0.55);padding:6px 12px;border-radius:6px;color:#fff;font-size:13px;"
+        v-if="
+          route.query.showModeToggle === '1' ||
+          route.query.showModeToggle === 'true'
+        "
+        style="
+          position: fixed;
+          top: 12px;
+          right: 12px;
+          z-index: 1000;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          background: rgba(0, 0, 0, 0.55);
+          padding: 6px 12px;
+          border-radius: 6px;
+          color: #fff;
+          font-size: 13px;
+        "
       >
-        <span>{{ isReadonly ? t('editor.publishView.readonlyMode') : t('editor.publishView.interactiveMode') }}</span>
+        <span>{{
+          isReadonly
+            ? t("editor.publishView.readonlyMode")
+            : t("editor.publishView.interactiveMode")
+        }}</span>
         <el-button size="small" @click="togglePublishInteraction">
-          {{ isReadonly ? t('editor.publishView.switchToInteractive') : t('editor.publishView.switchToReadonly') }}
+          {{
+            isReadonly
+              ? t("editor.publishView.switchToInteractive")
+              : t("editor.publishView.switchToReadonly")
+          }}
         </el-button>
       </div>
       <div
@@ -376,7 +461,11 @@ onUnmounted(() => window.removeEventListener('message', handleMessage))
         />
       </div>
       <aside v-if="showAiSidebar" :class="styles['fg-renderer__ai-sidebar']">
-        <iframe :src="aiSidebarUrl" :title="t('editor.publishView.aiAssistant')" :class="styles['fg-renderer__ai-iframe']" />
+        <iframe
+          :src="aiSidebarUrl"
+          :title="t('editor.publishView.aiAssistant')"
+          :class="styles['fg-renderer__ai-iframe']"
+        />
       </aside>
     </div>
   </div>

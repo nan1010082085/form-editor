@@ -28,7 +28,7 @@ Schema 驱动的可视化编辑器：表单设计 + 页面/大屏搭建 + 发布
 - Element Plus 2.9 + ECharts 6.1
 - Pinia（**12** Store，大量 `shallowRef`）
 - Vue Router 4（qiankun / micro-app）
-- Vite 5 + Vitest（**99** 规格文件）
+- Vite 5 + Vitest（**111** 规格文件）
 - immer（撤销/重做 patches）
 - CSS Module（`.module.scss`）强制隔离
 
@@ -39,7 +39,7 @@ Schema 驱动的可视化编辑器：表单设计 + 页面/大屏搭建 + 发布
 | 能力 | 状态 | 说明 |
 |------|------|------|
 | Free / Flex 双布局 | ✅ | board.layoutMode |
-| 85 Widget / 91 注册项 | ✅ | 8 分组，registry 注册 |
+| 87 Widget / 95 注册项 | ✅ | 8 分组，registry 注册 |
 | 四大配置系统 | ✅ | 事件 / 联动 / API / 变量 |
 | 视口剔除（大屏编辑） | ✅ | `useViewportCulling` |
 | immer 撤销重做 | ✅ | `editorStore` patches |
@@ -107,7 +107,7 @@ bash deploy/deploy.sh --target editor
 
 ## Widget 体系
 
-**85** 个目录，**91** 次 `registerWidget`，分组统计：
+**87** 个目录，**95** 次 `registerWidget`，分组统计：
 
 | 分组 | 数量 | 代表 |
 |------|------|------|
@@ -181,13 +181,13 @@ editor/
 │   ├── components/
 │   │   ├── Editor/          # 设计器 UI（Canvas / Overlay / PropertyPanel…）
 │   │   └── WidgetRenderer/  # SchemaRender → SchemaNode → WidgetNode
-│   ├── composables/         # 46 个组合式 API
+│   ├── composables/         # 59 个组合式 API
 │   ├── engine/              # eventEngine
 │   ├── locales/             # zh-CN / en-US（含 editor-* 扩展包）
 │   ├── stores/              # 12 Pinia Store
 │   ├── utils/               # boardTemplates / dashboardDemo / boardThemes…
 │   ├── views/               # 页面
-│   ├── widgets/             # 85 目录 + registry（createWidgetPlugin）
+│   ├── widgets/             # 87 目录 + registry（createWidgetPlugin）
 │   └── workers/             # IndexedDB / cache Worker
 ├── docs/                    # 产品 / 架构 / 设计文档
 ├── CONTRIBUTING.md          # 改代码必改文档
@@ -224,8 +224,8 @@ editor/
 | 指标 | 数量 |
 |------|------|
 | Pinia Store | 12 |
-| Composable | 46 |
-| Widget 目录 | 85 |
-| registerWidget | 91 |
+| Composable | 59 |
+| Widget 目录 | 87 |
+| registerWidget | 95 |
 | Vitest 规格 | 99 |
 | API 模块 | 11 |

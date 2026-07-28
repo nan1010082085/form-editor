@@ -7,127 +7,140 @@
  * - 动态组件：每个属性由 PropertyField 根据 type 渲染不同输入
  * - 每行一个属性：label + value 水平排列
  */
-import { computed, ref } from 'vue'
-import { useEditorStore } from '../../stores/editor'
-import { useWidgetStore } from '../../stores/widget'
-import { useBoardStore } from '../../stores/board'
-import { getWidget } from '../../widgets/registry'
-import { buildConfigHelpText } from '../../utils/configHelpText'
-import type { Widget, WidgetConfig, ConfigPanelType } from '../../widgets/base/types'
-import PropertyField from './PropertyField.vue'
-import BorderEditor from './BorderEditor.vue'
-import BorderRadiusEditor from './BorderRadiusEditor.vue'
-import SpacingEditor from './SpacingEditor.vue'
-import TableColumnsEditor from './TableColumnsEditor.vue'
-import type { TableColumn } from '../../widgets/table/config'
-import AdvancedColumnsEditor from './AdvancedColumnsEditor.vue'
-import type { AdvancedTableColumn } from '../../widgets/advanced-table/config'
-import ActionButtonsEditor from './ActionButtonsEditor.vue'
-import type { ActionButton } from '../../widgets/advanced-table/config'
-import NumberArrayEditor from './NumberArrayEditor.vue'
-import GenericArrayEditor from './GenericArrayEditor.vue'
-import OptionsEditor from './OptionsEditor.vue'
-import SearchFieldsEditor from './SearchFieldsEditor.vue'
-import CrudFormFieldsEditor from './CrudFormFieldsEditor.vue'
-import AdhocFieldsEditor from './AdhocFieldsEditor.vue'
-import KanbanColumnsEditor from './KanbanColumnsEditor.vue'
-import type { SearchFieldSchema } from '@/components/WidgetRenderer/types'
-import type { CrudFormFieldSchema } from '@/widgets/crud-list-page/config'
-import type { AdhocQueryField } from '@/widgets/adhoc-query/config'
-import type { KanbanColumn } from '@/widgets/kanban/config'
-import RulesEditor from './RulesEditor.vue'
-import PropertyPanelConfigBar from './PropertyPanelConfigBar.vue'
-import PropertyPanelSections from './PropertyPanelSections.vue'
-import EventConfigDialog from './EventConfigDialog.vue'
-import LinkageSchemaDialog from './LinkageSchemaDialog.vue'
-import OptionsApiConfigDialog from './OptionsApiConfigDialog.vue'
-import VariableConfigDialog from './VariableConfigDialog.vue'
-import ChartLinkageDialog from './ChartLinkageDialog.vue'
-import { useClipboard } from '../../composables/useClipboard'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './style.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { computed, ref } from "vue";
+import { useEditorStore } from "../../stores/editor";
+import { useWidgetStore } from "../../stores/widget";
+import { useBoardStore } from "../../stores/board";
+import {
+  getWidget,
+  getWidgetDisplayName,
+  getWidgetDescription,
+} from "../../widgets/registry";
+import { buildConfigHelpText } from "../../utils/configHelpText";
+import type { WidgetConfig, ConfigPanelType } from "../../widgets/base/types";
+import PropertyField from "./PropertyField.vue";
+import PropertyPanelConfigBar from "./PropertyPanelConfigBar.vue";
+import PropertyPanelSections from "./PropertyPanelSections.vue";
+import EventConfigDialog from "./EventConfigDialog.vue";
+import LinkageSchemaDialog from "./LinkageSchemaDialog.vue";
+import OptionsApiConfigDialog from "./OptionsApiConfigDialog.vue";
+import VariableConfigDialog from "./VariableConfigDialog.vue";
+import ChartLinkageDialog from "./ChartLinkageDialog.vue";
+import { useClipboard } from "../../composables/useClipboard";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./style.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
-const editorStore = useEditorStore()
-const widgetStore = useWidgetStore()
-const boardStore = useBoardStore()
-const { t } = useI18n()
-const { copy } = useClipboard()
+const editorStore = useEditorStore();
+const widgetStore = useWidgetStore();
+const boardStore = useBoardStore();
+const { t } = useI18n();
+const { copy } = useClipboard();
+
+/** 复制当前选中 Widget 的 ID 到剪贴板 */
+async function copyWidgetId() {
+  if (editorStore.selectedId) {
+    await copy(editorStore.selectedId);
+  }
+}
 
 // ---- 选中的 Widget ----
 
 const selectedWidget = computed(() => {
-  if (!editorStore.selectedId) return null
-  return widgetStore.findWidget(editorStore.selectedId)
-})
+  if (!editorStore.selectedId) return null;
+  return widgetStore.findWidget(editorStore.selectedId);
+});
 
 // ---- Widget 注册配置 ----
 
 const widgetConfig = computed(() => {
-  if (!selectedWidget.value) return null
-  const regItem = getWidget(selectedWidget.value.type)
-  if (!regItem) return undefined
-  return { ...regItem, config: regItem.config as WidgetConfig }
-})
+  if (!selectedWidget.value) return null;
+  const regItem = getWidget(selectedWidget.value.type);
+  if (!regItem) return undefined;
+  return { ...regItem, config: regItem.config as WidgetConfig };
+});
+
+/** 翻译后的 Widget 显示名称 */
+const widgetDisplayName = computed(() => {
+  if (!selectedWidget.value) return "";
+  return getWidgetDisplayName(selectedWidget.value.type, t);
+});
+
+/** 翻译后的 Widget 描述 */
+const widgetDescription = computed(() => {
+  if (!selectedWidget.value) return "";
+  return getWidgetDescription(selectedWidget.value.type, t);
+});
 
 // ---- 属性面板声明 ----
 
 const panelDeclaration = computed(() => {
-  if (!widgetConfig.value) return undefined
-  return widgetConfig.value.config.propertyPanel ?? undefined
-})
+  if (!widgetConfig.value) return undefined;
+  return widgetConfig.value.config.propertyPanel ?? undefined;
+});
 
 // ---- 事件目标（支持动态函数） ----
 
 const resolvedEventTargets = computed(() => {
-  const et = widgetConfig.value?.config.eventTargets
-  if (!et || !selectedWidget.value) return undefined
-  if (typeof et === 'function') return et(selectedWidget.value)
-  return et
-})
+  const et = widgetConfig.value?.config.eventTargets;
+  if (!et || !selectedWidget.value) return undefined;
+  if (typeof et === "function") return et(selectedWidget.value);
+  return et;
+});
 
 // ---- 属性列表项类型 ----
 
 // PropertyItem / PropertySection / propertySections 构建逻辑已抽到 usePropertySections composable
-import { usePropertySections } from '../../composables/usePropertySections'
-import { usePropertyPanelLogic } from '../../composables/usePropertyPanelLogic'
-import { usePropertyPanelDialogs } from '../../composables/usePropertyPanelDialogs'
+import { usePropertySections } from "../../composables/usePropertySections";
+import { usePropertyPanelLogic } from "../../composables/usePropertyPanelLogic";
+import { usePropertyPanelDialogs } from "../../composables/usePropertyPanelDialogs";
 
-const { propertySections } = usePropertySections(selectedWidget, panelDeclaration, t)
+const { propertySections } = usePropertySections(
+  selectedWidget,
+  panelDeclaration,
+  t,
+);
 
 // ---- visibleOn 条件求值 ----
 
-const { updateProperty, updateStylePatch, isItemVisible } = usePropertyPanelLogic(selectedWidget, widgetStore)
+const { updateProperty, updateStylePatch, isItemVisible } =
+  usePropertyPanelLogic(selectedWidget, widgetStore);
 
 // 过滤可见项的 section
 const visibleSections = computed(() =>
-  propertySections.value.map(section => ({
-    ...section,
-    items: section.items.filter(isItemVisible),
-  })).filter(section => section.items.length > 0),
-)
+  propertySections.value
+    .map((section) => ({
+      ...section,
+      items: section.items.filter(isItemVisible),
+    }))
+    .filter((section) => section.items.length > 0),
+);
 
 // ---- 手风琴展开状态 ----
 
-const expandedSections = ref<Set<string>>(new Set(['basic', 'position', 'style', 'props']))
+const expandedSections = ref<Set<string>>(
+  new Set(["basic", "position", "style", "props"]),
+);
 
 function toggleSection(key: string) {
   if (expandedSections.value.has(key)) {
-    expandedSections.value.delete(key)
+    expandedSections.value.delete(key);
   } else {
-    expandedSections.value.add(key)
+    expandedSections.value.add(key);
   }
 }
 
 // ---- configPanels 声明 ----
 
 const configPanels = computed<ConfigPanelType[]>(() => {
-  if (!widgetConfig.value) return []
-  return widgetConfig.value.config.configPanels ?? []
-})
+  if (!widgetConfig.value) return [];
+  return widgetConfig.value.config.configPanels ?? [];
+});
 
 /** 根据 configPanels 自动生成配置说明 */
-const configHelpText = computed(() => buildConfigHelpText(configPanels.value, t))
+const configHelpText = computed(() =>
+  buildConfigHelpText(configPanels.value, t),
+);
 
 // ---- 事件/规则/API/变量 弹框 ----
 
@@ -148,32 +161,42 @@ const {
   handleVariableSave,
   handleBoardVariableSave,
   handleChartLinkageSave,
-} = usePropertyPanelDialogs(selectedWidget, widgetStore, editorStore, boardStore)
+} = usePropertyPanelDialogs(
+  selectedWidget,
+  widgetStore,
+  editorStore,
+  boardStore,
+);
 
 // ---- 画布配置（未选中部件时显示） ----
 
-const canvasExpanded = ref(true)
+const canvasExpanded = ref(true);
 
 // boardPropertyItems 构建逻辑已抽到 useBoardPropertyItems composable
-import { useBoardPropertyItems } from '../../composables/useBoardPropertyItems'
-import { useBoardPropertyUpdater } from '../../composables/useBoardPropertyUpdater'
+import { useBoardPropertyItems } from "../../composables/useBoardPropertyItems";
+import { useBoardPropertyUpdater } from "../../composables/useBoardPropertyUpdater";
 
-const { boardPropertyItems } = useBoardPropertyItems(t)
+const { boardPropertyItems } = useBoardPropertyItems(t);
 
-const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
+const { updateBoardProperty } = useBoardPropertyUpdater(boardStore);
 </script>
 
 <template>
   <div :class="[styles.panel, 'editor-ui']">
-    <div :class="styles.header">{{ t('editor.property.title') }}</div>
+    <div :class="styles.header">{{ t("editor.property.title") }}</div>
 
     <!-- 未选中部件时：显示画布配置 -->
     <template v-if="!selectedWidget">
-      <div :class="styles.scroll" style="overflow: auto; height: 100%;">
+      <div :class="styles.scroll" style="overflow: auto; height: 100%">
         <div :class="styles.section">
-          <div :class="styles.sectionHeader" @click="canvasExpanded = !canvasExpanded">
+          <div
+            :class="styles.sectionHeader"
+            @click="canvasExpanded = !canvasExpanded"
+          >
             <AppIcon name="arrow-down" :size="12" :class="styles.arrow" />
-            <span :class="styles.sectionLabel">{{ t('editor.property.canvasConfig') }}</span>
+            <span :class="styles.sectionLabel">{{
+              t("editor.property.canvasConfig")
+            }}</span>
           </div>
           <div v-if="canvasExpanded" :class="styles.sectionBody">
             <PropertyField
@@ -187,8 +210,13 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
               @update="(v: unknown) => updateBoardProperty(item.key, v)"
             />
             <div :class="styles.variableBtn">
-              <el-button size="small" @click="boardVariableDialogVisible = true">
-                {{ t('editor.property.canvasVariables') }} ({{ boardStore.variables.length }})
+              <el-button
+                size="small"
+                @click="boardVariableDialogVisible = true"
+              >
+                {{ t("editor.property.canvasVariables") }} ({{
+                  boardStore.variables.length
+                }})
               </el-button>
             </div>
           </div>
@@ -206,10 +234,10 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
 
     <template v-else>
       <div :class="styles.widgetNameRow">
-        <span :class="styles.widgetType">{{ widgetConfig?.displayName }}</span>
+        <span :class="styles.widgetType">{{ widgetDisplayName }}</span>
         <el-popover
-          v-if="widgetConfig?.config.description"
-          :content="widgetConfig.config.description"
+          v-if="widgetDescription"
+          :content="widgetDescription"
           placement="top"
           :show-after="500"
           trigger="hover"
@@ -218,9 +246,19 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
             <AppIcon name="question-filled" :class="styles.questionIcon" />
           </template>
         </el-popover>
-        <el-popover v-if="selectedWidget" :content="t('editor.property.copyId')" placement="top" :show-after="500" trigger="hover">
+        <el-popover
+          v-if="selectedWidget"
+          :content="t('editor.property.copyId')"
+          placement="top"
+          :show-after="500"
+          trigger="hover"
+        >
           <template #reference>
-            <AppIcon name="copy-document" :class="styles.copyIdIcon" @click="copyWidgetId" />
+            <AppIcon
+              name="copy-document"
+              :class="styles.copyIdIcon"
+              @click="copyWidgetId"
+            />
           </template>
         </el-popover>
       </div>
@@ -287,4 +325,3 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore)
     </template>
   </div>
 </template>
-

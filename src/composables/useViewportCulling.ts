@@ -4,19 +4,20 @@
  * 自由布局画布使用绝对定位，通过视口矩形判断 widget 是否应渲染。
  * 剔除仅影响 DOM 渲染层，交互命中仍基于全量 widget 数据（EditorOverlay）。
  */
-import type { InjectionKey, Ref } from 'vue'
+import type { InjectionKey, Ref } from "vue";
 
 /** 画布坐标系下的可视矩形（含缓冲区） */
 export interface ViewportRect {
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
 }
 
-export const VIEWPORT_CULLING_KEY: InjectionKey<Ref<ViewportRect | null>> = Symbol('viewportCulling')
+export const VIEWPORT_CULLING_KEY: InjectionKey<Ref<ViewportRect | null>> =
+  Symbol("viewportCulling");
 
-const DEFAULT_BUFFER = 200
+const DEFAULT_BUFFER = 200;
 
 /**
  * 根据滚动容器状态计算画布坐标系可视矩形。
@@ -30,13 +31,13 @@ export function computeViewportRect(
   zoom: number,
   buffer = DEFAULT_BUFFER,
 ): ViewportRect {
-  const scale = zoom / 100
+  const scale = zoom / 100;
   return {
     minX: scrollLeft / scale - buffer,
     minY: scrollTop / scale - buffer,
     maxX: (scrollLeft + clientWidth) / scale + buffer,
     maxY: (scrollTop + clientHeight) / scale + buffer,
-  }
+  };
 }
 
 /** 矩形与视口是否相交 */
@@ -47,13 +48,13 @@ export function isRectInViewport(
   h: number,
   viewport: ViewportRect,
 ): boolean {
-  if (w <= 0 || h <= 0) return true
+  if (w <= 0 || h <= 0) return true;
   return (
-    x + w >= viewport.minX
-    && x <= viewport.maxX
-    && y + h >= viewport.minY
-    && y <= viewport.maxY
-  )
+    x + w >= viewport.minX &&
+    x <= viewport.maxX &&
+    y + h >= viewport.minY &&
+    y <= viewport.maxY
+  );
 }
 
 /** widget 在画布绝对坐标下是否可见 */
@@ -64,6 +65,6 @@ export function isWidgetVisibleInViewport(
   height: number,
   viewport: ViewportRect | null | undefined,
 ): boolean {
-  if (!viewport) return true
-  return isRectInViewport(canvasX, canvasY, width, height, viewport)
+  if (!viewport) return true;
+  return isRectInViewport(canvasX, canvasY, width, height, viewport);
 }

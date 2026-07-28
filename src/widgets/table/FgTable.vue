@@ -1,70 +1,86 @@
 <script setup lang="ts">
-import { inject, computed, reactive, watch, onMounted } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { useListData } from '../../composables/useListData'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import type { ListApiConfig } from '../../components/WidgetRenderer/types'
-import type { TableColumn, PaginationConfig, SelectionConfig } from './config'
+import { inject, computed, reactive, watch, onMounted } from "vue";
+import { widgetDataKey } from "../base/types";
+import { useListData } from "../../composables/useListData";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import type { ListApiConfig } from "../../components/WidgetRenderer/types";
+import type { TableColumn, PaginationConfig, SelectionConfig } from "./config";
 import {
   WIDGET_SURFACE_KEY,
   getTableRowsFromMock,
   shouldUseWidgetMock,
-} from '../base/widgetMock'
-import styles from './style.module.scss'
+} from "../base/widgetMock";
+import styles from "./style.module.scss";
 
-const widgetData = inject(widgetDataKey)!
-const surface = inject(WIDGET_SURFACE_KEY, 'runtime')
+const widgetData = inject(widgetDataKey)!;
+const surface = inject(WIDGET_SURFACE_KEY, "runtime");
 
 // ---- Schema config ----
 
-const columns = computed<TableColumn[]>(() =>
-  (widgetData.value.props?.columns as TableColumn[]) ?? [],
-)
+const columns = computed<TableColumn[]>(
+  () => (widgetData.value.props?.columns as TableColumn[]) ?? [],
+);
 
-const stripe = computed(() => (widgetData.value.props?.stripe as boolean) ?? true)
-const border = computed(() => (widgetData.value.props?.border as boolean) ?? true)
-const tableHeight = computed(() => (widgetData.value.props?.height as number) ?? 280)
-const globalSortable = computed(() => (widgetData.value.props?.sortable as boolean) ?? false)
+const stripe = computed(
+  () => (widgetData.value.props?.stripe as boolean) ?? true,
+);
+const border = computed(
+  () => (widgetData.value.props?.border as boolean) ?? true,
+);
+const tableHeight = computed(
+  () => (widgetData.value.props?.height as number) ?? 280,
+);
+const globalSortable = computed(
+  () => (widgetData.value.props?.sortable as boolean) ?? false,
+);
 
-const paginationConfig = computed<PaginationConfig>(() =>
-  (widgetData.value.props?.pagination as PaginationConfig) ?? { enabled: true, pageSize: 20, pageSizes: [10, 20, 50, 100] },
-)
+const paginationConfig = computed<PaginationConfig>(
+  () =>
+    (widgetData.value.props?.pagination as PaginationConfig) ?? {
+      enabled: true,
+      pageSize: 20,
+      pageSizes: [10, 20, 50, 100],
+    },
+);
 
-const selectionConfig = computed<SelectionConfig>(() =>
-  (widgetData.value.props?.selection as SelectionConfig) ?? { enabled: false },
-)
+const selectionConfig = computed<SelectionConfig>(
+  () =>
+    (widgetData.value.props?.selection as SelectionConfig) ?? {
+      enabled: false,
+    },
+);
 
 // ---- Build ListApiConfig from widget api or props ----
 
 function buildListApiConfig(): ListApiConfig {
-  const api = widgetData.value.api
+  const api = widgetData.value.api;
   if (api?.url) {
     return {
       url: api.url,
-      method: api.method ?? 'post',
+      method: api.method ?? "post",
       dataPath: api.dataPath,
       immediate: false,
-    }
+    };
   }
-  const props = widgetData.value.props
-  const apiUrl = props?.apiUrl as string
+  const props = widgetData.value.props;
+  const apiUrl = props?.apiUrl as string;
   if (apiUrl) {
     return {
       url: apiUrl,
-      method: ((props?.apiMethod as string) ?? 'get') as 'get' | 'post',
+      method: ((props?.apiMethod as string) ?? "get") as "get" | "post",
       dataPath: props?.responseDataPath as string,
       immediate: false,
-    }
+    };
   }
-  return { url: '', immediate: false }
+  return { url: "", immediate: false };
 }
 
-const listApiConfig = reactive<ListApiConfig>(buildListApiConfig())
+const listApiConfig = reactive<ListApiConfig>(buildListApiConfig());
 
 watch(
   () => [widgetData.value.api?.url, widgetData.value.props?.apiUrl],
   () => Object.assign(listApiConfig, buildListApiConfig()),
-)
+);
 
 // ---- useListData composable ----
 
@@ -87,66 +103,80 @@ const {
   pageSize: paginationConfig.value.pageSize,
   autoLoad: false,
   enableRetry: true,
-})
+});
 
 // Sync pageSize when pagination config changes
 watch(
   () => paginationConfig.value.pageSize,
-  (newSize) => { pageSize.value = newSize },
-)
+  (newSize) => {
+    pageSize.value = newSize;
+  },
+);
 
 // ---- Expose widget state ----
 
 useExposeWidget(() => ({
-  get loading() { return loading.value },
-  get tableData() { return tableData.value },
-  get selectedRows() { return selectedRows.value },
-}))
+  get loading() {
+    return loading.value;
+  },
+  get tableData() {
+    return tableData.value;
+  },
+  get selectedRows() {
+    return selectedRows.value;
+  },
+}));
 
 // ---- Sort change wrapper (table order can be null) ----
 
-function onSortChange({ prop, order }: { prop: string; order: 'ascending' | 'descending' | null }) {
-  handleSortChange({ prop, order: order ?? '' })
+function onSortChange({
+  prop,
+  order,
+}: {
+  prop: string;
+  order: "ascending" | "descending" | null;
+}) {
+  handleSortChange({ prop, order: order ?? "" });
 }
 
 // ---- Default client-side filter method ----
 
 function defaultFilterMethod(prop: string) {
-  return (value: unknown, row: Record<string, unknown>) => row[prop] === value
+  return (value: unknown, row: Record<string, unknown>) => row[prop] === value;
 }
 
 // ---- Auto-load on mount ----
 
 function applyEditorMockIfNeeded() {
-  const hasApi = !!listApiConfig.url
-  if (!shouldUseWidgetMock(surface, hasApi)) return
-  const mock = getTableRowsFromMock('table')
-  if (!mock) return
-  tableData.value = mock.rows
-  total.value = mock.total
+  const hasApi = !!listApiConfig.url;
+  if (!shouldUseWidgetMock(surface, hasApi)) return;
+  const mock = getTableRowsFromMock("table");
+  if (!mock) return;
+  tableData.value = mock.rows;
+  total.value = mock.total;
 }
 
 onMounted(() => {
   if (listApiConfig.url) {
-    fetchData()
+    fetchData();
   } else {
-    applyEditorMockIfNeeded()
+    applyEditorMockIfNeeded();
   }
-})
+});
 
 // ---- Watch API URL changes ----
 
 watch(
   () => listApiConfig.url,
   (url) => {
-    if (url) fetchData()
+    if (url) fetchData();
     else {
-      tableData.value = []
-      total.value = 0
-      applyEditorMockIfNeeded()
+      tableData.value = [];
+      total.value = 0;
+      applyEditorMockIfNeeded();
     }
   },
-)
+);
 
 // ---- defineExpose for programmatic access ----
 
@@ -154,7 +184,7 @@ defineExpose({
   refresh: fetchData,
   setSearchParams,
   clearSelection,
-})
+});
 </script>
 
 <template>
@@ -187,9 +217,19 @@ defineExpose({
         :width="col.width === 'auto' ? undefined : col.width"
         :min-width="col.minWidth"
         :fixed="col.fixed"
-        :sortable="col.sortable !== undefined ? col.sortable : (globalSortable ? 'custom' : false)"
+        :sortable="
+          col.sortable !== undefined
+            ? col.sortable
+            : globalSortable
+              ? 'custom'
+              : false
+        "
         :filters="col.filters"
-        :filter-method="col.filters ? (col.filterMethod ?? defaultFilterMethod(col.prop)) : undefined"
+        :filter-method="
+          col.filters
+            ? (col.filterMethod ?? defaultFilterMethod(col.prop))
+            : undefined
+        "
       />
     </el-table>
 

@@ -8,32 +8,32 @@
  * - json type emits null on empty input
  * - staticData array-editor renders correctly in PropertyPanel for chart widgets
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
-import { createPinia, setActivePinia } from 'pinia'
-import PropertyField from '@/components/Editor/PropertyField.vue'
-import PropertyPanel from '@/components/Editor/PropertyPanel.vue'
-import editorZhCN from '@/locales/editor-zh-CN'
-import { useEditorStore } from '@/stores/editor'
-import { useWidgetStore } from '@/stores/widget'
-import { registerWidget } from '@/widgets/registry'
-import type { Widget } from '@/widgets/base/types'
-import type { Component } from 'vue'
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
+import { createPinia, setActivePinia } from "pinia";
+import PropertyField from "@/components/Editor/PropertyField.vue";
+import PropertyPanel from "@/components/Editor/PropertyPanel.vue";
+import editorZhCN from "@/locales/editor-zh-CN";
+import { useEditorStore } from "@/stores/editor";
+import { useWidgetStore } from "@/stores/widget";
+import { registerWidget } from "@/widgets/registry";
+import type { Widget } from "@/widgets/base/types";
+import type { Component } from "vue";
 
 // PropertyPanel 使用 useI18n；测试环境用本地 locale 包构造 t（见 PropertyPanel.spec.ts 同款 mock）
-const messages = editorZhCN as unknown as Record<string, unknown>
+const messages = editorZhCN as unknown as Record<string, unknown>;
 function lookup(obj: Record<string, unknown>, path: string): string {
-  const parts = path.split('.')
-  let cur: unknown = obj
+  const parts = path.split(".");
+  let cur: unknown = obj;
   for (const p of parts) {
-    cur = (cur as Record<string, unknown>)?.[p]
+    cur = (cur as Record<string, unknown>)?.[p];
   }
-  return typeof cur === 'string' ? cur : path
+  return typeof cur === "string" ? cur : path;
 }
-vi.mock('@schema-platform/platform-shared', () => ({
+vi.mock("@schema-platform/platform-shared", () => ({
   useI18n: () => ({ t: (key: string) => lookup(messages, key) }),
-}))
+}));
 
 // ---- Stub Element Plus components ----
 
@@ -42,291 +42,376 @@ const elInputStub = {
     <input v-if="type !== 'textarea'" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" />
     <textarea v-else :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" @focus="$emit('focus')" @blur="$emit('blur')" />
   </div>`,
-  props: ['modelValue', 'size', 'placeholder', 'disabled', 'type', 'rows', 'readonly'],
-  emits: ['update:modelValue', 'focus', 'blur'],
-}
+  props: [
+    "modelValue",
+    "size",
+    "placeholder",
+    "disabled",
+    "type",
+    "rows",
+    "readonly",
+  ],
+  emits: ["update:modelValue", "focus", "blur"],
+};
 
 const elInputNumberStub = {
-  template: '<input type="number" :value="modelValue" @input="$emit(\'update:modelValue\', Number($event.target.value))" />',
-  props: ['modelValue', 'min', 'max', 'size', 'controlsPosition', 'controls-position'],
-  emits: ['update:modelValue'],
-}
+  template:
+    '<input type="number" :value="modelValue" @input="$emit(\'update:modelValue\', Number($event.target.value))" />',
+  props: [
+    "modelValue",
+    "min",
+    "max",
+    "size",
+    "controlsPosition",
+    "controls-position",
+  ],
+  emits: ["update:modelValue"],
+};
 
 const elSwitchStub = {
-  template: '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />',
-  props: ['modelValue'],
-  emits: ['update:modelValue'],
-}
+  template:
+    '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />',
+  props: ["modelValue"],
+  emits: ["update:modelValue"],
+};
 
 const elSelectStub = {
-  template: '<select :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
-  props: ['modelValue', 'size', 'style'],
-  emits: ['update:modelValue'],
-}
+  template:
+    '<select :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
+  props: ["modelValue", "size", "style"],
+  emits: ["update:modelValue"],
+};
 
 const elOptionStub = {
   template: '<option :value="value"><slot>{{ label }}</slot></option>',
-  props: ['label', 'value'],
-}
+  props: ["label", "value"],
+};
 
 const elColorPickerStub = {
-  template: '<input type="color" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-  props: ['modelValue', 'size', 'showAlpha', 'show-alpha'],
-  emits: ['update:modelValue'],
-}
+  template:
+    '<input type="color" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+  props: ["modelValue", "size", "showAlpha", "show-alpha"],
+  emits: ["update:modelValue"],
+};
 
 const elButtonStub = {
-  template: '<button @click="$emit(\'click\')"><slot /></button>',
-  props: ['size', 'plain', 'type', 'text', 'disabled'],
-  emits: ['click'],
-}
+  template: "<button @click=\"$emit('click')\"><slot /></button>",
+  props: ["size", "plain", "type", "text", "disabled"],
+  emits: ["click"],
+};
 
 const elTooltipStub = {
-  template: '<span><slot /></span>',
-  props: ['content', 'placement', 'showAfter', 'show-after', 'disabled'],
-}
+  template: "<span><slot /></span>",
+  props: ["content", "placement", "showAfter", "show-after", "disabled"],
+};
 
 const AppIconStub = {
-  template: '<span><slot /></span>',
-  props: ['name', 'size'],
-}
+  template: "<span><slot /></span>",
+  props: ["name", "size"],
+};
 
 const stubs = {
-  'el-input': elInputStub,
-  'el-input-number': elInputNumberStub,
-  'el-switch': elSwitchStub,
-  'el-select': elSelectStub,
-  'el-option': elOptionStub,
-  'el-color-picker': elColorPickerStub,
-  'el-button': elButtonStub,
-  'el-tooltip': elTooltipStub,
+  "el-input": elInputStub,
+  "el-input-number": elInputNumberStub,
+  "el-switch": elSwitchStub,
+  "el-select": elSelectStub,
+  "el-option": elOptionStub,
+  "el-color-picker": elColorPickerStub,
+  "el-button": elButtonStub,
+  "el-tooltip": elTooltipStub,
   AppIcon: AppIconStub,
-}
+};
 
 // ---- Test widget factory ----
 
-const stubComponent: Component = { template: '<div />' }
+const stubComponent: Component = { template: "<div />" };
 
 function createBarChartWidget(overrides: Partial<Widget> = {}): Widget {
   return {
-    id: 'bar-chart_test1',
-    name: 'FgBarChart',
-    type: 'bar-chart',
-    label: '柱状图',
+    id: "bar-chart_test1",
+    name: "FgBarChart",
+    type: "bar-chart",
+    label: "柱状图",
     position: { x: 0, y: 0, w: 400, h: 400, zIndex: 1 },
     style: {},
     props: {
       staticData: [
-        { category: '1月', value: 120 },
-        { category: '2月', value: 200 },
+        { category: "1月", value: 120 },
+        { category: "2月", value: 200 },
       ],
-      xField: 'category',
-      yField: 'value',
-      title: '测试图表',
+      xField: "category",
+      yField: "value",
+      title: "测试图表",
       showLegend: true,
       showLabel: false,
-      colorScheme: 'default',
+      colorScheme: "default",
       stack: false,
       horizontal: false,
       rawOption: null,
     },
     options: [],
     events: [],
-    rules: [],
     validationRules: [],
     ...overrides,
-  }
+  };
 }
 
 function registerBarChartWidget() {
   registerWidget({
-    name: 'FgBarChart',
-    displayName: '柱状图',
-    type: 'bar-chart',
-    group: 'chart',
+    name: "FgBarChart",
+    displayName: "柱状图",
+    type: "bar-chart",
+    group: "chart",
     component: stubComponent,
     create: (id: string) => createBarChartWidget({ id }),
     config: {
-      name: 'FgBarChart',
-      displayName: '柱状图',
-      description: '柱状图组件',
-      configPanels: ['api', 'variables'],
+      name: "FgBarChart",
+      displayName: "柱状图",
+      description: "柱状图组件",
+      configPanels: ["api", "variables"],
       propertyPanel: {
-        basic: ['label'],
-        style: ['margin', 'padding', 'backgroundColor', 'borderRadius'],
+        basic: ["label"],
+        style: ["margin", "padding", "backgroundColor", "borderRadius"],
         props: [
-          { key: 'staticData', label: '静态数据', type: 'array-editor', fields: [
-            { key: 'category', label: '分类', type: 'text' },
-            { key: 'value', label: '值', type: 'number' },
-          ]},
-          { key: 'title', label: '图表标题', type: 'input' },
-          { key: 'showLegend', label: '显示图例', type: 'switch', default: true },
-          { key: 'rawOption', label: '高级配置 (JSON)', type: 'json' },
+          {
+            key: "staticData",
+            label: "静态数据",
+            type: "array-editor",
+            fields: [
+              { key: "category", label: "分类", type: "text" },
+              { key: "value", label: "值", type: "number" },
+            ],
+          },
+          { key: "title", label: "图表标题", type: "input" },
+          {
+            key: "showLegend",
+            label: "显示图例",
+            type: "switch",
+            default: true,
+          },
+          { key: "rawOption", label: "高级配置 (JSON)", type: "json" },
         ],
       },
     },
-  })
+  });
 }
 
 // ---- Tests ----
 
-describe('PropertyField - json type', () => {
-  it('renders a textarea for json type', () => {
+describe("PropertyField - json type", () => {
+  it("renders a textarea for json type", () => {
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: { foo: 'bar' } },
+      props: { label: "配置", type: "json", value: { foo: "bar" } },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    expect(textarea.exists()).toBe(true)
-    expect(textarea.element.value).toContain('"foo"')
-  })
+    });
+    const textarea = wrapper.find("textarea");
+    expect(textarea.exists()).toBe(true);
+    expect(textarea.element.value).toContain('"foo"');
+  });
 
-  it('displays formatted JSON in textarea', () => {
-    const data = { key: 'value', num: 42 }
+  it("displays formatted JSON in textarea", () => {
+    const data = { key: "value", num: 42 };
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: data },
+      props: { label: "配置", type: "json", value: data },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    expect(textarea.element.value).toBe(JSON.stringify(data, null, 2))
-  })
+    });
+    const textarea = wrapper.find("textarea");
+    expect(textarea.element.value).toBe(JSON.stringify(data, null, 2));
+  });
 
-  it('shows empty textarea when value is null', () => {
+  it("shows empty textarea when value is null", () => {
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: null },
+      props: { label: "配置", type: "json", value: null },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    expect(textarea.element.value).toBe('')
-  })
+    });
+    const textarea = wrapper.find("textarea");
+    expect(textarea.element.value).toBe("");
+  });
 
-  it('emits parsed JSON object on blur with valid JSON', async () => {
+  it("emits parsed JSON object on blur with valid JSON", async () => {
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: null },
+      props: { label: "配置", type: "json", value: null },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    await textarea.setValue('{"a": 1, "b": "test"}')
-    await textarea.trigger('blur')
-    await nextTick()
+    });
+    const textarea = wrapper.find("textarea");
+    await textarea.setValue('{"a": 1, "b": "test"}');
+    await textarea.trigger("blur");
+    await nextTick();
 
-    expect(wrapper.emitted('update')).toBeTruthy()
-    expect(wrapper.emitted('update')![0][0]).toEqual({ a: 1, b: 'test' })
-  })
+    expect(wrapper.emitted("update")).toBeTruthy();
+    expect(wrapper.emitted("update")![0][0]).toEqual({ a: 1, b: "test" });
+  });
 
-  it('shows error message on blur with invalid JSON', async () => {
+  it("shows error message on blur with invalid JSON", async () => {
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: null },
+      props: { label: "配置", type: "json", value: null },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    await textarea.setValue('{invalid json}')
-    await textarea.trigger('blur')
-    await nextTick()
+    });
+    const textarea = wrapper.find("textarea");
+    await textarea.setValue("{invalid json}");
+    await textarea.trigger("blur");
+    await nextTick();
 
-    expect(wrapper.text()).toContain('JSON 格式不正确')
-    expect(wrapper.emitted('update')).toBeFalsy()
-  })
+    expect(wrapper.text()).toContain("JSON 格式不正确");
+    expect(wrapper.emitted("update")).toBeFalsy();
+  });
 
-  it('emits null on blur with empty textarea', async () => {
+  it("emits null on blur with empty textarea", async () => {
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: { foo: 'bar' } },
+      props: { label: "配置", type: "json", value: { foo: "bar" } },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    await textarea.setValue('')
-    await textarea.trigger('blur')
-    await nextTick()
+    });
+    const textarea = wrapper.find("textarea");
+    await textarea.setValue("");
+    await textarea.trigger("blur");
+    await nextTick();
 
-    expect(wrapper.emitted('update')).toBeTruthy()
-    expect(wrapper.emitted('update')![0][0]).toBeNull()
-  })
+    expect(wrapper.emitted("update")).toBeTruthy();
+    expect(wrapper.emitted("update")![0][0]).toBeNull();
+  });
 
-  it('clears error on focus after invalid input', async () => {
+  it("clears error on focus after invalid input", async () => {
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: null },
+      props: { label: "配置", type: "json", value: null },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    await textarea.setValue('{bad}')
-    await textarea.trigger('blur')
-    await nextTick()
-    expect(wrapper.text()).toContain('JSON 格式不正确')
+    });
+    const textarea = wrapper.find("textarea");
+    await textarea.setValue("{bad}");
+    await textarea.trigger("blur");
+    await nextTick();
+    expect(wrapper.text()).toContain("JSON 格式不正确");
 
-    await textarea.trigger('focus')
-    await nextTick()
-    expect(wrapper.text()).not.toContain('JSON 格式不正确')
-  })
+    await textarea.trigger("focus");
+    await nextTick();
+    expect(wrapper.text()).not.toContain("JSON 格式不正确");
+  });
 
-  it('emits parsed array on valid JSON array input', async () => {
+  it("emits parsed array on valid JSON array input", async () => {
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: null },
+      props: { label: "配置", type: "json", value: null },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    await textarea.setValue('[1, 2, 3]')
-    await textarea.trigger('blur')
-    await nextTick()
+    });
+    const textarea = wrapper.find("textarea");
+    await textarea.setValue("[1, 2, 3]");
+    await textarea.trigger("blur");
+    await nextTick();
 
-    expect(wrapper.emitted('update')![0][0]).toEqual([1, 2, 3])
-  })
+    expect(wrapper.emitted("update")![0][0]).toEqual([1, 2, 3]);
+  });
 
-  it('syncs textarea when value prop changes externally', async () => {
+  it("syncs textarea when value prop changes externally", async () => {
     const wrapper = mount(PropertyField, {
-      props: { label: '配置', type: 'json', value: { a: 1 } },
+      props: { label: "配置", type: "json", value: { a: 1 } },
       global: { stubs },
-    })
-    const textarea = wrapper.find('textarea')
-    expect(textarea.element.value).toContain('"a"')
+    });
+    const textarea = wrapper.find("textarea");
+    expect(textarea.element.value).toContain('"a"');
 
-    await wrapper.setProps({ value: { b: 2 } })
-    await nextTick()
-    expect(textarea.element.value).toContain('"b"')
-  })
-})
+    await wrapper.setProps({ value: { b: 2 } });
+    await nextTick();
+    expect(textarea.element.value).toContain('"b"');
+  });
+});
 
-describe('PropertyPanel - chart staticData array-editor', () => {
-  let editorStore: ReturnType<typeof useEditorStore>
-  let widgetStore: ReturnType<typeof useWidgetStore>
+describe("PropertyPanel - chart staticData array-editor", () => {
+  let editorStore: ReturnType<typeof useEditorStore>;
+  let widgetStore: ReturnType<typeof useWidgetStore>;
 
   beforeEach(() => {
-    setActivePinia(createPinia())
-    editorStore = useEditorStore()
-    widgetStore = useWidgetStore()
-    registerBarChartWidget()
-  })
+    setActivePinia(createPinia());
+    editorStore = useEditorStore();
+    widgetStore = useWidgetStore();
+    registerBarChartWidget();
+  });
 
-  it('renders staticData array-editor for bar-chart widget', () => {
-    widgetStore.addWidget(createBarChartWidget())
-    editorStore.select('bar-chart_test1')
-
-    const wrapper = mount(PropertyPanel, {
-      global: { stubs: { ...stubs, EventConfigDialog: { template: '<div />', props: ['visible', 'events'], emits: ['update:visible', 'save'] }, VariableConfigDialog: { template: '<div />', props: ['visible', 'variables', 'title'], emits: ['update:visible', 'save'] }, OptionsApiConfigDialog: { template: '<div />', props: ['visible', 'api'], emits: ['update:visible', 'save'] } } },
-    })
-    expect(wrapper.text()).toContain('静态数据')
-  })
-
-  it('renders staticData with existing data items', () => {
-    widgetStore.addWidget(createBarChartWidget())
-    editorStore.select('bar-chart_test1')
+  it("renders staticData array-editor for bar-chart widget", () => {
+    widgetStore.addWidget(createBarChartWidget());
+    editorStore.select("bar-chart_test1");
 
     const wrapper = mount(PropertyPanel, {
-      global: { stubs: { ...stubs, EventConfigDialog: { template: '<div />', props: ['visible', 'events'], emits: ['update:visible', 'save'] }, VariableConfigDialog: { template: '<div />', props: ['visible', 'variables', 'title'], emits: ['update:visible', 'save'] }, OptionsApiConfigDialog: { template: '<div />', props: ['visible', 'api'], emits: ['update:visible', 'save'] } } },
-    })
+      global: {
+        stubs: {
+          ...stubs,
+          EventConfigDialog: {
+            template: "<div />",
+            props: ["visible", "events"],
+            emits: ["update:visible", "save"],
+          },
+          VariableConfigDialog: {
+            template: "<div />",
+            props: ["visible", "variables", "title"],
+            emits: ["update:visible", "save"],
+          },
+          OptionsApiConfigDialog: {
+            template: "<div />",
+            props: ["visible", "api"],
+            emits: ["update:visible", "save"],
+          },
+        },
+      },
+    });
+    expect(wrapper.text()).toContain("静态数据");
+  });
+
+  it("renders staticData with existing data items", () => {
+    widgetStore.addWidget(createBarChartWidget());
+    editorStore.select("bar-chart_test1");
+
+    const wrapper = mount(PropertyPanel, {
+      global: {
+        stubs: {
+          ...stubs,
+          EventConfigDialog: {
+            template: "<div />",
+            props: ["visible", "events"],
+            emits: ["update:visible", "save"],
+          },
+          VariableConfigDialog: {
+            template: "<div />",
+            props: ["visible", "variables", "title"],
+            emits: ["update:visible", "save"],
+          },
+          OptionsApiConfigDialog: {
+            template: "<div />",
+            props: ["visible", "api"],
+            emits: ["update:visible", "save"],
+          },
+        },
+      },
+    });
     // Should show array items with category/value fields
-    expect(wrapper.text()).toContain('分类')
-    expect(wrapper.text()).toContain('值')
-  })
+    expect(wrapper.text()).toContain("分类");
+    expect(wrapper.text()).toContain("值");
+  });
 
-  it('renders rawOption as json textarea for chart widget', () => {
-    widgetStore.addWidget(createBarChartWidget())
-    editorStore.select('bar-chart_test1')
+  it("renders rawOption as json textarea for chart widget", () => {
+    widgetStore.addWidget(createBarChartWidget());
+    editorStore.select("bar-chart_test1");
 
     const wrapper = mount(PropertyPanel, {
-      global: { stubs: { ...stubs, EventConfigDialog: { template: '<div />', props: ['visible', 'events'], emits: ['update:visible', 'save'] }, VariableConfigDialog: { template: '<div />', props: ['visible', 'variables', 'title'], emits: ['update:visible', 'save'] }, OptionsApiConfigDialog: { template: '<div />', props: ['visible', 'api'], emits: ['update:visible', 'save'] } } },
-    })
+      global: {
+        stubs: {
+          ...stubs,
+          EventConfigDialog: {
+            template: "<div />",
+            props: ["visible", "events"],
+            emits: ["update:visible", "save"],
+          },
+          VariableConfigDialog: {
+            template: "<div />",
+            props: ["visible", "variables", "title"],
+            emits: ["update:visible", "save"],
+          },
+          OptionsApiConfigDialog: {
+            template: "<div />",
+            props: ["visible", "api"],
+            emits: ["update:visible", "save"],
+          },
+        },
+      },
+    });
     // rawOption should render as a textarea
-    const textarea = wrapper.find('textarea')
-    expect(textarea.exists()).toBe(true)
-  })
-})
+    const textarea = wrapper.find("textarea");
+    expect(textarea.exists()).toBe(true);
+  });
+});

@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue'
-import { widgetDataKey } from '../base/types'
-import './FgTimePicker.module.scss'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
+import { inject } from "vue";
+import { widgetDataKey } from "../base/types";
+import "./FgTimePicker.module.scss";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
 
-import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
 
-const widgetData = inject(widgetDataKey)!
-const { isDisabled } = useWidgetRenderState()
-const { controlStyle: dynamicStyle } = useWidgetControlSize(32)
+const widgetData = inject(widgetDataKey)!;
+const { isDisabled } = useWidgetRenderState();
+const { controlStyle: dynamicStyle } = useWidgetControlSize(32);
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 </script>
 
 <template>
@@ -29,4 +31,3 @@ useExposeWidget((wd) => ({
     :arrow-control="(widgetData.props?.arrowControl as boolean) || false"
   />
 </template>
-

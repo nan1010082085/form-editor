@@ -4,45 +4,45 @@
  *
  * 写入 widget.chartLinkages，运行时由 useChartLinkage 消费。
  */
-import { ref, watch, computed } from 'vue'
-import type { ChartLinkageRule, Widget } from '@/widgets/base/types'
-import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
-import ChartLinkageConfig from './ChartLinkageConfig.vue'
-import { useWidgetStore } from '@/stores/widget'
+import { ref, watch, computed } from "vue";
+import type { ChartLinkageRule, Widget } from "@/widgets/base/types";
+import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
+import ChartLinkageConfig from "./ChartLinkageConfig.vue";
+import { useWidgetStore } from "@/stores/widget";
 
 const props = defineProps<{
-  visible: boolean
-  sourceWidgetId: string
-  chartLinkages: ChartLinkageRule[]
-}>()
+  visible: boolean;
+  sourceWidgetId: string;
+  chartLinkages: ChartLinkageRule[];
+}>();
 
 const emit = defineEmits<{
-  'update:visible': [val: boolean]
-  save: [rules: ChartLinkageRule[]]
-}>()
+  "update:visible": [val: boolean];
+  save: [rules: ChartLinkageRule[]];
+}>();
 
-const widgetStore = useWidgetStore()
+const widgetStore = useWidgetStore();
 
-const allWidgets = computed<Widget[]>(() => widgetStore.widgets)
+const allWidgets = computed<Widget[]>(() => widgetStore.widgets);
 
-const localRules = ref<ChartLinkageRule[]>([])
+const localRules = ref<ChartLinkageRule[]>([]);
 
 watch(
   () => props.visible,
   (open) => {
     if (open) {
-      localRules.value = JSON.parse(JSON.stringify(props.chartLinkages ?? []))
+      localRules.value = JSON.parse(JSON.stringify(props.chartLinkages ?? []));
     }
   },
-)
+);
 
 function handleSave() {
-  emit('save', localRules.value)
-  emit('update:visible', false)
+  emit("save", localRules.value);
+  emit("update:visible", false);
 }
 
 function handleClose() {
-  emit('update:visible', false)
+  emit("update:visible", false);
 }
 </script>
 

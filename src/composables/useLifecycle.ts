@@ -13,21 +13,21 @@
  * 3. 初始化阶段通过 isInitialized flag 跳过 onFieldChange
  * 4. 所有钩子异常捕获并 console.error，不阻塞表单主流程
  */
-import { onMounted, onUnmounted, watch, ref } from 'vue'
+import { onMounted, onUnmounted, watch, ref } from "vue";
 import type {
   FormLifecycleConfig,
   FormData,
-} from '@/components/WidgetRenderer/types'
-import { useLogger } from '@/composables/useLogger'
+} from "@/components/WidgetRenderer/types";
+import { useLogger } from "@/composables/useLogger";
 
-const logger = useLogger('Lifecycle')
+const logger = useLogger("Lifecycle");
 
 /** 生命周期钩子执行结果 */
 export interface UseLifecycleReturn {
   /** 执行 onBeforeSubmit 钩子，返回 false 可阻止提交 */
-  executeBeforeSubmit: () => Promise<boolean>
+  executeBeforeSubmit: () => Promise<boolean>;
   /** 执行 onAfterLoad 钩子（loadApi 回填完成后调用） */
-  executeAfterLoad: (data: FormData) => Promise<void>
+  executeAfterLoad: (data: FormData) => Promise<void>;
 }
 
 /**
@@ -39,10 +39,10 @@ function compileExpression<T extends (...args: unknown[]) => unknown>(
   paramNames: string[],
 ): T {
   try {
-    return new Function(...paramNames, `"use strict"; ${expression}`) as T
+    return new Function(...paramNames, `"use strict"; ${expression}`) as T;
   } catch {
-    logger.error(`表达式编译失败: "${expression}"`)
-    return ((() => {}) as unknown) as T
+    logger.error(`表达式编译失败: "${expression}"`);
+    return (() => {}) as unknown as T;
   }
 }
 
@@ -59,19 +59,19 @@ async function executeHook<R = void>(
   args: unknown[],
   paramNames: string[],
 ): Promise<R | undefined> {
-  if (!hook) return undefined
+  if (!hook) return undefined;
 
   try {
-    let fn: (...args: unknown[]) => R | Promise<R>
-    if (typeof hook === 'function') {
-      fn = hook
+    let fn: (...args: unknown[]) => R | Promise<R>;
+    if (typeof hook === "function") {
+      fn = hook;
     } else {
-      fn = compileExpression<typeof fn>(hook, paramNames)
+      fn = compileExpression<typeof fn>(hook, paramNames);
     }
-    return await fn(...args)
+    return await fn(...args);
   } catch (err) {
-    logger.error('钩子执行异常:', err)
-    return undefined
+    logger.error("钩子执行异常:", err);
+    return undefined;
   }
 }
 
@@ -87,84 +87,103 @@ export function useLifecycle(
   formData: FormData,
 ): UseLifecycleReturn {
   // 初始化标记：onMounted 完成前的 watch 不触发 onFieldChange
-  const isInitialized = ref(false)
+  const isInitialized = ref(false);
 
   // ---- onFormMount: 挂载后触发一次 ----
   onMounted(async () => {
     if (lifecycle?.onFormMount) {
-      await executeHook(lifecycle.onFormMount as ((...args: unknown[]) => unknown) | string | undefined, [formData], ['formData'])
+      await executeHook(
+        lifecycle.onFormMount as
+          | ((...args: unknown[]) => unknown)
+          | string
+          | undefined,
+        [formData],
+        ["formData"],
+      );
     }
     // 标记初始化完成，后续字段变化才触发 onFieldChange
-    isInitialized.value = true
-  })
+    isInitialized.value = true;
+  });
 
   // ---- onFieldChange: 深度监听 formData，300ms 防抖 ----
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   if (lifecycle?.onFieldChange) {
     watch(
       () => formData,
       (newData, oldData) => {
         // 初始化阶段跳过
-        if (!isInitialized.value) return
+        if (!isInitialized.value) return;
 
         // 找出变化的字段
         const allKeys = new Set([
           ...Object.keys(newData),
           ...(oldData ? Object.keys(oldData) : []),
-        ])
+        ]);
 
         for (const key of allKeys) {
           if (newData[key] !== oldData?.[key]) {
             // 防抖：清除上一个定时器，设置新的 300ms 延迟
             if (debounceTimer) {
-              clearTimeout(debounceTimer)
+              clearTimeout(debounceTimer);
             }
             debounceTimer = setTimeout(() => {
               executeHook(
-                lifecycle.onFieldChange! as ((...args: unknown[]) => unknown) | string,
+                lifecycle.onFieldChange! as
+                  | ((...args: unknown[]) => unknown)
+                  | string,
                 [key, newData[key], newData],
-                ['field', 'value', 'formData'],
-              )
-            }, 300)
+                ["field", "value", "formData"],
+              );
+            }, 300);
             // 只触发一次（取第一个变化的字段），防抖合并后续变化
-            break
+            break;
           }
         }
       },
       { deep: true },
-    )
+    );
   }
 
   // ---- 组件卸载时清理防抖定时器 ----
   onUnmounted(() => {
     if (debounceTimer) {
-      clearTimeout(debounceTimer)
-      debounceTimer = null
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
     }
-  })
+  });
 
   // ---- onBeforeSubmit: 提交前校验 ----
   async function executeBeforeSubmit(): Promise<boolean> {
-    if (!lifecycle?.onBeforeSubmit) return true
+    if (!lifecycle?.onBeforeSubmit) return true;
     const result = await executeHook<boolean>(
-      lifecycle.onBeforeSubmit as ((...args: unknown[]) => boolean | Promise<boolean>) | string | undefined,
+      lifecycle.onBeforeSubmit as
+        | ((...args: unknown[]) => boolean | Promise<boolean>)
+        | string
+        | undefined,
       [formData],
-      ['formData'],
-    )
+      ["formData"],
+    );
     // 未定义或异常时默认允许提交
-    return result !== false
+    return result !== false;
   }
 
   // ---- onAfterLoad: 数据回填完成后 ----
   async function executeAfterLoad(data: FormData): Promise<void> {
     if (lifecycle?.onAfterLoad) {
-      await executeHook(lifecycle.onAfterLoad as ((...args: unknown[]) => unknown) | string | undefined, [data], ['formData'])
+      await executeHook(
+        lifecycle.onAfterLoad as
+          | ((...args: unknown[]) => unknown)
+          | string
+          | undefined,
+        [data],
+        ["formData"],
+      );
     }
   }
 
   return {
     executeBeforeSubmit,
     executeAfterLoad,
-  }
+  };
 }

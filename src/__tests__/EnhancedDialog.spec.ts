@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
-import EnhancedDialog from '@/components/EnhancedDialog.vue'
+import { describe, it, expect, afterEach } from "vitest";
+import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
+import EnhancedDialog from "@/components/EnhancedDialog.vue";
 
 // Stub TDesign components used by EnhancedDialog
 const tDialogStub = {
@@ -12,78 +12,88 @@ const tDialogStub = {
       <div class="t-dialog__footer"><slot name="footer" /></div>
     </div>
   </div>`,
-  props: ['visible', 'header', 'width', 'destroyOnClose', 'destroyOnClose:close', 'closeOnOverlayClick', 'closeBtn', 'attach', 'style'],
-  emits: ['close'],
-}
+  props: [
+    "visible",
+    "header",
+    "width",
+    "destroyOnClose",
+    "destroyOnClose:close",
+    "closeOnOverlayClick",
+    "closeBtn",
+    "attach",
+    "style",
+  ],
+  emits: ["close"],
+};
 
 const tPopupStub = {
   template: '<span><slot /><slot name="content" /></span>',
-  props: ['placement', 'overlayInnerStyle', 'trigger'],
-}
+  props: ["placement", "overlayInnerStyle", "trigger"],
+};
 
 // Stub TDesign icons
 const iconStub = {
-  template: '<span />',
-}
+  template: "<span />",
+};
 
 const stubs = {
-  't-dialog': tDialogStub,
-  't-popup': tPopupStub,
+  "t-dialog": tDialogStub,
+  "t-popup": tPopupStub,
   FullscreenIcon: iconStub,
   FullscreenExitIcon: iconStub,
   CloseIcon: iconStub,
   HelpCircleFilledIcon: iconStub,
   AppIcon: iconStub,
-}
+};
 
-describe('EnhancedDialog', () => {
+describe("EnhancedDialog", () => {
   afterEach(() => {
-    document.body.innerHTML = ''
-  })
+    document.body.innerHTML = "";
+  });
 
-  it('renders el-dialog', async () => {
+  it("renders el-dialog", async () => {
     const wrapper = mount(EnhancedDialog, {
-      props: { modelValue: true, title: 'Test' },
+      props: { modelValue: true, title: "Test" },
       global: { stubs },
-    })
-    await nextTick()
-    expect(wrapper.find('.t-dialog').exists()).toBe(true)
-    wrapper.unmount()
-  })
+    });
+    await nextTick();
+    expect(wrapper.find(".t-dialog").exists()).toBe(true);
+    wrapper.unmount();
+  });
 
-  it('shows fullscreen button by default', async () => {
+  it("shows fullscreen button by default", async () => {
     const wrapper = mount(EnhancedDialog, {
-      props: { modelValue: true, title: 'Test' },
+      props: { modelValue: true, title: "Test" },
       global: { stubs },
-    })
-    await nextTick()
-    expect(wrapper.find('[data-testid="fullscreen-btn"]').exists()).toBe(true)
-    wrapper.unmount()
-  })
+    });
+    await nextTick();
+    expect(wrapper.find('[data-testid="fullscreen-btn"]').exists()).toBe(true);
+    wrapper.unmount();
+  });
 
-  it('hides fullscreen button when showFullscreenBtn is false', async () => {
+  it("hides fullscreen button when showFullscreenBtn is false", async () => {
     const wrapper = mount(EnhancedDialog, {
-      props: { modelValue: true, title: 'Test', showFullscreenBtn: false },
+      props: { modelValue: true, title: "Test", showFullscreenBtn: false },
       global: { stubs },
-    })
-    await nextTick()
-    expect(wrapper.find('[data-testid="fullscreen-btn"]').exists()).toBe(false)
-    wrapper.unmount()
-  })
+    });
+    await nextTick();
+    expect(wrapper.find('[data-testid="fullscreen-btn"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
 
-  it('toggles fullscreen on button click', async () => {
+  it("toggles fullscreen on button click", async () => {
     const wrapper = mount(EnhancedDialog, {
-      props: { modelValue: true, title: 'Test' },
+      props: { modelValue: true, title: "Test" },
       global: { stubs },
-    })
-    await nextTick()
-    const btn = wrapper.find('[data-testid="fullscreen-btn"]')
-    expect(btn.exists()).toBe(true)
-    await btn.trigger('click')
-    await nextTick()
+    });
+    await nextTick();
+    const btn = wrapper.find('[data-testid="fullscreen-btn"]');
+    expect(btn.exists()).toBe(true);
+    await btn.trigger("click");
+    await nextTick();
     // After click, fullscreen exit button should appear
-    const exitBtn = wrapper.find('[data-testid="fullscreen-btn"]')
-    expect(exitBtn.exists()).toBe(true)
-    wrapper.unmount()
-  })
-})
+    const exitBtn = wrapper.find('[data-testid="fullscreen-btn"]');
+    expect(exitBtn.exists()).toBe(true);
+    wrapper.unmount();
+  });
+});

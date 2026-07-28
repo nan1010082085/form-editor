@@ -1,9 +1,9 @@
-import type { StatisticWidgetMock } from '../base/widgetMock'
+import type { StatisticWidgetMock } from "../base/widgetMock";
 
 export const qrScannerMock: StatisticWidgetMock = {
-  kind: 'statistic',
+  kind: "statistic",
   defaultProps: {
-    label: '扫码录入',
-    placeholder: '扫码或输入编码',
+    label: "扫码录入",
+    placeholder: "扫码或输入编码",
   },
-}
+};

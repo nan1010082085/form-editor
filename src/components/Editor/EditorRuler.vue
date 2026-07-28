@@ -5,255 +5,276 @@
  * 使用 canvas 绘制水平和垂直标尺，与画布背景点对齐。
  * 固定在滚动容器边缘，不随内容滚动。
  */
-import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
-import { useBoardStore } from '../../stores/board'
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
+import { useBoardStore } from "../../stores/board";
 
 const props = defineProps<{
   /** 滚动容器 */
-  scrollContainer?: HTMLElement | null
-}>()
+  scrollContainer?: HTMLElement | null;
+}>();
 
-const boardStore = useBoardStore()
+const boardStore = useBoardStore();
 
-const horizontalCanvas = ref<HTMLCanvasElement>()
-const verticalCanvas = ref<HTMLCanvasElement>()
-const cornerCanvas = ref<HTMLCanvasElement>()
+const horizontalCanvas = ref<HTMLCanvasElement>();
+const verticalCanvas = ref<HTMLCanvasElement>();
+const cornerCanvas = ref<HTMLCanvasElement>();
 
-const RULER_SIZE = 24
-const DOT_INTERVAL = 20
-const LABEL_INTERVAL = 100
+const RULER_SIZE = 24;
+const DOT_INTERVAL = 20;
+const LABEL_INTERVAL = 100;
 
-let animFrameId: number | null = null
+let animFrameId: number | null = null;
 
 /** 获取缩放比例 */
-const zoom = computed(() => boardStore.canvas.zoom / 100)
+const zoom = computed(() => boardStore.canvas.zoom / 100);
 
 /** 绘制水平标尺 */
 function drawHorizontalRuler(scrollLeft: number) {
-  const canvas = horizontalCanvas.value
-  if (!canvas) return
+  const canvas = horizontalCanvas.value;
+  if (!canvas) return;
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-  const dpr = window.devicePixelRatio || 1
-  const width = canvas.clientWidth
-  const height = RULER_SIZE
+  const dpr = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth;
+  const height = RULER_SIZE;
 
-  canvas.width = width * dpr
-  canvas.height = height * dpr
-  ctx.scale(dpr, dpr)
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  ctx.scale(dpr, dpr);
 
   // 背景
-  ctx.fillStyle = '#f8f9fa'
-  ctx.fillRect(0, 0, width, height)
+  ctx.fillStyle = "#f8f9fa";
+  ctx.fillRect(0, 0, width, height);
 
   // 底部边框
-  ctx.strokeStyle = '#dee2e6'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(0, height - 0.5)
-  ctx.lineTo(width, height - 0.5)
-  ctx.stroke()
+  ctx.strokeStyle = "#dee2e6";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, height - 0.5);
+  ctx.lineTo(width, height - 0.5);
+  ctx.stroke();
 
-  const scaledInterval = DOT_INTERVAL * zoom.value
+  const scaledInterval = DOT_INTERVAL * zoom.value;
 
   // 计算起始位置
-  const startPx = scrollLeft
-  const startTick = Math.floor(startPx / scaledInterval) * scaledInterval
+  const startPx = scrollLeft;
+  const startTick = Math.floor(startPx / scaledInterval) * scaledInterval;
 
-  ctx.fillStyle = '#6c757d'
-  ctx.strokeStyle = '#6c757d'
-  ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif'
-  ctx.textAlign = 'center'
+  ctx.fillStyle = "#6c757d";
+  ctx.strokeStyle = "#6c757d";
+  ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.textAlign = "center";
 
-  for (let px = startTick; px < startPx + width + scaledInterval; px += scaledInterval) {
-    const screenX = px - startPx
-    const value = Math.round(px / zoom.value)
+  for (
+    let px = startTick;
+    px < startPx + width + scaledInterval;
+    px += scaledInterval
+  ) {
+    const screenX = px - startPx;
+    const value = Math.round(px / zoom.value);
 
-    const isMajor = value % LABEL_INTERVAL === 0
-    const tickHeight = isMajor ? 12 : 6
+    const isMajor = value % LABEL_INTERVAL === 0;
+    const tickHeight = isMajor ? 12 : 6;
 
-    ctx.beginPath()
-    ctx.moveTo(screenX + 0.5, height - tickHeight)
-    ctx.lineTo(screenX + 0.5, height)
-    ctx.lineWidth = isMajor ? 1 : 0.5
-    ctx.stroke()
+    ctx.beginPath();
+    ctx.moveTo(screenX + 0.5, height - tickHeight);
+    ctx.lineTo(screenX + 0.5, height);
+    ctx.lineWidth = isMajor ? 1 : 0.5;
+    ctx.stroke();
 
     if (isMajor) {
-      ctx.fillText(String(value), screenX, height - 14)
+      ctx.fillText(String(value), screenX, height - 14);
     }
   }
 }
 
 /** 绘制垂直标尺 */
 function drawVerticalRuler(scrollTop: number) {
-  const canvas = verticalCanvas.value
-  if (!canvas) return
+  const canvas = verticalCanvas.value;
+  if (!canvas) return;
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-  const dpr = window.devicePixelRatio || 1
-  const width = RULER_SIZE
-  const height = canvas.clientHeight
+  const dpr = window.devicePixelRatio || 1;
+  const width = RULER_SIZE;
+  const height = canvas.clientHeight;
 
-  canvas.width = width * dpr
-  canvas.height = height * dpr
-  ctx.scale(dpr, dpr)
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  ctx.scale(dpr, dpr);
 
   // 背景
-  ctx.fillStyle = '#f8f9fa'
-  ctx.fillRect(0, 0, width, height)
+  ctx.fillStyle = "#f8f9fa";
+  ctx.fillRect(0, 0, width, height);
 
   // 右侧边框
-  ctx.strokeStyle = '#dee2e6'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(width - 0.5, 0)
-  ctx.lineTo(width - 0.5, height)
-  ctx.stroke()
+  ctx.strokeStyle = "#dee2e6";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(width - 0.5, 0);
+  ctx.lineTo(width - 0.5, height);
+  ctx.stroke();
 
-  const scaledInterval = DOT_INTERVAL * zoom.value
+  const scaledInterval = DOT_INTERVAL * zoom.value;
 
   // 计算起始位置
-  const startPx = scrollTop
-  const startTick = Math.floor(startPx / scaledInterval) * scaledInterval
+  const startPx = scrollTop;
+  const startTick = Math.floor(startPx / scaledInterval) * scaledInterval;
 
-  ctx.fillStyle = '#6c757d'
-  ctx.strokeStyle = '#6c757d'
-  ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif'
+  ctx.fillStyle = "#6c757d";
+  ctx.strokeStyle = "#6c757d";
+  ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
 
-  for (let px = startTick; px < startPx + height + scaledInterval; px += scaledInterval) {
-    const screenY = px - startPx
-    const value = Math.round(px / zoom.value)
+  for (
+    let px = startTick;
+    px < startPx + height + scaledInterval;
+    px += scaledInterval
+  ) {
+    const screenY = px - startPx;
+    const value = Math.round(px / zoom.value);
 
-    const isMajor = value % LABEL_INTERVAL === 0
-    const tickWidth = isMajor ? 12 : 6
+    const isMajor = value % LABEL_INTERVAL === 0;
+    const tickWidth = isMajor ? 12 : 6;
 
-    ctx.beginPath()
-    ctx.moveTo(width - tickWidth, screenY + 0.5)
-    ctx.lineTo(width, screenY + 0.5)
-    ctx.lineWidth = isMajor ? 1 : 0.5
-    ctx.stroke()
+    ctx.beginPath();
+    ctx.moveTo(width - tickWidth, screenY + 0.5);
+    ctx.lineTo(width, screenY + 0.5);
+    ctx.lineWidth = isMajor ? 1 : 0.5;
+    ctx.stroke();
 
     if (isMajor) {
-      ctx.save()
-      ctx.translate(width - 14, screenY + 0.5)
-      ctx.rotate(-Math.PI / 2)
-      ctx.textAlign = 'center'
-      ctx.fillText(String(value), 0, 0)
-      ctx.restore()
+      ctx.save();
+      ctx.translate(width - 14, screenY + 0.5);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.fillText(String(value), 0, 0);
+      ctx.restore();
     }
   }
 }
 
 /** 绘制左上角 */
 function drawCorner() {
-  const canvas = cornerCanvas.value
-  if (!canvas) return
+  const canvas = cornerCanvas.value;
+  if (!canvas) return;
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-  const dpr = window.devicePixelRatio || 1
-  const size = RULER_SIZE
+  const dpr = window.devicePixelRatio || 1;
+  const size = RULER_SIZE;
 
-  canvas.width = size * dpr
-  canvas.height = size * dpr
-  ctx.scale(dpr, dpr)
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  ctx.scale(dpr, dpr);
 
   // 背景
-  ctx.fillStyle = '#f8f9fa'
-  ctx.fillRect(0, 0, size, size)
+  ctx.fillStyle = "#f8f9fa";
+  ctx.fillRect(0, 0, size, size);
 
   // 边框
-  ctx.strokeStyle = '#dee2e6'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(0, size - 0.5)
-  ctx.lineTo(size, size - 0.5)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.moveTo(size - 0.5, 0)
-  ctx.lineTo(size - 0.5, size)
-  ctx.stroke()
+  ctx.strokeStyle = "#dee2e6";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, size - 0.5);
+  ctx.lineTo(size, size - 0.5);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(size - 0.5, 0);
+  ctx.lineTo(size - 0.5, size);
+  ctx.stroke();
 
   // 对角线
-  ctx.strokeStyle = '#ced4da'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(0, 0)
-  ctx.lineTo(size, size)
-  ctx.stroke()
+  ctx.strokeStyle = "#ced4da";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(size, size);
+  ctx.stroke();
 }
 
 /** 同步滚动位置 */
 function syncScroll() {
-  if (!props.scrollContainer) return
+  if (!props.scrollContainer) return;
 
-  const { scrollLeft, scrollTop } = props.scrollContainer
-  drawHorizontalRuler(scrollLeft)
-  drawVerticalRuler(scrollTop)
+  const { scrollLeft, scrollTop } = props.scrollContainer;
+  drawHorizontalRuler(scrollLeft);
+  drawVerticalRuler(scrollTop);
 }
 
 /** 处理滚动事件 */
 function handleScroll() {
-  if (animFrameId) cancelAnimationFrame(animFrameId)
-  animFrameId = requestAnimationFrame(syncScroll)
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  animFrameId = requestAnimationFrame(syncScroll);
 }
 
 /** 监听容器变化 */
-let resizeObserver: ResizeObserver | null = null
+let resizeObserver: ResizeObserver | null = null;
 
 onMounted(async () => {
-  await nextTick()
-  drawCorner()
-  syncScroll()
+  await nextTick();
+  drawCorner();
+  syncScroll();
 
   if (props.scrollContainer) {
-    props.scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+    props.scrollContainer.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
     resizeObserver = new ResizeObserver(() => {
-      syncScroll()
-    })
-    resizeObserver.observe(props.scrollContainer)
+      syncScroll();
+    });
+    resizeObserver.observe(props.scrollContainer);
   }
-})
+});
 
 onUnmounted(() => {
-  if (animFrameId) cancelAnimationFrame(animFrameId)
+  if (animFrameId) cancelAnimationFrame(animFrameId);
   if (props.scrollContainer) {
-    props.scrollContainer.removeEventListener('scroll', handleScroll)
+    props.scrollContainer.removeEventListener("scroll", handleScroll);
   }
-  resizeObserver?.disconnect()
-})
+  resizeObserver?.disconnect();
+});
 
 // 监听滚动容器变化
-watch(() => props.scrollContainer, async (newContainer, oldContainer) => {
-  if (oldContainer) {
-    oldContainer.removeEventListener('scroll', handleScroll)
-  }
-  if (newContainer) {
-    newContainer.addEventListener('scroll', handleScroll, { passive: true })
-    resizeObserver?.disconnect()
-    resizeObserver = new ResizeObserver(() => syncScroll())
-    resizeObserver.observe(newContainer)
-  }
-  await nextTick()
-  syncScroll()
-})
+watch(
+  () => props.scrollContainer,
+  async (newContainer, oldContainer) => {
+    if (oldContainer) {
+      oldContainer.removeEventListener("scroll", handleScroll);
+    }
+    if (newContainer) {
+      newContainer.addEventListener("scroll", handleScroll, { passive: true });
+      resizeObserver?.disconnect();
+      resizeObserver = new ResizeObserver(() => syncScroll());
+      resizeObserver.observe(newContainer);
+    }
+    await nextTick();
+    syncScroll();
+  },
+);
 
 // 监听缩放变化
 watch(zoom, () => {
-  drawCorner()
-  syncScroll()
-})
+  drawCorner();
+  syncScroll();
+});
 
 // 监听画布尺寸/单位变化
-watch(() => [boardStore.canvas.width, boardStore.canvas.height, boardStore.canvas.widthUnit, boardStore.canvas.heightUnit], () => {
-  drawCorner()
-  syncScroll()
-})
+watch(
+  () => [
+    boardStore.canvas.width,
+    boardStore.canvas.height,
+    boardStore.canvas.widthUnit,
+    boardStore.canvas.heightUnit,
+  ],
+  () => {
+    drawCorner();
+    syncScroll();
+  },
+);
 </script>
 
 <template>

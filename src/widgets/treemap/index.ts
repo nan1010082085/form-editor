@@ -1,2 +1,2 @@
-export { default as FgTreemap } from './FgTreemap.vue'
-export { treemapConfig, createTreemapWidget } from './config'
+export { default as FgTreemap } from "./FgTreemap.vue";
+export { treemapConfig, createTreemapWidget } from "./config";

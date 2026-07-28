@@ -6,58 +6,58 @@
  */
 
 /** 数据源传输方式 */
-export type DataSourceTransport = 'http-poll' | 'websocket' | 'static'
+export type DataSourceTransport = "http-poll" | "websocket" | "static";
 
 /** 数据源定义 — 存储在 schema 根级别，widget 通过 ID 引用 */
 export interface DataSourceDefinition {
   /** 唯一 ID（创建时生成，随 schema 持久化） */
-  id: string
+  id: string;
   /** 设计器中显示的名称 */
-  name: string
+  name: string;
   /** 传输方式 */
-  transport: DataSourceTransport
+  transport: DataSourceTransport;
   /** HTTP 配置（http-poll 模式） */
   http?: {
-    url: string
-    method: 'get' | 'post'
-    params?: Record<string, unknown>
-    headers?: Record<string, string>
-    body?: Record<string, unknown>
-    timeout?: number
-    dataPath?: string
+    url: string;
+    method: "get" | "post";
+    params?: Record<string, unknown>;
+    headers?: Record<string, string>;
+    body?: Record<string, unknown>;
+    timeout?: number;
+    dataPath?: string;
     /** 轮询间隔（秒），0 = 不轮询（一次性请求） */
-    pollIntervalSec: number
-  }
+    pollIntervalSec: number;
+  };
   /** WebSocket 配置（websocket 模式） */
   websocket?: {
-    url: string
-    auth?: Record<string, string>
-    dataPath?: string
-    reconnect: { maxRetries: number; delayMs: number }
-  }
+    url: string;
+    auth?: Record<string, string>;
+    dataPath?: string;
+    reconnect: { maxRetries: number; delayMs: number };
+  };
   /** 响应字段映射 */
   mapping: {
-    labelKey: string
-    valueKey: string
-    childrenKey?: string
-  }
+    labelKey: string;
+    valueKey: string;
+    childrenKey?: string;
+  };
   /** 缓存策略 */
   cache: {
-    level: 'memory' | 'indexeddb' | 'both'
-    ttlMs: number
-  }
+    level: "memory" | "indexeddb" | "both";
+    ttlMs: number;
+  };
   /** 重试配置 */
   retry?: {
-    enabled: boolean
-    maxRetries: number
-  }
+    enabled: boolean;
+    maxRetries: number;
+  };
 }
 
 /** 数据源运行时状态 */
 export interface DataSourceState<T = unknown> {
-  data: T | null
-  loading: boolean
-  error: string | null
-  lastUpdated: number
-  subscriberCount: number
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  lastUpdated: number;
+  subscriberCount: number;
 }

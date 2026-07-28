@@ -4,70 +4,74 @@
  *
  * 支持全屏模式、弹框模式、边框控制、加载/错误状态。
  */
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './style.module.scss'
+import { inject, computed, ref } from "vue";
+import { widgetDataKey } from "../base/types";
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from "../base/widgetMock";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./style.module.scss";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
+const widgetData = inject(widgetDataKey)!;
+const surface = inject(WIDGET_SURFACE_KEY, "runtime" as WidgetSurface);
 
-const src = computed(() => widgetData.value.props?.src as string ?? '')
-const width = computed(() => (widgetData.value.props?.width as string) || '100%')
-const height = computed(() => (widgetData.value.props?.height as string) || '400px')
-const border = computed(() => widgetData.value.props?.border === true)
-const fullscreen = computed(() => widgetData.value.props?.fullscreen === true)
-const dialogMode = computed(() => widgetData.value.props?.dialogMode === true)
+const src = computed(() => (widgetData.value.props?.src as string) ?? "");
+const width = computed(
+  () => (widgetData.value.props?.width as string) || "100%",
+);
+const height = computed(
+  () => (widgetData.value.props?.height as string) || "400px",
+);
+const border = computed(() => widgetData.value.props?.border === true);
+const fullscreen = computed(() => widgetData.value.props?.fullscreen === true);
+const dialogMode = computed(() => widgetData.value.props?.dialogMode === true);
 
-const loading = ref(false)
-const hasError = ref(false)
+const loading = ref(false);
+const hasError = ref(false);
 
 function handleLoad() {
-  loading.value = false
-  hasError.value = false
+  loading.value = false;
+  hasError.value = false;
 }
 
 function handleError() {
-  loading.value = false
-  hasError.value = true
+  loading.value = false;
+  hasError.value = true;
 }
 
 // Start loading when src changes
 function handleSrcChange() {
   if (src.value) {
-    loading.value = true
-    hasError.value = false
+    loading.value = true;
+    hasError.value = false;
   }
 }
 
 // Watch src to trigger loading state
 const iframeSrc = computed(() => {
-  handleSrcChange()
-  return src.value
-})
+  handleSrcChange();
+  return src.value;
+});
 
 const wrapperStyle = computed(() => {
-  if (fullscreen.value) return {}
-  return { width: width.value, height: height.value }
-})
+  if (fullscreen.value) return {};
+  return { width: width.value, height: height.value };
+});
 
 const wrapperClasses = computed(() => {
-  if (fullscreen.value) return [styles.wrapper, styles.fullscreen]
-  return [styles.wrapper]
-})
+  if (fullscreen.value) return [styles.wrapper, styles.fullscreen];
+  return [styles.wrapper];
+});
 
 const iframeClasses = computed(() => {
-  const cls = [styles.iframe]
-  if (border.value && !fullscreen.value) cls.push(styles.withBorder)
-  return cls
-})
+  const cls = [styles.iframe];
+  if (border.value && !fullscreen.value) cls.push(styles.withBorder);
+  return cls;
+});
 
 // 设计器画布不加载外部 URL，仅展示占位预览
-const isEditorSurface = computed(() => surface === 'editor')
-const isEditorMode = computed(() => isEditorSurface.value || !src.value)
+const isEditorSurface = computed(() => surface === "editor");
+const isEditorMode = computed(() => isEditorSurface.value || !src.value);
 </script>
 
 <template>
@@ -75,12 +79,14 @@ const isEditorMode = computed(() => isEditorSurface.value || !src.value)
   <div v-if="dialogMode && !fullscreen" :class="styles.dialogOverlay">
     <div :class="styles.dialogContent">
       <div v-if="loading" :class="styles.loadingOverlay">
-        <span>{{ t('editor.iframe.loading') }}</span>
+        <span>{{ t("editor.iframe.loading") }}</span>
       </div>
       <div v-if="hasError" :class="styles.errorOverlay">
-        <span>{{ t('editor.iframe.loadFailed') }}</span>
-        <span :style="{ fontSize: '12px', color: 'var(--el-text-color-secondary)' }">
-          {{ t('editor.iframe.checkUrl') }}
+        <span>{{ t("editor.iframe.loadFailed") }}</span>
+        <span
+          :style="{ fontSize: '12px', color: 'var(--el-text-color-secondary)' }"
+        >
+          {{ t("editor.iframe.checkUrl") }}
         </span>
       </div>
       <iframe
@@ -98,10 +104,10 @@ const isEditorMode = computed(() => isEditorSurface.value || !src.value)
   <!-- Fullscreen mode -->
   <div v-else-if="fullscreen" :class="styles.fullscreen">
     <div v-if="loading" :class="styles.loadingOverlay">
-      <span>{{ t('editor.iframe.loading') }}</span>
+      <span>{{ t("editor.iframe.loading") }}</span>
     </div>
     <div v-if="hasError" :class="styles.errorOverlay">
-      <span>{{ t('editor.iframe.loadFailed') }}</span>
+      <span>{{ t("editor.iframe.loadFailed") }}</span>
     </div>
     <iframe
       v-if="src && !hasError"
@@ -119,17 +125,21 @@ const isEditorMode = computed(() => isEditorSurface.value || !src.value)
     <!-- Editor canvas placeholder -->
     <div v-if="isEditorMode" :class="styles.placeholder">
       <span v-if="src">{{ src }}</span>
-      <span v-else>{{ t('editor.iframe.configUrl') }}</span>
-      <span v-if="isEditorSurface" :class="styles.editorHint">{{ t('editor.iframe.editorHint') }}</span>
+      <span v-else>{{ t("editor.iframe.configUrl") }}</span>
+      <span v-if="isEditorSurface" :class="styles.editorHint">{{
+        t("editor.iframe.editorHint")
+      }}</span>
     </div>
     <template v-else>
       <div v-if="loading" :class="styles.loadingOverlay">
-        <span>{{ t('editor.iframe.loading') }}</span>
+        <span>{{ t("editor.iframe.loading") }}</span>
       </div>
       <div v-if="hasError" :class="styles.errorOverlay">
-        <span>{{ t('editor.iframe.loadFailed') }}</span>
-        <span :style="{ fontSize: '12px', color: 'var(--el-text-color-secondary)' }">
-          {{ t('editor.iframe.checkUrl') }}
+        <span>{{ t("editor.iframe.loadFailed") }}</span>
+        <span
+          :style="{ fontSize: '12px', color: 'var(--el-text-color-secondary)' }"
+        >
+          {{ t("editor.iframe.checkUrl") }}
         </span>
       </div>
       <iframe

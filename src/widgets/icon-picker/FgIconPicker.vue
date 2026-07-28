@@ -1,54 +1,58 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
-import * as ElementPlusIcons from '@element-plus/icons-vue'
-import { widgetDataKey, widgetStyleKey } from '../base/types'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './style.module.scss'
+import { inject, computed, ref } from "vue";
+import * as ElementPlusIcons from "@element-plus/icons-vue";
+import { widgetDataKey, widgetStyleKey } from "../base/types";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./style.module.scss";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const widgetStyle = inject(widgetStyleKey)!
-const { isDisabled } = useWidgetRenderState()
+const widgetData = inject(widgetDataKey)!;
+const widgetStyle = inject(widgetStyleKey)!;
+const { isDisabled } = useWidgetRenderState();
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 
 // Build icon list from @element-plus/icons-vue
 const allIcons = Object.keys(ElementPlusIcons).map((name) => ({
   name,
   component: (ElementPlusIcons as Record<string, unknown>)[name],
-}))
+}));
 
-const searchQuery = ref('')
-const popoverVisible = ref(false)
+const searchQuery = ref("");
+const popoverVisible = ref(false);
 
 const filteredIcons = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase()
-  if (!q) return allIcons
-  return allIcons.filter((icon) => icon.name.toLowerCase().includes(q))
-})
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return allIcons;
+  return allIcons.filter((icon) => icon.name.toLowerCase().includes(q));
+});
 
-const selectedIconName = computed(() => widgetData.value.defaultValue as string)
+const selectedIconName = computed(
+  () => widgetData.value.defaultValue as string,
+);
 
 function selectIcon(name: string) {
-  widgetData.value.defaultValue = name
-  popoverVisible.value = false
-  searchQuery.value = ''
+  widgetData.value.defaultValue = name;
+  popoverVisible.value = false;
+  searchQuery.value = "";
 }
 
 function clearIcon() {
-  widgetData.value.defaultValue = ''
-  searchQuery.value = ''
+  widgetData.value.defaultValue = "";
+  searchQuery.value = "";
 }
 
 const dynamicStyle = computed(() => ({
   fontSize: widgetStyle.value?.fontSize as string,
   color: widgetStyle.value?.color as string,
-}))
+}));
 </script>
 
 <template>
@@ -64,7 +68,10 @@ const dynamicStyle = computed(() => ({
       <template #reference>
         <el-input
           :model-value="selectedIconName"
-          :placeholder="(widgetData.props?.placeholder as string) || t('editor.iconPicker.placeholder')"
+          :placeholder="
+            (widgetData.props?.placeholder as string) ||
+            t('editor.iconPicker.placeholder')
+          "
           :disabled="isDisabled"
           :clearable="(widgetData.props?.clearable as boolean) ?? true"
           :style="dynamicStyle"
@@ -74,7 +81,13 @@ const dynamicStyle = computed(() => ({
         >
           <template v-if="selectedIconName" #prefix>
             <el-icon>
-              <component :is="ElementPlusIcons[selectedIconName as keyof typeof ElementPlusIcons]" />
+              <component
+                :is="
+                  ElementPlusIcons[
+                    selectedIconName as keyof typeof ElementPlusIcons
+                  ]
+                "
+              />
             </el-icon>
           </template>
         </el-input>
@@ -92,7 +105,10 @@ const dynamicStyle = computed(() => ({
           <div
             v-for="icon in filteredIcons"
             :key="icon.name"
-            :class="[styles.iconItem, { [styles.active]: icon.name === selectedIconName }]"
+            :class="[
+              styles.iconItem,
+              { [styles.active]: icon.name === selectedIconName },
+            ]"
             :title="icon.name"
             @click="selectIcon(icon.name)"
           >
@@ -103,7 +119,7 @@ const dynamicStyle = computed(() => ({
           </div>
         </div>
         <div v-if="filteredIcons.length === 0" :class="styles.emptyText">
-          {{ t('editor.iconPicker.noMatchIcon') }}
+          {{ t("editor.iconPicker.noMatchIcon") }}
         </div>
       </div>
     </el-popover>

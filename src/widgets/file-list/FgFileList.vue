@@ -1,72 +1,84 @@
 <script setup lang="ts">
-import { inject, ref, watch } from 'vue'
-import { useI18n } from '@schema-platform/platform-shared'
-import { widgetDataKey } from '../base/types'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useWidgetLayoutStyle } from '../../composables/useWidgetControlSize'
-import styles from './style.module.scss'
+import { inject, ref, watch } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
+import { widgetDataKey } from "../base/types";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useWidgetLayoutStyle } from "../../composables/useWidgetControlSize";
+import styles from "./style.module.scss";
 
-const { t } = useI18n()
-const widgetData = inject(widgetDataKey)!
-const { layoutStyle } = useWidgetLayoutStyle(200)
+const { t } = useI18n();
+const widgetData = inject(widgetDataKey)!;
+const { layoutStyle } = useWidgetLayoutStyle(200);
 
-type FileItem = { name: string; url: string }
+type FileItem = { name: string; url: string };
 
-const fileList = ref<FileItem[]>([])
+const fileList = ref<FileItem[]>([]);
 
 useExposeWidget(() => ({
-  get value() { return fileList.value },
-}))
+  get value() {
+    return fileList.value;
+  },
+}));
 
 watch(
   () => widgetData.value.defaultValue,
   (val) => {
-    fileList.value = Array.isArray(val) ? val as FileItem[] : []
+    fileList.value = Array.isArray(val) ? (val as FileItem[]) : [];
   },
   { immediate: true },
-)
+);
 
 function syncValue() {
-  widgetData.value.defaultValue = fileList.value
+  widgetData.value.defaultValue = fileList.value;
 }
 
 function handleUpload() {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.multiple = (widgetData.value.props?.multiple as boolean) ?? true
-  input.accept = (widgetData.value.props?.accept as string) || ''
+  const input = document.createElement("input");
+  input.type = "file";
+  input.multiple = (widgetData.value.props?.multiple as boolean) ?? true;
+  input.accept = (widgetData.value.props?.accept as string) || "";
   input.onchange = () => {
-    const files = input.files
-    if (!files) return
+    const files = input.files;
+    if (!files) return;
     for (const file of Array.from(files)) {
-      fileList.value.push({ name: file.name, url: URL.createObjectURL(file) })
+      fileList.value.push({ name: file.name, url: URL.createObjectURL(file) });
     }
-    syncValue()
-  }
-  input.click()
+    syncValue();
+  };
+  input.click();
 }
 
 function handleRemove(index: number) {
-  if (widgetData.value.props?.allowDelete === false) return
-  fileList.value.splice(index, 1)
-  syncValue()
+  if (widgetData.value.props?.allowDelete === false) return;
+  fileList.value.splice(index, 1);
+  syncValue();
 }
 
 function handlePreview(file: FileItem) {
-  if (widgetData.value.props?.allowPreview === false) return
-  window.open(file.url, '_blank')
+  if (widgetData.value.props?.allowPreview === false) return;
+  window.open(file.url, "_blank");
 }
 </script>
 
 <template>
   <div :class="styles.container" :style="layoutStyle">
-    <div :class="styles.title">{{ (widgetData.props?.title as string) || t('editor.fileList.title') }}</div>
+    <div :class="styles.title">
+      {{ (widgetData.props?.title as string) || t("editor.fileList.title") }}
+    </div>
     <div :class="styles.body">
       <div :class="styles.list">
-        <div v-if="!fileList.length" :class="styles.empty">{{ t('editor.fileList.empty') }}</div>
+        <div v-if="!fileList.length" :class="styles.empty">
+          {{ t("editor.fileList.empty") }}
+        </div>
         <div v-for="(file, i) in fileList" :key="i" :class="styles.item">
           <span
-            :class="[styles.fileName, { [styles.fileNameClickable]: widgetData.props?.allowPreview !== false }]"
+            :class="[
+              styles.fileName,
+              {
+                [styles.fileNameClickable]:
+                  widgetData.props?.allowPreview !== false,
+              },
+            ]"
             @click="handlePreview(file)"
           >
             {{ file.name }}
@@ -81,7 +93,10 @@ function handlePreview(file: FileItem) {
         </div>
       </div>
       <el-button type="primary" :class="styles.uploadBtn" @click="handleUpload">
-        {{ (widgetData.props?.buttonText as string) || t('editor.fileList.selectFile') }}
+        {{
+          (widgetData.props?.buttonText as string) ||
+          t("editor.fileList.selectFile")
+        }}
       </el-button>
     </div>
   </div>

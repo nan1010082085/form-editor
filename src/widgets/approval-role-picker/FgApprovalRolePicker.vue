@@ -1,83 +1,93 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useI18n } from '@schema-platform/platform-shared'
+import { inject, ref } from "vue";
+import { widgetDataKey } from "../base/types";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useI18n } from "@schema-platform/platform-shared";
 
-import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const { isDisabled } = useWidgetRenderState()
-const { controlStyle: dynamicStyle } = useWidgetControlSize(40)
+const widgetData = inject(widgetDataKey)!;
+const { isDisabled } = useWidgetRenderState();
+const { controlStyle: dynamicStyle } = useWidgetControlSize(40);
 
 interface RoleItem {
-  id: string
-  name: string
-  description?: string
+  id: string;
+  name: string;
+  description?: string;
 }
 
-const options = ref<RoleItem[]>([])
-const loading = ref(false)
+const options = ref<RoleItem[]>([]);
+const loading = ref(false);
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-  get label() {
-    const val = wd.value.defaultValue
-    if (!val) return ''
-    if (Array.isArray(val)) {
-      return val.map(v => {
-        const found = options.value.find(r => r.id === v)
-        return found?.name ?? v
-      }).join(', ')
-    }
-    const found = options.value.find(r => r.id === val)
-    return found?.name ?? ''
+  get value() {
+    return wd.value.defaultValue;
   },
-}))
+  get label() {
+    const val = wd.value.defaultValue;
+    if (!val) return "";
+    if (Array.isArray(val)) {
+      return val
+        .map((v) => {
+          const found = options.value.find((r) => r.id === v);
+          return found?.name ?? v;
+        })
+        .join(", ");
+    }
+    const found = options.value.find((r) => r.id === val);
+    return found?.name ?? "";
+  },
+}));
 
-const selectRef = ref<{ $el?: HTMLElement }>()
+const selectRef = ref<{ $el?: HTMLElement }>();
 
 function forwardNativeChange() {
-  selectRef.value?.$el?.dispatchEvent(new Event('change', { bubbles: true }))
+  selectRef.value?.$el?.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
 function getFlowApiBase(): string {
-  return (widgetData.value.props?.apiBaseUrl as string)
-    || (import.meta.env.VITE_FLOW_API_BASE_URL as string)
-    || ''
+  return (
+    (widgetData.value.props?.apiBaseUrl as string) ||
+    (import.meta.env.VITE_FLOW_API_BASE_URL as string) ||
+    ""
+  );
 }
 
 function getToken(): string {
-  return localStorage.getItem('token') || ''
+  return localStorage.getItem("token") || "";
 }
 
 async function fetchRoles(query: string) {
-  loading.value = true
+  loading.value = true;
   try {
-    const base = getFlowApiBase()
-    const params = new URLSearchParams({ q: query || '', page: '1', pageSize: '50' })
+    const base = getFlowApiBase();
+    const params = new URLSearchParams({
+      q: query || "",
+      page: "1",
+      pageSize: "50",
+    });
     const res = await fetch(`${base}/roles?${params}`, {
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
       },
-    })
-    const json = await res.json()
+    });
+    const json = await res.json();
     if (json.success && json.data) {
-      options.value = json.data.items || []
+      options.value = json.data.items || [];
     }
   } catch {
-    options.value = []
+    options.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function remoteSearch(query: string) {
-  await fetchRoles(query)
+  await fetchRoles(query);
 }
 </script>
 
@@ -86,7 +96,10 @@ async function remoteSearch(query: string) {
     ref="selectRef"
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || t('editor.approvalRolePicker.placeholder')"
+    :placeholder="
+      (widgetData.props?.placeholder as string) ||
+      t('editor.approvalRolePicker.placeholder')
+    "
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :multiple="(widgetData.props?.multiple as boolean) || false"

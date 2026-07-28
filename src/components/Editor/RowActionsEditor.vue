@@ -5,103 +5,136 @@
  * List-based editor for search-list row operation buttons.
  * Conditional fields shown based on action type (emit/api/navigate/dialog).
  */
-import { computed } from 'vue'
-import type { SearchListRowAction } from '@/components/WidgetRenderer/types'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './RowActionsEditor.module.scss'
+import { computed } from "vue";
+import type { SearchListRowAction } from "@/components/WidgetRenderer/types";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./RowActionsEditor.module.scss";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const props = defineProps<{
-  rowActions: SearchListRowAction[]
-}>()
+  rowActions: SearchListRowAction[];
+}>();
 
 const emit = defineEmits<{
-  'update:rowActions': [actions: SearchListRowAction[]]
-}>()
+  "update:rowActions": [actions: SearchListRowAction[]];
+}>();
 
 const actionTypeOptions = computed(() => [
-  { label: t('editor.rowActionsEditor.actionTypeEmit'), value: 'emit' as const },
-  { label: t('editor.rowActionsEditor.actionTypeApi'), value: 'api' as const },
-  { label: t('editor.rowActionsEditor.actionTypeNavigate'), value: 'navigate' as const },
-  { label: t('editor.rowActionsEditor.actionTypeDialog'), value: 'dialog' as const },
-])
+  {
+    label: t("editor.rowActionsEditor.actionTypeEmit"),
+    value: "emit" as const,
+  },
+  { label: t("editor.rowActionsEditor.actionTypeApi"), value: "api" as const },
+  {
+    label: t("editor.rowActionsEditor.actionTypeNavigate"),
+    value: "navigate" as const,
+  },
+  {
+    label: t("editor.rowActionsEditor.actionTypeDialog"),
+    value: "dialog" as const,
+  },
+]);
 
 const buttonTypeOptions = computed(() => [
-  { label: t('editor.columnsEditor.buttonTypeDefault'), value: '' as const },
-  { label: t('editor.columnsEditor.buttonTypePrimary'), value: 'primary' as const },
-  { label: t('editor.columnsEditor.buttonTypeSuccess'), value: 'success' as const },
-  { label: t('editor.columnsEditor.buttonTypeWarning'), value: 'warning' as const },
-  { label: t('editor.columnsEditor.buttonTypeDanger'), value: 'danger' as const },
-  { label: t('editor.columnsEditor.buttonTypeInfo'), value: 'info' as const },
-])
+  { label: t("editor.columnsEditor.buttonTypeDefault"), value: "" as const },
+  {
+    label: t("editor.columnsEditor.buttonTypePrimary"),
+    value: "primary" as const,
+  },
+  {
+    label: t("editor.columnsEditor.buttonTypeSuccess"),
+    value: "success" as const,
+  },
+  {
+    label: t("editor.columnsEditor.buttonTypeWarning"),
+    value: "warning" as const,
+  },
+  {
+    label: t("editor.columnsEditor.buttonTypeDanger"),
+    value: "danger" as const,
+  },
+  { label: t("editor.columnsEditor.buttonTypeInfo"), value: "info" as const },
+]);
 
 const apiMethodOptions = [
-  { label: 'GET', value: 'get' as const },
-  { label: 'POST', value: 'post' as const },
-  { label: 'PUT', value: 'put' as const },
-  { label: 'DELETE', value: 'delete' as const },
-]
+  { label: "GET", value: "get" as const },
+  { label: "POST", value: "post" as const },
+  { label: "PUT", value: "put" as const },
+  { label: "DELETE", value: "delete" as const },
+];
 
 function addAction() {
   const action: SearchListRowAction = {
-    label: '',
-    buttonType: '' as SearchListRowAction['buttonType'],
-    type: 'emit',
-    emitEvent: '',
-  }
-  emit('update:rowActions', [...props.rowActions, action])
+    label: "",
+    buttonType: "" as SearchListRowAction["buttonType"],
+    type: "emit",
+    emitEvent: "",
+  };
+  emit("update:rowActions", [...props.rowActions, action]);
 }
 
 function removeAction(index: number) {
-  emit('update:rowActions', props.rowActions.filter((_, i) => i !== index))
+  emit(
+    "update:rowActions",
+    props.rowActions.filter((_, i) => i !== index),
+  );
 }
 
 function moveUp(index: number) {
-  if (index === 0) return
-  const updated = [...props.rowActions]
-  ;[updated[index - 1], updated[index]] = [updated[index], updated[index - 1]]
-  emit('update:rowActions', updated)
+  if (index === 0) return;
+  const updated = [...props.rowActions];
+  [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+  emit("update:rowActions", updated);
 }
 
 function moveDown(index: number) {
-  if (index >= props.rowActions.length - 1) return
-  const updated = [...props.rowActions]
-  ;[updated[index], updated[index + 1]] = [updated[index + 1], updated[index]]
-  emit('update:rowActions', updated)
+  if (index >= props.rowActions.length - 1) return;
+  const updated = [...props.rowActions];
+  [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+  emit("update:rowActions", updated);
 }
 
-function updateAction<K extends keyof SearchListRowAction>(index: number, field: K, value: SearchListRowAction[K]) {
+function updateAction<K extends keyof SearchListRowAction>(
+  index: number,
+  field: K,
+  value: SearchListRowAction[K],
+) {
   const updated = props.rowActions.map((a, i) =>
     i === index ? { ...a, [field]: value } : a,
-  )
-  emit('update:rowActions', updated)
+  );
+  emit("update:rowActions", updated);
 }
 
-function parseDialogSchemaJson(text: string): import('@/components/WidgetRenderer/types').PartialWidget[] | undefined {
-  if (!text.trim()) return undefined
+function parseDialogSchemaJson(
+  text: string,
+): import("@/components/WidgetRenderer/types").PartialWidget[] | undefined {
+  if (!text.trim()) return undefined;
   try {
-    return JSON.parse(text)
+    return JSON.parse(text);
   } catch {
-    return undefined
+    return undefined;
   }
 }
 
 function parseNavigateQuery(text: string): Record<string, string> | undefined {
-  if (!text.trim()) return undefined
+  if (!text.trim()) return undefined;
   try {
-    return JSON.parse(text) as Record<string, string>
+    return JSON.parse(text) as Record<string, string>;
   } catch {
-    return undefined
+    return undefined;
   }
 }
 </script>
 
 <template>
   <div :class="styles['row-actions-editor']">
-    <div v-if="rowActions.length === 0" :class="styles['row-actions-editor__empty']">
-      {{ t('editor.rowActionsEditor.emptyHint') }}
+    <div
+      v-if="rowActions.length === 0"
+      :class="styles['row-actions-editor__empty']"
+    >
+      {{ t("editor.rowActionsEditor.emptyHint") }}
     </div>
 
     <div
@@ -110,7 +143,9 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       :class="styles['row-actions-editor__item']"
     >
       <div :class="styles['row-actions-editor__item-header']">
-        <span :class="styles['row-actions-editor__item-title']">{{ t('editor.rowActionsEditor.actionTitle', { index: idx + 1 }) }}</span>
+        <span :class="styles['row-actions-editor__item-title']">{{
+          t("editor.rowActionsEditor.actionTitle", { index: idx + 1 })
+        }}</span>
         <div :class="styles['row-actions-editor__item-actions']">
           <el-button
             size="small"
@@ -128,19 +163,16 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
           >
             <AppIcon name="arrow-down" />
           </el-button>
-          <el-button
-            type="danger"
-            size="small"
-            text
-            @click="removeAction(idx)"
-          >
+          <el-button type="danger" size="small" text @click="removeAction(idx)">
             <AppIcon name="delete" />
           </el-button>
         </div>
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.label') }}</label>
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.label")
+        }}</label>
         <el-input
           :model-value="action.label"
           size="small"
@@ -150,7 +182,9 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.buttonType') }}</label>
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.buttonType")
+        }}</label>
         <el-select
           :model-value="action.buttonType ?? ''"
           size="small"
@@ -167,7 +201,9 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.icon') }}</label>
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.icon")
+        }}</label>
         <el-input
           :model-value="action.icon ?? ''"
           size="small"
@@ -177,7 +213,9 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.actionType') }}</label>
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.actionType")
+        }}</label>
         <el-select
           :model-value="action.type"
           size="small"
@@ -194,29 +232,42 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       </div>
 
       <!-- Emit type: event name -->
-      <div v-if="action.type === 'emit'" :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.emitEvent') }}</label>
+      <div
+        v-if="action.type === 'emit'"
+        :class="styles['row-actions-editor__field']"
+      >
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.emitEvent")
+        }}</label>
         <el-input
           :model-value="action.emitEvent ?? ''"
           size="small"
           :placeholder="t('editor.rowActionsEditor.emitEventPlaceholder')"
-          @update:model-value="updateAction(idx, 'emitEvent', $event || undefined)"
+          @update:model-value="
+            updateAction(idx, 'emitEvent', $event || undefined)
+          "
         />
       </div>
 
       <!-- API type: url and method -->
       <template v-if="action.type === 'api'">
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.apiUrl') }}</label>
+          <label :class="styles['row-actions-editor__label']">{{
+            t("editor.rowActionsEditor.apiUrl")
+          }}</label>
           <el-input
             :model-value="action.apiUrl ?? ''"
             size="small"
             placeholder="/api/item/:id"
-            @update:model-value="updateAction(idx, 'apiUrl', $event || undefined)"
+            @update:model-value="
+              updateAction(idx, 'apiUrl', $event || undefined)
+            "
           />
         </div>
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.apiMethod') }}</label>
+          <label :class="styles['row-actions-editor__label']">{{
+            t("editor.rowActionsEditor.apiMethod")
+          }}</label>
           <el-select
             :model-value="action.apiMethod ?? 'get'"
             size="small"
@@ -234,85 +285,139 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       </template>
 
       <!-- Navigate type: path + query -->
-      <div v-if="action.type === 'navigate'" :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.navigatePath') }}</label>
+      <div
+        v-if="action.type === 'navigate'"
+        :class="styles['row-actions-editor__field']"
+      >
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.navigatePath")
+        }}</label>
         <el-input
           :model-value="action.navigatePath ?? ''"
           size="small"
           placeholder="/detail/:id"
-          @update:model-value="updateAction(idx, 'navigatePath', $event || undefined)"
+          @update:model-value="
+            updateAction(idx, 'navigatePath', $event || undefined)
+          "
         />
       </div>
-      <div v-if="action.type === 'navigate'" :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.navigateQuery') }}</label>
+      <div
+        v-if="action.type === 'navigate'"
+        :class="styles['row-actions-editor__field']"
+      >
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.navigateQuery")
+        }}</label>
         <el-input
           type="textarea"
-          :model-value="action.navigateQuery ? JSON.stringify(action.navigateQuery, null, 2) : ''"
+          :model-value="
+            action.navigateQuery
+              ? JSON.stringify(action.navigateQuery, null, 2)
+              : ''
+          "
           :rows="2"
           placeholder='{"from":"list"}'
-          @update:model-value="updateAction(idx, 'navigateQuery', parseNavigateQuery($event))"
+          @update:model-value="
+            updateAction(idx, 'navigateQuery', parseNavigateQuery($event))
+          "
         />
       </div>
 
       <!-- Dialog type: title, width, and schema -->
       <template v-if="action.type === 'dialog'">
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.dialogTitle') }}</label>
+          <label :class="styles['row-actions-editor__label']">{{
+            t("editor.rowActionsEditor.dialogTitle")
+          }}</label>
           <el-input
             :model-value="action.dialogTitle ?? ''"
             size="small"
             :placeholder="t('editor.rowActionsEditor.dialogTitlePlaceholder')"
-            @update:model-value="updateAction(idx, 'dialogTitle', $event || undefined)"
+            @update:model-value="
+              updateAction(idx, 'dialogTitle', $event || undefined)
+            "
           />
         </div>
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.dialogWidth') }}</label>
+          <label :class="styles['row-actions-editor__label']">{{
+            t("editor.rowActionsEditor.dialogWidth")
+          }}</label>
           <el-input
             :model-value="action.dialogWidth ?? ''"
             size="small"
             :placeholder="t('editor.rowActionsEditor.dialogWidthPlaceholder')"
-            @update:model-value="updateAction(idx, 'dialogWidth', $event || undefined)"
+            @update:model-value="
+              updateAction(idx, 'dialogWidth', $event || undefined)
+            "
           />
         </div>
         <div :class="styles['row-actions-editor__field']">
-          <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.dialogSchema') }}</label>
+          <label :class="styles['row-actions-editor__label']">{{
+            t("editor.rowActionsEditor.dialogSchema")
+          }}</label>
           <el-input
             type="textarea"
-            :model-value="action.dialogSchema ? JSON.stringify(action.dialogSchema, null, 2) : ''"
+            :model-value="
+              action.dialogSchema
+                ? JSON.stringify(action.dialogSchema, null, 2)
+                : ''
+            "
             :rows="4"
             placeholder='[{"type":"input","field":"name","label":"Name"}]'
-            @update:model-value="updateAction(idx, 'dialogSchema', $event ? parseDialogSchemaJson($event) : undefined)"
+            @update:model-value="
+              updateAction(
+                idx,
+                'dialogSchema',
+                $event ? parseDialogSchemaJson($event) : undefined,
+              )
+            "
           />
         </div>
       </template>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.confirmPrompt') }}</label>
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.confirmPrompt")
+        }}</label>
         <el-input
           :model-value="action.confirm ?? ''"
           size="small"
           :placeholder="t('editor.rowActionsEditor.confirmPlaceholder')"
-          @update:model-value="updateAction(idx, 'confirm', $event || undefined)"
+          @update:model-value="
+            updateAction(idx, 'confirm', $event || undefined)
+          "
         />
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.visibleCondition') }}</label>
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.visibleCondition")
+        }}</label>
         <el-input
           :model-value="action.visibleOn ?? ''"
           size="small"
-          :placeholder="t('editor.rowActionsEditor.visibleConditionPlaceholder')"
-          @update:model-value="updateAction(idx, 'visibleOn', $event || undefined)"
+          :placeholder="
+            t('editor.rowActionsEditor.visibleConditionPlaceholder')
+          "
+          @update:model-value="
+            updateAction(idx, 'visibleOn', $event || undefined)
+          "
         />
       </div>
 
       <div :class="styles['row-actions-editor__field']">
-        <label :class="styles['row-actions-editor__label']">{{ t('editor.rowActionsEditor.disabledCondition') }}</label>
+        <label :class="styles['row-actions-editor__label']">{{
+          t("editor.rowActionsEditor.disabledCondition")
+        }}</label>
         <el-input
           :model-value="action.disabledOn ?? ''"
           size="small"
-          :placeholder="t('editor.rowActionsEditor.disabledConditionPlaceholder')"
-          @update:model-value="updateAction(idx, 'disabledOn', $event || undefined)"
+          :placeholder="
+            t('editor.rowActionsEditor.disabledConditionPlaceholder')
+          "
+          @update:model-value="
+            updateAction(idx, 'disabledOn', $event || undefined)
+          "
         />
       </div>
     </div>
@@ -325,8 +430,7 @@ function parseNavigateQuery(text: string): Record<string, string> | undefined {
       @click="addAction"
     >
       <AppIcon name="plus" />
-      {{ t('editor.rowActionsEditor.addActionText') }}
+      {{ t("editor.rowActionsEditor.addActionText") }}
     </el-button>
   </div>
 </template>
-

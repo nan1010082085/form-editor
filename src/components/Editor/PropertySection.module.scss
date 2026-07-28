@@ -17,7 +17,9 @@
     letter-spacing: 0.3px;
     transition: color 0.15s;
 
-    &:hover { color: var(--el-color-primary); }
+    &:hover {
+      color: var(--el-color-primary);
+    }
   }
 
   :global(.el-collapse-item__wrap) {

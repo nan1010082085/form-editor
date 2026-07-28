@@ -1,10 +1,10 @@
-import { donutChartConfig } from './config-donut'
-import { FgDonutChart, createPieChartWidget } from './index'
+import { donutChartConfig } from "./config-donut";
+import { FgDonutChart, createPieChartWidget } from "./index";
 
-export { FgDonutChart }
+export { FgDonutChart };
 
 export function createDonutChartWidget(id: string) {
-  return createPieChartWidget(id, donutChartConfig)
+  return createPieChartWidget(id, donutChartConfig);
 }
 
-export { donutChartConfig }
+export { donutChartConfig };

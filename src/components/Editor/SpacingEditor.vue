@@ -7,88 +7,88 @@
  * - 解除链接：4 个独立输入（上右下左），可分别设置不同值
  * - 中央矩形实时预览各边数值
  */
-import { ref, computed } from 'vue'
-import styles from './SpacingEditor.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { ref, computed } from "vue";
+import styles from "./SpacingEditor.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const props = defineProps<{
   /** 'margin' 或 'padding' */
-  mode: 'margin' | 'padding'
-  value?: Record<string, string>
-}>()
+  mode: "margin" | "padding";
+  value?: Record<string, string>;
+}>();
 
 const emit = defineEmits<{
-  update: [patch: Record<string, string>]
-}>()
+  update: [patch: Record<string, string>];
+}>();
 
 // ---- 链接模式 ----
 
-const linked = ref(true)
+const linked = ref(true);
 
-type Side = 'top' | 'right' | 'bottom' | 'left'
+type Side = "top" | "right" | "bottom" | "left";
 
 const SIDE_PROP_MAP: Record<Side, Record<string, string>> = {
-  top: { margin: 'marginTop', padding: 'paddingTop' },
-  right: { margin: 'marginRight', padding: 'paddingRight' },
-  bottom: { margin: 'marginBottom', padding: 'paddingBottom' },
-  left: { margin: 'marginLeft', padding: 'paddingLeft' },
-}
+  top: { margin: "marginTop", padding: "paddingTop" },
+  right: { margin: "marginRight", padding: "paddingRight" },
+  bottom: { margin: "marginBottom", padding: "paddingBottom" },
+  left: { margin: "marginLeft", padding: "paddingLeft" },
+};
 
 // ---- 解析值 ----
 
 function parsePx(val?: string): number {
-  if (!val) return 0
-  const m = val.match(/^(\d+(?:\.\d+)?)/)
-  return m ? parseFloat(m[1]) : 0
+  if (!val) return 0;
+  const m = val.match(/^(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : 0;
 }
 
 function getSideVal(side: Side): number {
-  const v = props.value ?? {}
-  const prefix = props.mode
+  const v = props.value ?? {};
+  const prefix = props.mode;
   // 优先读取单边属性，fallback 到简写
-  return parsePx(v[SIDE_PROP_MAP[side][prefix]]) || parsePx(v[prefix])
+  return parsePx(v[SIDE_PROP_MAP[side][prefix]]) || parsePx(v[prefix]);
 }
 
 const linkedValue = computed(() => {
-  const v = props.value ?? {}
-  return parsePx(v[props.mode])
-})
+  const v = props.value ?? {};
+  return parsePx(v[props.mode]);
+});
 
-const topVal = computed(() => getSideVal('top'))
-const rightVal = computed(() => getSideVal('right'))
-const bottomVal = computed(() => getSideVal('bottom'))
-const leftVal = computed(() => getSideVal('left'))
+const topVal = computed(() => getSideVal("top"));
+const rightVal = computed(() => getSideVal("right"));
+const bottomVal = computed(() => getSideVal("bottom"));
+const leftVal = computed(() => getSideVal("left"));
 
 // ---- 操作 ----
 
 function applyLinked(val: number | undefined) {
-  const v = `${val ?? 0}px`
-  const prefix = props.mode
-  emit('update', {
+  const v = `${val ?? 0}px`;
+  const prefix = props.mode;
+  emit("update", {
     [prefix]: v,
-    [`${prefix}Top`]: '',
-    [`${prefix}Right`]: '',
-    [`${prefix}Bottom`]: '',
-    [`${prefix}Left`]: '',
-  })
+    [`${prefix}Top`]: "",
+    [`${prefix}Right`]: "",
+    [`${prefix}Bottom`]: "",
+    [`${prefix}Left`]: "",
+  });
 }
 
 function applySide(side: Side, val: number | undefined) {
-  const v = `${val ?? 0}px`
-  const prefix = props.mode
-  const prop = SIDE_PROP_MAP[side][prefix]
-  const patch: Record<string, string> = { [prop]: v, [prefix]: '' }
-  emit('update', patch)
+  const v = `${val ?? 0}px`;
+  const prefix = props.mode;
+  const prop = SIDE_PROP_MAP[side][prefix];
+  const patch: Record<string, string> = { [prop]: v, [prefix]: "" };
+  emit("update", patch);
 }
 
 function toggleLinked() {
-  linked.value = !linked.value
+  linked.value = !linked.value;
   if (linked.value) {
     // 切回链接模式：用当前 top 值统一四边
-    applyLinked(topVal.value)
+    applyLinked(topVal.value);
   }
 }
 </script>
@@ -104,7 +104,9 @@ function toggleLinked() {
         </div>
         <!-- Right -->
         <div :class="[styles.side, styles.sideRight]">
-          <span :class="[styles.sideValue, styles.sideValueVertical]">{{ rightVal }}</span>
+          <span :class="[styles.sideValue, styles.sideValueVertical]">{{
+            rightVal
+          }}</span>
         </div>
         <!-- Bottom -->
         <div :class="[styles.side, styles.sideBottom]">
@@ -112,16 +114,28 @@ function toggleLinked() {
         </div>
         <!-- Left -->
         <div :class="[styles.side, styles.sideLeft]">
-          <span :class="[styles.sideValue, styles.sideValueVertical]">{{ leftVal }}</span>
+          <span :class="[styles.sideValue, styles.sideValueVertical]">{{
+            leftVal
+          }}</span>
         </div>
         <!-- Center -->
         <div :class="styles.center">
-          <span :class="styles.centerLabel">{{ mode === 'margin' ? 'M' : 'P' }}</span>
+          <span :class="styles.centerLabel">{{
+            mode === "margin" ? "M" : "P"
+          }}</span>
         </div>
       </div>
 
       <!-- Link toggle -->
-      <el-tooltip :content="linked ? t('editor.spacingEditor.unlink') : t('editor.spacingEditor.linkFour')" placement="top" :show-after="300">
+      <el-tooltip
+        :content="
+          linked
+            ? t('editor.spacingEditor.unlink')
+            : t('editor.spacingEditor.linkFour')
+        "
+        placement="top"
+        :show-after="300"
+      >
         <button
           :class="[styles.linkBtn, linked && styles.linkBtnActive]"
           @click="toggleLinked"
@@ -134,7 +148,9 @@ function toggleLinked() {
     <!-- 链接模式：单个输入 -->
     <div v-if="linked" :class="styles.controls">
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">{{ t('editor.spacingEditor.value') }}</label>
+        <label :class="styles.controlLabel">{{
+          t("editor.spacingEditor.value")
+        }}</label>
         <el-input-number
           :model-value="linkedValue"
           :min="0"
@@ -150,7 +166,9 @@ function toggleLinked() {
     <!-- 解除链接：4 个独立输入 -->
     <div v-else :class="styles.controlsGrid">
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">{{ t('editor.spacingEditor.top') }}</label>
+        <label :class="styles.gridLabel">{{
+          t("editor.spacingEditor.top")
+        }}</label>
         <el-input-number
           :model-value="topVal"
           :min="0"
@@ -162,7 +180,9 @@ function toggleLinked() {
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">{{ t('editor.spacingEditor.right') }}</label>
+        <label :class="styles.gridLabel">{{
+          t("editor.spacingEditor.right")
+        }}</label>
         <el-input-number
           :model-value="rightVal"
           :min="0"
@@ -174,7 +194,9 @@ function toggleLinked() {
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">{{ t('editor.spacingEditor.bottom') }}</label>
+        <label :class="styles.gridLabel">{{
+          t("editor.spacingEditor.bottom")
+        }}</label>
         <el-input-number
           :model-value="bottomVal"
           :min="0"
@@ -182,11 +204,15 @@ function toggleLinked() {
           size="small"
           controls-position="right"
           :class="styles.gridInput"
-          @update:model-value="(v: number | undefined) => applySide('bottom', v)"
+          @update:model-value="
+            (v: number | undefined) => applySide('bottom', v)
+          "
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">{{ t('editor.spacingEditor.left') }}</label>
+        <label :class="styles.gridLabel">{{
+          t("editor.spacingEditor.left")
+        }}</label>
         <el-input-number
           :model-value="leftVal"
           :min="0"

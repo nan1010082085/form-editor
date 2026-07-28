@@ -1,10 +1,10 @@
-import { multiGaugeConfig } from './config-multi'
-import { FgMultiGauge, createGaugeWidget } from './index'
+import { multiGaugeConfig } from "./config-multi";
+import { FgMultiGauge, createGaugeWidget } from "./index";
 
-export { FgMultiGauge }
+export { FgMultiGauge };
 
 export function createMultiGaugeWidget(id: string) {
-  return createGaugeWidget(id, multiGaugeConfig)
+  return createGaugeWidget(id, multiGaugeConfig);
 }
 
-export { multiGaugeConfig }
+export { multiGaugeConfig };

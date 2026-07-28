@@ -1,30 +1,32 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey } from '../base/types'
-import './FgCascader.module.scss'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
-import { useI18n } from '@schema-platform/platform-shared'
+import { inject, computed, ref } from "vue";
+import { widgetDataKey } from "../base/types";
+import "./FgCascader.module.scss";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const { isDisabled } = useWidgetRenderState()
-const { controlStyle: dynamicStyle } = useWidgetControlSize(32)
+const widgetData = inject(widgetDataKey)!;
+const { isDisabled } = useWidgetRenderState();
+const { controlStyle: dynamicStyle } = useWidgetControlSize(32);
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 
 const cascaderProps = computed(() => ({
   multiple: (widgetData.value.props?.multiple as boolean) || false,
-}))
+}));
 
-const cascaderRef = ref<{ $el?: HTMLElement }>()
+const cascaderRef = ref<{ $el?: HTMLElement }>();
 
 function forwardNativeChange() {
-  cascaderRef.value?.$el?.dispatchEvent(new Event('change', { bubbles: true }))
+  cascaderRef.value?.$el?.dispatchEvent(new Event("change", { bubbles: true }));
 }
 </script>
 
@@ -34,7 +36,10 @@ function forwardNativeChange() {
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
     :options="(widgetData.props?.options as any[]) || []"
-    :placeholder="(widgetData.props?.placeholder as string) || t('editor.common.selectPlaceholder')"
+    :placeholder="
+      (widgetData.props?.placeholder as string) ||
+      t('editor.common.selectPlaceholder')
+    "
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :show-all-levels="(widgetData.props?.showAllLevels as boolean) ?? true"
@@ -44,4 +49,3 @@ function forwardNativeChange() {
     @change="forwardNativeChange"
   />
 </template>
-

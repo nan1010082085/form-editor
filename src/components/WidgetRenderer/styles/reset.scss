@@ -3,7 +3,7 @@
 // 通用重置已迁移至 src/styles/theme.scss（全局生效）
 // 此文件仅保留 FormGrid 容器内的隔离逻辑
 // ============================================================
-@use './variables' as *;
+@use "./variables" as *;
 
 // ---- 根容器隔离（防止宿主页面继承样式） ----
 .fg {
@@ -40,7 +40,13 @@
   }
 
   // 段落/标题重置
-  p, h1, h2, h3, h4, h5, h6 {
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     margin: 0;
     padding: 0;
     font-size: inherit;
@@ -88,7 +94,8 @@
     width: 100%;
   }
 
-  th, td {
+  th,
+  td {
     padding: 0;
     font-weight: normal;
     text-align: left;

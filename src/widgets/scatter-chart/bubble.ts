@@ -1,10 +1,10 @@
-import { bubbleChartConfig } from './config-bubble'
-import { FgBubbleChart, createScatterChartWidget } from './index'
+import { bubbleChartConfig } from "./config-bubble";
+import { FgBubbleChart, createScatterChartWidget } from "./index";
 
-export { FgBubbleChart }
+export { FgBubbleChart };
 
 export function createBubbleChartWidget(id: string) {
-  return createScatterChartWidget(id, bubbleChartConfig)
+  return createScatterChartWidget(id, bubbleChartConfig);
 }
 
-export { bubbleChartConfig }
+export { bubbleChartConfig };

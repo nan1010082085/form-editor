@@ -1,4 +1,4 @@
-@use 'datasource-dialog-tokens' as *;
+@use "datasource-dialog-tokens" as *;
 
 .builder {
   display: flex;
@@ -55,7 +55,7 @@
 }
 
 .previewCode {
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 11px;
   color: var(--color-primary);
   word-break: break-all;

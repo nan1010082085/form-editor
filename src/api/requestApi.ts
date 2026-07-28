@@ -4,34 +4,36 @@
  * 提供底层 fetch 封装，供 composable 层调用。
  * 所有外部 API 请求必须经过 src/api/ 目录聚合。
  */
-import { apiClient } from '@/utils/apiClient'
+import { apiClient } from "@/utils/apiClient";
 
 export async function genericFetchApi(
   url: string,
-  method: string = 'get',
+  method: string = "get",
   headers: Record<string, string> = {},
   params?: unknown,
 ): Promise<unknown> {
-  const upperMethod = method.toUpperCase()
+  const upperMethod = method.toUpperCase();
   const fetchOptions: RequestInit = {
     method: upperMethod,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...headers,
     },
+  };
+
+  if (params && ["POST", "PUT", "PATCH"].includes(upperMethod)) {
+    fetchOptions.body = JSON.stringify(params);
   }
 
-  if (params && ['POST', 'PUT', 'PATCH'].includes(upperMethod)) {
-    fetchOptions.body = JSON.stringify(params)
-  }
-
-  const response = await window.fetch(url, fetchOptions)
+  const response = await window.fetch(url, fetchOptions);
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+    throw new Error(
+      `API request failed: ${response.status} ${response.statusText}`,
+    );
   }
 
-  return response.json()
+  return response.json();
 }
 
 /**
@@ -45,5 +47,5 @@ export async function requestExternalUrl<T>(
   headers?: Record<string, string>,
   timeout?: number,
 ): Promise<T> {
-  return apiClient.requestUrl<T>(method, url, bodyOrParams, headers, timeout)
+  return apiClient.requestUrl<T>(method, url, bodyOrParams, headers, timeout);
 }

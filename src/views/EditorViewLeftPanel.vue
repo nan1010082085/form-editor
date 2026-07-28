@@ -5,15 +5,15 @@
  * 从 EditorView.vue 拆分而来，负责渲染左侧面板（组件树/大纲）。
  * 包含可见性切换的动画逻辑。
  */
-import EditorLeftPanel from '@/components/Editor/EditorLeftPanel.vue'
-import styles from './EditorView.module.scss'
+import EditorLeftPanel from "@/components/Editor/EditorLeftPanel.vue";
+import styles from "./EditorView.module.scss";
 
 defineProps<{
-  visible: boolean
-  schemaStatus: string
-  schemaType: string
-  schemaId: string | null
-}>()
+  visible: boolean;
+  schemaStatus: "draft" | "published";
+  schemaType: "form" | "page";
+  schemaId: string | null;
+}>();
 </script>
 
 <template>

@@ -9,59 +9,73 @@
  * - 辅助线层（灰色虚线）
  * - 交互事件（选中、拖拽、缩放）
  */
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useWidgetStore } from '../../stores/widget'
-import { useEditorStore } from '../../stores/editor'
-import { useDragStore } from '../../stores/drag'
-import { useBoardStore } from '../../stores/board'
-import { useDrag } from '../../composables/useDrag'
-import { useResize } from '../../composables/useResize'
-import { useClipboard } from '../../composables/useClipboard'
-import { useDuplicateWidget } from '../../composables/useDuplicateWidget'
-import { useSnapshot } from '../../composables/useSnapshot'
-import { applyTemplate } from '../../utils/apiClient'
-import { useI18n } from '@schema-platform/platform-shared'
-import { viewportToCanvas, constrainToCanvasBounds } from '../../utils/coordinate'
-import { collectAllContainers } from '../../utils/collision'
-import type { Widget, SchemaType } from '../../widgets/base/types'
-import type { ResizeHandle } from '../../composables/useResize'
-import SchemaRender from '../WidgetRenderer/SchemaRender.vue'
-import WidgetContextMenu from './WidgetContextMenu.vue'
-import styles from './EditorOverlay.module.scss'
+import { computed, ref, onMounted, onUnmounted } from "vue";
+import { ElMessage } from "element-plus";
+import { useWidgetStore } from "../../stores/widget";
+import { useEditorStore } from "../../stores/editor";
+import { useDragStore } from "../../stores/drag";
+import { useBoardStore } from "../../stores/board";
+import { useDrag } from "../../composables/useDrag";
+import { useResize } from "../../composables/useResize";
+import { useClipboard } from "../../composables/useClipboard";
+import { useDuplicateWidget } from "../../composables/useDuplicateWidget";
+import { useSnapshot } from "../../composables/useSnapshot";
+import { applyTemplate } from "../../utils/apiClient";
+import { useI18n } from "@schema-platform/platform-shared";
+import {
+  viewportToCanvas,
+  constrainToCanvasBounds,
+} from "../../utils/coordinate";
+import { collectAllContainers } from "../../utils/collision";
+import type { Widget, SchemaType } from "../../widgets/base/types";
+import type { ResizeHandle } from "../../composables/useResize";
+import SchemaRender from "../WidgetRenderer/SchemaRender.vue";
+import WidgetContextMenu from "./WidgetContextMenu.vue";
+import styles from "./EditorOverlay.module.scss";
 
 // ================================================================
 // 递归展开 Widget 树，子组件坐标转为画布绝对坐标
 // ================================================================
 
 interface FlatWidget {
-  widget: Widget
-  canvasX: number
-  canvasY: number
-  widthPx: number
-  heightPx: number
-  depth: number
+  widget: Widget;
+  canvasX: number;
+  canvasY: number;
+  widthPx: number;
+  heightPx: number;
+  depth: number;
 }
 
 /** Resolve widget w/h to pixels, accounting for % units */
-function resolveSizePx(w: Widget, parentW: number, parentH: number): { w: number; h: number } {
-  const pos = w.position
-  if (!pos) return { w: 0, h: 0 }
-  const wUnit = pos.wUnit ?? 'px'
-  const hUnit = pos.hUnit ?? 'px'
+function resolveSizePx(
+  w: Widget,
+  parentW: number,
+  parentH: number,
+): { w: number; h: number } {
+  const pos = w.position;
+  if (!pos) return { w: 0, h: 0 };
+  const wUnit = pos.wUnit ?? "px";
+  const hUnit = pos.hUnit ?? "px";
   return {
-    w: wUnit === '%' ? Math.round(parentW * pos.w / 100) : pos.w,
-    h: hUnit === '%' ? Math.round(parentH * pos.h / 100) : pos.h,
-  }
+    w: wUnit === "%" ? Math.round((parentW * pos.w) / 100) : pos.w,
+    h: hUnit === "%" ? Math.round((parentH * pos.h) / 100) : pos.h,
+  };
 }
 
-function flattenWidgets(widgets: Widget[], offsetX = 0, offsetY = 0, depth = 0, parentW = 0, parentH = 0): FlatWidget[] {
-  const result: FlatWidget[] = []
-  const canvasW = parentW || boardStore.getCanvasWidthPx()
-  const canvasH = parentH || boardStore.getCanvasHeightPx()
+function flattenWidgets(
+  widgets: Widget[],
+  offsetX = 0,
+  offsetY = 0,
+  depth = 0,
+  parentW = 0,
+  parentH = 0,
+): FlatWidget[] {
+  const result: FlatWidget[] = [];
+  const canvasW = parentW || boardStore.getCanvasWidthPx();
+  const canvasH = parentH || boardStore.getCanvasHeightPx();
   for (const w of widgets) {
-    if (!w || !w.position) continue
-    const size = resolveSizePx(w, canvasW, canvasH)
+    if (!w || !w.position) continue;
+    const size = resolveSizePx(w, canvasW, canvasH);
     result.push({
       widget: w,
       canvasX: offsetX + (w.position.x || 0),
@@ -69,107 +83,147 @@ function flattenWidgets(widgets: Widget[], offsetX = 0, offsetY = 0, depth = 0, 
       widthPx: size.w,
       heightPx: size.h,
       depth,
-    })
+    });
     if (w.children?.length && !SELF_RENDERING_CONTAINERS.has(w.type)) {
-      result.push(...flattenWidgets(w.children, offsetX + (w.position.x || 0), offsetY + (w.position.y || 0), depth + 1, size.w, size.h))
+      result.push(
+        ...flattenWidgets(
+          w.children,
+          offsetX + (w.position.x || 0),
+          offsetY + (w.position.y || 0),
+          depth + 1,
+          size.w,
+          size.h,
+        ),
+      );
     }
   }
-  return result
+  return result;
 }
 
 const emit = defineEmits<{
-  openEvent: [widget: Widget]
-  openRule: [widget: Widget]
-  openApi: [widget: Widget]
-  openVariables: [widget: Widget]
-  savePreview: [dataUrl: string]
-}>()
+  openEvent: [widget: Widget];
+  openRule: [widget: Widget];
+  openApi: [widget: Widget];
+  openVariables: [widget: Widget];
+  savePreview: [dataUrl: string];
+}>();
 
-const widgetStore = useWidgetStore()
-const editorStore = useEditorStore()
-const dragStore = useDragStore()
-const boardStore = useBoardStore()
-const { duplicateFromWidget } = useDuplicateWidget()
-const { t } = useI18n()
+const widgetStore = useWidgetStore();
+const editorStore = useEditorStore();
+const dragStore = useDragStore();
+const boardStore = useBoardStore();
+const { duplicateFromWidget } = useDuplicateWidget();
+const { t } = useI18n();
 
-const { startDragFromPanel, startDragOnCanvas, updateDrag, endDrag, cancelDrag } = useDrag()
-const { copy } = useClipboard()
-const { captureElement } = useSnapshot()
+const {
+  startDragFromPanel,
+  startDragOnCanvas,
+  updateDrag,
+  endDrag,
+  cancelDrag,
+} = useDrag();
+const { copy } = useClipboard();
+const { captureElement } = useSnapshot();
 
 // ---- ESC 键取消拖拽 ----
 
 function handleKeyDown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && dragStore.isDragging) {
-    e.preventDefault()
-    cancelDrag()
+  if (e.key === "Escape" && dragStore.isDragging) {
+    e.preventDefault();
+    cancelDrag();
   }
 }
 
 onMounted(() => {
-  document.addEventListener('keydown', handleKeyDown)
-})
+  document.addEventListener("keydown", handleKeyDown);
+});
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeyDown)
-})
+  document.removeEventListener("keydown", handleKeyDown);
+});
 
 /** 自渲染容器：children 在组件内部渲染，flattenWidgets 跳过其子组件 */
 const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
-  'single-col', 'double-col', 'triple-col', 'quad-col',
-  'tree-layout',
-])
+  "single-col",
+  "double-col",
+  "triple-col",
+  "quad-col",
+  "tree-layout",
+]);
 
 /** 交互式容器：hitArea 设为 pointer-events:none，点击穿透到实际 UI */
-const INTERACTIVE_CONTAINER_TYPES: ReadonlySet<SchemaType> = new Set(['tabs', 'dialog'])
-const { startResize, updateResize, endResize } = useResize()
+const INTERACTIVE_CONTAINER_TYPES: ReadonlySet<SchemaType> = new Set([
+  "tabs",
+  "dialog",
+]);
+const { startResize, updateResize, endResize } = useResize();
 
-const overlayRef = ref<HTMLElement>()
+const overlayRef = ref<HTMLElement>();
 
 // ================================================================
 // 网格线层
 // ================================================================
 
-const gridOverlayVisible = computed(() =>
-  boardStore.canvas.layoutMode === 'free' && boardStore.canvas.freeLayout?.snapToGrid === true,
-)
+const gridOverlayVisible = computed(
+  () =>
+    boardStore.canvas.layoutMode === "free" &&
+    boardStore.canvas.freeLayout?.snapToGrid === true,
+);
 const gridSizePx = computed(() => {
-  const columns = boardStore.canvas.freeLayout?.gridColumns ?? 24
-  return boardStore.getCanvasWidthPx() / columns
-})
-const gridRowHeightPx = computed(() => boardStore.canvas.freeLayout?.gridRowHeight ?? 8)
+  const columns = boardStore.canvas.freeLayout?.gridColumns ?? 24;
+  return boardStore.getCanvasWidthPx() / columns;
+});
+const gridRowHeightPx = computed(
+  () => boardStore.canvas.freeLayout?.gridRowHeight ?? 8,
+);
 
 // ================================================================
 // 右键上下文菜单
 // ================================================================
 
-const contextMenu = ref({ visible: false, x: 0, y: 0, widget: null as Widget | null })
+const contextMenu = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  widget: null as Widget | null,
+});
 
 function showContextMenu(e: MouseEvent, widget: Widget) {
-  contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, widget }
+  contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, widget };
 }
 
 function handleCopyWidget(widget: Widget) {
-  duplicateFromWidget(widget)
+  duplicateFromWidget(widget);
 }
 
 function handleDeleteWidget(widget: Widget) {
-  widgetStore.removeWidget(widget.id)
-  editorStore.select(null)
+  widgetStore.removeWidget(widget.id);
+  editorStore.select(null);
 }
 
 function handleCopyId(id: string) {
-  copy(id, t('editor.overlay.copiedWidgetId'))
+  copy(id, t("editor.overlay.copiedWidgetId"));
 }
 
-function handleOpenEvent(widget: Widget) { emit('openEvent', widget) }
-function handleOpenRule(widget: Widget) { emit('openRule', widget) }
-function handleOpenApi(widget: Widget) { emit('openApi', widget) }
-function handleOpenVariables(widget: Widget) { emit('openVariables', widget) }
+function handleOpenEvent(widget: Widget) {
+  emit("openEvent", widget);
+}
+function handleOpenRule(widget: Widget) {
+  emit("openRule", widget);
+}
+function handleOpenApi(widget: Widget) {
+  emit("openApi", widget);
+}
+function handleOpenVariables(widget: Widget) {
+  emit("openVariables", widget);
+}
 
 async function handleSavePreview(widget: Widget) {
-  const el = document.querySelector(`[data-widget-id="${widget.id}"]`) as HTMLElement | null
-  if (!el) return
-  const dataUrl = await captureElement(el)
-  if (dataUrl) emit('savePreview', dataUrl)
+  const el = document.querySelector(
+    `[data-widget-id="${widget.id}"]`,
+  ) as HTMLElement | null;
+  if (!el) return;
+  const dataUrl = await captureElement(el);
+  if (dataUrl) emit("savePreview", dataUrl);
 }
 
 // ================================================================
@@ -177,176 +231,237 @@ async function handleSavePreview(widget: Widget) {
 // ================================================================
 
 const selectedWidget = computed(() => {
-  if (!editorStore.selectedId) return null
-  return widgetStore.findWidget(editorStore.selectedId)
-})
+  if (!editorStore.selectedId) return null;
+  return widgetStore.findWidget(editorStore.selectedId);
+});
 
 const selectionStyle = computed(() => {
-  const w = selectedWidget.value
-  if (!w) return { display: 'none' as const }
+  const w = selectedWidget.value;
+  if (!w) return { display: "none" as const };
   // 递归查找子组件的画布绝对坐标（跳过自渲染容器内部）
-  const findCanvasPos = (widgets: Widget[], targetId: string, ox = 0, oy = 0): { x: number; y: number } | null => {
+  const findCanvasPos = (
+    widgets: Widget[],
+    targetId: string,
+    ox = 0,
+    oy = 0,
+  ): { x: number; y: number } | null => {
     for (const widget of widgets) {
-      const wp = widget.position ?? { x: 0, y: 0, w: 0, h: 0 }
-      if (widget.id === targetId) return { x: ox + wp.x, y: oy + wp.y }
-      if (widget.children?.length && !SELF_RENDERING_CONTAINERS.has(widget.type)) {
-        const found = findCanvasPos(widget.children, targetId, ox + wp.x, oy + wp.y)
-        if (found) return found
+      const wp = widget.position ?? { x: 0, y: 0, w: 0, h: 0 };
+      if (widget.id === targetId) return { x: ox + wp.x, y: oy + wp.y };
+      if (
+        widget.children?.length &&
+        !SELF_RENDERING_CONTAINERS.has(widget.type)
+      ) {
+        const found = findCanvasPos(
+          widget.children,
+          targetId,
+          ox + wp.x,
+          oy + wp.y,
+        );
+        if (found) return found;
       }
     }
-    return null
-  }
-  const pos = findCanvasPos(widgetStore.widgets, w.id)
-  const x = pos?.x ?? w.position?.x ?? 0
-  const y = pos?.y ?? w.position?.y ?? 0
-  const delta = getStyleSizeDelta(w)
+    return null;
+  };
+  const pos = findCanvasPos(widgetStore.widgets, w.id);
+  const x = pos?.x ?? w.position?.x ?? 0;
+  const y = pos?.y ?? w.position?.y ?? 0;
+  const delta = getStyleSizeDelta(w);
   // 处理百分比宽高
-  const wUnit = w.position?.wUnit ?? 'px'
-  const hUnit = w.position?.hUnit ?? 'px'
-  const canvasWidth = boardStore.getCanvasWidthPx()
-  const canvasHeight = boardStore.getCanvasHeightPx()
-  const widgetW = wUnit === '%' ? (canvasWidth * w.position.w / 100) : w.position.w
-  const widgetH = hUnit === '%' ? (canvasHeight * w.position.h / 100) : w.position.h
+  const wUnit = w.position?.wUnit ?? "px";
+  const hUnit = w.position?.hUnit ?? "px";
+  const canvasWidth = boardStore.getCanvasWidthPx();
+  const canvasHeight = boardStore.getCanvasHeightPx();
+  const widgetW =
+    wUnit === "%" ? (canvasWidth * w.position.w) / 100 : w.position.w;
+  const widgetH =
+    hUnit === "%" ? (canvasHeight * w.position.h) / 100 : w.position.h;
   return {
-    position: 'absolute' as const,
+    position: "absolute" as const,
     left: `${x + delta.mx}px`,
     top: `${y + delta.my}px`,
     width: `${widgetW + delta.bw}px`,
     height: `${widgetH + delta.bh}px`,
-    border: '2px solid var(--color-primary)',
-    pointerEvents: 'none' as const,
+    border: "2px solid var(--color-primary)",
+    pointerEvents: "none" as const,
     zIndex: 9999,
-  }
-})
+  };
+});
 
 /** 扁平化所有 Widget（含容器内子组件），坐标转为画布绝对坐标 */
-const flatWidgets = computed(() => flattenWidgets(widgetStore.widgets))
+const flatWidgets = computed(() => flattenWidgets(widgetStore.widgets));
 
 // ---- 样式尺寸辅助 ----
 
 function parsePxVal(val?: string): number {
-  if (!val) return 0
-  const m = val.match(/^(\d+(?:\.\d+)?)/)
-  return m ? parseFloat(m[1]) : 0
+  if (!val) return 0;
+  const m = val.match(/^(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : 0;
 }
 
-function getStyleNum(style: Record<string, unknown> | undefined, key: string): number {
-  return parsePxVal(style?.[key] as string | undefined)
+function getStyleNum(
+  style: Record<string, unknown> | undefined,
+  key: string,
+): number {
+  return parsePxVal(style?.[key] as string | undefined);
 }
 
 /** 计算 widget 的 margin 偏移和 border/padding 扩展尺寸 */
-function getStyleSizeDelta(widget: Widget): { mx: number; my: number; bw: number; bh: number } {
-  const s = widget.style as Record<string, unknown> | undefined
-  if (!s) return { mx: 0, my: 0, bw: 0, bh: 0 }
+function getStyleSizeDelta(widget: Widget): {
+  mx: number;
+  my: number;
+  bw: number;
+  bh: number;
+} {
+  const s = widget.style as Record<string, unknown> | undefined;
+  if (!s) return { mx: 0, my: 0, bw: 0, bh: 0 };
 
-  const mt = getStyleNum(s, 'marginTop') || getStyleNum(s, 'margin')
-  const mr = getStyleNum(s, 'marginRight') || getStyleNum(s, 'margin')
-  const mb = getStyleNum(s, 'marginBottom') || getStyleNum(s, 'margin')
-  const ml = getStyleNum(s, 'marginLeft') || getStyleNum(s, 'margin')
+  const mt = getStyleNum(s, "marginTop") || getStyleNum(s, "margin");
+  const mr = getStyleNum(s, "marginRight") || getStyleNum(s, "margin");
+  const mb = getStyleNum(s, "marginBottom") || getStyleNum(s, "margin");
+  const ml = getStyleNum(s, "marginLeft") || getStyleNum(s, "margin");
 
   // margin 偏移（左上角位移）
-  const mx = ml - mr
-  const my = mt - mb
+  const mx = ml - mr;
+  const my = mt - mb;
 
   // margin 增量（总宽度 = 左margin + 右margin）
-  const marginW = ml + mr
-  const marginH = mt + mb
+  const marginW = ml + mr;
+  const marginH = mt + mb;
 
-  return { mx, my, bw: marginW, bh: marginH }
+  return { mx, my, bw: marginW, bh: marginH };
 }
 // ================================================================
 
 const handles: { type: ResizeHandle; style: Record<string, string> }[] = [
-  { type: 'nw', style: { left: '-4px', top: '-4px', cursor: 'nw-resize' } },
-  { type: 'n', style: { left: '50%', top: '-4px', transform: 'translateX(-50%)', cursor: 'n-resize' } },
-  { type: 'ne', style: { right: '-4px', top: '-4px', cursor: 'ne-resize' } },
-  { type: 'e', style: { right: '-4px', top: '50%', transform: 'translateY(-50%)', cursor: 'e-resize' } },
-  { type: 'se', style: { right: '-4px', bottom: '-4px', cursor: 'se-resize' } },
-  { type: 's', style: { left: '50%', bottom: '-4px', transform: 'translateX(-50%)', cursor: 's-resize' } },
-  { type: 'sw', style: { left: '-4px', bottom: '-4px', cursor: 'sw-resize' } },
-  { type: 'w', style: { left: '-4px', top: '50%', transform: 'translateY(-50%)', cursor: 'w-resize' } },
-]
+  { type: "nw", style: { left: "-4px", top: "-4px", cursor: "nw-resize" } },
+  {
+    type: "n",
+    style: {
+      left: "50%",
+      top: "-4px",
+      transform: "translateX(-50%)",
+      cursor: "n-resize",
+    },
+  },
+  { type: "ne", style: { right: "-4px", top: "-4px", cursor: "ne-resize" } },
+  {
+    type: "e",
+    style: {
+      right: "-4px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      cursor: "e-resize",
+    },
+  },
+  { type: "se", style: { right: "-4px", bottom: "-4px", cursor: "se-resize" } },
+  {
+    type: "s",
+    style: {
+      left: "50%",
+      bottom: "-4px",
+      transform: "translateX(-50%)",
+      cursor: "s-resize",
+    },
+  },
+  { type: "sw", style: { left: "-4px", bottom: "-4px", cursor: "sw-resize" } },
+  {
+    type: "w",
+    style: {
+      left: "-4px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      cursor: "w-resize",
+    },
+  },
+];
 
 // ================================================================
 // 辅助线
 // ================================================================
 
-const guideLines = computed(() => dragStore.guideLines)
+const guideLines = computed(() => dragStore.guideLines);
 
 // ================================================================
 // 容器高亮（拖拽悬停时，支持嵌套容器的画布绝对坐标）
 // ================================================================
 
 const hoveredContainer = computed(() => {
-  if (!dragStore.isDragging || !dragStore.hoveredContainerId) return null
-  return widgetStore.findWidget(dragStore.hoveredContainerId)
-})
+  if (!dragStore.isDragging || !dragStore.hoveredContainerId) return null;
+  return widgetStore.findWidget(dragStore.hoveredContainerId);
+});
 
 /** 计算嵌套容器的画布绝对坐标（递归累加父容器偏移） */
-function getContainerCanvasPosition(containerId: string): { x: number; y: number } {
-  const allContainers = collectAllContainers(widgetStore.widgets)
-  const found = allContainers.find(c => c.id === containerId)
-  if (found && '_canvasX' in found) {
-    return { x: (found as Widget & { _canvasX: number })._canvasX, y: (found as Widget & { _canvasY: number })._canvasY }
+function getContainerCanvasPosition(containerId: string): {
+  x: number;
+  y: number;
+} {
+  const allContainers = collectAllContainers(widgetStore.widgets);
+  const found = allContainers.find((c) => c.id === containerId);
+  if (found && "_canvasX" in found) {
+    return {
+      x: (found as Widget & { _canvasX: number })._canvasX,
+      y: (found as Widget & { _canvasY: number })._canvasY,
+    };
   }
   // 回退到根级坐标
-  const widget = widgetStore.findWidget(containerId)
-  return { x: widget?.position.x ?? 0, y: widget?.position.y ?? 0 }
+  const widget = widgetStore.findWidget(containerId);
+  return { x: widget?.position.x ?? 0, y: widget?.position.y ?? 0 };
 }
 
 const containerHighlightStyle = computed(() => {
-  const c = hoveredContainer.value
-  if (!c) return { display: 'none' as const }
-  const canvasPos = getContainerCanvasPosition(c.id)
+  const c = hoveredContainer.value;
+  if (!c) return { display: "none" as const };
+  const canvasPos = getContainerCanvasPosition(c.id);
   return {
-    position: 'absolute' as const,
+    position: "absolute" as const,
     left: `${canvasPos.x}px`,
     top: `${canvasPos.y}px`,
     width: `${c.position?.w ?? 0}px`,
     height: `${c.position?.h ?? 0}px`,
-    border: '2px dashed var(--color-primary)',
-    backgroundColor: 'rgba(64, 158, 255, 0.1)',
-    pointerEvents: 'none' as const,
+    border: "2px dashed var(--color-primary)",
+    backgroundColor: "rgba(64, 158, 255, 0.1)",
+    pointerEvents: "none" as const,
     zIndex: 9998,
-  }
-})
+  };
+});
 
 // ================================================================
 // 放置预览线（指示新组件的插入位置）
 // ================================================================
 
-const dropPreviewLine = computed(() => dragStore.dropPreviewLine)
+const dropPreviewLine = computed(() => dragStore.dropPreviewLine);
 
 const dropPreviewLineStyle = computed(() => {
-  const line = dropPreviewLine.value
-  if (!line) return { display: 'none' as const }
+  const line = dropPreviewLine.value;
+  if (!line) return { display: "none" as const };
 
-  if (line.orientation === 'horizontal') {
+  if (line.orientation === "horizontal") {
     return {
-      position: 'absolute' as const,
+      position: "absolute" as const,
       left: `${line.start}px`,
       top: `${line.position - 1}px`,
       width: `${line.end - line.start}px`,
-      height: '2px',
-      backgroundColor: 'var(--color-primary)',
-      pointerEvents: 'none' as const,
+      height: "2px",
+      backgroundColor: "var(--color-primary)",
+      pointerEvents: "none" as const,
       zIndex: 9999,
-      boxShadow: '0 0 4px var(--color-primary)',
-    }
+      boxShadow: "0 0 4px var(--color-primary)",
+    };
   }
 
   return {
-    position: 'absolute' as const,
+    position: "absolute" as const,
     left: `${line.position - 1}px`,
     top: `${line.start}px`,
-    width: '2px',
+    width: "2px",
     height: `${line.end - line.start}px`,
-    backgroundColor: 'var(--color-primary)',
-    pointerEvents: 'none' as const,
+    backgroundColor: "var(--color-primary)",
+    pointerEvents: "none" as const,
     zIndex: 9999,
-    boxShadow: '0 0 4px var(--color-primary)',
-  }
-})
+    boxShadow: "0 0 4px var(--color-primary)",
+  };
+});
 
 // ================================================================
 // 事件处理
@@ -355,7 +470,7 @@ const dropPreviewLineStyle = computed(() => {
 /** 点击空白区域取消选中 */
 function handleOverlayClick(e: MouseEvent) {
   if (e.target === overlayRef.value) {
-    editorStore.clearSelection()
+    editorStore.clearSelection();
   }
 }
 
@@ -364,122 +479,129 @@ function handleOverlayClick(e: MouseEvent) {
  * hitArea 拦截了 mousedown（用于拖拽检测），click 事件需要手动转发给底层 UI。
  */
 function handleInteractiveClick(e: MouseEvent, _widget: Widget) {
-  const hitArea = e.currentTarget as HTMLElement
-  hitArea.style.pointerEvents = 'none'
-  const target = document.elementFromPoint(e.clientX, e.clientY)
-  hitArea.style.pointerEvents = ''
+  const hitArea = e.currentTarget as HTMLElement;
+  hitArea.style.pointerEvents = "none";
+  const target = document.elementFromPoint(e.clientX, e.clientY);
+  hitArea.style.pointerEvents = "";
   if (target && target !== hitArea) {
-    target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+    target.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
   }
 }
 
 /** Widget 上 mousedown — 区分点击和拖拽 */
 function handleWidgetMouseDown(e: MouseEvent, widget: Widget) {
-  e.stopPropagation()
-  editorStore.select(widget.id)
+  e.stopPropagation();
+  editorStore.select(widget.id);
 
-  const startX = e.clientX
-  const startY = e.clientY
-  let dragging = false
-  const DRAG_THRESHOLD = 3
-  let rafId: number | null = null
-  let pendingEvent: MouseEvent | null = null
+  const startX = e.clientX;
+  const startY = e.clientY;
+  let dragging = false;
+  const DRAG_THRESHOLD = 3;
+  let rafId: number | null = null;
+  let pendingEvent: MouseEvent | null = null;
 
   const processMouseMove = () => {
     if (!pendingEvent || !dragging || !overlayRef.value) {
-      rafId = null
-      return
+      rafId = null;
+      return;
     }
-    const me = pendingEvent
-    pendingEvent = null
-    updateDrag(me.clientX, me.clientY, overlayRef.value)
-    rafId = null
-  }
+    const me = pendingEvent;
+    pendingEvent = null;
+    updateDrag(me.clientX, me.clientY, overlayRef.value);
+    rafId = null;
+  };
 
   const onMouseMove = (me: MouseEvent) => {
-    const dx = me.clientX - startX
-    const dy = me.clientY - startY
+    const dx = me.clientX - startX;
+    const dy = me.clientY - startY;
 
-    if (!dragging && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
-      dragging = true
+    if (
+      !dragging &&
+      (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)
+    ) {
+      dragging = true;
       if (overlayRef.value) {
-        startDragOnCanvas(widget.id, startX, startY, overlayRef.value)
+        startDragOnCanvas(widget.id, startX, startY, overlayRef.value);
       }
     }
 
     if (dragging) {
-      pendingEvent = me
+      pendingEvent = me;
       if (rafId === null) {
-        rafId = requestAnimationFrame(processMouseMove)
+        rafId = requestAnimationFrame(processMouseMove);
       }
     }
-  }
+  };
 
   const onMouseUp = () => {
     if (dragging) {
-      endDrag()
+      endDrag();
     }
     if (rafId !== null) {
-      cancelAnimationFrame(rafId)
-      rafId = null
+      cancelAnimationFrame(rafId);
+      rafId = null;
     }
-    document.removeEventListener('mousemove', onMouseMove)
-    document.removeEventListener('mouseup', onMouseUp)
-  }
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  };
 
-  document.addEventListener('mousemove', onMouseMove)
-  document.addEventListener('mouseup', onMouseUp)
+  document.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("mouseup", onMouseUp);
 }
 
 /** 缩放手柄 mousedown 开始缩放 */
 function handleHandleMouseDown(e: MouseEvent, handle: ResizeHandle) {
-  e.stopPropagation()
-  if (!editorStore.selectedId) return
-  startResize(editorStore.selectedId, handle, e.clientX, e.clientY)
+  e.stopPropagation();
+  if (!editorStore.selectedId) return;
+  startResize(editorStore.selectedId, handle, e.clientX, e.clientY);
 
   const onMouseMove = (me: MouseEvent) => {
-    updateResize(me.clientX, me.clientY, me.shiftKey)
-  }
+    updateResize(me.clientX, me.clientY, me.shiftKey);
+  };
 
   const onMouseUp = () => {
-    endResize()
-    document.removeEventListener('mousemove', onMouseMove)
-    document.removeEventListener('mouseup', onMouseUp)
-  }
+    endResize();
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  };
 
-  document.addEventListener('mousemove', onMouseMove)
-  document.addEventListener('mouseup', onMouseUp)
+  document.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("mouseup", onMouseUp);
 }
 
 /** 拖拽悬停（从面板拖入时更新位置） */
-let dragOverRafId: number | null = null
-let pendingDragOverEvent: DragEvent | null = null
+let dragOverRafId: number | null = null;
+let pendingDragOverEvent: DragEvent | null = null;
 
 function processDragOver() {
   if (!pendingDragOverEvent || !dragStore.isDragging || !overlayRef.value) {
-    dragOverRafId = null
-    return
+    dragOverRafId = null;
+    return;
   }
-  const e = pendingDragOverEvent
-  pendingDragOverEvent = null
-  updateDrag(e.clientX, e.clientY, overlayRef.value)
-  dragOverRafId = null
+  const e = pendingDragOverEvent;
+  pendingDragOverEvent = null;
+  updateDrag(e.clientX, e.clientY, overlayRef.value);
+  dragOverRafId = null;
 }
 
 function handleDragOver(e: DragEvent) {
-  e.preventDefault()
+  e.preventDefault();
   // 面板拖入：首次 dragover 时启动拖拽跟踪，使碰撞检测和预览线在悬停阶段生效
   if (!dragStore.isDragging) {
-    const hasSchemaType = e.dataTransfer?.types.includes('schema-type') || e.dataTransfer?.types.includes('application/schema-drag')
+    const hasSchemaType =
+      e.dataTransfer?.types.includes("schema-type") ||
+      e.dataTransfer?.types.includes("application/schema-drag");
     if (hasSchemaType && overlayRef.value) {
       // dragover 阶段无法读取 data，用临时 type 启动跟踪
-      dragStore.startDrag('panel', `preview_${Date.now()}`, 'input')
+      dragStore.startDrag("panel", `preview_${Date.now()}`, "input");
     }
   }
   if (dragStore.isDragging) {
-    pendingDragOverEvent = e
+    pendingDragOverEvent = e;
     if (dragOverRafId === null) {
-      dragOverRafId = requestAnimationFrame(processDragOver)
+      dragOverRafId = requestAnimationFrame(processDragOver);
     }
   }
 }
@@ -487,85 +609,104 @@ function handleDragOver(e: DragEvent) {
 /** 拖拽离开画布区域时清理预览状态 */
 function handleDragLeave(e: DragEvent) {
   // 只在真正离开 overlay 区域时清理（避免子元素触发的 leave 事件）
-  const relatedTarget = e.relatedTarget as HTMLElement | null
-  if (relatedTarget && overlayRef.value?.contains(relatedTarget)) return
-  if (dragStore.isDragging && dragStore.dragSource === 'panel') {
-    dragStore.endDrag()
+  const relatedTarget = e.relatedTarget as HTMLElement | null;
+  if (relatedTarget && overlayRef.value?.contains(relatedTarget)) return;
+  if (dragStore.isDragging && dragStore.dragSource === "panel") {
+    dragStore.endDrag();
   }
 }
 
 /** 放置（从面板拖入结束） */
 function handleDrop(e: DragEvent) {
-  e.preventDefault()
-  const templateId = e.dataTransfer?.getData('template-id')
+  e.preventDefault();
+  const templateId = e.dataTransfer?.getData("template-id");
   if (templateId) {
-    dragStore.endDrag()
-    handleTemplateDrop(templateId, e.clientX, e.clientY)
-    return
+    dragStore.endDrag();
+    handleTemplateDrop(templateId, e.clientX, e.clientY);
+    return;
   }
-  const schemaType = e.dataTransfer?.getData('schema-type') as import('../../widgets/base/types').SchemaType | undefined
+  const schemaType = e.dataTransfer?.getData("schema-type") as
+    | import("../../widgets/base/types").SchemaType
+    | undefined;
   if (schemaType) {
     // 如果 dragover 阶段已经启动了拖拽跟踪，先结束再用正确的类型重新开始
     if (dragStore.isDragging) {
-      dragStore.endDrag()
+      dragStore.endDrag();
     }
-    startDragFromPanel(schemaType)
+    startDragFromPanel(schemaType);
     if (overlayRef.value) {
-      updateDrag(e.clientX, e.clientY, overlayRef.value)
+      updateDrag(e.clientX, e.clientY, overlayRef.value);
     }
   }
-  endDrag()
+  endDrag();
 }
 
 /** 处理模板拖放到画布 */
-async function handleTemplateDrop(templateId: string, clientX: number, clientY: number) {
+async function handleTemplateDrop(
+  templateId: string,
+  clientX: number,
+  clientY: number,
+) {
   try {
-    const result = await applyTemplate(templateId)
-    const widgets = result.widgets as unknown as Widget[]
+    const result = await applyTemplate(templateId);
+    const widgets = result.widgets as unknown as Widget[];
 
     // 计算放置位置（画布坐标系）
-    let dropX = 0
-    let dropY = 0
+    let dropX = 0;
+    let dropY = 0;
     if (overlayRef.value) {
-      const rect = overlayRef.value.getBoundingClientRect()
-      const zoom = boardStore.canvas.zoom
-      const canvasPos = viewportToCanvas(clientX, clientY, rect, overlayRef.value.scrollLeft, overlayRef.value.scrollTop, zoom)
-      dropX = canvasPos.x
-      dropY = canvasPos.y
+      const rect = overlayRef.value.getBoundingClientRect();
+      const zoom = boardStore.canvas.zoom;
+      const canvasPos = viewportToCanvas(
+        clientX,
+        clientY,
+        rect,
+        overlayRef.value.scrollLeft,
+        overlayRef.value.scrollTop,
+        zoom,
+      );
+      dropX = canvasPos.x;
+      dropY = canvasPos.y;
     }
 
     // 计算模板 widgets 的包围盒，用于偏移到放置点
     if (widgets.length > 0) {
-      const minX = Math.min(...widgets.map(w => w.position?.x ?? 0))
-      const minY = Math.min(...widgets.map(w => w.position?.y ?? 0))
-      const offsetX = dropX - minX
-      const offsetY = dropY - minY
+      const minX = Math.min(...widgets.map((w) => w.position?.x ?? 0));
+      const minY = Math.min(...widgets.map((w) => w.position?.y ?? 0));
+      const offsetX = dropX - minX;
+      const offsetY = dropY - minY;
 
       for (const w of widgets) {
         if (w.position) {
-          w.position.x += offsetX
-          w.position.y += offsetY
+          w.position.x += offsetX;
+          w.position.y += offsetY;
           // 边界约束
           const constrained = constrainToCanvasBounds(
-            w.position.x, w.position.y, w.position.w, w.position.h,
-            boardStore.getCanvasWidthPx(), boardStore.getCanvasHeightPx(),
-          )
-          w.position.x = constrained.x
-          w.position.y = constrained.y
+            w.position.x,
+            w.position.y,
+            w.position.w,
+            w.position.h,
+            boardStore.getCanvasWidthPx(),
+            boardStore.getCanvasHeightPx(),
+          );
+          w.position.x = constrained.x;
+          w.position.y = constrained.y;
         }
-        widgetStore.addWidget(w)
+        widgetStore.addWidget(w);
       }
     } else {
       // 无位置信息的 widgets 直接添加
       for (const w of widgets) {
-        widgetStore.addWidget(w)
+        widgetStore.addWidget(w);
       }
     }
 
-    editorStore.pushHistory([...widgetStore.widgets])
-    ElMessage.success(t('editor.overlay.templateApplied', { name: result.name }))
+    editorStore.pushHistory([...widgetStore.widgets]);
+    ElMessage.success(
+      t("editor.overlay.templateApplied", { name: result.name }),
+    );
   } catch {
-    ElMessage.error(t('editor.overlay.templateApplyFailed'))
+    ElMessage.error(t("editor.overlay.templateApplyFailed"));
   }
 }
 </script>
@@ -605,35 +746,34 @@ async function handleTemplateDrop(templateId: string, clientX: number, clientY: 
       v-for="fw in flatWidgets"
       :key="fw.widget.id"
       :class="styles.hitArea"
-      :style="(() => {
-        const d = getStyleSizeDelta(fw.widget)
-        return {
-          position: 'absolute',
-          left: `${fw.canvasX + d.mx}px`,
-          top: `${fw.canvasY + d.my}px`,
-          width: `${fw.widthPx + d.bw}px`,
-          height: `${fw.heightPx + d.bh}px`,
-          zIndex: (fw.widget.position.zIndex ?? 1) + 100 + fw.depth * 10,
-        }
-      })()"
+      :style="
+        (() => {
+          const d = getStyleSizeDelta(fw.widget);
+          return {
+            position: 'absolute',
+            left: `${fw.canvasX + d.mx}px`,
+            top: `${fw.canvasY + d.my}px`,
+            width: `${fw.widthPx + d.bw}px`,
+            height: `${fw.heightPx + d.bh}px`,
+            zIndex: (fw.widget.position.zIndex ?? 1) + 100 + fw.depth * 10,
+          };
+        })()
+      "
       @dragover.stop.prevent="handleDragOver($event)"
       @drop.stop="handleDrop($event)"
       @mousedown.stop="handleWidgetMouseDown($event, fw.widget)"
-      @click.stop="INTERACTIVE_CONTAINER_TYPES.has(fw.widget.type) && handleInteractiveClick($event, fw.widget)"
+      @click.stop="
+        INTERACTIVE_CONTAINER_TYPES.has(fw.widget.type) &&
+        handleInteractiveClick($event, fw.widget)
+      "
       @contextmenu.prevent="showContextMenu($event, fw.widget)"
     />
 
     <!-- 容器高亮 -->
-    <div
-      v-if="hoveredContainer"
-      :style="containerHighlightStyle"
-    />
+    <div v-if="hoveredContainer" :style="containerHighlightStyle" />
 
     <!-- 放置预览线 -->
-    <div
-      v-if="dropPreviewLine"
-      :style="dropPreviewLineStyle"
-    />
+    <div v-if="dropPreviewLine" :style="dropPreviewLineStyle" />
 
     <!-- 选中框 -->
     <div v-if="selectedWidget" :style="selectionStyle">
@@ -686,4 +826,3 @@ async function handleTemplateDrop(templateId: string, clientX: number, clientY: 
     />
   </div>
 </template>
-

@@ -5,113 +5,114 @@
  * 展示工作流各节点的执行状态、耗时、错误信息。
  * 点击节点可展开查看输入/输出数据。
  */
-import { ref } from 'vue'
-import styles from './ExecutionTimeline.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { ref } from "vue";
+import styles from "./ExecutionTimeline.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
 // ── Types ──
 export interface NodeLog {
-  id: string
-  nodeId: string
-  nodeName: string
-  status: 'running' | 'completed' | 'failed' | 'skipped'
-  input: Record<string, unknown>
-  output: Record<string, unknown>
-  error: string
-  startedAt: string
-  completedAt: string | null
-  duration: number
+  id: string;
+  nodeId: string;
+  nodeName: string;
+  status: "running" | "completed" | "failed" | "skipped";
+  input: Record<string, unknown>;
+  output: Record<string, unknown>;
+  error: string;
+  startedAt: string;
+  completedAt: string | null;
+  duration: number;
 }
 
 // ── Props ──
 const props = defineProps<{
-  nodeLogs: NodeLog[]
-}>()
+  nodeLogs: NodeLog[];
+}>();
 
 // ── Emits ──
 const emit = defineEmits<{
-  'node-click': [node: NodeLog]
-}>()
+  "node-click": [node: NodeLog];
+}>();
 
 // ── State ──
-const expandedNodes = ref<Set<string>>(new Set())
+const expandedNodes = ref<Set<string>>(new Set());
 
 // ── Helpers ──
-function nodeIcon(status: string) {
-  const map: Record<string, typeof SuccessFilled> = {
-    completed: SuccessFilled,
-    failed: CircleCloseFilled,
-    running: Loading,
-    skipped: Remove,
-  }
-  return map[status] ?? WarningFilled
+function nodeIcon(status: string): string {
+  const map: Record<string, string> = {
+    completed: "success-filled",
+    failed: "circle-close-filled",
+    running: "loading",
+    skipped: "circle-close-filled",
+  };
+  return map[status] ?? "warning-filled";
 }
 
 function nodeIconColor(status: string): string {
   const map: Record<string, string> = {
-    completed: 'var(--color-success)',
-    failed: 'var(--color-danger)',
-    running: 'var(--color-primary)',
-    skipped: 'var(--text-color-secondary)',
-  }
-  return map[status] ?? 'var(--text-color-secondary)'
+    completed: "var(--color-success)",
+    failed: "var(--color-danger)",
+    running: "var(--color-primary)",
+    skipped: "var(--text-color-secondary)",
+  };
+  return map[status] ?? "var(--text-color-secondary)";
 }
 
 function statusLabel(s: string): string {
   const map: Record<string, string> = {
-    running: '运行中',
-    completed: '已完成',
-    failed: '失败',
-    skipped: '已跳过',
-  }
-  return map[s] ?? s
+    running: "运行中",
+    completed: "已完成",
+    failed: "失败",
+    skipped: "已跳过",
+  };
+  return map[s] ?? s;
 }
 
-function statusTheme(s: string): 'default' | 'success' | 'warning' | 'danger' {
-  const map: Record<string, 'default' | 'success' | 'warning' | 'danger'> = {
-    running: 'default',
-    completed: 'success',
-    failed: 'danger',
-    skipped: 'default',
-  }
-  return map[s] ?? 'default'
+function statusTheme(s: string): "default" | "success" | "warning" | "danger" {
+  const map: Record<string, "default" | "success" | "warning" | "danger"> = {
+    running: "default",
+    completed: "success",
+    failed: "danger",
+    skipped: "default",
+  };
+  return map[s] ?? "default";
 }
 
 function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`
-  return `${Math.floor(ms / 60_000)}m ${Math.round((ms % 60_000) / 1000)}s`
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${Math.floor(ms / 60_000)}m ${Math.round((ms % 60_000) / 1000)}s`;
 }
 
 function formatTime(d: string | null): string {
-  if (!d) return '-'
-  return new Date(d).toLocaleString('zh-CN')
+  if (!d) return "-";
+  return new Date(d).toLocaleString("zh-CN");
 }
 
 function formatJson(obj: unknown): string {
-  if (!obj || (typeof obj === 'object' && Object.keys(obj).length === 0)) return '(空)'
-  return JSON.stringify(obj, null, 2)
+  if (!obj || (typeof obj === "object" && Object.keys(obj).length === 0))
+    return "(空)";
+  return JSON.stringify(obj, null, 2);
 }
 
 function hasIO(node: NodeLog): boolean {
   return (
     Object.keys(node.input ?? {}).length > 0 ||
     Object.keys(node.output ?? {}).length > 0
-  )
+  );
 }
 
 function toggleExpand(nodeId: string) {
   if (expandedNodes.value.has(nodeId)) {
-    expandedNodes.value.delete(nodeId)
+    expandedNodes.value.delete(nodeId);
   } else {
-    expandedNodes.value.add(nodeId)
+    expandedNodes.value.add(nodeId);
   }
 }
 
 function handleNodeClick(node: NodeLog) {
-  emit('node-click', node)
+  emit("node-click", node);
   if (hasIO(node)) {
-    toggleExpand(node.id)
+    toggleExpand(node.id);
   }
 }
 </script>
@@ -126,8 +127,8 @@ function handleNodeClick(node: NodeLog) {
     >
       <!-- Dot -->
       <div :class="styles.dot">
-        <component
-          :is="nodeIcon(node.status)"
+        <AppIcon
+          :name="nodeIcon(node.status)"
           :size="14"
           :class="styles.dotIcon"
           :style="{ color: nodeIconColor(node.status) }"
@@ -137,7 +138,9 @@ function handleNodeClick(node: NodeLog) {
       <!-- Content card -->
       <div :class="styles.content">
         <div :class="styles.header">
-          <span :class="styles.nodeName">{{ node.nodeName || node.nodeId }}</span>
+          <span :class="styles.nodeName">{{
+            node.nodeName || node.nodeId
+          }}</span>
           <el-tag :type="statusTheme(node.status)" size="small">
             {{ statusLabel(node.status) }}
           </el-tag>
@@ -154,7 +157,7 @@ function handleNodeClick(node: NodeLog) {
 
         <!-- Error -->
         <div v-if="node.error" :class="styles.errorBlock">
-          <AppIcon name="circle-close-filled"  />
+          <AppIcon name="circle-close-filled" />
           <span>{{ node.error }}</span>
         </div>
 
@@ -162,7 +165,7 @@ function handleNodeClick(node: NodeLog) {
         <template v-if="hasIO(node)">
           <div :class="styles.ioToggle">
             <el-link type="primary" :underline="false">
-              {{ expandedNodes.has(node.id) ? '收起' : '查看' }} 输入/输出
+              {{ expandedNodes.has(node.id) ? "收起" : "查看" }} 输入/输出
             </el-link>
           </div>
 
@@ -181,7 +184,5 @@ function handleNodeClick(node: NodeLog) {
     </div>
   </div>
 
-  <div v-else :class="styles.empty">
-    暂无节点执行记录
-  </div>
+  <div v-else :class="styles.empty">暂无节点执行记录</div>
 </template>

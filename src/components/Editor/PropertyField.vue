@@ -5,132 +5,136 @@
  * 根据 type prop 渲染不同的 Element Plus 输入组件。
  * 所有输入事件统一通过 'update' emit 向上传递。
  */
-import { ref, computed, watch, onMounted } from 'vue'
-import { fetchRemoteOptions as apiFetchRemoteOptions } from '@/api/widgetApi'
-import styles from './PropertyField.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { ref, computed, watch, onMounted } from "vue";
+import { fetchRemoteOptions as apiFetchRemoteOptions } from "@/api/widgetApi";
+import styles from "./PropertyField.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 interface SelectOption {
-  label: string
-  value: string | number | boolean
+  label: string;
+  value: string | number | boolean;
 }
 
 interface RemoteOption {
-  label: string
-  value: string | number | boolean
+  label: string;
+  value: string | number | boolean;
 }
 
 const props = defineProps<{
-  label: string
-  type: string
-  value: unknown
-  desc?: string
-  placeholder?: string
-  options?: SelectOption[]
-  remoteUrl?: string
-  labelField?: string
-  valueField?: string
-}>()
+  label: string;
+  type: string;
+  value: unknown;
+  desc?: string;
+  placeholder?: string;
+  options?: SelectOption[];
+  remoteUrl?: string;
+  labelField?: string;
+  valueField?: string;
+}>();
 
 const emit = defineEmits<{
-  update: [value: unknown]
-}>()
+  update: [value: unknown];
+}>();
 
 function handleUpdate(val: unknown) {
-  emit('update', val)
+  emit("update", val);
 }
 
 // ---- Color Array ----
 
-const DEFAULT_COLORS = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de']
+const DEFAULT_COLORS = ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de"];
 
 const colorArrayValue = computed(() => {
   if (Array.isArray(props.value)) {
-    return props.value as string[]
+    return props.value as string[];
   }
-  return DEFAULT_COLORS
-})
+  return DEFAULT_COLORS;
+});
 
 function updateColorArray(index: number, color: string) {
-  const arr = [...colorArrayValue.value]
-  arr[index] = color
-  emit('update', arr)
+  const arr = [...colorArrayValue.value];
+  arr[index] = color;
+  emit("update", arr);
 }
 
 function addColorArrayItem() {
-  const arr = [...colorArrayValue.value, '#000000']
-  emit('update', arr)
+  const arr = [...colorArrayValue.value, "#000000"];
+  emit("update", arr);
 }
 
 function removeColorArrayItem(index: number) {
-  const arr = colorArrayValue.value.filter((_, i) => i !== index)
-  emit('update', arr)
+  const arr = colorArrayValue.value.filter((_, i) => i !== index);
+  emit("update", arr);
 }
 
 // ---- Remote Select 状态 ----
-const remoteOptions = ref<RemoteOption[]>([])
-const remoteLoading = ref(false)
+const remoteOptions = ref<RemoteOption[]>([]);
+const remoteLoading = ref(false);
 
 async function fetchRemoteOptions() {
-  if (!props.remoteUrl) return
-  remoteLoading.value = true
+  if (!props.remoteUrl) return;
+  remoteLoading.value = true;
   try {
     remoteOptions.value = await apiFetchRemoteOptions(
       props.remoteUrl,
-      props.labelField ?? 'name',
-      props.valueField ?? 'id',
-    )
+      props.labelField ?? "name",
+      props.valueField ?? "id",
+    );
   } catch {
-    remoteOptions.value = []
+    remoteOptions.value = [];
   } finally {
-    remoteLoading.value = false
+    remoteLoading.value = false;
   }
 }
 
 onMounted(() => {
-  if (props.type === 'remote-select') {
-    fetchRemoteOptions()
+  if (props.type === "remote-select") {
+    fetchRemoteOptions();
   }
-})
+});
 
 // ---- JSON 编辑器状态 ----
 
-const jsonText = ref('')
-const jsonError = ref('')
+const jsonText = ref("");
+const jsonError = ref("");
 
 function formatJsonValue(val: unknown): string {
-  if (val === null || val === undefined) return ''
-  return JSON.stringify(val, null, 2)
+  if (val === null || val === undefined) return "";
+  return JSON.stringify(val, null, 2);
 }
 
 // 初始化 & 同步外部值变化
-watch(() => props.value, (val) => {
-  if (props.type === 'json') {
-    jsonText.value = formatJsonValue(val)
-    jsonError.value = ''
-  }
-}, { immediate: true })
+watch(
+  () => props.value,
+  (val) => {
+    if (props.type === "json") {
+      jsonText.value = formatJsonValue(val);
+      jsonError.value = "";
+    }
+  },
+  { immediate: true },
+);
 
 function onJsonFocus() {
-  jsonError.value = ''
+  jsonError.value = "";
 }
 
 function onJsonBlur() {
-  const text = jsonText.value.trim()
+  const text = jsonText.value.trim();
   if (!text) {
-    emit('update', null)
-    jsonError.value = ''
-    return
+    emit("update", null);
+    jsonError.value = "";
+    return;
   }
   try {
-    const parsed = JSON.parse(text)
-    emit('update', parsed)
-    jsonError.value = ''
+    const parsed = JSON.parse(text);
+    emit("update", parsed);
+    jsonError.value = "";
   } catch {
-    jsonError.value = t('editor.propertyField.jsonFormatError')
+    jsonError.value = t("editor.propertyField.jsonFormatError");
   }
 }
 </script>
@@ -138,7 +142,9 @@ function onJsonBlur() {
 <template>
   <div :class="[styles.field, type === 'textarea' && styles.fieldTextarea]">
     <el-tooltip :content="desc || label" placement="top" :show-after="300">
-      <label :class="styles.label">{{ label.length > 4 ? label.slice(0, 4) + '…' : label }}</label>
+      <label :class="styles.label">{{
+        label.length > 4 ? label.slice(0, 4) + "…" : label
+      }}</label>
     </el-tooltip>
     <div :class="styles.control">
       <!-- 文本输入 -->
@@ -183,7 +189,7 @@ function onJsonBlur() {
         @update:model-value="handleUpdate"
       >
         <el-option
-          v-for="opt in (props.options ?? [])"
+          v-for="opt in props.options ?? []"
           :key="String(opt.value)"
           :label="opt.label"
           :value="opt.value"

@@ -7,145 +7,149 @@
  * - 解除链接：点击某边选中，控件仅影响该边
  * - 选中某边时显示该边的值，未选中时显示简写值
  */
-import { ref, computed } from 'vue'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './BorderEditor.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { ref, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./BorderEditor.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const props = defineProps<{
-  value?: Record<string, string>
-}>()
+  value?: Record<string, string>;
+}>();
 
 const emit = defineEmits<{
-  update: [patch: Record<string, string>]
-}>()
+  update: [patch: Record<string, string>];
+}>();
 
 // ---- 边框状态 ----
 
-type Side = 'top' | 'right' | 'bottom' | 'left'
+type Side = "top" | "right" | "bottom" | "left";
 
 const SIDE_BORDER_MAP: Record<Side, string> = {
-  top: 'borderTop',
-  right: 'borderRight',
-  bottom: 'borderBottom',
-  left: 'borderLeft',
-}
+  top: "borderTop",
+  right: "borderRight",
+  bottom: "borderBottom",
+  left: "borderLeft",
+};
 
 /** 当前选中的边（单选），null 表示未选中（使用简写） */
-const activeSide = ref<Side | null>(null)
-const linked = ref(true)
+const activeSide = ref<Side | null>(null);
+const linked = ref(true);
 
 // ---- 解析边框属性 ----
 
-function parseBorder(shorthand?: string): { width: number; style: string; color: string } {
-  if (!shorthand) return { width: 0, style: 'solid', color: '#000000' }
-  const parts = shorthand.trim().split(/\s+/)
-  const width = parseInt(parts[0]) || 0
-  const style = parts[1] || 'solid'
-  const color = parts[2] || '#000000'
-  return { width, style, color }
+function parseBorder(shorthand?: string): {
+  width: number;
+  style: string;
+  color: string;
+} {
+  if (!shorthand) return { width: 0, style: "solid", color: "#000000" };
+  const parts = shorthand.trim().split(/\s+/);
+  const width = parseInt(parts[0]) || 0;
+  const style = parts[1] || "solid";
+  const color = parts[2] || "#000000";
+  return { width, style, color };
 }
 
 function getActiveBorder(): { width: number; style: string; color: string } {
-  const v = props.value ?? {}
+  const v = props.value ?? {};
   if (activeSide.value) {
-    return parseBorder(v[SIDE_BORDER_MAP[activeSide.value]])
+    return parseBorder(v[SIDE_BORDER_MAP[activeSide.value]]);
   }
-  return parseBorder(v.border)
+  return parseBorder(v.border);
 }
 
-const currentWidth = computed(() => getActiveBorder().width)
-const currentStyle = computed(() => getActiveBorder().style)
-const currentColor = computed(() => getActiveBorder().color)
+const currentWidth = computed(() => getActiveBorder().width);
+const currentStyle = computed(() => getActiveBorder().style);
+const currentColor = computed(() => getActiveBorder().color);
 
 // ---- 操作 ----
 
 function selectSide(side: Side) {
   // 单选：点击已选中的取消选中，否则选中新边
-  activeSide.value = activeSide.value === side ? null : side
+  activeSide.value = activeSide.value === side ? null : side;
 }
 
 function buildBorderValue(width: number, style: string, color: string): string {
-  return `${width}px ${style} ${color}`
+  return `${width}px ${style} ${color}`;
 }
 
 function applyChange(width?: number, style?: string, color?: string) {
-  const w = width ?? currentWidth.value
-  const s = style ?? currentStyle.value
-  const c = color ?? currentColor.value
-  const borderVal = buildBorderValue(w, s, c)
+  const w = width ?? currentWidth.value;
+  const s = style ?? currentStyle.value;
+  const c = color ?? currentColor.value;
+  const borderVal = buildBorderValue(w, s, c);
 
   if (linked.value) {
     // 链接模式：简写，清除所有单边
-    emit('update', {
+    emit("update", {
       border: borderVal,
-      borderTop: '',
-      borderRight: '',
-      borderBottom: '',
-      borderLeft: '',
-    })
+      borderTop: "",
+      borderRight: "",
+      borderBottom: "",
+      borderLeft: "",
+    });
   } else if (activeSide.value) {
     // 选中了某边：仅修改该边，清除简写
-    emit('update', {
-      border: '',
+    emit("update", {
+      border: "",
       [SIDE_BORDER_MAP[activeSide.value]]: borderVal,
-    })
+    });
   } else {
     // 未选中任何边：应用到简写
-    emit('update', {
+    emit("update", {
       border: borderVal,
-      borderTop: '',
-      borderRight: '',
-      borderBottom: '',
-      borderLeft: '',
-    })
+      borderTop: "",
+      borderRight: "",
+      borderBottom: "",
+      borderLeft: "",
+    });
   }
 }
 
 function onWidthChange(val: number | undefined) {
-  applyChange(val ?? 0)
+  applyChange(val ?? 0);
 }
 
 function onStyleChange(val: string) {
-  const w = currentWidth.value || 1
-  applyChange(w, val)
+  const w = currentWidth.value || 1;
+  applyChange(w, val);
 }
 
 function onColorChange(val: string) {
-  const w = currentWidth.value || 1
-  applyChange(w, undefined, val || '#000000')
+  const w = currentWidth.value || 1;
+  applyChange(w, undefined, val || "#000000");
 }
 
 function toggleLinked() {
-  linked.value = !linked.value
+  linked.value = !linked.value;
   if (linked.value) {
-    activeSide.value = null
+    activeSide.value = null;
     // 切回链接模式：用当前值统一四边
-    applyChange()
+    applyChange();
   }
 }
 
 // ---- 预览边框样式 ----
 
 function getSideStyle(side: Side): Record<string, string> {
-  const v = props.value ?? {}
-  const parsed = parseBorder(v[SIDE_BORDER_MAP[side]] || v.border)
-  if (parsed.width === 0) return {}
+  const v = props.value ?? {};
+  const parsed = parseBorder(v[SIDE_BORDER_MAP[side]] || v.border);
+  if (parsed.width === 0) return {};
   return {
     borderWidth: `${parsed.width}px`,
     borderStyle: parsed.style,
     borderColor: parsed.color,
-  }
+  };
 }
 
 const borderStyleOptions = computed(() => [
-  { label: t('editor.borderEditor.styleSolid'), value: 'solid' },
-  { label: t('editor.borderEditor.styleDashed'), value: 'dashed' },
-  { label: t('editor.borderEditor.styleDotted'), value: 'dotted' },
-  { label: t('editor.borderEditor.styleNone'), value: 'none' },
-])
+  { label: t("editor.borderEditor.styleSolid"), value: "solid" },
+  { label: t("editor.borderEditor.styleDashed"), value: "dashed" },
+  { label: t("editor.borderEditor.styleDotted"), value: "dotted" },
+  { label: t("editor.borderEditor.styleNone"), value: "none" },
+]);
 </script>
 
 <template>
@@ -155,25 +159,41 @@ const borderStyleOptions = computed(() => [
       <div :class="styles.box">
         <!-- Top -->
         <div
-          :class="[styles.side, styles.sideTop, activeSide === 'top' && styles.sideActive]"
+          :class="[
+            styles.side,
+            styles.sideTop,
+            activeSide === 'top' && styles.sideActive,
+          ]"
           :style="getSideStyle('top')"
           @click="selectSide('top')"
         />
         <!-- Right -->
         <div
-          :class="[styles.side, styles.sideRight, activeSide === 'right' && styles.sideActive]"
+          :class="[
+            styles.side,
+            styles.sideRight,
+            activeSide === 'right' && styles.sideActive,
+          ]"
           :style="getSideStyle('right')"
           @click="selectSide('right')"
         />
         <!-- Bottom -->
         <div
-          :class="[styles.side, styles.sideBottom, activeSide === 'bottom' && styles.sideActive]"
+          :class="[
+            styles.side,
+            styles.sideBottom,
+            activeSide === 'bottom' && styles.sideActive,
+          ]"
           :style="getSideStyle('bottom')"
           @click="selectSide('bottom')"
         />
         <!-- Left -->
         <div
-          :class="[styles.side, styles.sideLeft, activeSide === 'left' && styles.sideActive]"
+          :class="[
+            styles.side,
+            styles.sideLeft,
+            activeSide === 'left' && styles.sideActive,
+          ]"
           :style="getSideStyle('left')"
           @click="selectSide('left')"
         />
@@ -184,7 +204,15 @@ const borderStyleOptions = computed(() => [
       </div>
 
       <!-- Link toggle -->
-      <el-tooltip :content="linked ? t('editor.borderEditor.unlinkTooltip') : t('editor.borderEditor.linkTooltip')" placement="top" :show-after="300">
+      <el-tooltip
+        :content="
+          linked
+            ? t('editor.borderEditor.unlinkTooltip')
+            : t('editor.borderEditor.linkTooltip')
+        "
+        placement="top"
+        :show-after="300"
+      >
         <button
           :class="[styles.linkBtn, linked && styles.linkBtnActive]"
           @click="toggleLinked"
@@ -197,15 +225,26 @@ const borderStyleOptions = computed(() => [
     <!-- 选中边提示（仅解除链接模式） -->
     <div v-if="!linked" :class="styles.sideHint">
       <template v-if="activeSide">
-        {{ t('editor.borderEditor.editingSide', { side: { top: t('editor.borderEditor.sideTop'), right: t('editor.borderEditor.sideRight'), bottom: t('editor.borderEditor.sideBottom'), left: t('editor.borderEditor.sideLeft') }[activeSide] }) }}
+        {{
+          t("editor.borderEditor.editingSide", {
+            side: {
+              top: t("editor.borderEditor.sideTop"),
+              right: t("editor.borderEditor.sideRight"),
+              bottom: t("editor.borderEditor.sideBottom"),
+              left: t("editor.borderEditor.sideLeft"),
+            }[activeSide],
+          })
+        }}
       </template>
-      <template v-else>{{ t('editor.borderEditor.clickSideHint') }}</template>
+      <template v-else>{{ t("editor.borderEditor.clickSideHint") }}</template>
     </div>
 
     <!-- 编辑控件 -->
     <div :class="styles.controls">
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">{{ t('editor.borderEditor.width') }}</label>
+        <label :class="styles.controlLabel">{{
+          t("editor.borderEditor.width")
+        }}</label>
         <el-input-number
           :model-value="currentWidth"
           :min="0"
@@ -217,7 +256,9 @@ const borderStyleOptions = computed(() => [
         />
       </div>
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">{{ t('editor.borderEditor.style') }}</label>
+        <label :class="styles.controlLabel">{{
+          t("editor.borderEditor.style")
+        }}</label>
         <el-select
           :model-value="currentStyle"
           size="small"
@@ -233,7 +274,9 @@ const borderStyleOptions = computed(() => [
         </el-select>
       </div>
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">{{ t('editor.borderEditor.color') }}</label>
+        <label :class="styles.controlLabel">{{
+          t("editor.borderEditor.color")
+        }}</label>
         <el-color-picker
           :model-value="currentColor"
           size="small"

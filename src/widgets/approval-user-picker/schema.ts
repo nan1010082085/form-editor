@@ -1,14 +1,21 @@
-import { nanoid } from 'nanoid'
-import type { Widget } from '../base/types'
+import { nanoid } from "nanoid";
+import type { Widget } from "../base/types";
 
 export function createApprovalUserPickerWidget(id?: string): Widget {
   return {
     id: id ?? nanoid(),
-    type: 'approval-user-picker',
-    field: 'approver',
-    label: '审批人',
-    props: { placeholder: '请选择审批人', clearable: true, multiple: false, apiBaseUrl: '' },
-    style: { width: '240px', height: '40px', fontSize: '14px' },
+    name: "FgApprovalUserPicker",
+    type: "approval-user-picker",
+    field: "approver",
+    label: "审批人",
+    props: {
+      placeholder: "请选择审批人",
+      clearable: true,
+      multiple: false,
+      apiBaseUrl: "",
+    },
+    style: { width: "240px", height: "40px", fontSize: "14px" },
+    position: { x: 0, y: 0, w: 280, h: 40, zIndex: 1 },
     children: [],
-  }
+  };
 }

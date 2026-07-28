@@ -47,12 +47,16 @@
   --td-border-level-3-color: rgba(0, 212, 255, 0.05);
 
   // ---- 阴影 ----
-  --td-shadow-1: 0 0 10px rgba(0, 212, 255, 0.1), 0 0 20px rgba(0, 212, 255, 0.05);
-  --td-shadow-2: 0 0 15px rgba(0, 212, 255, 0.15), 0 0 30px rgba(0, 212, 255, 0.08);
-  --td-shadow-3: 0 0 20px rgba(0, 212, 255, 0.2), 0 0 40px rgba(0, 212, 255, 0.1);
+  --td-shadow-1:
+    0 0 10px rgba(0, 212, 255, 0.1), 0 0 20px rgba(0, 212, 255, 0.05);
+  --td-shadow-2:
+    0 0 15px rgba(0, 212, 255, 0.15), 0 0 30px rgba(0, 212, 255, 0.08);
+  --td-shadow-3:
+    0 0 20px rgba(0, 212, 255, 0.2), 0 0 40px rgba(0, 212, 255, 0.1);
 
   // ---- 科技感扩展变量 ----
-  --glow-primary: 0 0 10px rgba(0, 212, 255, 0.3), 0 0 20px rgba(0, 212, 255, 0.15);
+  --glow-primary:
+    0 0 10px rgba(0, 212, 255, 0.3), 0 0 20px rgba(0, 212, 255, 0.15);
   --glass-bg: rgba(17, 24, 32, 0.8);
   --glass-border: rgba(0, 212, 255, 0.1);
   --glass-blur: blur(20px);
@@ -123,7 +127,6 @@
   // ---- 按钮 ----
   --btn-height: 32px;
   --btn-radius: 6px;
-
 }
 
 // ---- 滚动条 ----
@@ -218,7 +221,8 @@
   background: transparent;
   color: rgba(255, 255, 255, 0.8);
 
-  th, td {
+  th,
+  td {
     border-color: rgba(0, 212, 255, 0.06);
   }
 }

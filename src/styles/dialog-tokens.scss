@@ -2,7 +2,7 @@
 // Dialog 统一样式 Token（Mixin 库）
 // 所有弹窗组件共享的卡片、标签、控件高度等样式
 // ============================================================
-@use './editor-ui-tokens' as *;
+@use "./editor-ui-tokens" as *;
 
 // 弹窗 body：左右分栏布局
 @mixin dialog-body {

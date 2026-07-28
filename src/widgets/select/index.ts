@@ -1,3 +1,3 @@
-export { default as FgSelect } from './FgSelect.vue'
-export { createSelectWidget } from './schema'
-export { selectConfig } from './config'
+export { default as FgSelect } from "./FgSelect.vue";
+export { createSelectWidget } from "./schema";
+export { selectConfig } from "./config";

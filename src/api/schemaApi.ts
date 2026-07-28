@@ -22,7 +22,7 @@ export {
   applyTemplate,
   createTemplate,
   deleteTemplate,
-} from '@/utils/apiClient'
+} from "@/utils/apiClient";
 
 export type {
   VersionEntry,
@@ -31,4 +31,4 @@ export type {
   TemplateCategory,
   TemplateItem,
   TemplateApplyResult,
-} from '@/utils/apiClient'
+} from "@/utils/apiClient";

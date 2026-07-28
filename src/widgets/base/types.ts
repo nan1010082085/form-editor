@@ -1,100 +1,122 @@
-import type { InjectionKey, ComputedRef, Ref } from 'vue'
-import type { FormItemRule } from 'element-plus'
+import type { InjectionKey, ComputedRef, Ref } from "vue";
+import type { FormItemRule } from "element-plus";
 
 // ============================================================
 // SchemaType — 组件类型枚举
 // ============================================================
 
 /** 容器组件类型 */
-export type ContainerType = 'form' | 'card' | 'tabs' | 'dialog' | 'single-col' | 'double-col' | 'triple-col' | 'quad-col' | 'micro-app-container' | 'row-container'
+export type ContainerType =
+  | "form"
+  | "card"
+  | "tabs"
+  | "dialog"
+  | "single-col"
+  | "double-col"
+  | "triple-col"
+  | "quad-col"
+  | "micro-app-container"
+  | "row-container";
 
 /** 基础组件类型 */
 export type BasicType =
-  | 'input'
-  | 'number'
-  | 'select'
-  | 'radio'
-  | 'checkbox'
-  | 'date'
-  | 'textarea'
-  | 'richtext'
-  | 'button'
-  | 'filter-bar'
-  | 'sub-form'
-  | 'progress-bar'
-  | 'rank-list'
-  | 'comparison-card'
-  | 'realtime-clock'
-  | 'marquee-text'
-  | 'tab-container'
-  | 'form-steps'
-  | 'condition-builder'
-  | 'treemap'
-  | 'upload'
-  | 'switch'
-  | 'slider'
-  | 'rate'
-  | 'table'
-  | 'title'
-  | 'divider'
-  | 'spacer'
-  | 'toolbar-buttons'
-  | 'file-list'
-  | 'transfer'
-  | 'banner'
-  | 'tree-layout'
-  | 'date-time-slot'
-  | 'time-picker'
-  | 'cascader'
-  | 'color-picker'
-  | 'tag-input'
-  | 'autocomplete'
-  | 'descriptions'
-  | 'advanced-table'
-  | 'tree-table'
-  | 'bar-chart' | 'stacked-bar-chart' | 'horizontal-bar-chart'
-  | 'line-chart' | 'area-chart'
-  | 'pie-chart' | 'donut-chart'
-  | 'scatter-chart' | 'bubble-chart'
-  | 'radar' | 'filled-radar'
-  | 'gauge' | 'multi-gauge'
-  | 'heatmap'
-  | 'funnel' | 'compare-funnel'
-  | 'candlestick'
-  | 'map'
-  | 'statistic'
-  | 'approval-user-picker'
-  | 'approval-role-picker'
-  | 'approval-comment'
-  | 'icon-picker'
-  | 'tree-select'
-  | 'permission-tree'
-  | 'dynamic-detail-table'
-  | 'qr-scanner'
+  | "input"
+  | "number"
+  | "select"
+  | "radio"
+  | "checkbox"
+  | "date"
+  | "textarea"
+  | "richtext"
+  | "button"
+  | "filter-bar"
+  | "sub-form"
+  | "progress-bar"
+  | "rank-list"
+  | "comparison-card"
+  | "realtime-clock"
+  | "marquee-text"
+  | "tab-container"
+  | "form-steps"
+  | "condition-builder"
+  | "treemap"
+  | "upload"
+  | "switch"
+  | "slider"
+  | "rate"
+  | "table"
+  | "title"
+  | "divider"
+  | "spacer"
+  | "toolbar-buttons"
+  | "file-list"
+  | "transfer"
+  | "banner"
+  | "tree-layout"
+  | "date-time-slot"
+  | "time-picker"
+  | "cascader"
+  | "color-picker"
+  | "tag-input"
+  | "autocomplete"
+  | "descriptions"
+  | "advanced-table"
+  | "tree-table"
+  | "bar-chart"
+  | "stacked-bar-chart"
+  | "horizontal-bar-chart"
+  | "line-chart"
+  | "area-chart"
+  | "pie-chart"
+  | "donut-chart"
+  | "scatter-chart"
+  | "bubble-chart"
+  | "radar"
+  | "filled-radar"
+  | "gauge"
+  | "multi-gauge"
+  | "heatmap"
+  | "funnel"
+  | "compare-funnel"
+  | "candlestick"
+  | "map"
+  | "statistic"
+  | "approval-user-picker"
+  | "approval-role-picker"
+  | "approval-comment"
+  | "icon-picker"
+  | "tree-select"
+  | "permission-tree"
+  | "dynamic-detail-table"
+  | "qr-scanner";
 
 /** 嵌入类组件 */
-export type EmbedType = 'iframe' | 'micro-app'
+export type EmbedType = "iframe" | "micro-app";
 
 /** 业务场景组件 */
 export type BusinessType =
-  | 'crud-list-page'
-  | 'user-management'
-  | 'role-management'
-  | 'user-selector'
-  | 'flow-timeline'
-  | 'flow-task-actions'
-  | 'calendar'
-  | 'kanban'
-  | 'adhoc-query'
-  | 'notification'
-  | 'auto-refresh'
-  | 'compliance-checklist'
+  | "crud-list-page"
+  | "user-management"
+  | "role-management"
+  | "user-selector"
+  | "flow-timeline"
+  | "flow-task-actions"
+  | "calendar"
+  | "kanban"
+  | "adhoc-query"
+  | "notification"
+  | "auto-refresh"
+  | "compliance-checklist";
 
 /** 所有组件类型 — 运行时真源为 widgets/registry，新增类型仅需 registerWidget */
-export type SchemaType = string
+export type SchemaType = string;
 
 /** @internal 内置 Widget 类型字面量（文档与 fallback 用） */
-export type KnownSchemaType = ContainerType | BasicType | EmbedType | BusinessType
+export type KnownSchemaType =
+  | ContainerType
+  | BasicType
+  | EmbedType
+  | BusinessType;
 
 // ============================================================
 // 表单字段值类型
@@ -109,34 +131,42 @@ export type FormFieldValue =
   | string[]
   | number[]
   | Record<string, unknown>
-  | Record<string, unknown>[]
+  | Record<string, unknown>[];
 
 // ============================================================
 // 字典项
 // ============================================================
 
 export interface DictItem {
-  label: string
-  value: string | number | boolean
-  id?: string | number
-  children?: DictItem[]
+  label: string;
+  value: string | number | boolean;
+  id?: string | number;
+  type?: string;
+  children?: DictItem[];
 }
 
 // ============================================================
-// 校验规则（Element Plus FormItemRule）
+// 校验规则（Element Plus FormItemRule + 自定义 WidgetRule 扩展）
 // ============================================================
 
-export type SchemaRules = FormItemRule[]
+/** 扩展 FormItemRule，支持 WidgetRule 系统的 watches/condition/actions */
+export interface SchemaRule extends FormItemRule {
+  watches?: Array<{ type: string; source: string }>;
+  condition?: string;
+  actions?: Array<{ type: string; config: Record<string, unknown> }>;
+}
+
+export type SchemaRules = SchemaRule[];
 
 // ============================================================
 // Widget 变量
 // ============================================================
 
 export interface WidgetVariable {
-  name: string
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array'
-  defaultValue?: unknown
-  description?: string
+  name: string;
+  type: "string" | "number" | "boolean" | "object" | "array";
+  defaultValue?: unknown;
+  description?: string;
 }
 
 // ============================================================
@@ -145,75 +175,78 @@ export interface WidgetVariable {
 
 /** 事件动作类型 */
 export type EventActionType =
-  | 'show' | 'hide'
-  | 'open-dialog' | 'close-dialog'
-  | 'switch-tab'
-  | 'set-value'
-  | 'submit' | 'reset'
-  | 'emit'
-  | 'set-variable'    // 修改用户变量
-  | 'trigger-event'   // 触发目标组件的指定事件
-  | 'post-message'    // 向父窗口发送 postMessage
-  | 'close-tab'       // 关闭浏览器页签
-  | 'copy'            // 复制文本到剪贴板
-  | 'refresh'         // 刷新目标组件数据
-  | 'api'             // 调用后端 API
-  | 'navigate'        // 路由跳转
-  | 'startFlow'       // 发起流程
-  | 'endFlow'         // 结束流程
-  | 'submitSubmission' // 校验并提交表单数据到 Submission API
-  | 'exportData'       // 导出文件下载（CSV/Excel 等）
-  | 'chart-linkage'    // 图表联动（钻取/筛选/高亮）
+  | "show"
+  | "hide"
+  | "open-dialog"
+  | "close-dialog"
+  | "switch-tab"
+  | "set-value"
+  | "submit"
+  | "reset"
+  | "emit"
+  | "set-variable" // 修改用户变量
+  | "trigger-event" // 触发目标组件的指定事件
+  | "post-message" // 向父窗口发送 postMessage
+  | "close-tab" // 关闭浏览器页签
+  | "copy" // 复制文本到剪贴板
+  | "refresh" // 刷新目标组件数据
+  | "api" // 调用后端 API
+  | "navigate" // 路由跳转
+  | "startFlow" // 发起流程
+  | "endFlow" // 结束流程
+  | "submitSubmission" // 校验并提交表单数据到 Submission API
+  | "exportData" // 导出文件下载（CSV/Excel 等）
+  | "chart-linkage"; // 图表联动（钻取/筛选/高亮）
 
 /** 事件动作 */
 export interface SchemaEventAction {
-  type: EventActionType
+  type: EventActionType;
   /** 目标组件 ID 或弹窗 ID */
-  target?: string
+  target?: string;
   /** 附带值（如切换到哪个标签、emit 的 payload） */
-  value?: unknown
+  value?: unknown;
   // ---- set-variable 专用 ----
   /** 变量名 */
-  variable?: string
+  variable?: string;
   // ---- trigger-event 专用 ----
   /** 要触发的事件名 */
-  event?: string
+  event?: string;
   // ---- post-message 专用 ----
   /** 消息内容 */
-  message?: Record<string, unknown>
+  message?: Record<string, unknown>;
   // ---- copy 专用 ----
   /** 要复制的文本（支持 formData.xxx 引用） */
-  text?: string
+  text?: string;
   // ---- api 专用 ----
   /** API 地址 */
-  apiUrl?: string
+  apiUrl?: string;
   /** 请求方法 */
-  apiMethod?: 'get' | 'post' | 'put' | 'delete'
+  apiMethod?: "get" | "post" | "put" | "delete";
   /** 请求参数，'formData' 表示使用表单数据 */
-  apiParams?: Record<string, unknown> | 'formData'
+  apiParams?: Record<string, unknown> | "formData";
   // ---- navigate 专用 ----
   /** 路由路径 */
-  navigatePath?: string
+  navigatePath?: string;
   /** 路由查询参数 */
-  navigateQuery?: Record<string, string>
+  navigateQuery?: Record<string, string>;
   // ---- startFlow 专用 ----
   /** 流程定义 ID */
-  definitionId?: string
+  definitionId?: string;
   /** 流程变量 */
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>;
   // ---- endFlow 专用 ----
   /** 流程实例 ID */
-  instanceId?: string
+  instanceId?: string;
   /** 结束原因 */
-  reason?: string
+  reason?: string;
   // ---- submitSubmission 专用 ----
   /** 目标 Schema ID（sourceId 或 publishId） */
-  schemaId?: string
+  schemaId?: string;
   /** exportData 专用：下载文件名（不含扩展名时可从 Content-Disposition 推断） */
-  exportFileName?: string
+  exportFileName?: string;
   // ---- chart-linkage 专用 ----
   /** 图表联动规则 ID */
-  chartLinkageRuleId?: string
+  chartLinkageRuleId?: string;
 }
 
 // ============================================================
@@ -222,24 +255,24 @@ export interface SchemaEventAction {
 
 export interface WidgetEvent {
   /** 触发事件名（click / change / close 等） */
-  trigger: string
+  trigger: string;
   /** 事件目标（部件内部元素标识，为空则绑定到整个部件） */
-  eventTarget?: string
+  eventTarget?: string;
   /** 执行条件表达式 */
-  condition?: string
+  condition?: string;
   /** 执行前确认提示 */
-  confirm?: string
-  actions: SchemaEventAction[]
+  confirm?: string;
+  actions: SchemaEventAction[];
 }
 
 /** 事件目标配置 — 声明部件内可绑定事件的子元素 */
 export interface EventTargetConfig {
   /** 目标标识（传给 triggerWidgetEvent 的第三个参数） */
-  id: string
+  id: string;
   /** 显示名称 */
-  label: string
+  label: string;
   /** 描述 */
-  description?: string
+  description?: string;
 }
 
 // ============================================================
@@ -253,25 +286,37 @@ export interface EventTargetConfig {
 /** 搜索字段配置 */
 export interface SearchFieldConfig {
   /** 字段名（作为 API 查询参数 key） */
-  field: string
+  field: string;
   /** 显示标签 */
-  label: string
+  label: string;
   /** 搜索控件类型 */
-  type: 'input' | 'select' | 'date' | 'date-range' | 'cascader' | 'time-picker' | 'number' | 'checkbox'
+  type:
+    | "input"
+    | "select"
+    | "date"
+    | "date-range"
+    | "cascader"
+    | "time-picker"
+    | "number"
+    | "checkbox";
   /** 占位文字 */
-  placeholder?: string
+  placeholder?: string;
   /** 下拉选项（type=select/checkbox 时使用） */
-  options?: { label: string; value: string | number | boolean }[]
+  options?: { label: string; value: string | number | boolean }[];
   /** 级联选项（type=cascader 时使用） */
-  cascaderOptions?: { label: string; value: string | number; children?: unknown[] }[]
+  cascaderOptions?: {
+    label: string;
+    value: string | number;
+    children?: unknown[];
+  }[];
   /** 默认值 */
-  defaultValue?: unknown
+  defaultValue?: unknown;
   /** number 类型最小值 */
-  min?: number
+  min?: number;
   /** number 类型最大值 */
-  max?: number
+  max?: number;
   /** number 类型步长 */
-  step?: number
+  step?: number;
 }
 
 // ============================================================
@@ -280,24 +325,24 @@ export interface SearchFieldConfig {
 
 /** 动态数据请求配置 */
 export interface SchemaApiConfig {
-  url: string
-  method?: 'get' | 'post'
-  params?: Record<string, unknown>
-  headers?: Record<string, string>          // 自定义 HTTP 请求头
-  body?: Record<string, unknown>            // POST 请求体（与 params 分离，params 是 query 参数）
-  timeout?: number                          // 请求超时时间（毫秒），默认 5000
-  dataPath?: string      // dot-notation path to data array (e.g. "result.records"). Falls back to data > list > rows > items > records
-  labelKey?: string      // 默认 'label'
-  valueKey?: string      // 默认 'value'
-  childrenKey?: string   // 树形数据子节点字段（保留树形结构不拍平）
-  ttl?: number           // 缓存 TTL（毫秒），默认 0 = 永不过期
-  immediate?: boolean    // 默认 true，挂载时加载
-  dictCode?: string      // 从 global.dictMap 查找（优先于 url）
-  cacheLevel?: 'memory' | 'indexeddb' | 'both'  // 缓存策略，默认 'memory'
-  enableRetry?: boolean  // 开启重试，默认 false
-  retryCount?: number    // 重试次数，默认 3，最高 5
+  url: string;
+  method?: "get" | "post";
+  params?: Record<string, unknown>;
+  headers?: Record<string, string>; // 自定义 HTTP 请求头
+  body?: Record<string, unknown>; // POST 请求体（与 params 分离，params 是 query 参数）
+  timeout?: number; // 请求超时时间（毫秒），默认 5000
+  dataPath?: string; // dot-notation path to data array (e.g. "result.records"). Falls back to data > list > rows > items > records
+  labelKey?: string; // 默认 'label'
+  valueKey?: string; // 默认 'value'
+  childrenKey?: string; // 树形数据子节点字段（保留树形结构不拍平）
+  ttl?: number; // 缓存 TTL（毫秒），默认 0 = 永不过期
+  immediate?: boolean; // 默认 true，挂载时加载
+  dictCode?: string; // 从 global.dictMap 查找（优先于 url）
+  cacheLevel?: "memory" | "indexeddb" | "both"; // 缓存策略，默认 'memory'
+  enableRetry?: boolean; // 开启重试，默认 false
+  retryCount?: number; // 重试次数，默认 3，最高 5
   /** 引用全局 DataSourceDefinition 的 ID — 设置后 url/method/params 等字段被忽略 */
-  dataSourceId?: string
+  dataSourceId?: string;
 }
 
 // ============================================================
@@ -305,48 +350,54 @@ export interface SchemaApiConfig {
 // ============================================================
 
 /** 联动类型 */
-export type LinkageType = 'visible' | 'disabled' | 'required' | 'options' | 'set-value' | 'reset-fields'
+export type LinkageType =
+  | "visible"
+  | "disabled"
+  | "required"
+  | "options"
+  | "set-value"
+  | "reset-fields";
 
 /** 联动配置 */
 export interface SchemaLinkage {
   /** 联动类型 */
-  type: LinkageType
+  type: LinkageType;
   /** 监听的字段列表 */
-  watchFields: string[]
+  watchFields: string[];
   /** 联动条件 — 函数或字符串表达式 */
-  condition: string | ((values: Record<string, FormFieldValue>) => boolean)
+  condition: string | ((values: Record<string, FormFieldValue>) => boolean);
   /** options 联动时，条件为真的静态选项 */
-  thenOptions?: DictItem[]
+  thenOptions?: DictItem[];
   /** options 联动时，条件为真的动态 API 配置 */
-  thenApi?: SchemaApiConfig
+  thenApi?: SchemaApiConfig;
   /** 条件为假时的回退值（visible=false, disabled=false 等） */
-  elseValue?: FormFieldValue
+  elseValue?: FormFieldValue;
   /** set-value 联动：条件为真时设置的字面值 */
-  thenValue?: FormFieldValue
+  thenValue?: FormFieldValue;
   /** set-value 联动：条件为真时复制值来源字段 */
-  valueSource?: string
+  valueSource?: string;
   /** reset-fields 联动：条件为真时要重置的目标字段列表 */
-  targetFields?: string[]
+  targetFields?: string[];
 }
 
 /** 联动计算后的字段状态 */
 export interface LinkageState {
   /** 是否可见 */
-  visible: boolean
+  visible: boolean;
   /** 是否禁用 */
-  disabled: boolean
+  disabled: boolean;
   /** 是否必填 */
-  required: boolean
+  required: boolean;
   /** options 联动覆盖的静态选项 */
-  options?: DictItem[]
+  options?: DictItem[];
   /** options 联动覆盖的 API 配置 */
-  optionsApi?: SchemaApiConfig
+  optionsApi?: SchemaApiConfig;
   /** elseValue: 联动条件为 false 时回退到此值 */
-  elseValue?: FormFieldValue
+  elseValue?: FormFieldValue;
   /** set-value 联动设置的目标值 */
-  targetValue?: FormFieldValue
+  targetValue?: FormFieldValue;
   /** reset-fields 联动：条件为真时要重置的目标字段列表 */
-  resetFields?: string[]
+  resetFields?: string[];
 }
 
 // ============================================================
@@ -354,41 +405,41 @@ export interface LinkageState {
 // ============================================================
 
 /** 图表联动触发方式 */
-export type ChartLinkageTrigger = 'click' | 'select' | 'hover'
+export type ChartLinkageTrigger = "click" | "select" | "hover";
 
 /** 图表联动动作类型 */
-export type ChartLinkageAction = 'filter' | 'drilldown' | 'highlight'
+export type ChartLinkageAction = "filter" | "drilldown" | "highlight";
 
 /** 图表联动规则 */
 export interface ChartLinkageRule {
   /** 规则 ID */
-  id: string
+  id: string;
   /** 源图表 Widget ID（触发联动的图表） */
-  sourceWidgetId: string
+  sourceWidgetId: string;
   /** 触发方式 */
-  trigger: ChartLinkageTrigger
+  trigger: ChartLinkageTrigger;
   /** 目标图表 Widget ID 列表（被联动的图表） */
-  targetWidgetIds: string[]
+  targetWidgetIds: string[];
   /** 参数映射：源数据字段 -> 目标筛选字段 */
-  paramMapping: Record<string, string>
+  paramMapping: Record<string, string>;
   /** 联动动作类型 */
-  action: ChartLinkageAction
+  action: ChartLinkageAction;
   /** 钻取维度字段（drilldown 动作专用） */
-  drilldownField?: string
+  drilldownField?: string;
   /** 钻取层级标签（用于面包屑显示） */
-  drilldownLabel?: string
+  drilldownLabel?: string;
 }
 
 /** 图表钻取历史记录 */
 export interface DrilldownHistoryEntry {
   /** 钻取的维度值 */
-  value: string
+  value: string;
   /** 钻取的维度字段 */
-  field: string
+  field: string;
   /** 显示标签 */
-  label: string
+  label: string;
   /** 钻取时的筛选条件快照 */
-  filters: Record<string, unknown>
+  filters: Record<string, unknown>;
 }
 
 // ============================================================
@@ -396,87 +447,110 @@ export interface DrilldownHistoryEntry {
 // ============================================================
 
 /** 配置面板类型（属性面板底部的弹框入口按钮） */
-export type ConfigPanelType = 'events' | 'linkages' | 'api' | 'variables' | 'chart-linkages'
+export type ConfigPanelType =
+  | "events"
+  | "linkages"
+  | "api"
+  | "variables"
+  | "chart-linkages";
 
 /** 属性面板声明中的基础属性快捷键 */
-export type BasicPropKey = 'field' | 'label' | 'defaultValue' | 'hidden' | 'options' | 'validationRules'
+export type BasicPropKey =
+  | "field"
+  | "label"
+  | "defaultValue"
+  | "hidden"
+  | "options"
+  | "validationRules";
 
 /** 属性面板声明中的属性项（字符串快捷键 或 完整配置对象） */
 export type PropertyPanelItem =
   | BasicPropKey
   | {
-      key: string
-      label: string
-      type: string
-      default?: unknown
-      desc?: string
-      placeholder?: string
-      options?: { label: string; value: string | number | boolean }[]
-      fields?: ArrayFieldSchema[]
-      itemLabel?: string
-      visibleOn?: string
-    }
+      key: string;
+      label: string;
+      type: string;
+      default?: unknown;
+      desc?: string;
+      placeholder?: string;
+      options?: { label: string; value: string | number | boolean }[];
+      fields?: ArrayFieldSchema[];
+      itemLabel?: string;
+      visibleOn?: string;
+    };
 
 /** 属性面板声明 */
 export interface PropertyPanelConfig {
-  basic?: PropertyPanelItem[]
-  style?: string[]
-  props?: PropertyPanelItem[]
+  basic?: PropertyPanelItem[];
+  style?: string[];
+  props?: PropertyPanelItem[];
 }
 
 /** Widget 完整配置（config.ts 导出的对象结构） */
 export interface WidgetConfig {
-  name: string
-  displayName: string
-  type?: SchemaType         // 组件类型（变体需要指定，基础组件可省略）
-  description: string      // 部件描述，用于属性面板 tooltip
-  author?: string          // 部件作者
-  defaultStyle?: Record<string, unknown>
-  defaultProps?: Record<string, unknown>
+  name: string;
+  displayName: string;
+  type?: SchemaType; // 组件类型（变体需要指定，基础组件可省略）
+  description: string; // 部件描述，用于属性面板 tooltip
+  author?: string; // 部件作者
+  defaultStyle?: Record<string, unknown>;
+  defaultProps?: Record<string, unknown>;
   /** 拖入画布时的默认位置（覆盖全局 DEFAULT_POSITION） */
-  defaultPosition?: Partial<{ x: number; y: number; w: number; h: number; xUnit: 'px' | '%'; yUnit: 'px' | '%'; wUnit: 'px' | '%'; hUnit: 'px' | '%'; zIndex: number }>
-  propertyPanel?: PropertyPanelConfig
-  configPanels?: ConfigPanelType[]
+  defaultPosition?: Partial<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    xUnit: "px" | "%";
+    yUnit: "px" | "%";
+    wUnit: "px" | "%";
+    hUnit: "px" | "%";
+    zIndex: number;
+  }>;
+  propertyPanel?: PropertyPanelConfig;
+  configPanels?: ConfigPanelType[];
   /** 事件目标列表 — 声明部件内可独立绑定事件的子元素（支持静态数组或动态函数） */
-  eventTargets?: EventTargetConfig[] | ((widget: Widget) => EventTargetConfig[])
+  eventTargets?:
+    | EventTargetConfig[]
+    | ((widget: Widget) => EventTargetConfig[]);
   /** 组件暴露的运行时值 — 供联动条件表达式引用 exposed.widgetId.xxx */
-  exposedValues?: ExposedValueConfig[]
+  exposedValues?: ExposedValueConfig[];
   /** 组件可接收的外部事件 — 由事件引擎 trigger-event 动作触发 */
-  receivableEvents?: ReceivableEventConfig[]
+  receivableEvents?: ReceivableEventConfig[];
   /** 该 widget 可用的画布模式。未声明 = 两种模式都可用；声明则必须包含当前模式，否则组件面板隐藏 */
-  contexts?: BoardLayoutMode[]
+  contexts?: BoardLayoutMode[];
 }
 
 /** 组件暴露值配置 */
 export interface ExposedValueConfig {
   /** 引用 key，如 selectedRows / loading */
-  key: string
+  key: string;
   /** 值类型 */
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array'
+  type: "string" | "number" | "boolean" | "object" | "array";
   /** 说明 */
-  description: string
+  description: string;
   /** 示例值 */
-  example?: unknown
+  example?: unknown;
 }
 
 /** 组件可接收事件配置 */
 export interface ReceivableEventConfig {
   /** 事件名，如 refresh / reset-search */
-  name: string
+  name: string;
   /** 说明 */
-  description: string
+  description: string;
   /** 参数说明 */
-  params?: Record<string, string>
+  params?: Record<string, string>;
 }
 
 /** 通用数组编辑器字段声明 */
 export interface ArrayFieldSchema {
-  key: string
-  label: string
-  type: 'text' | 'select' | 'number' | 'switch'
-  options?: { label: string; value: string | number | boolean }[]
-  default?: unknown
-  placeholder?: string
+  key: string;
+  label: string;
+  type: "text" | "select" | "number" | "switch" | "color";
+  options?: { label: string; value: string | number | boolean }[];
+  default?: unknown;
+  placeholder?: string;
 }
 
 // ============================================================
@@ -486,150 +560,150 @@ export interface ArrayFieldSchema {
 export interface Widget {
   // === 基础标识 ===
   /** 唯一 ID（组件Key + 5位随机Hash） */
-  id: string
+  id: string;
   /** 组件名称（如 'FgInput'） */
-  name: string
+  name: string;
   /** 组件类型 */
-  type: SchemaType
+  type: SchemaType;
 
   // === 属性配置 ===
   /** 表单字段名 */
-  field?: string
+  field?: string;
   /** 组件标签 */
-  label?: string
+  label?: string;
   /** 组件特有属性 */
-  props?: Record<string, unknown>
+  props?: Record<string, unknown>;
   /** 选项列表 */
-  options?: DictItem[]
+  options?: DictItem[];
   /** 默认值 */
-  defaultValue?: FormFieldValue
+  defaultValue?: FormFieldValue;
 
   // === 位置配置 ===
   position: {
-    x: number           // 水平位置 - 绝对定位
-    y: number           // 垂直位置 - 绝对定位
-    w: number           // 宽度值
-    h: number           // 高度值
-    xUnit?: 'px' | '%'  // 水平位置单位，默认 px
-    yUnit?: 'px' | '%'  // 垂直位置单位，默认 px
-    wUnit?: 'px' | '%'  // 宽度单位，默认 px
-    hUnit?: 'px' | '%'  // 高度单位，默认 px
-    zIndex?: number
-  }
+    x: number; // 水平位置 - 绝对定位
+    y: number; // 垂直位置 - 绝对定位
+    w: number; // 宽度值
+    h: number; // 高度值
+    xUnit?: "px" | "%"; // 水平位置单位，默认 px
+    yUnit?: "px" | "%"; // 垂直位置单位，默认 px
+    wUnit?: "px" | "%"; // 宽度单位，默认 px
+    hUnit?: "px" | "%"; // 高度单位，默认 px
+    zIndex?: number;
+  };
 
   // === 响应式位置 ===
   /** 按断点覆盖位置/尺寸（仅预览/发布模式生效） */
-  responsivePosition?: ResponsivePosition
+  responsivePosition?: ResponsivePosition;
 
   // === 样式配置 ===
   /** 组件特有样式 */
-  style?: Record<string, unknown>
+  style?: Record<string, unknown>;
 
   // === 变量 ===
   /** 组件内部变量 */
-  variables?: WidgetVariable[]
+  variables?: WidgetVariable[];
 
   // === 事件 ===
   /** 组件事件列表 */
-  events?: WidgetEvent[]
+  events?: WidgetEvent[];
 
   // === 联动 ===
   /** 组件联动规则列表（SchemaLinkage） */
-  linkages?: SchemaLinkage[]
+  linkages?: SchemaLinkage[];
 
   // === 图表联动 ===
   /** 图表联动规则列表（ChartLinkageRule） */
-  chartLinkages?: ChartLinkageRule[]
+  chartLinkages?: ChartLinkageRule[];
 
   // === 运行时状态（由规则引擎设置） ===
   /** 组件是否禁用（规则引擎可动态设置） */
-  disabled?: boolean
+  disabled?: boolean;
 
   // === 数据源 ===
   /** API 数据源配置（用于动态加载 options 等） */
-  api?: SchemaApiConfig
+  api?: SchemaApiConfig;
 
   // === 校验规则 ===
   /** 表单校验规则（Element Plus FormItemRule） */
-  validationRules?: SchemaRules
+  validationRules?: SchemaRules;
 
   // === 容器绑定 ===
   /** 表单容器专用：绑定到哪个表单容器 */
-  formId?: string
+  formId?: string;
   /** 页签容器专用：绑定到哪个标签 */
-  tabKey?: string
+  tabKey?: string;
   /** 行列容器专用：绑定到哪一列 */
-  colIndex?: number
+  colIndex?: number;
 
   // === 静态属性 ===
   /** 设计时隐藏 */
-  hidden?: boolean
+  hidden?: boolean;
   /** 锁定位置与尺寸，禁止拖拽/缩放 */
-  locked?: boolean
+  locked?: boolean;
 
   // === 布局属性（流式渲染器使用） ===
   /** 栅格列宽（1-24） */
-  span?: number | Record<string, number>
+  span?: number | Record<string, number>;
   /** 表格列合并 */
-  colspan?: number
+  colspan?: number;
   /** 表格行合并 */
-  rowspan?: number
+  rowspan?: number;
   /** CSS 宽度 */
-  width?: string
+  width?: string;
   /** CSS 高度 */
-  height?: string
+  height?: string;
   /** 对齐方式 */
-  align?: 'left' | 'center' | 'right'
+  align?: "left" | "center" | "right";
   /** 显示边框 */
-  border?: boolean
+  border?: boolean;
 
   // === 条件表达式 ===
   /** 条件可见 — 表达式求值为 true 时可见 */
-  visibleOn?: string
+  visibleOn?: string;
   /** 条件禁用 — 表达式求值为 true 时禁用 */
-  disabledOn?: string
+  disabledOn?: string;
   /** 条件必填 — 表达式求值为 true 时必填 */
-  requiredOn?: string
+  requiredOn?: string;
 
   // === 按钮配置 ===
   /** 按钮文本 */
-  text?: string
+  text?: string;
   /** 按钮类型 */
-  buttonType?: '' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
+  buttonType?: "" | "primary" | "success" | "warning" | "danger" | "info";
   /** 图标 */
-  icon?: string
+  icon?: string;
   /** 按钮动作列表 */
-  actions?: Record<string, unknown>[]
+  actions?: Record<string, unknown>[];
   /** 按钮组配置 */
-  buttons?: Record<string, unknown>[]
+  buttons?: Record<string, unknown>[];
 
   // === 表格/搜索列表 ===
   /** 列表 API 配置 */
-  listApi?: Record<string, unknown>
+  listApi?: Record<string, unknown>;
   /** 搜索字段定义 */
-  searchFields?: Record<string, unknown>[]
+  searchFields?: Record<string, unknown>[];
   /** 表格列定义 */
-  columns?: Record<string, unknown>[]
+  columns?: Record<string, unknown>[];
   /** 行操作按钮 */
-  rowActions?: Record<string, unknown>[]
+  rowActions?: Record<string, unknown>[];
 
   // === 高级配置 ===
   /** 边框隐藏 */
-  hideBorder?: string[]
+  hideBorder?: string[];
   /** 权限角色白名单 */
-  permissionRoles?: string[]
+  permissionRoles?: string[];
   /** 只读模式 */
-  readonly?: boolean
+  readonly?: boolean;
   /** 自定义 HTML 属性 */
-  customAttrs?: Record<string, string>
+  customAttrs?: Record<string, string>;
 
   // === 子组件 ===
   /** 子 Widget 列表（容器组件） */
-  children?: Widget[]
+  children?: Widget[];
 
   // === 生命周期 ===
   /** Widget 生命周期钩子 */
-  lifecycle?: WidgetLifecycleConfig
+  lifecycle?: WidgetLifecycleConfig;
 }
 
 /**
@@ -639,166 +713,184 @@ export interface Widget {
  * 用于 API 存储、文档示例、schema 导入导出等场景。
  * 编辑器加载后会补全为完整的 Widget。
  */
-export type PartialWidget = Omit<Widget, 'id' | 'name' | 'position' | 'children'> & {
-  id?: string
-  name?: string
-  position?: Widget['position']
-  children?: PartialWidget[]
-}
+export type PartialWidget = Omit<
+  Widget,
+  "id" | "name" | "position" | "children"
+> & {
+  id?: string;
+  name?: string;
+  position?: Widget["position"];
+  children?: PartialWidget[];
+};
 
 /** 全宽组件类型集合 — 这些组件在 grid-col 中渲染时强制占满整行 */
 export const FULL_WIDTH_TYPES = [
-  'table',
-  'advanced-table',
-  'tree-table',
-  'upload',
-  'transfer',
-  'banner',
-  'tree-layout',
-  'file-list',
-  'descriptions',
-  'statistic',
-  'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
-  'line-chart', 'area-chart',
-  'pie-chart', 'donut-chart',
-  'scatter-chart', 'bubble-chart',
-  'radar', 'filled-radar',
-  'gauge', 'multi-gauge',
-  'heatmap',
-  'funnel', 'compare-funnel',
-  'candlestick',
-  'map',
-] as const
+  "table",
+  "advanced-table",
+  "tree-table",
+  "upload",
+  "transfer",
+  "banner",
+  "tree-layout",
+  "file-list",
+  "descriptions",
+  "statistic",
+  "bar-chart",
+  "stacked-bar-chart",
+  "horizontal-bar-chart",
+  "line-chart",
+  "area-chart",
+  "pie-chart",
+  "donut-chart",
+  "scatter-chart",
+  "bubble-chart",
+  "radar",
+  "filled-radar",
+  "gauge",
+  "multi-gauge",
+  "heatmap",
+  "funnel",
+  "compare-funnel",
+  "candlestick",
+  "map",
+] as const;
 
 /**
  * 判断组件类型是否为全宽组件
  * 全宽组件在 grid-col 中渲染时 span 强制为 24
  */
 export function isFullWidthType(type: SchemaType): boolean {
-  return (FULL_WIDTH_TYPES as readonly string[]).includes(type)
+  return (FULL_WIDTH_TYPES as readonly string[]).includes(type);
 }
 
 // ============================================================
 // Board（画布）
 // ============================================================
 
-export type CanvasUnit = 'px' | '%'
+export type CanvasUnit = "px" | "%";
 
 /** 画布布局模式：free=绝对定位自由画布，flex=流式页面布局 */
-export type BoardLayoutMode = 'free' | 'flex'
+export type BoardLayoutMode = "free" | "flex";
 
 /** 响应式断点（编辑器预览/发布模式） */
-export type PreviewBreakpoint = 'desktop' | 'tablet' | 'mobile'
+export type PreviewBreakpoint = "desktop" | "tablet" | "mobile";
 
 /** 单个断点的位置/尺寸覆盖 */
 export interface BreakpointPosition {
-  x?: number
-  y?: number
-  w?: number
-  h?: number
-  xUnit?: 'px' | '%'
-  yUnit?: 'px' | '%'
-  wUnit?: 'px' | '%'
-  hUnit?: 'px' | '%'
-  zIndex?: number
+  x?: number;
+  y?: number;
+  w?: number;
+  h?: number;
+  xUnit?: "px" | "%";
+  yUnit?: "px" | "%";
+  wUnit?: "px" | "%";
+  hUnit?: "px" | "%";
+  zIndex?: number;
   /** 是否在该断点下隐藏 */
-  hidden?: boolean
+  hidden?: boolean;
 }
 
 /** 响应式位置配置 — 按断点覆盖 Widget 位置 */
-export type ResponsivePosition = Partial<Record<PreviewBreakpoint, BreakpointPosition>>
+export type ResponsivePosition = Partial<
+  Record<PreviewBreakpoint, BreakpointPosition>
+>;
 
 /** 自由布局留白预设 */
-export type FreeLayoutPreset = 'full' | 'form-narrow' | 'list-standard' | 'list-wide' | 'dashboard-demo'
+export type FreeLayoutPreset =
+  | "full"
+  | "form-narrow"
+  | "list-standard"
+  | "list-wide"
+  | "dashboard-demo";
 
 /** Flex 页面模板 */
-export type FlexPageTemplate = 'form' | 'list' | 'detail' | 'page' | 'blank'
+export type FlexPageTemplate = "form" | "list" | "detail" | "page" | "blank";
 
 /** 自由布局内容区留白 */
 export interface FreeLayoutOptions {
   /** 内容最大宽度（px），超出则居中留白 */
-  maxContentWidth?: number
+  maxContentWidth?: number;
   /** 水平对齐 */
-  contentAlign?: 'left' | 'center'
+  contentAlign?: "left" | "center";
   /** 左右内边距，如 "24px" */
-  marginX?: string
+  marginX?: string;
   /** 启用网格吸附 */
-  snapToGrid?: boolean
+  snapToGrid?: boolean;
   /** 网格列数（12 或 24），默认 24 */
-  gridColumns?: number
+  gridColumns?: number;
   /** 网格行高（px），默认 8 */
-  gridRowHeight?: number
+  gridRowHeight?: number;
 }
 
 /** 发布视图自适应模式 */
-export type ScaleMode = 'fit-width' | 'fit-height' | 'contain' | 'stretch'
+export type ScaleMode = "fit-width" | "fit-height" | "contain" | "stretch";
 
 export interface CanvasConfig {
-  width: number
-  height: number
-  widthUnit?: CanvasUnit
-  heightUnit?: CanvasUnit
-  backgroundColor: string
-  padding: string
+  width: number;
+  height: number;
+  widthUnit?: CanvasUnit;
+  heightUnit?: CanvasUnit;
+  backgroundColor: string;
+  padding: string;
   /** 缩放比例 100-150 */
-  zoom: number
+  zoom: number;
   /** 布局模式，默认 free（兼容旧 Schema） */
-  layoutMode?: BoardLayoutMode
+  layoutMode?: BoardLayoutMode;
   /** 自由布局留白（layoutMode=free 时生效） */
-  freeLayout?: FreeLayoutOptions
+  freeLayout?: FreeLayoutOptions;
   /** Flex 页面模板标识（layoutMode=flex 时记录创建模板） */
-  flexTemplate?: FlexPageTemplate
+  flexTemplate?: FlexPageTemplate;
   /** 大屏主题预设 ID（boardThemes.ts） */
-  themePreset?: string
+  themePreset?: string;
   /** 发布视图自适应模式（仅 publish/preview 生效） */
-  scaleMode?: ScaleMode
+  scaleMode?: ScaleMode;
 }
 
 export interface BoardVariable {
-  name: string
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array'
-  defaultValue?: unknown
-  description?: string
+  name: string;
+  type: "string" | "number" | "boolean" | "object" | "array";
+  defaultValue?: unknown;
+  description?: string;
 }
 
 export interface BoardEvent {
-  trigger: 'mount' | 'submit' | 'reset' | 'custom'
-  name?: string
-  actions: SchemaEventAction[]
+  trigger: "mount" | "submit" | "reset" | "custom";
+  name?: string;
+  actions: SchemaEventAction[];
 }
 
 /** 画布页面 — 每个页面有独立的画布配置和 widget 集合 */
 export interface BoardPage {
   /** 页面 ID */
-  id: string
+  id: string;
   /** 页面名称 */
-  name: string
+  name: string;
   /** 页面级画布配置（覆盖 Board.canvas） */
-  canvas?: Partial<CanvasConfig>
+  canvas?: Partial<CanvasConfig>;
   /** 页面级变量 */
-  variables?: BoardVariable[]
+  variables?: BoardVariable[];
   /** 页面级事件 */
-  events?: BoardEvent[]
+  events?: BoardEvent[];
   /** 页面的 widget 集合 */
-  widgets: Widget[]
+  widgets: Widget[];
 }
 
 export interface Board {
   /** 画布实例 ID */
-  id: string
+  id: string;
   /** 画布名称 */
-  name: string
-  status: 'draft' | 'published'
-  canvas: CanvasConfig
-  variables: BoardVariable[]
-  events: BoardEvent[]
-  widgets: Widget[]
+  name: string;
+  status: "draft" | "published";
+  canvas: CanvasConfig;
+  variables: BoardVariable[];
+  events: BoardEvent[];
+  widgets: Widget[];
   /** 多页面支持 — 存在时优先使用 pages[currentPageId] 的 widgets */
-  pages?: BoardPage[]
+  pages?: BoardPage[];
   /** 当前活跃页面 ID */
-  currentPageId?: string
+  currentPageId?: string;
   /** 集中管理的数据源定义 */
-  dataSources?: import('../types/dataSource').DataSourceDefinition[]
+  dataSources?: import("../../types/dataSource").DataSourceDefinition[];
 }
 
 // ============================================================
@@ -806,10 +898,13 @@ export interface Board {
 // ============================================================
 
 /** 注入当前 Widget 数据 */
-export const widgetDataKey: InjectionKey<ComputedRef<Widget>> = Symbol('WidgetData')
+export const widgetDataKey: InjectionKey<ComputedRef<Widget>> =
+  Symbol("WidgetData");
 
 /** 注入当前 Widget 样式配置 */
-export const widgetStyleKey: InjectionKey<ComputedRef<Record<string, unknown>>> = Symbol('WidgetStyle')
+export const widgetStyleKey: InjectionKey<
+  ComputedRef<Record<string, unknown>>
+> = Symbol("WidgetStyle");
 
 // ============================================================
 // Widget 渲染状态（规则引擎输出）
@@ -818,15 +913,17 @@ export const widgetStyleKey: InjectionKey<ComputedRef<Record<string, unknown>>> 
 /** 规则引擎计算的渲染状态 */
 export interface WidgetRenderState {
   /** 是否可见 */
-  visible: boolean
+  visible: boolean;
   /** 是否禁用 */
-  disabled: boolean
+  disabled: boolean;
   /** 是否必填 */
-  required: boolean
+  required: boolean;
 }
 
 /** 注入规则引擎计算的渲染状态 */
-export const widgetRenderStateKey: InjectionKey<ComputedRef<WidgetRenderState>> = Symbol('WidgetRenderState')
+export const widgetRenderStateKey: InjectionKey<
+  ComputedRef<WidgetRenderState>
+> = Symbol("WidgetRenderState");
 
 // ============================================================
 // 表单上下文（FgForm provide → SchemaNode inject）
@@ -835,58 +932,68 @@ export const widgetRenderStateKey: InjectionKey<ComputedRef<WidgetRenderState>> 
 /** 表单上下文，由 FgForm 提供给子组件 */
 export interface FormContext {
   /** el-form 组件引用 */
-  formRef: Ref<unknown>
+  formRef: Ref<unknown>;
   /** 表单数据模型（field → value），绑定到 el-form :model */
-  formModel: Record<string, unknown>
+  formModel: Record<string, unknown>;
   /** 更新指定字段值（子组件通过 inject 调用） */
-  updateField: (field: string, value: unknown) => void
+  updateField: (field: string, value: unknown) => void;
 }
 
 /** 注入表单上下文（el-form ref + model） */
-export const formContextKey: InjectionKey<FormContext> = Symbol('FormContext')
+export const formContextKey: InjectionKey<FormContext> = Symbol("FormContext");
 
 /** 组件暴露值注入 Key — 每个组件 provide 自己的 exposedState */
-export const widgetExposedKey: InjectionKey<Record<string, unknown>> = Symbol('WidgetExposed')
+export const widgetExposedKey: InjectionKey<Record<string, unknown>> =
+  Symbol("WidgetExposed");
 
 /** 解析后的部件像素尺寸（与 overlay 计算一致） */
 export interface WidgetBounds {
-  widthPx: number
-  heightPx: number
+  widthPx: number;
+  heightPx: number;
 }
 
 /** 当前部件的解析尺寸 — SchemaNode provide，部件 inject */
-export const widgetBoundsKey: InjectionKey<ComputedRef<WidgetBounds>> = Symbol('WidgetBounds')
+export const widgetBoundsKey: InjectionKey<ComputedRef<WidgetBounds>> =
+  Symbol("WidgetBounds");
 
 /** 父容器解析尺寸 — 嵌套部件用于 % 单位换算 */
-export const parentBoundsKey: InjectionKey<ComputedRef<WidgetBounds>> = Symbol('ParentBounds')
+export const parentBoundsKey: InjectionKey<ComputedRef<WidgetBounds>> =
+  Symbol("ParentBounds");
 
 // ============================================================
 // Widget 生命周期
 // ============================================================
 
 /** 生命周期钩子：字符串表达式或函数 */
-export type LifecycleHook = string | ((ctx: LifecycleContext) => void | Promise<void>)
+export type LifecycleHook =
+  | string
+  | ((ctx: LifecycleContext) => void | Promise<void>);
 
 /** 生命周期钩子配置 */
 export interface WidgetLifecycleConfig {
-  onInit?: LifecycleHook
-  onMount?: LifecycleHook
-  onUnmount?: LifecycleHook
-  onDataChange?: LifecycleHook
-  onVisibleChange?: LifecycleHook
-  onBeforeSubmit?: LifecycleHook
-  onAfterLoad?: LifecycleHook
-  onOpen?: LifecycleHook
-  onClose?: LifecycleHook
+  onInit?: LifecycleHook;
+  onMount?: LifecycleHook;
+  onUnmount?: LifecycleHook;
+  onDataChange?: LifecycleHook;
+  onVisibleChange?: LifecycleHook;
+  onBeforeSubmit?: LifecycleHook;
+  onAfterLoad?: LifecycleHook;
+  onOpen?: LifecycleHook;
+  onClose?: LifecycleHook;
 }
 
 /** 生命周期执行上下文 */
 export interface LifecycleContext {
-  widget: Widget
-  formData: Record<string, unknown>
-  scopes: unknown[]
-  field?: string
-  value?: unknown
-  logger: { info: (...a: unknown[]) => void; warn: (...a: unknown[]) => void; error: (...a: unknown[]) => void; debug: (...a: unknown[]) => void }
-  [key: string]: unknown
+  widget: Widget;
+  formData: Record<string, unknown>;
+  scopes: unknown[];
+  field?: string;
+  value?: unknown;
+  logger: {
+    info: (...a: unknown[]) => void;
+    warn: (...a: unknown[]) => void;
+    error: (...a: unknown[]) => void;
+    debug: (...a: unknown[]) => void;
+  };
+  [key: string]: unknown;
 }

@@ -3,11 +3,11 @@
  *
  * Provides group/ungroup, move, and path-based operations for the editor.
  */
-import type { PartialWidget, SchemaType } from '@/widgets/base/types'
-import { LAYOUT_CONTAINER_TYPES } from '@/composables/useConstant'
+import type { PartialWidget, SchemaType } from "@/widgets/base/types";
+import { LAYOUT_CONTAINER_TYPES } from "@/composables/useConstant";
 
 /** Container types that support children — 统一引用 useConstant */
-const CONTAINER_TYPES = LAYOUT_CONTAINER_TYPES
+const CONTAINER_TYPES = LAYOUT_CONTAINER_TYPES;
 
 // ----------------------------------------------------------------
 // Path-based tree operations (Sprint 10)
@@ -17,30 +17,36 @@ const CONTAINER_TYPES = LAYOUT_CONTAINER_TYPES
  * Get the item at a given path in the schema tree.
  * Path [0, 2, 1] means schema[0].children[2].children[1].
  */
-export function getItemAtPath(schema: PartialWidget[], path: number[]): PartialWidget | undefined {
-  if (path.length === 0) return undefined
-  let current = schema[path[0]]
+export function getItemAtPath(
+  schema: PartialWidget[],
+  path: number[],
+): PartialWidget | undefined {
+  if (path.length === 0) return undefined;
+  let current = schema[path[0]];
   for (let i = 1; i < path.length; i++) {
-    if (!current?.children) return undefined
-    current = current.children[path[i]]
+    if (!current?.children) return undefined;
+    current = current.children[path[i]];
   }
-  return current
+  return current;
 }
 
 /**
  * Remove the item at the given path, returning a new schema array.
  */
-export function removeAtPath(schema: PartialWidget[], path: number[]): PartialWidget[] {
-  if (path.length === 0) return schema
-  const result = JSON.parse(JSON.stringify(schema)) as PartialWidget[]
+export function removeAtPath(
+  schema: PartialWidget[],
+  path: number[],
+): PartialWidget[] {
+  if (path.length === 0) return schema;
+  const result = JSON.parse(JSON.stringify(schema)) as PartialWidget[];
   if (path.length === 1) {
-    result.splice(path[0], 1)
-    return result
+    result.splice(path[0], 1);
+    return result;
   }
-  const parent = getItemAtPath(result, path.slice(0, -1))
-  if (!parent?.children) return schema
-  parent.children.splice(path[path.length - 1], 1)
-  return result
+  const parent = getItemAtPath(result, path.slice(0, -1));
+  if (!parent?.children) return schema;
+  parent.children.splice(path[path.length - 1], 1);
+  return result;
 }
 
 /**
@@ -53,16 +59,16 @@ export function insertAtPath(
   index: number,
   item: PartialWidget,
 ): PartialWidget[] {
-  const result = JSON.parse(JSON.stringify(schema)) as PartialWidget[]
+  const result = JSON.parse(JSON.stringify(schema)) as PartialWidget[];
   if (parentPath.length === 0) {
-    result.splice(index, 0, item)
-    return result
+    result.splice(index, 0, item);
+    return result;
   }
-  const parent = getItemAtPath(result, parentPath)
-  if (!parent) return schema
-  if (!parent.children) parent.children = []
-  parent.children.splice(index, 0, item)
-  return result
+  const parent = getItemAtPath(result, parentPath);
+  if (!parent) return schema;
+  if (!parent.children) parent.children = [];
+  parent.children.splice(index, 0, item);
+  return result;
 }
 
 /**
@@ -70,11 +76,11 @@ export function insertAtPath(
  * Returns negative if a < b, positive if a > b, 0 if equal.
  */
 export function comparePaths(a: number[], b: number[]): number {
-  const minLen = Math.min(a.length, b.length)
+  const minLen = Math.min(a.length, b.length);
   for (let i = 0; i < minLen; i++) {
-    if (a[i] !== b[i]) return a[i] - b[i]
+    if (a[i] !== b[i]) return a[i] - b[i];
   }
-  return a.length - b.length
+  return a.length - b.length;
 }
 
 /**
@@ -82,18 +88,18 @@ export function comparePaths(a: number[], b: number[]): number {
  * Used for range-select with Shift+Click.
  */
 export function flattenToPaths(schema: PartialWidget[]): number[][] {
-  const result: number[][] = []
+  const result: number[][] = [];
   function walk(items: PartialWidget[], prefix: number[]) {
     for (let i = 0; i < items.length; i++) {
-      const path = [...prefix, i]
-      result.push(path)
+      const path = [...prefix, i];
+      result.push(path);
       if (items[i].children?.length) {
-        walk(items[i].children!, path)
+        walk(items[i].children!, path);
       }
     }
   }
-  walk(schema, [])
-  return result
+  walk(schema, []);
+  return result;
 }
 
 // ----------------------------------------------------------------
@@ -102,43 +108,52 @@ export function flattenToPaths(schema: PartialWidget[]): number[][] {
 
 /** Flattened tree node for the SchemaTree component */
 export interface SchemaTreeNode {
-  id: string          // path key, e.g. "0-1-2"
-  path: number[]      // index path, e.g. [0, 1, 2]
-  type: SchemaType
-  label: string
-  field?: string
-  isContainer: boolean
-  children: SchemaTreeNode[]
+  id: string; // path key, e.g. "0-1-2"
+  path: number[]; // index path, e.g. [0, 1, 2]
+  type: SchemaType;
+  label: string;
+  field?: string;
+  isContainer: boolean;
+  children: SchemaTreeNode[];
 }
 
 /**
  * Build a tree data structure from schema for the SchemaTree panel.
  */
 export function buildSchemaTree(schema: PartialWidget[]): SchemaTreeNode[] {
-  function walk(items: PartialWidget[], parentPath: number[]): SchemaTreeNode[] {
+  function walk(
+    items: PartialWidget[],
+    parentPath: number[],
+  ): SchemaTreeNode[] {
     return items.map((item, index) => {
-      const path = [...parentPath, index]
-      const isContainer = CONTAINER_TYPES.has(item.type) || (Array.isArray(item.children) && item.children.length > 0 && item.type === 'tabs')
-      const label = item.label || item.field || item.type
+      const path = [...parentPath, index];
+      const isContainer =
+        CONTAINER_TYPES.has(item.type) ||
+        (Array.isArray(item.children) &&
+          item.children.length > 0 &&
+          item.type === "tabs");
+      const label = item.label || item.field || item.type;
       return {
-        id: path.join('-'),
+        id: path.join("-"),
         path,
         type: item.type as SchemaType,
         label,
         field: item.field,
         isContainer,
         children: item.children ? walk(item.children, path) : [],
-      }
-    })
+      };
+    });
   }
-  return walk(schema, [])
+  return walk(schema, []);
 }
 
 /**
  * Check if a schema item is a container type that can hold children.
  */
 export function isContainerType(item: PartialWidget): boolean {
-  return CONTAINER_TYPES.has(item.type as SchemaType) && Array.isArray(item.children)
+  return (
+    CONTAINER_TYPES.has(item.type as SchemaType) && Array.isArray(item.children)
+  );
 }
 
 /**
@@ -146,8 +161,10 @@ export function isContainerType(item: PartialWidget): boolean {
  */
 function getDefaultContainerLabel(type: SchemaType): string {
   switch (type) {
-    case 'card': return 'Card'
-    default: return type
+    case "card":
+      return "Card";
+    default:
+      return type;
   }
 }
 
@@ -164,32 +181,32 @@ export function groupAsContainer(
   selectedIndices: number[],
   containerType: SchemaType,
 ): PartialWidget[] {
-  if (selectedIndices.length === 0) return items
-  if (!CONTAINER_TYPES.has(containerType)) return items
+  if (selectedIndices.length === 0) return items;
+  if (!CONTAINER_TYPES.has(containerType)) return items;
 
   // Sort indices to maintain order
-  const sorted = [...selectedIndices].sort((a, b) => a - b)
-  const minIdx = sorted[0]
-  const maxIdx = sorted[sorted.length - 1]
+  const sorted = [...selectedIndices].sort((a, b) => a - b);
+  const minIdx = sorted[0];
+  const maxIdx = sorted[sorted.length - 1];
 
   // Extract the selected items (preserving order)
-  const selectedItems = sorted.map((i) => items[i])
+  const selectedItems = sorted.map((i) => items[i]);
 
   // Deep clone the selected items for the container children
-  const children = JSON.parse(JSON.stringify(selectedItems)) as PartialWidget[]
+  const children = JSON.parse(JSON.stringify(selectedItems)) as PartialWidget[];
 
   // Build the new container
   const container: PartialWidget = {
     type: containerType,
     label: getDefaultContainerLabel(containerType),
     children,
-  }
+  };
 
   // Replace the selected range with the container
-  const result = [...items]
-  result.splice(minIdx, maxIdx - minIdx + 1, container)
+  const result = [...items];
+  result.splice(minIdx, maxIdx - minIdx + 1, container);
 
-  return result
+  return result;
 }
 
 /**
@@ -203,21 +220,23 @@ export function ungroupContainer(
   items: PartialWidget[],
   containerIndex: number,
 ): PartialWidget[] {
-  if (containerIndex < 0 || containerIndex >= items.length) return items
+  if (containerIndex < 0 || containerIndex >= items.length) return items;
 
-  const item = items[containerIndex]
-  if (!isContainerType(item)) return items
+  const item = items[containerIndex];
+  if (!isContainerType(item)) return items;
 
-  const children = item.children ?? []
-  if (children.length === 0) return items
+  const children = item.children ?? [];
+  if (children.length === 0) return items;
 
   // Deep clone children to avoid reference issues
-  const clonedChildren = JSON.parse(JSON.stringify(children)) as PartialWidget[]
+  const clonedChildren = JSON.parse(
+    JSON.stringify(children),
+  ) as PartialWidget[];
 
-  const result = [...items]
-  result.splice(containerIndex, 1, ...clonedChildren)
+  const result = [...items];
+  result.splice(containerIndex, 1, ...clonedChildren);
 
-  return result
+  return result;
 }
 
 /**
@@ -233,13 +252,13 @@ export function moveItem(
   fromIndex: number,
   toIndex: number,
 ): PartialWidget[] {
-  if (fromIndex === toIndex) return items
-  if (fromIndex < 0 || fromIndex >= items.length) return items
-  if (toIndex < 0 || toIndex >= items.length) return items
+  if (fromIndex === toIndex) return items;
+  if (fromIndex < 0 || fromIndex >= items.length) return items;
+  if (toIndex < 0 || toIndex >= items.length) return items;
 
-  const result = [...items]
-  const [moved] = result.splice(fromIndex, 1)
-  result.splice(toIndex, 0, moved)
+  const result = [...items];
+  const [moved] = result.splice(fromIndex, 1);
+  result.splice(toIndex, 0, moved);
 
-  return result
+  return result;
 }

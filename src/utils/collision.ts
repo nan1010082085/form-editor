@@ -1,6 +1,6 @@
-import type { Widget } from '../widgets/base/types'
-import { useAllContainerTypes } from '../composables/useConstant'
-import { resolveWidgetSize } from './unitResolver'
+import type { Widget } from "../widgets/base/types";
+import { useAllContainerTypes } from "../composables/useConstant";
+import { resolveWidgetSize } from "./unitResolver";
 
 /**
  * 碰撞检测
@@ -9,17 +9,23 @@ import { resolveWidgetSize } from './unitResolver'
 
 /** 获取容器组件类型集合（动态） */
 function getContainerTypesSet() {
-  return useAllContainerTypes()
+  return useAllContainerTypes();
 }
 
 /** 计算两个矩形的重叠面积 */
 function overlapArea(
-  ax: number, ay: number, aw: number, ah: number,
-  bx: number, by: number, bw: number, bh: number,
+  ax: number,
+  ay: number,
+  aw: number,
+  ah: number,
+  bx: number,
+  by: number,
+  bw: number,
+  bh: number,
 ): number {
-  const xOverlap = Math.max(0, Math.min(ax + aw, bx + bw) - Math.max(ax, bx))
-  const yOverlap = Math.max(0, Math.min(ay + ah, by + bh) - Math.max(ay, by))
-  return xOverlap * yOverlap
+  const xOverlap = Math.max(0, Math.min(ax + aw, bx + bw) - Math.max(ax, bx));
+  const yOverlap = Math.max(0, Math.min(ay + ah, by + bh) - Math.max(ay, by));
+  return xOverlap * yOverlap;
 }
 
 /**
@@ -36,27 +42,27 @@ export function detectContainerCollision(
   canvasWidth?: number,
   canvasHeight?: number,
 ): Widget | null {
-  const wp = widget.position ?? { x: 0, y: 0, w: 0, h: 0 }
-  const wx = wp.x
-  const wy = wp.y
+  const wp = widget.position ?? { x: 0, y: 0, w: 0, h: 0 };
+  const wx = wp.x;
+  const wy = wp.y;
 
   // 处理百分比宽高
-  const cw = canvasWidth ?? 1920
-  const ch = canvasHeight ?? 1080
-  const { w: ww, h: wh } = resolveWidgetSize(widget, cw, ch)
-  const widgetArea = ww * wh
+  const cw = canvasWidth ?? 1920;
+  const ch = canvasHeight ?? 1080;
+  const { w: ww, h: wh } = resolveWidgetSize(widget, cw, ch);
+  const widgetArea = ww * wh;
 
   for (const container of containers) {
-    if (container.id === widget.id) continue
-    if (!container.position) continue
-    const cp = container.position
-    const { w: cw2, h: ch2 } = resolveWidgetSize(container, cw, ch)
-    const area = overlapArea(wx, wy, ww, wh, cp.x, cp.y, cw2, ch2)
+    if (container.id === widget.id) continue;
+    if (!container.position) continue;
+    const cp = container.position;
+    const { w: cw2, h: ch2 } = resolveWidgetSize(container, cw, ch);
+    const area = overlapArea(wx, wy, ww, wh, cp.x, cp.y, cw2, ch2);
     if (area >= widgetArea * 0.5) {
-      return container
+      return container;
     }
   }
-  return null
+  return null;
 }
 
 /**
@@ -74,44 +80,51 @@ export function detectNestedContainerCollision(
   canvasWidth?: number,
   canvasHeight?: number,
 ): (Widget & { _canvasX: number; _canvasY: number }) | null {
-  const wp = widget.position ?? { x: 0, y: 0, w: 0, h: 0 }
-  const wx = wp.x
-  const wy = wp.y
+  const wp = widget.position ?? { x: 0, y: 0, w: 0, h: 0 };
+  const wx = wp.x;
+  const wy = wp.y;
 
   // 处理百分比宽高
-  const cw = canvasWidth ?? 1920
-  const ch = canvasHeight ?? 1080
-  const { w: ww, h: wh } = resolveWidgetSize(widget, cw, ch)
-  const widgetArea = ww * wh
+  const cw = canvasWidth ?? 1920;
+  const ch = canvasHeight ?? 1080;
+  const { w: ww, h: wh } = resolveWidgetSize(widget, cw, ch);
+  const widgetArea = ww * wh;
 
   // 优先匹配最深层的容器（后遍历的通常是更深层的子容器）
-  let best: (Widget & { _canvasX: number; _canvasY: number }) | null = null
-  let bestDepth = -1
+  let best: (Widget & { _canvasX: number; _canvasY: number }) | null = null;
+  let bestDepth = -1;
 
   for (const container of containers) {
-    if (container.id === widget.id) continue
-    if (!container.position) continue
-    const cx = container._canvasX
-    const cy = container._canvasY
-    const { w: containerW, h: containerH } = resolveWidgetSize(container, cw, ch)
-    const area = overlapArea(wx, wy, ww, wh, cx, cy, containerW, containerH)
+    if (container.id === widget.id) continue;
+    if (!container.position) continue;
+    const cx = container._canvasX;
+    const cy = container._canvasY;
+    const { w: containerW, h: containerH } = resolveWidgetSize(
+      container,
+      cw,
+      ch,
+    );
+    const area = overlapArea(wx, wy, ww, wh, cx, cy, containerW, containerH);
     if (area >= widgetArea * 0.5) {
-      const depth = (container as { _depth?: number })._depth ?? 0
+      const depth = (container as { _depth?: number })._depth ?? 0;
       if (depth > bestDepth) {
-        best = container
-        bestDepth = depth
+        best = container;
+        bestDepth = depth;
       }
     }
   }
-  return best
+  return best;
 }
 
 /** 获取所有根级容器（排除 widget 自身） */
-export function getRootContainers(widgets: Widget[], excludeId?: string): Widget[] {
-  const containerTypes = getContainerTypesSet()
+export function getRootContainers(
+  widgets: Widget[],
+  excludeId?: string,
+): Widget[] {
+  const containerTypes = getContainerTypesSet();
   return widgets.filter(
     (w) => containerTypes.has(w.type) && w.id !== excludeId,
-  )
+  );
 }
 
 /**
@@ -134,27 +147,38 @@ export function collectAllContainers(
   depth = 0,
   excludeId?: string,
 ): Array<Widget & { _canvasX: number; _canvasY: number; _depth: number }> {
-  const result: Array<Widget & { _canvasX: number; _canvasY: number; _depth: number }> = []
-  const containerTypes = getContainerTypesSet()
+  const result: Array<
+    Widget & { _canvasX: number; _canvasY: number; _depth: number }
+  > = [];
+  const containerTypes = getContainerTypesSet();
   for (const w of widgets) {
-    if (w.id === excludeId) continue
-    if (!w.position) continue
+    if (w.id === excludeId) continue;
+    if (!w.position) continue;
     if (containerTypes.has(w.type)) {
-      const canvasX = offsetX + w.position.x
-      const canvasY = offsetY + w.position.y
-      result.push({ ...w, _canvasX: canvasX, _canvasY: canvasY, _depth: depth })
+      const canvasX = offsetX + w.position.x;
+      const canvasY = offsetY + w.position.y;
+      result.push({
+        ...w,
+        _canvasX: canvasX,
+        _canvasY: canvasY,
+        _depth: depth,
+      });
       // 自渲染容器（多列布局）的子组件坐标系由容器内部管理，
       // 但其 children 仍需递归收集以支持深层嵌套碰撞
       if (w.children?.length) {
-        result.push(...collectAllContainers(
-          w.children.filter((c): c is Widget => c != null && c.position != null) as Widget[],
-          canvasX,
-          canvasY,
-          depth + 1,
-          excludeId,
-        ))
+        result.push(
+          ...collectAllContainers(
+            w.children.filter(
+              (c): c is Widget => c != null && c.position != null,
+            ) as Widget[],
+            canvasX,
+            canvasY,
+            depth + 1,
+            excludeId,
+          ),
+        );
       }
     }
   }
-  return result
+  return result;
 }

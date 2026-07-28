@@ -5,108 +5,108 @@
  * 用于配置 Table 等组件的 API 数据源。
  * 支持 URL、Method、Headers、Response Data Path 配置。
  */
-import { ref, watch } from 'vue'
-import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
-import styles from './RequestConfigDialog.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { ref, watch } from "vue";
+import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
+import styles from "./RequestConfigDialog.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 interface RequestConfig {
-  apiUrl: string
-  apiMethod: string
-  apiHeaders: Record<string, string>
-  responseDataPath: string
+  apiUrl: string;
+  apiMethod: string;
+  apiHeaders: Record<string, string>;
+  responseDataPath: string;
 }
 
 const props = defineProps<{
-  visible: boolean
-  config: RequestConfig
-}>()
+  visible: boolean;
+  config: RequestConfig;
+}>();
 
 const emit = defineEmits<{
-  'update:visible': [val: boolean]
-  'update:config': [config: RequestConfig]
-  save: [config: RequestConfig]
-  cancel: []
-}>()
+  "update:visible": [val: boolean];
+  "update:config": [config: RequestConfig];
+  save: [config: RequestConfig];
+  cancel: [];
+}>();
 
 // ---- 本地编辑副本 ----
 
 const localConfig = ref<RequestConfig>({
-  apiUrl: '',
-  apiMethod: 'get',
+  apiUrl: "",
+  apiMethod: "get",
   apiHeaders: {},
-  responseDataPath: '',
-})
+  responseDataPath: "",
+});
 
 // Header 键值对编辑状态
 interface HeaderEntry {
-  key: string
-  value: string
+  key: string;
+  value: string;
 }
 
-const headerEntries = ref<HeaderEntry[]>([])
+const headerEntries = ref<HeaderEntry[]>([]);
 
 watch(
   () => props.visible,
   (open) => {
     if (open) {
-      localConfig.value = JSON.parse(JSON.stringify(props.config))
+      localConfig.value = JSON.parse(JSON.stringify(props.config));
       // 将 headers 对象转为键值对数组
       headerEntries.value = Object.entries(localConfig.value.apiHeaders).map(
         ([key, value]) => ({ key, value }),
-      )
+      );
       // 确保至少有一行
       if (headerEntries.value.length === 0) {
-        headerEntries.value.push({ key: '', value: '' })
+        headerEntries.value.push({ key: "", value: "" });
       }
     }
   },
-)
+);
 
 // ---- Header CRUD ----
 
 function addHeader() {
-  headerEntries.value.push({ key: '', value: '' })
+  headerEntries.value.push({ key: "", value: "" });
 }
 
 function removeHeader(index: number) {
-  headerEntries.value.splice(index, 1)
+  headerEntries.value.splice(index, 1);
 }
 
 function syncHeaders() {
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = {};
   for (const entry of headerEntries.value) {
     if (entry.key.trim()) {
-      headers[entry.key.trim()] = entry.value
+      headers[entry.key.trim()] = entry.value;
     }
   }
-  localConfig.value.apiHeaders = headers
+  localConfig.value.apiHeaders = headers;
 }
 
 // ---- 方法选项 ----
 
 const methodOptions = [
-  { label: 'GET', value: 'get' },
-  { label: 'POST', value: 'post' },
-  { label: 'PUT', value: 'put' },
-  { label: 'DELETE', value: 'delete' },
-]
+  { label: "GET", value: "get" },
+  { label: "POST", value: "post" },
+  { label: "PUT", value: "put" },
+  { label: "DELETE", value: "delete" },
+];
 
 // ---- 保存 / 关闭 ----
 
 function handleSave() {
-  syncHeaders()
-  emit('save', { ...localConfig.value })
-  emit('update:config', { ...localConfig.value })
-  emit('update:visible', false)
+  syncHeaders();
+  emit("save", { ...localConfig.value });
+  emit("update:config", { ...localConfig.value });
+  emit("update:visible", false);
 }
 
 function handleClose() {
-  emit('cancel')
-  emit('update:visible', false)
+  emit("cancel");
+  emit("update:visible", false);
 }
 </script>
 
@@ -121,7 +121,7 @@ function handleClose() {
       <!-- URL -->
       <!-- URL -->
       <div :class="styles.row">
-        <label :class="styles.label">{{ t('editor.api.requestUrl') }}</label>
+        <label :class="styles.label">{{ t("editor.api.requestUrl") }}</label>
         <el-input
           v-model="localConfig.apiUrl"
           size="small"
@@ -131,12 +131,8 @@ function handleClose() {
 
       <!-- Method -->
       <div :class="styles.row">
-        <label :class="styles.label">{{ t('editor.api.method') }}</label>
-        <el-select
-          v-model="localConfig.apiMethod"
-          size="small"
-          style="flex: 1"
-        >
+        <label :class="styles.label">{{ t("editor.api.method") }}</label>
+        <el-select v-model="localConfig.apiMethod" size="small" style="flex: 1">
           <el-option
             v-for="opt in methodOptions"
             :key="opt.value"
@@ -149,15 +145,12 @@ function handleClose() {
       <!-- Headers -->
       <div :class="styles.section">
         <div :class="styles.sectionHeader">
-          <span :class="styles.sectionTitle">{{ t('editor.api.headers') }}</span>
-          <el-button
-            type="primary"
-            text
-            size="small"
-            @click="addHeader"
-          >
+          <span :class="styles.sectionTitle">{{
+            t("editor.api.headers")
+          }}</span>
+          <el-button type="primary" text size="small" @click="addHeader">
             <AppIcon name="plus" />
-            {{ t('editor.common.add') }}
+            {{ t("editor.common.add") }}
           </el-button>
         </div>
 
@@ -178,12 +171,7 @@ function handleClose() {
             placeholder="Header Value"
             @change="syncHeaders"
           />
-          <el-button
-            type="danger"
-            text
-            size="small"
-            @click="removeHeader(idx)"
-          >
+          <el-button type="danger" text size="small" @click="removeHeader(idx)">
             <AppIcon name="delete" />
           </el-button>
         </div>
@@ -191,7 +179,7 @@ function handleClose() {
 
       <!-- Response Data Path -->
       <div :class="styles.row">
-        <label :class="styles.label">{{ t('editor.api.dataPath') }}</label>
+        <label :class="styles.label">{{ t("editor.api.dataPath") }}</label>
         <el-input
           v-model="localConfig.responseDataPath"
           size="small"
@@ -201,8 +189,12 @@ function handleClose() {
     </div>
 
     <template #footer>
-      <el-button size="small" @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
-      <el-button type="primary" size="small" @click="handleSave">{{ t('editor.common.save') }}</el-button>
+      <el-button size="small" @click="handleClose">{{
+        t("editor.common.cancel")
+      }}</el-button>
+      <el-button type="primary" size="small" @click="handleSave">{{
+        t("editor.common.save")
+      }}</el-button>
     </template>
   </AppDialog>
 </template>

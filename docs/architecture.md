@@ -14,9 +14,9 @@ editor/
 │   ├── components/
 │   │   ├── Editor/          # 设计器 UI
 │   │   └── WidgetRenderer/  # 运行时 / 画布渲染
-│   ├── widgets/             # 85 目录，91 registerWidget
+│   ├── widgets/             # 87 目录，95 registerWidget
 │   ├── stores/              # 12 Pinia Store
-│   ├── composables/         # 46 组合式 API
+│   ├── composables/         # 59 组合式 API
 │   ├── engine/              # eventEngine
 │   ├── api/                 # 11 领域 API
 │   ├── utils/               # 模板、主题、Demo、坐标…

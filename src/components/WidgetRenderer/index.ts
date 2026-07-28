@@ -1,6 +1,6 @@
 // WidgetRenderer 组件库 barrel export
-export { default as WidgetRenderer } from './index.vue'
-export { default as SchemaRender } from './SchemaRender.vue'
+export { default as WidgetRenderer } from "./index.vue";
+export { default as SchemaRender } from "./SchemaRender.vue";
 export type {
   SchemaType,
   PartialWidget,
@@ -36,7 +36,7 @@ export type {
   SearchListRowAction,
   FormGridLocale,
   TranslateFn,
-} from './types'
+} from "./types";
 export {
   FORM_GRID_CONTEXT_KEY,
   FORM_GRID_FORM_KEY,
@@ -45,4 +45,4 @@ export {
   FORM_GRID_LINKAGE_KEY,
   FORM_GRID_T_KEY,
   FORM_REGISTRY_KEY,
-} from './types'
+} from "./types";

@@ -2,29 +2,29 @@
 /**
  * PropertyPanelConfigBar — 事件/联动/数据源/变量配置入口
  */
-import type { Widget } from '../../widgets/base/types'
-import type { ConfigPanelType } from '../../widgets/base/types'
-import styles from './style.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import type { Widget } from "../../widgets/base/types";
+import type { ConfigPanelType } from "../../widgets/base/types";
+import styles from "./style.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
 defineProps<{
-  configPanels: ConfigPanelType[]
-  configHelpText: string
-  selectedWidget: Widget
-}>()
+  configPanels: ConfigPanelType[];
+  configHelpText: string;
+  selectedWidget: Widget;
+}>();
 
 const emit = defineEmits<{
-  openEvent: []
-  openLinkage: []
-  openApi: []
-  openVariables: []
-  openChartLinkage: []
-}>()
+  openEvent: [];
+  openLinkage: [];
+  openApi: [];
+  openVariables: [];
+  openChartLinkage: [];
+}>();
 </script>
 
 <template>
   <div v-if="configPanels.length" :class="styles.configActions">
-    <div style="overflow: auto;">
+    <div style="overflow: auto">
       <div :class="styles.configButtons">
         <el-popover placement="bottom-start" :width="280" trigger="click">
           <template #default>
@@ -43,7 +43,11 @@ const emit = defineEmits<{
               {{ selectedWidget.events.length }}
             </span>
           </el-button>
-          <el-button v-if="panel === 'linkages'" plain @click="emit('openLinkage')">
+          <el-button
+            v-if="panel === 'linkages'"
+            plain
+            @click="emit('openLinkage')"
+          >
             字段联动
             <span v-if="selectedWidget.linkages?.length" :class="styles.badge">
               {{ selectedWidget.linkages.length }}
@@ -53,15 +57,26 @@ const emit = defineEmits<{
             数据源
             <span v-if="selectedWidget.api" :class="styles.badge">1</span>
           </el-button>
-          <el-button v-if="panel === 'variables'" plain @click="emit('openVariables')">
+          <el-button
+            v-if="panel === 'variables'"
+            plain
+            @click="emit('openVariables')"
+          >
             变量
             <span v-if="selectedWidget.variables?.length" :class="styles.badge">
               {{ selectedWidget.variables.length }}
             </span>
           </el-button>
-          <el-button v-if="panel === 'chart-linkages'" plain @click="emit('openChartLinkage')">
+          <el-button
+            v-if="panel === 'chart-linkages'"
+            plain
+            @click="emit('openChartLinkage')"
+          >
             图表联动
-            <span v-if="selectedWidget.chartLinkages?.length" :class="styles.badge">
+            <span
+              v-if="selectedWidget.chartLinkages?.length"
+              :class="styles.badge"
+            >
               {{ selectedWidget.chartLinkages.length }}
             </span>
           </el-button>

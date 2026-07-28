@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { inject } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useI18n } from '@schema-platform/platform-shared'
+import { inject } from "vue";
+import { widgetDataKey } from "../base/types";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useI18n } from "@schema-platform/platform-shared";
 
-import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const { isDisabled } = useWidgetRenderState()
-const { controlStyle: dynamicStyle } = useWidgetControlSize(120)
+const widgetData = inject(widgetDataKey)!;
+const { isDisabled } = useWidgetRenderState();
+const { controlStyle: dynamicStyle } = useWidgetControlSize(120);
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 </script>
 
 <template>
@@ -23,7 +25,10 @@ useExposeWidget((wd) => ({
     v-model="widgetData.defaultValue"
     type="textarea"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || t('editor.approvalComment.placeholder')"
+    :placeholder="
+      (widgetData.props?.placeholder as string) ||
+      t('editor.approvalComment.placeholder')
+    "
     :disabled="isDisabled"
     :rows="(widgetData.props?.rows as number) || 4"
     :maxlength="(widgetData.props?.maxlength as number) || 1000"

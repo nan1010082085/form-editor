@@ -19,7 +19,7 @@ src/
 │   ├── WidgetRenderer/  # 渲染引擎（SchemaRender → SchemaNode → WidgetNode + 视口剔除）
 │   ├── Credential/      # 凭证管理
 │   └── System/          # 系统级组件
-├── composables/         # 组合式 API（46 个）
+├── composables/         # 组合式 API（59 个）
 ├── engine/              # 事件引擎（eventEngine.ts）
 ├── locales/             # i18n（zh-CN/en-US + editor-*）
 ├── microapp/            # qiankun 微前端集成
@@ -29,7 +29,7 @@ src/
 ├── types/               # TypeScript 类型定义
 ├── utils/               # boardTemplates/dashboardDemo/boardThemes/坐标/校验等
 ├── views/               # 页面级视图
-├── widgets/             # Widget 组件库（85 目录 / 91 registerWidget）
+├── widgets/             # Widget 组件库（87 目录 / 95 registerWidget）
 │   ├── base/types.ts    # SchemaType=string；KnownSchemaType 文档用
 │   ├── registry.ts      # 注册表 + createWidgetPlugin
 │   └── index.ts         # 统一注册入口

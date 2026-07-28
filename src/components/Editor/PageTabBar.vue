@@ -5,62 +5,61 @@
  * 显示在画布上方，支持切换、新增、重命名、删除页面。
  * 仅在多页面模式下显示。
  */
-import { ref, nextTick } from 'vue'
-import { useBoardStore } from '@/stores/board'
-import { useWidgetStore } from '@/stores/widget'
-import { generateWidgetId } from '@/widgets/registry'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import styles from './PageTabBar.module.scss'
+import { ref, nextTick } from "vue";
+import { useBoardStore } from "@/stores/board";
+import { useWidgetStore } from "@/stores/widget";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import styles from "./PageTabBar.module.scss";
 
-const boardStore = useBoardStore()
-const widgetStore = useWidgetStore()
+const boardStore = useBoardStore();
+const widgetStore = useWidgetStore();
 
-const editingPageId = ref('')
-const editingName = ref('')
-const editInputRef = ref<HTMLInputElement>()
+const editingPageId = ref("");
+const editingName = ref("");
+const editInputRef = ref<HTMLInputElement>();
 
 function handleSwitch(pageId: string) {
-  if (pageId === boardStore.currentPageId) return
-  const fromId = boardStore.currentPageId
-  const toPage = boardStore.pages.find(p => p.id === pageId)
-  widgetStore.switchPage(fromId, pageId, toPage?.widgets)
-  boardStore.switchPage(pageId)
+  if (pageId === boardStore.currentPageId) return;
+  const fromId = boardStore.currentPageId;
+  const toPage = boardStore.pages.find((p) => p.id === pageId);
+  widgetStore.switchPage(fromId, pageId, toPage?.widgets);
+  boardStore.switchPage(pageId);
 }
 
 function handleAdd() {
-  const id = `page_${Date.now()}`
-  const pageNum = boardStore.pages.length + 1
+  const id = `page_${Date.now()}`;
+  const pageNum = boardStore.pages.length + 1;
   boardStore.addPage({
     id,
     name: `页面 ${pageNum}`,
     widgets: [],
-  })
-  widgetStore.switchPage(boardStore.currentPageId, id)
+  });
+  widgetStore.switchPage(boardStore.currentPageId, id);
 }
 
 function startRename(pageId: string, currentName: string) {
-  editingPageId.value = pageId
-  editingName.value = currentName
-  nextTick(() => editInputRef.value?.focus())
+  editingPageId.value = pageId;
+  editingName.value = currentName;
+  nextTick(() => editInputRef.value?.focus());
 }
 
 function confirmRename() {
   if (editingPageId.value && editingName.value.trim()) {
-    boardStore.renamePage(editingPageId.value, editingName.value.trim())
+    boardStore.renamePage(editingPageId.value, editingName.value.trim());
   }
-  editingPageId.value = ''
+  editingPageId.value = "";
 }
 
 function handleDelete(pageId: string) {
-  if (boardStore.pages.length <= 1) return
-  const idx = boardStore.pages.findIndex(p => p.id === pageId)
-  boardStore.removePage(pageId)
-  widgetStore.pageWidgets.delete(pageId)
+  if (boardStore.pages.length <= 1) return;
+  const idx = boardStore.pages.findIndex((p) => p.id === pageId);
+  boardStore.removePage(pageId);
+  widgetStore.pageWidgets.delete(pageId);
   // 切换到相邻页面
-  const newPage = boardStore.pages[Math.min(idx, boardStore.pages.length - 1)]
+  const newPage = boardStore.pages[Math.min(idx, boardStore.pages.length - 1)];
   if (newPage) {
-    widgetStore.switchPage(pageId, newPage.id, newPage.widgets)
-    boardStore.switchPage(newPage.id)
+    widgetStore.switchPage(pageId, newPage.id, newPage.widgets);
+    boardStore.switchPage(newPage.id);
   }
 }
 </script>
@@ -71,7 +70,10 @@ function handleDelete(pageId: string) {
       <div
         v-for="page in boardStore.pages"
         :key="page.id"
-        :class="[styles.tab, { [styles.tabActive]: page.id === boardStore.currentPageId }]"
+        :class="[
+          styles.tab,
+          { [styles.tabActive]: page.id === boardStore.currentPageId },
+        ]"
         @click="handleSwitch(page.id)"
         @dblclick="startRename(page.id, page.name)"
       >

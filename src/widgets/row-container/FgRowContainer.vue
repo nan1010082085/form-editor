@@ -10,59 +10,59 @@
  *
  * 与 col 容器区别：col 是固定列数等宽；row-container 是任意 span 自由栅格。
  */
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey } from '../base/types'
-import type { Widget } from '../base/types'
-import SchemaRender from '../../components/WidgetRenderer/SchemaRender.vue'
-import { useFlexDropZone } from '../../composables/useFlexDropZone'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import styles from './style.module.scss'
+import { inject, computed, ref } from "vue";
+import { widgetDataKey } from "../base/types";
+import type { Widget } from "../base/types";
+import SchemaRender from "../../components/WidgetRenderer/SchemaRender.vue";
+import { useFlexDropZone } from "../../composables/useFlexDropZone";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import styles from "./style.module.scss";
 
-const props = defineProps<{ editable?: boolean; editorSelectable?: boolean }>()
+const props = defineProps<{ editable?: boolean; editorSelectable?: boolean }>();
 
-const widgetData = inject(widgetDataKey)!
+const widgetData = inject(widgetDataKey)!;
 
 useExposeWidget(() => ({
-  get children() { return widgetData.value.children ?? [] },
-}))
+  get children() {
+    return widgetData.value.children ?? [];
+  },
+}));
 
-const gutter = computed(() => (widgetData.value.props?.gutter as number) ?? 12)
-const children = computed(() => (widgetData.value.children ?? []) as Widget[])
+const gutter = computed(() => (widgetData.value.props?.gutter as number) ?? 12);
+const children = computed(() => (widgetData.value.children ?? []) as Widget[]);
 
 /** 解析子节点 span（1-24），默认 24（满宽独占一行） */
 function spanOf(child: Widget): number {
-  const s = child.span
-  const n = typeof s === 'number' ? s : 24
-  return Math.max(1, Math.min(24, n))
+  const s = child.span;
+  const n = typeof s === "number" ? s : 24;
+  return Math.max(1, Math.min(24, n));
 }
 
 /** 单元格 flex-basis：span/24 宽度，扣除 gutter 避免溢出换行计算偏差 */
 function cellStyle(child: Widget): Record<string, string> {
-  const span = spanOf(child)
-  const g = gutter.value
+  const span = spanOf(child);
+  const g = gutter.value;
   return {
     flex: `0 0 calc(${(span / 24) * 100}% - ${g}px)`,
     maxWidth: `calc(${(span / 24) * 100}% - ${g}px)`,
-  }
+  };
 }
 
 // ---- 编辑态拖放（顺序插入，无过滤，无需 allChildren 映射） ----
-const dropRef = ref<HTMLElement | null>(null)
-const dropEnabled = computed(() => Boolean(props.editorSelectable && widgetData.value.id))
+const dropRef = ref<HTMLElement | null>(null);
+const dropEnabled = computed(() =>
+  Boolean(props.editorSelectable && widgetData.value.id),
+);
 
-const {
-  isDragOver,
-  handleDragOver,
-  handleDragLeave,
-  handleDrop,
-} = useFlexDropZone(
-  dropRef,
-  () => widgetData.value.id ?? null,
-  () => children.value,
-  () => dropEnabled.value,
-  // 新拖入的子节点默认 span=24（满宽独占一行）
-  () => ({ span: 24 }),
-)
+const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
+  useFlexDropZone(
+    dropRef,
+    () => widgetData.value.id ?? null,
+    () => children.value,
+    () => dropEnabled.value,
+    // 新拖入的子节点默认 span=24（满宽独占一行）
+    () => ({ span: 24 }),
+  );
 </script>
 
 <template>

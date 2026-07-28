@@ -32,7 +32,10 @@
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover { color: var(--color-primary); background: var(--color-primary-lighter); }
+    &:hover {
+      color: var(--color-primary);
+      background: var(--color-primary-lighter);
+    }
     &--active {
       color: var(--color-primary);
       border-bottom-color: var(--color-primary);
@@ -62,9 +65,21 @@
     border-radius: 3px;
     white-space: nowrap;
 
-    &--draft { background: var(--text-color-disabled); color: var(--text-color-placeholder); }
-    &--published { background: rgba(0, 230, 118, 0.1); color: #00e676; }
-    &--form { background: var(--color-primary-bg-light); color: var(--color-primary); }
-    &--search-list { background: var(--color-primary-bg-light); color: var(--color-primary); }
+    &--draft {
+      background: var(--text-color-disabled);
+      color: var(--text-color-placeholder);
+    }
+    &--published {
+      background: rgba(0, 230, 118, 0.1);
+      color: #00e676;
+    }
+    &--form {
+      background: var(--color-primary-bg-light);
+      color: var(--color-primary);
+    }
+    &--search-list {
+      background: var(--color-primary-bg-light);
+      color: var(--color-primary);
+    }
   }
 }

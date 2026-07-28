@@ -10,332 +10,379 @@
  * - 委托 SchemaRender 渲染 Widget 树
  * - 画布交互（选中、拖拽、缩放）后续迭代接入
  */
-import { computed, onMounted, onUnmounted, provide, ref } from 'vue'
-import { ElMessageBox } from 'element-plus'
-import { useBoardStore } from '../../stores/board'
-import { useEditorStore } from '../../stores/editor'
-import EditorOverlay from './EditorOverlay.vue'
-import ZoomIndicator from './ZoomIndicator.vue'
-import SchemaRender from '../WidgetRenderer/SchemaRender.vue'
-import { useWidgetStore } from '../../stores/widget'
-import type { Widget, PreviewBreakpoint } from '../../widgets/base/types'
-import type { PartialWidget, DialogRegistry, EventExecutionContext, FormFieldValue } from '../WidgetRenderer/types'
-import { triggerWidgetEvent } from '../../engine'
-import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY, FORM_GRID_READONLY_KEY, PREVIEW_BREAKPOINT_KEY } from '../WidgetRenderer/types'
-import { WIDGET_SURFACE_KEY } from '../../widgets/base/widgetMock'
-import { useLinkage } from '../../composables/useLinkage'
-import { useBoardLayout } from '../../composables/useBoardLayout'
-import { WidgetRenderer } from '../WidgetRenderer'
-import { useAppStore } from '../../stores/app'
-import WidgetContextMenu from './WidgetContextMenu.vue'
-import { useClipboard } from '../../composables/useClipboard'
-import { useSnapshot } from '../../composables/useSnapshot'
-import { EDITOR_CONTEXTMENU_KEY } from './editorContextKeys'
-import { useFlexCanvasDropEnabled } from '../../composables/useFlexCanvasDrop'
-import { useDuplicateWidget } from '../../composables/useDuplicateWidget'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './EditorCanvas.module.scss'
-import rendererStyles from '../WidgetRenderer/style.module.scss'
+import { computed, onMounted, onUnmounted, provide, ref } from "vue";
+import { ElMessageBox } from "element-plus";
+import { useBoardStore } from "../../stores/board";
+import { useEditorStore } from "../../stores/editor";
+import EditorOverlay from "./EditorOverlay.vue";
+import SchemaRender from "../WidgetRenderer/SchemaRender.vue";
+import { useWidgetStore } from "../../stores/widget";
+import type { Widget, PreviewBreakpoint } from "../../widgets/base/types";
+import type {
+  PartialWidget,
+  DialogRegistry,
+  EventExecutionContext,
+  FormFieldValue,
+} from "../WidgetRenderer/types";
+import { triggerWidgetEvent } from "../../engine";
+import {
+  EVENT_CONTEXT_KEY,
+  DIALOG_REGISTRY_KEY,
+  FORM_GRID_LINKAGE_KEY,
+  FORM_GRID_READONLY_KEY,
+  PREVIEW_BREAKPOINT_KEY,
+} from "../WidgetRenderer/types";
+import { WIDGET_SURFACE_KEY } from "../../widgets/base/widgetMock";
+import { useLinkage } from "../../composables/useLinkage";
+import { useBoardLayout } from "../../composables/useBoardLayout";
+import { WidgetRenderer } from "../WidgetRenderer";
+import { useAppStore } from "../../stores/app";
+import WidgetContextMenu from "./WidgetContextMenu.vue";
+import { useClipboard } from "../../composables/useClipboard";
+import { useSnapshot } from "../../composables/useSnapshot";
+import { EDITOR_CONTEXTMENU_KEY } from "./editorContextKeys";
+import { useFlexCanvasDropEnabled } from "../../composables/useFlexCanvasDrop";
+import { useDuplicateWidget } from "../../composables/useDuplicateWidget";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./EditorCanvas.module.scss";
+import rendererStyles from "../WidgetRenderer/style.module.scss";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const props = defineProps<{
-  previewBreakpoint?: PreviewBreakpoint
-}>()
+  previewBreakpoint?: PreviewBreakpoint;
+}>();
 
 const emit = defineEmits<{
-  openEvent: [widget: Widget]
-  openRule: [widget: Widget]
-  openApi: [widget: Widget]
-  openVariables: [widget: Widget]
-  savePreview: [dataUrl: string]
-}>()
+  openEvent: [widget: Widget];
+  openRule: [widget: Widget];
+  openApi: [widget: Widget];
+  openVariables: [widget: Widget];
+  savePreview: [dataUrl: string];
+}>();
 
-const canvasRef = ref<HTMLElement>()
-const contentFrameRef = ref<HTMLElement>()
-defineExpose({ canvasRef })
+const canvasRef = ref<HTMLElement>();
+const contentFrameRef = ref<HTMLElement | null>(null);
+defineExpose({ canvasRef });
 
-const boardStore = useBoardStore()
-const editorStore = useEditorStore()
-const widgetStore = useWidgetStore()
-const appStore = useAppStore()
+const boardStore = useBoardStore();
+const editorStore = useEditorStore();
+const widgetStore = useWidgetStore();
+const appStore = useAppStore();
 
-const { isFlexLayout, rendererLayout, contentFrameStyle } = useBoardLayout(() => boardStore.canvas)
-const isPreview = computed(() => editorStore.mode !== 'edit')
-const isReadonly = computed(() => editorStore.mode === 'publish-readonly')
+const { isFlexLayout, rendererLayout, contentFrameStyle } = useBoardLayout(
+  () => boardStore.canvas,
+);
+const isPreview = computed(() => editorStore.mode !== "edit");
+const isReadonly = computed(() => editorStore.mode === "publish-readonly");
 
-const flexDropEnabled = computed(() => isFlexLayout.value && !isPreview.value)
-const showFlexEmpty = computed(() =>
-  flexDropEnabled.value && widgetStore.widgets.length === 0,
-)
+const flexDropEnabled = computed(() => isFlexLayout.value && !isPreview.value);
+const showFlexEmpty = computed(
+  () => flexDropEnabled.value && widgetStore.widgets.length === 0,
+);
 const {
   isDragOver: isFlexDragOver,
   handleDragOver: handleFlexDragOver,
   handleDragLeave: handleFlexDragLeave,
   handleDrop: handleFlexDrop,
-} = useFlexCanvasDropEnabled(contentFrameRef, flexDropEnabled)
-const { duplicateFromWidget } = useDuplicateWidget()
+} = useFlexCanvasDropEnabled(contentFrameRef, flexDropEnabled);
+const { duplicateFromWidget } = useDuplicateWidget();
 
 // ---- 百分比模式：监听父容器尺寸 ----
 
-const parentSize = ref({ width: 1920, height: 1080 })
-let resizeObserver: ResizeObserver | null = null
+const parentSize = ref({ width: 1920, height: 1080 });
+let resizeObserver: ResizeObserver | null = null;
 
 onMounted(() => {
-  const parent = canvasRef.value?.parentElement
+  const parent = canvasRef.value?.parentElement;
   if (parent) {
     const measure = () => {
-      parentSize.value = { width: parent.clientWidth, height: parent.clientHeight }
-    }
-    measure()
-    resizeObserver = new ResizeObserver(measure)
-    resizeObserver.observe(parent)
+      parentSize.value = {
+        width: parent.clientWidth,
+        height: parent.clientHeight,
+      };
+    };
+    measure();
+    resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(parent);
   }
-})
+});
 
 onUnmounted(() => {
-  resizeObserver?.disconnect()
-})
+  resizeObserver?.disconnect();
+});
 
 /** 画布容器样式：尺寸、背景、内边距、缩放 */
 const canvasStyle = computed(() => {
-  const c = boardStore.canvas
+  const c = boardStore.canvas;
 
   if (isFlexLayout.value) {
-    const zoom = c.zoom ?? 100
+    const zoom = c.zoom ?? 100;
     return {
-      width: '100%',
-      height: '100%',
-      minHeight: '100%',
+      width: "100%",
+      height: "100%",
+      minHeight: "100%",
       backgroundColor: c.backgroundColor,
       padding: c.padding,
-      position: 'relative' as const,
-      boxSizing: 'border-box' as const,
+      position: "relative" as const,
+      boxSizing: "border-box" as const,
       transform: zoom !== 100 ? `scale(${zoom / 100})` : undefined,
-      transformOrigin: 'top left' as const,
-    }
+      transformOrigin: "top left" as const,
+    };
   }
 
-  const wUnit = c.widthUnit ?? 'px'
-  const hUnit = c.heightUnit ?? 'px'
+  const wUnit = c.widthUnit ?? "px";
+  const hUnit = c.heightUnit ?? "px";
 
   // 编辑模式有 24px margin（标尺空间），百分比时需扣除 margin
-  const margin = isPreview.value ? 0 : 24
-  const availW = parentSize.value.width - margin * 2
-  const availH = parentSize.value.height - margin * 2
-  const widthPx = wUnit === '%' ? Math.round(availW * c.width / 100) : c.width
-  const heightPx = hUnit === '%' ? Math.round(availH * c.height / 100) : c.height
+  const margin = isPreview.value ? 0 : 24;
+  const availW = parentSize.value.width - margin * 2;
+  const availH = parentSize.value.height - margin * 2;
+  const widthPx =
+    wUnit === "%" ? Math.round((availW * c.width) / 100) : c.width;
+  const heightPx =
+    hUnit === "%" ? Math.round((availH * c.height) / 100) : c.height;
 
-  boardStore.setCanvasPixelSize(widthPx, heightPx)
+  boardStore.setCanvasPixelSize(widthPx, heightPx);
 
   return {
-    width: wUnit === '%' ? `calc(${c.width}% - ${margin * 2}px)` : `${c.width}px`,
-    height: hUnit === '%' ? `calc(${c.height}% - ${margin * 2}px)` : `${c.height}px`,
+    width:
+      wUnit === "%" ? `calc(${c.width}% - ${margin * 2}px)` : `${c.width}px`,
+    height:
+      hUnit === "%" ? `calc(${c.height}% - ${margin * 2}px)` : `${c.height}px`,
     backgroundColor: c.backgroundColor,
     padding: c.padding,
     transform: `scale(${c.zoom / 100})`,
-    transformOrigin: 'top left',
-    position: 'relative' as const,
-  }
-})
+    transformOrigin: "top left",
+    position: "relative" as const,
+  };
+});
 
 // ---- 预览模式：弹窗注册表 + 事件执行上下文 ----
 
-const dialogRegistry: DialogRegistry = new Map()
-const lastOpenedDialogId = ref<string | undefined>(undefined)
-provide(DIALOG_REGISTRY_KEY, dialogRegistry)
+const dialogRegistry: DialogRegistry = new Map();
+const lastOpenedDialogId = ref<string | undefined>(undefined);
+provide(DIALOG_REGISTRY_KEY, dialogRegistry);
 
 // ---- 变量 + exposed 上下文（预览模式） ----
 
-const runtimeVariables = ref<Record<string, unknown>>({})
-const exposedContext = ref<Record<string, Record<string, unknown>>>({})
+const runtimeVariables = ref<Record<string, unknown>>({});
+const exposedContext = ref<Record<string, Record<string, unknown>>>({});
 
 const variablesContext = computed(() => {
-  const vars: Record<string, unknown> = {}
+  const vars: Record<string, unknown> = {};
   for (const v of boardStore.variables) {
-    vars[v.name] = v.defaultValue
+    vars[v.name] = v.defaultValue;
   }
   function collect(items: Widget[]) {
     for (const item of items) {
       if (item.variables?.length) {
         for (const v of item.variables) {
-          vars[v.name] = v.defaultValue
+          vars[v.name] = v.defaultValue;
         }
       }
-      if (item.children?.length) collect(item.children as Widget[])
+      if (item.children?.length) collect(item.children as Widget[]);
     }
   }
-  collect(widgetStore.widgets)
-  Object.assign(vars, runtimeVariables.value)
-  return vars
-})
+  collect(widgetStore.widgets);
+  Object.assign(vars, runtimeVariables.value);
+  return vars;
+});
 
-provide('registerExposed', (widgetId: string, state: Record<string, unknown>) => {
-  exposedContext.value = { ...exposedContext.value, [widgetId]: state }
-})
-provide('unregisterExposed', (widgetId: string) => {
-  const { [widgetId]: _, ...rest } = exposedContext.value
-  exposedContext.value = rest
-})
-provide('variablesContext', variablesContext)
-provide('exposedContext', exposedContext)
+provide(
+  "registerExposed",
+  (widgetId: string, state: Record<string, unknown>) => {
+    exposedContext.value = { ...exposedContext.value, [widgetId]: state };
+  },
+);
+provide("unregisterExposed", (widgetId: string) => {
+  const { [widgetId]: _, ...rest } = exposedContext.value;
+  exposedContext.value = rest;
+});
+provide("variablesContext", variablesContext);
+provide("exposedContext", exposedContext);
 
 /** 递归查找 widget */
 function findWidgetById(items: Widget[], id: string): Widget | undefined {
   for (const item of items) {
-    if (item.id === id) return item
+    if (item.id === id) return item;
     if (item.children?.length) {
-      const found = findWidgetById(item.children as Widget[], id)
-      if (found) return found
+      const found = findWidgetById(item.children as Widget[], id);
+      if (found) return found;
     }
   }
-  return undefined
+  return undefined;
 }
 
 const previewEventContext: EventExecutionContext = {
   findWidget: (id: string) => findWidgetById(widgetStore.widgets, id),
-  updateWidget: (id: string, patch: Partial<Widget>) => widgetStore.updateWidget(id, patch),
+  updateWidget: (id: string, patch: Partial<Widget>) =>
+    widgetStore.updateWidget(id, patch),
   openDialog: (target: string) => {
-    const handler = dialogRegistry.get(target)
+    const handler = dialogRegistry.get(target);
     if (handler) {
-      lastOpenedDialogId.value = target
-      handler(true)
-      return
+      lastOpenedDialogId.value = target;
+      handler(true);
+      return;
     }
   },
   closeDialog: () => {
     if (lastOpenedDialogId.value) {
-      const handler = dialogRegistry.get(lastOpenedDialogId.value)
-      if (handler) handler(false)
-      lastOpenedDialogId.value = undefined
+      const handler = dialogRegistry.get(lastOpenedDialogId.value);
+      if (handler) handler(false);
+      lastOpenedDialogId.value = undefined;
     }
   },
   submitForm: () => {},
   resetForm: () => {},
   getFormData: () => {
-    const values: Record<string, unknown> = {}
+    const values: Record<string, unknown> = {};
     function walk(items: Widget[]) {
       for (const w of items) {
-        if (w.field) values[w.field] = w.defaultValue ?? null
-        if (w.children?.length) walk(w.children as Widget[])
+        if (w.field) values[w.field] = w.defaultValue ?? null;
+        if (w.children?.length) walk(w.children as Widget[]);
       }
     }
-    walk(widgetStore.widgets)
-    return values
+    walk(widgetStore.widgets);
+    return values;
   },
   emit: () => {},
-  get variables() { return variablesContext.value },
-  setVariable: (name: string, value: unknown) => { runtimeVariables.value[name] = value },
+  get variables() {
+    return variablesContext.value;
+  },
+  setVariable: (name: string, value: unknown) => {
+    runtimeVariables.value[name] = value;
+  },
   getVariable: (name: string) => variablesContext.value[name],
-  get exposed() { return exposedContext.value },
+  get exposed() {
+    return exposedContext.value;
+  },
   triggerEvent: (targetId: string, eventName: string) => {
-    const widget = findWidgetById(widgetStore.widgets, targetId)
+    const widget = findWidgetById(widgetStore.widgets, targetId);
     if (widget) {
-      triggerWidgetEvent(widget, eventName, previewEventContext)
+      triggerWidgetEvent(widget, eventName, previewEventContext);
     }
   },
   confirm: (message: string) => {
-    return ElMessageBox.confirm(message, t('editor.canvas.confirmTitle'), {
-      confirmButtonText: t('editor.common.confirm'),
-      cancelButtonText: t('editor.common.cancel'),
-      type: 'warning',
-    }).then(() => {})
+    return ElMessageBox.confirm(message, t("editor.canvas.confirmTitle"), {
+      confirmButtonText: t("editor.common.confirm"),
+      cancelButtonText: t("editor.common.cancel"),
+      type: "warning",
+    }).then(() => {});
   },
-}
-provide(EVENT_CONTEXT_KEY, previewEventContext)
+};
+provide(EVENT_CONTEXT_KEY, previewEventContext);
 
 // ---- 共享联动状态（编辑模式：注入给所有 SchemaNode，避免每个节点独立创建 useLinkage） ----
 
 const { stateMap: linkageStateMap } = useLinkage(
   widgetStore.widgets as unknown as PartialWidget[],
   computed(() => {
-    const values: Record<string, FormFieldValue> = {}
+    const values: Record<string, FormFieldValue> = {};
     function walk(items: Widget[]) {
       for (const w of items) {
-        if (w.field) values[w.field] = w.defaultValue ?? null
-        if (w.children?.length) walk(w.children as Widget[])
+        if (w.field) values[w.field] = w.defaultValue ?? null;
+        if (w.children?.length) walk(w.children as Widget[]);
       }
     }
-    walk(widgetStore.widgets)
-    return values
+    walk(widgetStore.widgets);
+    return values;
   }),
   variablesContext,
   exposedContext,
-)
-provide(FORM_GRID_LINKAGE_KEY, linkageStateMap)
-provide(FORM_GRID_READONLY_KEY, isReadonly)
+);
+provide(FORM_GRID_LINKAGE_KEY, linkageStateMap);
+provide(FORM_GRID_READONLY_KEY, isReadonly);
 
-provide(WIDGET_SURFACE_KEY, 'editor')
+provide(WIDGET_SURFACE_KEY, "editor");
 
 // ---- 响应式断点（预览/发布模式） ----
-const previewBreakpointRef = computed<PreviewBreakpoint>(() => props.previewBreakpoint ?? 'desktop')
-provide(PREVIEW_BREAKPOINT_KEY, previewBreakpointRef)
+const previewBreakpointRef = computed<PreviewBreakpoint>(
+  () => props.previewBreakpoint ?? "desktop",
+);
+provide(PREVIEW_BREAKPOINT_KEY, previewBreakpointRef);
 
-const isPercentWidth = computed(() => !isFlexLayout.value && (boardStore.canvas.widthUnit ?? 'px') === '%')
-const isPercentHeight = computed(() => !isFlexLayout.value && (boardStore.canvas.heightUnit ?? 'px') === '%')
+const isPercentWidth = computed(
+  () => !isFlexLayout.value && (boardStore.canvas.widthUnit ?? "px") === "%",
+);
+const isPercentHeight = computed(
+  () => !isFlexLayout.value && (boardStore.canvas.heightUnit ?? "px") === "%",
+);
 
-const formGridContext = computed(() => appStore.formGridContext)
-const { copy: copyToClipboard } = useClipboard()
-const { captureElement } = useSnapshot()
+const formGridContext = computed(() => appStore.formGridContext);
+const { copy: copyToClipboard } = useClipboard();
+const { captureElement } = useSnapshot();
 
-const contextMenu = ref({ visible: false, x: 0, y: 0, widget: null as Widget | null })
+const contextMenu = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  widget: null as Widget | null,
+});
 
 function showContextMenu(event: MouseEvent, widget: Widget) {
-  contextMenu.value = { visible: true, x: event.clientX, y: event.clientY, widget }
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    widget,
+  };
 }
 
-provide(EDITOR_CONTEXTMENU_KEY, showContextMenu)
+provide(EDITOR_CONTEXTMENU_KEY, showContextMenu);
 
 function handleCopyWidget(widget: Widget) {
-  duplicateFromWidget(widget)
+  duplicateFromWidget(widget);
 }
 
 function handleDeleteWidget(widget: Widget) {
-  widgetStore.removeWidget(widget.id)
-  editorStore.select(null)
-  editorStore.pushHistory([...widgetStore.widgets])
+  widgetStore.removeWidget(widget.id);
+  editorStore.select(null);
+  editorStore.pushHistory([...widgetStore.widgets]);
 }
 
 function handleCopyId(id: string) {
-  void copyToClipboard(id, t('editor.canvas.copiedWidgetId'))
+  void copyToClipboard(id, t("editor.canvas.copiedWidgetId"));
 }
 
 function handleBringToFront(widget: Widget) {
-  const parent = widgetStore.findParent(widget.id)
-  const parentId = parent?.id ?? null
-  const siblings = parent?.children ?? widgetStore.widgets
-  widgetStore.moveWidgetToIndex(widget.id, parentId, siblings.length - 1)
-  editorStore.pushHistory([...widgetStore.widgets])
+  const parent = widgetStore.findParent(widget.id);
+  const parentId = parent?.id ?? null;
+  const siblings = parent?.children ?? widgetStore.widgets;
+  widgetStore.moveWidgetToIndex(widget.id, parentId, siblings.length - 1);
+  editorStore.pushHistory([...widgetStore.widgets]);
 }
 
 function handleSendToBack(widget: Widget) {
-  const parent = widgetStore.findParent(widget.id)
-  const parentId = parent?.id ?? null
-  widgetStore.moveWidgetToIndex(widget.id, parentId, 0)
-  editorStore.pushHistory([...widgetStore.widgets])
+  const parent = widgetStore.findParent(widget.id);
+  const parentId = parent?.id ?? null;
+  widgetStore.moveWidgetToIndex(widget.id, parentId, 0);
+  editorStore.pushHistory([...widgetStore.widgets]);
 }
 
 function handleToggleLock(widget: Widget) {
-  widgetStore.updateWidget(widget.id, { locked: !widget.locked })
-  editorStore.pushHistory([...widgetStore.widgets])
+  widgetStore.updateWidget(widget.id, { locked: !widget.locked });
+  editorStore.pushHistory([...widgetStore.widgets]);
 }
 
 function handleToggleHidden(widget: Widget) {
-  widgetStore.updateWidget(widget.id, { hidden: !widget.hidden })
-  editorStore.pushHistory([...widgetStore.widgets])
+  widgetStore.updateWidget(widget.id, { hidden: !widget.hidden });
+  editorStore.pushHistory([...widgetStore.widgets]);
 }
 
 async function handleSavePreview(widget: Widget) {
-  const el = document.querySelector(`[data-widget-id="${widget.id}"]`) as HTMLElement | null
-  if (!el) return
-  const dataUrl = await captureElement(el)
-  if (dataUrl) emit('savePreview', dataUrl)
+  const el = document.querySelector(
+    `[data-widget-id="${widget.id}"]`,
+  ) as HTMLElement | null;
+  if (!el) return;
+  const dataUrl = await captureElement(el);
+  if (dataUrl) emit("savePreview", dataUrl);
 }
 
 function handleCanvasClick() {
   if (isFlexLayout.value && !isPreview.value) {
-    editorStore.clearSelection()
-    contextMenu.value.visible = false
+    editorStore.clearSelection();
+    contextMenu.value.visible = false;
   }
 }
 </script>
@@ -358,7 +405,10 @@ function handleCanvasClick() {
   >
     <div
       ref="contentFrameRef"
-      :class="[styles.contentFrame, { [styles.contentFrameDrop]: flexDropEnabled && isFlexDragOver }]"
+      :class="[
+        styles.contentFrame,
+        { [styles.contentFrameDrop]: flexDropEnabled && isFlexDragOver },
+      ]"
       :style="contentFrameStyle"
       @click="handleCanvasClick"
       @dragover="flexDropEnabled ? handleFlexDragOver($event) : undefined"
@@ -366,12 +416,11 @@ function handleCanvasClick() {
       @drop="flexDropEnabled ? handleFlexDrop($event) : undefined"
     >
       <!-- Flex 布局：流式渲染，编辑/预览共用 -->
-      <div
-        v-if="showFlexEmpty"
-        :class="styles.flexEmpty"
-      >
-        <span :class="styles.flexEmptyTitle">{{ t('editor.canvas.emptyFlex') }}</span>
-        <span>{{ t('editor.canvas.emptyFlexHint') }}</span>
+      <div v-if="showFlexEmpty" :class="styles.flexEmpty">
+        <span :class="styles.flexEmptyTitle">{{
+          t("editor.canvas.emptyFlex")
+        }}</span>
+        <span>{{ t("editor.canvas.emptyFlexHint") }}</span>
       </div>
       <WidgetRenderer
         v-if="isFlexLayout"
@@ -420,4 +469,3 @@ function handleCanvasClick() {
     />
   </div>
 </template>
-

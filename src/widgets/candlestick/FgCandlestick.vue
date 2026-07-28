@@ -1,126 +1,172 @@
 <script setup lang="ts">
-import { inject, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { useI18n } from '@schema-platform/platform-shared'
-import { widgetDataKey } from '../base/types'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useChartOption } from '../base/useChartOption'
-import { useChartLazyInit } from '../base/useChartLazyInit'
-import { useChartEvents } from '../../composables/useChartEvents'
-import { echarts, type EChartsType } from '../base/echarts'
-import styles from './style.module.scss'
+import { inject, ref, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
+import { widgetDataKey } from "../base/types";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useChartOption } from "../base/useChartOption";
+import { useChartLazyInit } from "../base/useChartLazyInit";
+import { useChartEvents } from "../../composables/useChartEvents";
+import { echarts, type EChartsType } from "../base/echarts";
+import styles from "./style.module.scss";
 
-const widgetData = inject(widgetDataKey)!
-const { t } = useI18n()
+const widgetData = inject(widgetDataKey)!;
+const { t } = useI18n();
 
-function buildOption(data: Record<string, unknown>[], props: Record<string, unknown>): Record<string, unknown> {
-  const dateField = (props.dateField as string) || 'date'
-  const openField = (props.openField as string) || 'open'
-  const closeField = (props.closeField as string) || 'close'
-  const lowField = (props.lowField as string) || 'low'
-  const highField = (props.highField as string) || 'high'
-  const title = props.title as string
-  const showLegend = props.showLegend !== false
-  const colorScheme = (props.colorScheme as string) || 'default'
+function buildOption(
+  data: Record<string, unknown>[],
+  props: Record<string, unknown>,
+): Record<string, unknown> {
+  const dateField = (props.dateField as string) || "date";
+  const openField = (props.openField as string) || "open";
+  const closeField = (props.closeField as string) || "close";
+  const lowField = (props.lowField as string) || "low";
+  const highField = (props.highField as string) || "high";
+  const title = props.title as string;
+  const showLegend = props.showLegend !== false;
+  const colorScheme = (props.colorScheme as string) || "default";
 
-  const dates = data.map(item => item[dateField] as string)
-  const seriesData = data.map(item => [
+  const dates = data.map((item) => item[dateField] as string);
+  const seriesData = data.map((item) => [
     Number(item[openField]) || 0,
     Number(item[closeField]) || 0,
     Number(item[lowField]) || 0,
     Number(item[highField]) || 0,
-  ])
+  ]);
 
   const colorMap: Record<string, string[]> = {
-    default: ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'],
-    dark: ['#dd6b66', '#759aa0', '#e69d87', '#8dc1a9', '#ea7e53', '#73a373', '#73b9bc', '#7289ab', '#91ca8c'],
-    light: ['#37A2DA', '#32C5E9', '#67E0E3', '#9FE6B8', '#FFDB5C', '#ff9f7f', '#fb7293', '#E690D1', '#e7bcf3'],
-  }
+    default: [
+      "#5470c6",
+      "#91cc75",
+      "#fac858",
+      "#ee6666",
+      "#73c0de",
+      "#3ba272",
+      "#fc8452",
+      "#9a60b4",
+      "#ea7ccc",
+    ],
+    dark: [
+      "#dd6b66",
+      "#759aa0",
+      "#e69d87",
+      "#8dc1a9",
+      "#ea7e53",
+      "#73a373",
+      "#73b9bc",
+      "#7289ab",
+      "#91ca8c",
+    ],
+    light: [
+      "#37A2DA",
+      "#32C5E9",
+      "#67E0E3",
+      "#9FE6B8",
+      "#FFDB5C",
+      "#ff9f7f",
+      "#fb7293",
+      "#E690D1",
+      "#e7bcf3",
+    ],
+  };
 
-  const colors = colorMap[colorScheme] || colorMap.default
+  const colors = colorMap[colorScheme] || colorMap.default;
 
   return {
     color: colors,
-    title: title ? { text: title, left: 'center' } : undefined,
+    title: title ? { text: title, left: "center" } : undefined,
     tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'cross' },
+      trigger: "axis",
+      axisPointer: { type: "cross" },
     },
-    legend: showLegend ? { bottom: 0, data: [t('editor.candlestick.seriesName')] } : undefined,
-    grid: { left: '3%', right: '4%', bottom: showLegend ? '12%' : '3%', containLabel: true },
-    xAxis: { type: 'category', data: dates },
-    yAxis: { type: 'value', scale: true },
-    series: [{
-      name: t('editor.candlestick.seriesName'),
-      type: 'candlestick',
-      data: seriesData,
-    }],
-  }
+    legend: showLegend
+      ? { bottom: 0, data: [t("editor.candlestick.seriesName")] }
+      : undefined,
+    grid: {
+      left: "3%",
+      right: "4%",
+      bottom: showLegend ? "12%" : "3%",
+      containLabel: true,
+    },
+    xAxis: { type: "category", data: dates },
+    yAxis: { type: "value", scale: true },
+    series: [
+      {
+        name: t("editor.candlestick.seriesName"),
+        type: "candlestick",
+        data: seriesData,
+      },
+    ],
+  };
 }
 
 const { chartOption, loading, chartData } = useChartOption({
   widgetData,
   buildOption,
-})
+});
 
 useExposeWidget(() => ({
-  get loading() { return loading.value },
-  get chartData() { return chartData.value },
-}))
+  get loading() {
+    return loading.value;
+  },
+  get chartData() {
+    return chartData.value;
+  },
+}));
 
-const chartRef = ref<HTMLDivElement>()
-const chartInstanceRef = ref<EChartsType | null>(null)
-let chartInstance: EChartsType | null = null
-useChartEvents(chartInstanceRef, widgetData, chartData)
-let resizeObserver: ResizeObserver | null = null
+const chartRef = ref<HTMLDivElement>();
+const chartInstanceRef = ref<EChartsType | null>(null);
+let chartInstance: EChartsType | null = null;
+useChartEvents(chartInstanceRef, widgetData, chartData);
+let resizeObserver: ResizeObserver | null = null;
 
-const { isVisible } = useChartLazyInit(chartRef)
+const { isVisible } = useChartLazyInit(chartRef);
 
 function initChart() {
-  if (!chartRef.value) return
-  chartInstance = echarts.init(chartRef.value)
-  chartInstanceRef.value = chartInstance
+  if (!chartRef.value) return;
+  chartInstance = echarts.init(chartRef.value);
+  chartInstanceRef.value = chartInstance;
   if (chartOption.value && Object.keys(chartOption.value).length > 0) {
-    chartInstance.setOption(chartOption.value)
+    chartInstance.setOption(chartOption.value);
   }
 }
 
 function handleResize() {
-  chartInstance?.resize()
+  chartInstance?.resize();
 }
 
 watch(isVisible, (visible) => {
   if (visible) {
-    nextTick(() => initChart())
+    nextTick(() => initChart());
   }
-})
+});
 
 watch(chartOption, async (option) => {
-  if (!isVisible.value) return
+  if (!isVisible.value) return;
   if (!chartInstance) {
-    await nextTick()
-    initChart()
+    await nextTick();
+    initChart();
   }
   if (chartInstance && Object.keys(option).length > 0) {
-    chartInstance.setOption(option, true)
+    chartInstance.setOption(option, true);
   }
-})
+});
 
 onMounted(() => {
   if (isVisible.value) {
-    initChart()
+    initChart();
   }
   if (chartRef.value) {
-    resizeObserver = new ResizeObserver(() => handleResize())
-    resizeObserver.observe(chartRef.value)
+    resizeObserver = new ResizeObserver(() => handleResize());
+    resizeObserver.observe(chartRef.value);
   }
-})
+});
 
 onUnmounted(() => {
-  resizeObserver?.disconnect()
-  resizeObserver = null
-  chartInstance?.dispose()
-  chartInstance = null
-})
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+  chartInstance?.dispose();
+  chartInstance = null;
+});
 </script>
 
 <template>

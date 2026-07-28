@@ -7,92 +7,94 @@
  * - 解除链接：4 个独立输入（左上/右上/右下/左下），可分别设置
  * - 中央矩形实时预览圆角效果
  */
-import { ref, computed } from 'vue'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './BorderRadiusEditor.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { ref, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./BorderRadiusEditor.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const props = defineProps<{
-  value?: Record<string, string>
-}>()
+  value?: Record<string, string>;
+}>();
 
 const emit = defineEmits<{
-  update: [patch: Record<string, string>]
-}>()
+  update: [patch: Record<string, string>];
+}>();
 
 // ---- 链接模式 ----
 
-const linked = ref(true)
+const linked = ref(true);
 
-type Corner = 'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'
+type Corner = "topLeft" | "topRight" | "bottomRight" | "bottomLeft";
 
 const CORNER_RADIUS_MAP: Record<Corner, string> = {
-  topLeft: 'borderTopLeftRadius',
-  topRight: 'borderTopRightRadius',
-  bottomRight: 'borderBottomRightRadius',
-  bottomLeft: 'borderBottomLeftRadius',
-}
+  topLeft: "borderTopLeftRadius",
+  topRight: "borderTopRightRadius",
+  bottomRight: "borderBottomRightRadius",
+  bottomLeft: "borderBottomLeftRadius",
+};
 
 // ---- 解析值 ----
 
 function parseRadius(val?: string): number {
-  if (!val) return 0
-  return parseInt(val) || 0
+  if (!val) return 0;
+  return parseInt(val) || 0;
 }
 
 function getCornerVal(corner: Corner): number {
-  const v = props.value ?? {}
-  return parseRadius(v[CORNER_RADIUS_MAP[corner]]) || parseRadius(v.borderRadius)
+  const v = props.value ?? {};
+  return (
+    parseRadius(v[CORNER_RADIUS_MAP[corner]]) || parseRadius(v.borderRadius)
+  );
 }
 
-const linkedValue = computed(() => parseRadius(props.value?.borderRadius))
+const linkedValue = computed(() => parseRadius(props.value?.borderRadius));
 
-const tlVal = computed(() => getCornerVal('topLeft'))
-const trVal = computed(() => getCornerVal('topRight'))
-const brVal = computed(() => getCornerVal('bottomRight'))
-const blVal = computed(() => getCornerVal('bottomLeft'))
+const tlVal = computed(() => getCornerVal("topLeft"));
+const trVal = computed(() => getCornerVal("topRight"));
+const brVal = computed(() => getCornerVal("bottomRight"));
+const blVal = computed(() => getCornerVal("bottomLeft"));
 
 // ---- 操作 ----
 
 function applyLinked(val: number | undefined) {
-  const v = `${val ?? 0}px`
-  emit('update', {
+  const v = `${val ?? 0}px`;
+  emit("update", {
     borderRadius: v,
-    borderTopLeftRadius: '',
-    borderTopRightRadius: '',
-    borderBottomRightRadius: '',
-    borderBottomLeftRadius: '',
-  })
+    borderTopLeftRadius: "",
+    borderTopRightRadius: "",
+    borderBottomRightRadius: "",
+    borderBottomLeftRadius: "",
+  });
 }
 
 function applyCorner(corner: Corner, val: number | undefined) {
-  const v = `${val ?? 0}px`
-  emit('update', {
+  const v = `${val ?? 0}px`;
+  emit("update", {
     [CORNER_RADIUS_MAP[corner]]: v,
-    borderRadius: '',
-  })
+    borderRadius: "",
+  });
 }
 
 function toggleLinked() {
-  linked.value = !linked.value
+  linked.value = !linked.value;
   if (linked.value) {
-    applyLinked(tlVal.value)
+    applyLinked(tlVal.value);
   }
 }
 
 // ---- 预览 ----
 
 const previewStyle = computed(() => {
-  const v = props.value ?? {}
+  const v = props.value ?? {};
   return {
-    borderTopLeftRadius: v.borderTopLeftRadius || v.borderRadius || '0',
-    borderTopRightRadius: v.borderTopRightRadius || v.borderRadius || '0',
-    borderBottomRightRadius: v.borderBottomRightRadius || v.borderRadius || '0',
-    borderBottomLeftRadius: v.borderBottomLeftRadius || v.borderRadius || '0',
-  }
-})
+    borderTopLeftRadius: v.borderTopLeftRadius || v.borderRadius || "0",
+    borderTopRightRadius: v.borderTopRightRadius || v.borderRadius || "0",
+    borderBottomRightRadius: v.borderBottomRightRadius || v.borderRadius || "0",
+    borderBottomLeftRadius: v.borderBottomLeftRadius || v.borderRadius || "0",
+  };
+});
 </script>
 
 <template>
@@ -102,13 +104,23 @@ const previewStyle = computed(() => {
       <div :class="styles.boxWrapper">
         <div :class="styles.box" :style="previewStyle">
           <div :class="styles.center">
-            <span :class="styles.centerLabel">{{ linked ? linkedValue : tlVal }}px</span>
+            <span :class="styles.centerLabel"
+              >{{ linked ? linkedValue : tlVal }}px</span
+            >
           </div>
         </div>
       </div>
 
       <!-- Link toggle -->
-      <el-tooltip :content="linked ? t('editor.borderEditor.unlinkTooltip') : t('editor.borderEditor.linkTooltip')" placement="top" :show-after="300">
+      <el-tooltip
+        :content="
+          linked
+            ? t('editor.borderEditor.unlinkTooltip')
+            : t('editor.borderEditor.linkTooltip')
+        "
+        placement="top"
+        :show-after="300"
+      >
         <button
           :class="[styles.linkBtn, linked && styles.linkBtnActive]"
           @click="toggleLinked"
@@ -121,7 +133,9 @@ const previewStyle = computed(() => {
     <!-- 链接模式：单个输入 -->
     <div v-if="linked" :class="styles.controls">
       <div :class="styles.controlRow">
-        <label :class="styles.controlLabel">{{ t('editor.borderRadiusEditor.radius') }}</label>
+        <label :class="styles.controlLabel">{{
+          t("editor.borderRadiusEditor.radius")
+        }}</label>
         <el-input-number
           :model-value="linkedValue"
           :min="0"
@@ -137,7 +151,9 @@ const previewStyle = computed(() => {
     <!-- 解除链接：4 个独立输入 -->
     <div v-else :class="styles.controlsGrid">
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">{{ t('editor.borderRadiusEditor.topLeft') }}</label>
+        <label :class="styles.gridLabel">{{
+          t("editor.borderRadiusEditor.topLeft")
+        }}</label>
         <el-input-number
           :model-value="tlVal"
           :min="0"
@@ -145,11 +161,15 @@ const previewStyle = computed(() => {
           size="small"
           controls-position="right"
           :class="styles.gridInput"
-          @update:model-value="(v: number | undefined) => applyCorner('topLeft', v)"
+          @update:model-value="
+            (v: number | undefined) => applyCorner('topLeft', v)
+          "
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">{{ t('editor.borderRadiusEditor.topRight') }}</label>
+        <label :class="styles.gridLabel">{{
+          t("editor.borderRadiusEditor.topRight")
+        }}</label>
         <el-input-number
           :model-value="trVal"
           :min="0"
@@ -157,11 +177,15 @@ const previewStyle = computed(() => {
           size="small"
           controls-position="right"
           :class="styles.gridInput"
-          @update:model-value="(v: number | undefined) => applyCorner('topRight', v)"
+          @update:model-value="
+            (v: number | undefined) => applyCorner('topRight', v)
+          "
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">{{ t('editor.borderRadiusEditor.bottomRight') }}</label>
+        <label :class="styles.gridLabel">{{
+          t("editor.borderRadiusEditor.bottomRight")
+        }}</label>
         <el-input-number
           :model-value="brVal"
           :min="0"
@@ -169,11 +193,15 @@ const previewStyle = computed(() => {
           size="small"
           controls-position="right"
           :class="styles.gridInput"
-          @update:model-value="(v: number | undefined) => applyCorner('bottomRight', v)"
+          @update:model-value="
+            (v: number | undefined) => applyCorner('bottomRight', v)
+          "
         />
       </div>
       <div :class="styles.gridCell">
-        <label :class="styles.gridLabel">{{ t('editor.borderRadiusEditor.bottomLeft') }}</label>
+        <label :class="styles.gridLabel">{{
+          t("editor.borderRadiusEditor.bottomLeft")
+        }}</label>
         <el-input-number
           :model-value="blVal"
           :min="0"
@@ -181,7 +209,9 @@ const previewStyle = computed(() => {
           size="small"
           controls-position="right"
           :class="styles.gridInput"
-          @update:model-value="(v: number | undefined) => applyCorner('bottomLeft', v)"
+          @update:model-value="
+            (v: number | undefined) => applyCorner('bottomLeft', v)
+          "
         />
       </div>
     </div>

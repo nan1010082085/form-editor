@@ -42,7 +42,12 @@
     justify-content: space-between;
     margin-bottom: 16px;
 
-    h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; color: var(--el-text-color-primary); }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      color: var(--el-text-color-primary);
+    }
   }
 
   &__subtitle {
@@ -76,7 +81,9 @@
 
   &__search {
     width: 200px;
-    :deep(.el-input__wrapper) { height: 32px; }
+    :deep(.el-input__wrapper) {
+      height: 32px;
+    }
   }
 
   // ---- Loading skeleton ----
@@ -161,7 +168,9 @@
     color: var(--el-text-color-secondary);
     font-size: 15px;
 
-    p { margin: 0 0 16px; }
+    p {
+      margin: 0 0 16px;
+    }
   }
 
   // ---- Cards ----
@@ -194,7 +203,9 @@
 
   animation: cardFadeIn 0.35s ease backwards;
   @for $i from 1 through 30 {
-    &:nth-child(#{$i}) { animation-delay: #{$i * 0.04}s; }
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.04}s;
+    }
   }
 
   &__check {
@@ -226,7 +237,9 @@
     color: var(--el-border-color);
   }
 
-  &__body { margin-bottom: 8px; }
+  &__body {
+    margin-bottom: 8px;
+  }
 
   &__name {
     font-size: 14px;
@@ -281,11 +294,21 @@
 }
 
 @keyframes cardFadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

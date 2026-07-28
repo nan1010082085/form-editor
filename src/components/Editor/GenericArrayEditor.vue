@@ -5,80 +5,81 @@
  * 根据 fields 声明动态渲染每个数组项的字段。
  * 支持 text / select / number / switch 四种字段类型。
  */
-import type { ArrayFieldSchema } from '../../widgets/base/types'
-import styles from './GenericArrayEditor.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import type { ArrayFieldSchema } from "../../widgets/base/types";
+import styles from "./GenericArrayEditor.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
-export type { ArrayFieldSchema }
+export type { ArrayFieldSchema };
 
 const props = defineProps<{
-  value: unknown[]
-  fields: ArrayFieldSchema[]
-  itemLabel?: string
-}>()
+  value: unknown[];
+  fields: ArrayFieldSchema[];
+  itemLabel?: string;
+}>();
 
 const emit = defineEmits<{
-  update: [value: unknown[]]
-}>()
+  update: [value: unknown[]];
+}>();
 
 function createItem(): Record<string, unknown> {
-  const item: Record<string, unknown> = {}
+  const item: Record<string, unknown> = {};
   for (const field of props.fields) {
-    item[field.key] = field.default ?? (field.type === 'number' ? 0 : field.type === 'switch' ? false : '')
+    item[field.key] =
+      field.default ??
+      (field.type === "number" ? 0 : field.type === "switch" ? false : "");
   }
-  return item
+  return item;
 }
 
 function addItem() {
-  emit('update', [...props.value, createItem()])
+  emit("update", [...props.value, createItem()]);
 }
 
 function removeItem(index: number) {
-  emit('update', props.value.filter((_, i) => i !== index))
+  emit(
+    "update",
+    props.value.filter((_, i) => i !== index),
+  );
 }
 
 function moveUp(index: number) {
-  if (index === 0) return
-  const updated = [...props.value]
-  ;[updated[index - 1], updated[index]] = [updated[index], updated[index - 1]]
-  emit('update', updated)
+  if (index === 0) return;
+  const updated = [...props.value];
+  [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+  emit("update", updated);
 }
 
 function moveDown(index: number) {
-  if (index >= props.value.length - 1) return
-  const updated = [...props.value]
-  ;[updated[index], updated[index + 1]] = [updated[index + 1], updated[index]]
-  emit('update', updated)
+  if (index >= props.value.length - 1) return;
+  const updated = [...props.value];
+  [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+  emit("update", updated);
 }
 
 function updateField(index: number, fieldKey: string, fieldValue: unknown) {
   const updated = props.value.map((item, i) =>
-    i === index ? { ...(item as Record<string, unknown>), [fieldKey]: fieldValue } : item,
-  )
-  emit('update', updated)
+    i === index
+      ? { ...(item as Record<string, unknown>), [fieldKey]: fieldValue }
+      : item,
+  );
+  emit("update", updated);
 }
 
 function getItemTitle(item: unknown, index: number): string {
   if (props.itemLabel) {
-    const record = item as Record<string, unknown>
-    const labelValue = record[props.itemLabel]
-    if (labelValue) return String(labelValue)
+    const record = item as Record<string, unknown>;
+    const labelValue = record[props.itemLabel];
+    if (labelValue) return String(labelValue);
   }
-  return `${index + 1}`
+  return `${index + 1}`;
 }
 </script>
 
 <template>
   <div :class="styles.editor">
-    <div v-if="value.length === 0" :class="styles.empty">
-      暂无数据
-    </div>
+    <div v-if="value.length === 0" :class="styles.empty">暂无数据</div>
 
-    <div
-      v-for="(item, idx) in value"
-      :key="idx"
-      :class="styles.item"
-    >
+    <div v-for="(item, idx) in value" :key="idx" :class="styles.item">
       <div :class="styles.itemHeader">
         <span :class="styles.itemTitle">#{{ getItemTitle(item, idx) }}</span>
         <div :class="styles.itemActions">
@@ -98,22 +99,13 @@ function getItemTitle(item: unknown, index: number): string {
           >
             <AppIcon name="arrow-down" />
           </el-button>
-          <el-button
-            type="danger"
-            size="small"
-            text
-            @click="removeItem(idx)"
-          >
+          <el-button type="danger" size="small" text @click="removeItem(idx)">
             <AppIcon name="delete" />
           </el-button>
         </div>
       </div>
 
-      <div
-        v-for="field in fields"
-        :key="field.key"
-        :class="styles.field"
-      >
+      <div v-for="field in fields" :key="field.key" :class="styles.field">
         <label :class="styles.label">{{ field.label }}</label>
 
         <el-input

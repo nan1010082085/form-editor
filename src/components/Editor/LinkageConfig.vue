@@ -9,38 +9,45 @@
  * - thenOptions / thenApi (for 'options' type)
  * - elseValue
  */
-import { computed } from 'vue'
-import { validateExpression } from '@/utils/expression'
-import type { SchemaLinkage, LinkageType, DictItem, SchemaApiConfig } from '@/components/WidgetRenderer/types'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './LinkageConfig.module.scss'
+import { computed } from "vue";
+import { validateExpression } from "@/utils/expression";
+import type {
+  SchemaLinkage,
+  LinkageType,
+  DictItem,
+  SchemaApiConfig,
+} from "@/components/WidgetRenderer/types";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./LinkageConfig.module.scss";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const props = defineProps<{
-  linkages: SchemaLinkage[]
-  availableFields: string[]
-}>()
+  linkages: SchemaLinkage[];
+  availableFields: string[];
+}>();
 
 const emit = defineEmits<{
-  'update:linkages': [linkages: SchemaLinkage[]]
-}>()
+  "update:linkages": [linkages: SchemaLinkage[]];
+}>();
 
 /** Linkage type options */
-const linkageTypeOptions = computed<{ label: string; value: LinkageType }[]>(() => [
-  { label: t('editor.linkageConfig.typeVisible'), value: 'visible' },
-  { label: t('editor.linkageConfig.typeDisabled'), value: 'disabled' },
-  { label: t('editor.linkageConfig.typeRequired'), value: 'required' },
-  { label: t('editor.linkageConfig.typeOptions'), value: 'options' },
-  { label: t('editor.linkageConfig.typeSetValue'), value: 'set-value' },
-  { label: t('editor.linkageConfig.typeResetFields'), value: 'reset-fields' },
-])
+const linkageTypeOptions = computed<{ label: string; value: LinkageType }[]>(
+  () => [
+    { label: t("editor.linkageConfig.typeVisible"), value: "visible" },
+    { label: t("editor.linkageConfig.typeDisabled"), value: "disabled" },
+    { label: t("editor.linkageConfig.typeRequired"), value: "required" },
+    { label: t("editor.linkageConfig.typeOptions"), value: "options" },
+    { label: t("editor.linkageConfig.typeSetValue"), value: "set-value" },
+    { label: t("editor.linkageConfig.typeResetFields"), value: "reset-fields" },
+  ],
+);
 
 /** Available fields as select options */
 const fieldOptions = computed(() =>
   props.availableFields.map((f) => ({ label: f, value: f })),
-)
+);
 
 /**
  * Cached condition validation states (Sprint 11 performance fix).
@@ -48,70 +55,78 @@ const fieldOptions = computed(() =>
  */
 const conditionStates = computed(() =>
   props.linkages.map((linkage) => {
-    if (!linkage.condition) return { valid: true as const, error: undefined as string | undefined }
-    return validateExpression(linkage.condition as string)
+    if (!linkage.condition)
+      return { valid: true as const, error: undefined as string | undefined };
+    return validateExpression(linkage.condition as string);
   }),
-)
+);
 
 function addLinkage() {
   const newLinkage: SchemaLinkage = {
-    type: 'visible',
+    type: "visible",
     watchFields: [],
-    condition: '',
-  }
-  emit('update:linkages', [...props.linkages, newLinkage])
+    condition: "",
+  };
+  emit("update:linkages", [...props.linkages, newLinkage]);
 }
 
 function removeLinkage(index: number) {
-  const updated = props.linkages.filter((_, i) => i !== index)
-  emit('update:linkages', updated)
+  const updated = props.linkages.filter((_, i) => i !== index);
+  emit("update:linkages", updated);
 }
 
-function updateLinkage<K extends keyof SchemaLinkage>(index: number, field: K, value: SchemaLinkage[K]) {
+function updateLinkage<K extends keyof SchemaLinkage>(
+  index: number,
+  field: K,
+  value: SchemaLinkage[K],
+) {
   const updated = props.linkages.map((item, i) =>
     i === index ? { ...item, [field]: value } : item,
-  )
-  emit('update:linkages', updated)
+  );
+  emit("update:linkages", updated);
 }
 
 /** Parse thenOptions from textarea (one per line: label=value) */
 function parseOptionsText(text: string): DictItem[] {
   return text
-    .split('\n')
+    .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
-      const eqIdx = line.indexOf('=')
-      if (eqIdx === -1) return { label: line, value: line }
-      return { label: line.slice(0, eqIdx).trim(), value: line.slice(eqIdx + 1).trim() }
-    })
+      const eqIdx = line.indexOf("=");
+      if (eqIdx === -1) return { label: line, value: line };
+      return {
+        label: line.slice(0, eqIdx).trim(),
+        value: line.slice(eqIdx + 1).trim(),
+      };
+    });
 }
 
 function optionsToText(options?: DictItem[]): string {
-  if (!options?.length) return ''
-  return options.map((o) => `${o.label}=${o.value}`).join('\n')
+  if (!options?.length) return "";
+  return options.map((o) => `${o.label}=${o.value}`).join("\n");
 }
 
 /** Parse thenApi from JSON text */
 function parseApiText(text: string): SchemaApiConfig | undefined {
-  if (!text.trim()) return undefined
+  if (!text.trim()) return undefined;
   try {
-    return JSON.parse(text) as SchemaApiConfig
+    return JSON.parse(text) as SchemaApiConfig;
   } catch {
-    return undefined
+    return undefined;
   }
 }
 
 function apiToText(api?: SchemaApiConfig): string {
-  if (!api) return ''
-  return JSON.stringify(api, null, 2)
+  if (!api) return "";
+  return JSON.stringify(api, null, 2);
 }
 </script>
 
 <template>
   <div :class="styles['linkage-config']">
     <div v-if="linkages.length === 0" :class="styles['linkage-config__empty']">
-      {{ t('editor.linkageConfig.emptyHint') }}
+      {{ t("editor.linkageConfig.emptyHint") }}
     </div>
 
     <div
@@ -120,25 +135,26 @@ function apiToText(api?: SchemaApiConfig): string {
       :class="styles['linkage-config__item']"
     >
       <div :class="styles['linkage-config__item-header']">
-        <span :class="styles['linkage-config__item-title']">{{ t('editor.linkageConfig.ruleTitle', { index: idx + 1 }) }}</span>
-        <el-button
-          type="danger"
-          link
-          size="small"
-          @click="removeLinkage(idx)"
-        >
+        <span :class="styles['linkage-config__item-title']">{{
+          t("editor.linkageConfig.ruleTitle", { index: idx + 1 })
+        }}</span>
+        <el-button type="danger" link size="small" @click="removeLinkage(idx)">
           <AppIcon name="delete" />
         </el-button>
       </div>
 
       <!-- Type -->
       <div :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.type') }}</label>
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.type")
+        }}</label>
         <el-select
           :model-value="linkage.type"
           size="small"
           style="width: 100%"
-          @update:model-value="updateLinkage(idx, 'type', $event as LinkageType)"
+          @update:model-value="
+            updateLinkage(idx, 'type', $event as LinkageType)
+          "
         >
           <el-option
             v-for="opt in linkageTypeOptions"
@@ -151,7 +167,9 @@ function apiToText(api?: SchemaApiConfig): string {
 
       <!-- Watch Fields -->
       <div :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.watchFields') }}</label>
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.watchFields")
+        }}</label>
         <el-select
           :model-value="linkage.watchFields"
           size="small"
@@ -159,7 +177,9 @@ function apiToText(api?: SchemaApiConfig): string {
           filterable
           style="width: 100%"
           :placeholder="t('editor.linkageConfig.watchFieldsPlaceholder')"
-          @update:model-value="updateLinkage(idx, 'watchFields', $event as string[])"
+          @update:model-value="
+            updateLinkage(idx, 'watchFields', $event as string[])
+          "
         >
           <el-option
             v-for="opt in fieldOptions"
@@ -172,7 +192,9 @@ function apiToText(api?: SchemaApiConfig): string {
 
       <!-- Condition Expression -->
       <div :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.conditionExpression') }}</label>
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.conditionExpression")
+        }}</label>
         <el-input
           type="textarea"
           :model-value="linkage.condition"
@@ -190,32 +212,51 @@ function apiToText(api?: SchemaApiConfig): string {
       </div>
 
       <!-- thenOptions (for 'options' type) -->
-      <div v-if="linkage.type === 'options'" :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.linkageOptions') }}</label>
+      <div
+        v-if="linkage.type === 'options'"
+        :class="styles['linkage-config__field']"
+      >
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.linkageOptions")
+        }}</label>
         <el-input
           type="textarea"
           :model-value="optionsToText(linkage.thenOptions)"
           :rows="3"
           :placeholder="t('editor.linkageConfig.linkageOptionsPlaceholder')"
-          @update:model-value="updateLinkage(idx, 'thenOptions', parseOptionsText($event))"
+          @update:model-value="
+            updateLinkage(idx, 'thenOptions', parseOptionsText($event))
+          "
         />
       </div>
 
       <!-- thenApi (for 'options' type) -->
-      <div v-if="linkage.type === 'options'" :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.linkageApi') }}</label>
+      <div
+        v-if="linkage.type === 'options'"
+        :class="styles['linkage-config__field']"
+      >
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.linkageApi")
+        }}</label>
         <el-input
           type="textarea"
           :model-value="apiToText(linkage.thenApi)"
           :rows="3"
           placeholder='{"url":"/api/options","method":"get"}'
-          @update:model-value="updateLinkage(idx, 'thenApi', parseApiText($event))"
+          @update:model-value="
+            updateLinkage(idx, 'thenApi', parseApiText($event))
+          "
         />
       </div>
 
       <!-- set-value specific: literal value -->
-      <div v-if="linkage.type === 'set-value'" :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.linkageSetValue') }}</label>
+      <div
+        v-if="linkage.type === 'set-value'"
+        :class="styles['linkage-config__field']"
+      >
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.linkageSetValue")
+        }}</label>
         <el-input
           :model-value="String(linkage.thenValue ?? '')"
           size="small"
@@ -225,15 +266,22 @@ function apiToText(api?: SchemaApiConfig): string {
       </div>
 
       <!-- set-value specific: value source field -->
-      <div v-if="linkage.type === 'set-value'" :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.valueSource') }}</label>
+      <div
+        v-if="linkage.type === 'set-value'"
+        :class="styles['linkage-config__field']"
+      >
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.valueSource")
+        }}</label>
         <el-select
           :model-value="linkage.valueSource ?? ''"
           size="small"
           style="width: 100%"
           clearable
           :placeholder="t('editor.linkageConfig.valueSourcePlaceholder')"
-          @update:model-value="updateLinkage(idx, 'valueSource', $event || undefined)"
+          @update:model-value="
+            updateLinkage(idx, 'valueSource', $event || undefined)
+          "
         >
           <el-option
             v-for="opt in fieldOptions"
@@ -245,8 +293,13 @@ function apiToText(api?: SchemaApiConfig): string {
       </div>
 
       <!-- reset-fields specific: target fields -->
-      <div v-if="linkage.type === 'reset-fields'" :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.targetFields') }}</label>
+      <div
+        v-if="linkage.type === 'reset-fields'"
+        :class="styles['linkage-config__field']"
+      >
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.targetFields")
+        }}</label>
         <el-select
           :model-value="linkage.targetFields ?? []"
           size="small"
@@ -254,7 +307,9 @@ function apiToText(api?: SchemaApiConfig): string {
           filterable
           style="width: 100%"
           :placeholder="t('editor.linkageConfig.targetFieldsPlaceholder')"
-          @update:model-value="updateLinkage(idx, 'targetFields', $event as string[])"
+          @update:model-value="
+            updateLinkage(idx, 'targetFields', $event as string[])
+          "
         >
           <el-option
             v-for="opt in fieldOptions"
@@ -267,7 +322,9 @@ function apiToText(api?: SchemaApiConfig): string {
 
       <!-- elseValue -->
       <div :class="styles['linkage-config__field']">
-        <label :class="styles['linkage-config__label']">{{ t('editor.linkageConfig.elseValue') }}</label>
+        <label :class="styles['linkage-config__label']">{{
+          t("editor.linkageConfig.elseValue")
+        }}</label>
         <el-input
           :model-value="String(linkage.elseValue ?? '')"
           size="small"
@@ -285,7 +342,7 @@ function apiToText(api?: SchemaApiConfig): string {
       @click="addLinkage"
     >
       <AppIcon name="plus" />
-      {{ t('editor.linkageConfig.addLinkage') }}
+      {{ t("editor.linkageConfig.addLinkage") }}
     </el-button>
   </div>
 </template>

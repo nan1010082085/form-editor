@@ -8,685 +8,779 @@
  * - Rule Engine: computeWidgetRenderState() returns correct states
  * - Widget Store CRUD: addWidget, removeWidget, updateWidget, findWidget, moveWidget
  */
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import type { Widget, SchemaType as WidgetSchemaType } from '@/widgets/base/types'
-import type { SchemaType } from '@/components/WidgetRenderer/types'
+import { describe, it, expect, beforeEach } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+import type {
+  Widget,
+  SchemaType as WidgetSchemaType,
+} from "@/widgets/base/types";
+import type { SchemaType } from "@/components/WidgetRenderer/types";
 
 // --- Registry & Config ---
-import { registerAllWidgets } from '@/widgets/index'
-import { getAllWidgets, getWidget, getComponentMap, createWidget, getWidgetsByGroup } from '@/widgets/registry'
+import { registerAllWidgets } from "@/widgets/index";
+import {
+  getAllWidgets,
+  getWidget,
+  getComponentMap,
+  createWidget,
+  getWidgetsByGroup,
+} from "@/widgets/registry";
 
 // --- Individual configs ---
-import { formConfig } from '@/widgets/form/config'
-import { cardConfig } from '@/widgets/card/config'
-import { tabsConfig } from '@/widgets/tabs/config'
-import { dialogConfig } from '@/widgets/dialog/config'
-import { inputConfig } from '@/widgets/input/config'
-import { selectConfig } from '@/widgets/select/config'
-import { numberConfig } from '@/widgets/number/config'
-import { radioConfig } from '@/widgets/radio/config'
-import { checkboxConfig } from '@/widgets/checkbox/config'
-import { dateConfig } from '@/widgets/date/config'
-import { textareaConfig } from '@/widgets/textarea/config'
-import { titleConfig } from '@/widgets/title/config'
-import { dividerConfig } from '@/widgets/divider/config'
-import { spacerConfig } from '@/widgets/spacer/config'
-import { toolbarButtonsConfig } from '@/widgets/toolbar-buttons/config'
-import { tableConfig } from '@/widgets/table/config'
-import { buttonConfig } from '@/widgets/button/config'
-import { richtextConfig } from '@/widgets/richtext/config'
-import { uploadConfig } from '@/widgets/upload/config'
-import { bannerConfig } from '@/widgets/banner/config'
-import { treeLayoutConfig } from '@/widgets/tree-layout/config'
-import { dateTimeSlotConfig } from '@/widgets/date-time-slot/config'
-import { fileListConfig } from '@/widgets/file-list/config'
-import { transferConfig } from '@/widgets/transfer/config'
-import { singleColConfig } from '@/widgets/single-col/config'
-import { doubleColConfig } from '@/widgets/double-col/config'
-import { tripleColConfig } from '@/widgets/triple-col/config'
-import { quadColConfig } from '@/widgets/quad-col/config'
-import { rowContainerConfig } from '@/widgets/row-container/config'
-import { switchConfig } from '@/widgets/switch/config'
-import { cascaderConfig } from '@/widgets/cascader/config'
-import { timePickerConfig } from '@/widgets/time-picker/config'
-import { sliderConfig } from '@/widgets/slider/config'
-import { rateConfig } from '@/widgets/rate/config'
-import { colorPickerConfig } from '@/widgets/color-picker/config'
-import { barChartConfig } from '@/widgets/bar-chart/config'
-import { stackedBarChartConfig } from '@/widgets/bar-chart/config-stacked'
-import { horizontalBarChartConfig } from '@/widgets/bar-chart/config-horizontal'
-import { lineChartConfig } from '@/widgets/line-chart/config'
-import { areaChartConfig } from '@/widgets/line-chart/config-area'
-import { pieChartConfig } from '@/widgets/pie-chart/config'
-import { donutChartConfig } from '@/widgets/pie-chart/config-donut'
-import { scatterChartConfig } from '@/widgets/scatter-chart/config'
-import { bubbleChartConfig } from '@/widgets/scatter-chart/config-bubble'
-import { radarConfig } from '@/widgets/radar/config'
-import { filledRadarConfig } from '@/widgets/radar/config-filled'
-import { gaugeConfig } from '@/widgets/gauge/config'
-import { multiGaugeConfig } from '@/widgets/gauge/config-multi'
-import { heatmapConfig } from '@/widgets/heatmap/config'
-import { funnelConfig } from '@/widgets/funnel/config'
-import { compareFunnelConfig } from '@/widgets/funnel/config-compare'
-import { candlestickConfig } from '@/widgets/candlestick/config'
-import { statisticConfig } from '@/widgets/statistic/config'
+import { formConfig } from "@/widgets/form/config";
+import { cardConfig } from "@/widgets/card/config";
+import { tabsConfig } from "@/widgets/tabs/config";
+import { dialogConfig } from "@/widgets/dialog/config";
+import { inputConfig } from "@/widgets/input/config";
+import { selectConfig } from "@/widgets/select/config";
+import { numberConfig } from "@/widgets/number/config";
+import { radioConfig } from "@/widgets/radio/config";
+import { checkboxConfig } from "@/widgets/checkbox/config";
+import { dateConfig } from "@/widgets/date/config";
+import { textareaConfig } from "@/widgets/textarea/config";
+import { titleConfig } from "@/widgets/title/config";
+import { dividerConfig } from "@/widgets/divider/config";
+import { spacerConfig } from "@/widgets/spacer/config";
+import { toolbarButtonsConfig } from "@/widgets/toolbar-buttons/config";
+import { tableConfig } from "@/widgets/table/config";
+import { buttonConfig } from "@/widgets/button/config";
+import { richtextConfig } from "@/widgets/richtext/config";
+import { uploadConfig } from "@/widgets/upload/config";
+import { bannerConfig } from "@/widgets/banner/config";
+import { treeLayoutConfig } from "@/widgets/tree-layout/config";
+import { dateTimeSlotConfig } from "@/widgets/date-time-slot/config";
+import { fileListConfig } from "@/widgets/file-list/config";
+import { transferConfig } from "@/widgets/transfer/config";
+import { singleColConfig } from "@/widgets/single-col/config";
+import { doubleColConfig } from "@/widgets/double-col/config";
+import { tripleColConfig } from "@/widgets/triple-col/config";
+import { quadColConfig } from "@/widgets/quad-col/config";
+import { rowContainerConfig } from "@/widgets/row-container/config";
+import { switchConfig } from "@/widgets/switch/config";
+import { cascaderConfig } from "@/widgets/cascader/config";
+import { timePickerConfig } from "@/widgets/time-picker/config";
+import { sliderConfig } from "@/widgets/slider/config";
+import { rateConfig } from "@/widgets/rate/config";
+import { colorPickerConfig } from "@/widgets/color-picker/config";
+import { barChartConfig } from "@/widgets/bar-chart/config";
+import { stackedBarChartConfig } from "@/widgets/bar-chart/config-stacked";
+import { horizontalBarChartConfig } from "@/widgets/bar-chart/config-horizontal";
+import { lineChartConfig } from "@/widgets/line-chart/config";
+import { areaChartConfig } from "@/widgets/line-chart/config-area";
+import { pieChartConfig } from "@/widgets/pie-chart/config";
+import { donutChartConfig } from "@/widgets/pie-chart/config-donut";
+import { scatterChartConfig } from "@/widgets/scatter-chart/config";
+import { bubbleChartConfig } from "@/widgets/scatter-chart/config-bubble";
+import { radarConfig } from "@/widgets/radar/config";
+import { filledRadarConfig } from "@/widgets/radar/config-filled";
+import { gaugeConfig } from "@/widgets/gauge/config";
+import { multiGaugeConfig } from "@/widgets/gauge/config-multi";
+import { heatmapConfig } from "@/widgets/heatmap/config";
+import { funnelConfig } from "@/widgets/funnel/config";
+import { compareFunnelConfig } from "@/widgets/funnel/config-compare";
+import { candlestickConfig } from "@/widgets/candlestick/config";
+import { statisticConfig } from "@/widgets/statistic/config";
 
 // --- createDefaultSchema ---
-import { createDefaultSchema } from '@/utils/schemaDefaults'
+import { createDefaultSchema } from "@/utils/schemaDefaults";
 
 // --- Rule engine ---
-import { computeWidgetRenderState } from '@/__tests__/widgetTestHarness'
+import { computeWidgetRenderState } from "@/__tests__/widgetTestHarness";
 
 // --- Widget store ---
-import { useWidgetStore } from '@/stores/widget'
-import { useEditorStore } from '@/stores/editor'
+import { useWidgetStore } from "@/stores/widget";
+import { useEditorStore } from "@/stores/editor";
 
 // --- Public schema helpers ---
-import { publicStylePanel } from '@/widgets/base/publicSchema'
+import { publicStylePanel } from "@/widgets/base/publicSchema";
 
 // =====================================================================
 // Expected registered widget types
 // =====================================================================
 const REGISTERED_TYPES: WidgetSchemaType[] = [
-  'form', 'card', 'tabs', 'dialog',
-  'single-col', 'double-col', 'triple-col', 'quad-col', 'row-container',
-  'input', 'select', 'number', 'radio', 'checkbox',
-  'date', 'textarea', 'title', 'divider',
-  'spacer', 'toolbar-buttons', 'table', 'button',
-  'richtext', 'upload', 'banner', 'tree-layout', 'date-time-slot',
-  'file-list', 'transfer',
-  'switch', 'cascader', 'time-picker',
-  'slider', 'rate', 'color-picker',
-  'bar-chart', 'stacked-bar-chart', 'horizontal-bar-chart',
-  'line-chart', 'area-chart',
-  'pie-chart', 'donut-chart',
-  'scatter-chart', 'bubble-chart',
-  'radar', 'filled-radar',
-  'gauge', 'multi-gauge',
-  'heatmap',
-  'funnel', 'compare-funnel',
-  'candlestick',
-  'statistic',
-]
+  "form",
+  "card",
+  "tabs",
+  "dialog",
+  "single-col",
+  "double-col",
+  "triple-col",
+  "quad-col",
+  "row-container",
+  "input",
+  "select",
+  "number",
+  "radio",
+  "checkbox",
+  "date",
+  "textarea",
+  "title",
+  "divider",
+  "spacer",
+  "toolbar-buttons",
+  "table",
+  "button",
+  "richtext",
+  "upload",
+  "banner",
+  "tree-layout",
+  "date-time-slot",
+  "file-list",
+  "transfer",
+  "switch",
+  "cascader",
+  "time-picker",
+  "slider",
+  "rate",
+  "color-picker",
+  "bar-chart",
+  "stacked-bar-chart",
+  "horizontal-bar-chart",
+  "line-chart",
+  "area-chart",
+  "pie-chart",
+  "donut-chart",
+  "scatter-chart",
+  "bubble-chart",
+  "radar",
+  "filled-radar",
+  "gauge",
+  "multi-gauge",
+  "heatmap",
+  "funnel",
+  "compare-funnel",
+  "candlestick",
+  "statistic",
+];
 
 const ALL_CONFIGS = [
-  { name: 'form', config: formConfig },
-  { name: 'card', config: cardConfig },
-  { name: 'tabs', config: tabsConfig },
-  { name: 'dialog', config: dialogConfig },
-  { name: 'input', config: inputConfig },
-  { name: 'select', config: selectConfig },
-  { name: 'number', config: numberConfig },
-  { name: 'radio', config: radioConfig },
-  { name: 'checkbox', config: checkboxConfig },
-  { name: 'date', config: dateConfig },
-  { name: 'textarea', config: textareaConfig },
-  { name: 'title', config: titleConfig },
-  { name: 'divider', config: dividerConfig },
-  { name: 'spacer', config: spacerConfig },
-  { name: 'toolbar-buttons', config: toolbarButtonsConfig },
-  { name: 'table', config: tableConfig },
-  { name: 'button', config: buttonConfig },
-  { name: 'richtext', config: richtextConfig },
-  { name: 'upload', config: uploadConfig },
-  { name: 'banner', config: bannerConfig },
-  { name: 'tree-layout', config: treeLayoutConfig },
-  { name: 'date-time-slot', config: dateTimeSlotConfig },
-  { name: 'file-list', config: fileListConfig },
-  { name: 'transfer', config: transferConfig },
-  { name: 'single-col', config: singleColConfig },
-  { name: 'double-col', config: doubleColConfig },
-  { name: 'triple-col', config: tripleColConfig },
-  { name: 'quad-col', config: quadColConfig },
-  { name: 'row-container', config: rowContainerConfig },
-  { name: 'switch', config: switchConfig },
-  { name: 'cascader', config: cascaderConfig },
-  { name: 'time-picker', config: timePickerConfig },
-  { name: 'slider', config: sliderConfig },
-  { name: 'rate', config: rateConfig },
-  { name: 'color-picker', config: colorPickerConfig },
-  { name: 'bar-chart', config: barChartConfig },
-  { name: 'stacked-bar-chart', config: stackedBarChartConfig },
-  { name: 'horizontal-bar-chart', config: horizontalBarChartConfig },
-  { name: 'line-chart', config: lineChartConfig },
-  { name: 'area-chart', config: areaChartConfig },
-  { name: 'pie-chart', config: pieChartConfig },
-  { name: 'donut-chart', config: donutChartConfig },
-  { name: 'scatter-chart', config: scatterChartConfig },
-  { name: 'bubble-chart', config: bubbleChartConfig },
-  { name: 'radar', config: radarConfig },
-  { name: 'filled-radar', config: filledRadarConfig },
-  { name: 'gauge', config: gaugeConfig },
-  { name: 'multi-gauge', config: multiGaugeConfig },
-  { name: 'heatmap', config: heatmapConfig },
-  { name: 'funnel', config: funnelConfig },
-  { name: 'compare-funnel', config: compareFunnelConfig },
-  { name: 'candlestick', config: candlestickConfig },
-  { name: 'statistic', config: statisticConfig },
-]
+  { name: "form", config: formConfig },
+  { name: "card", config: cardConfig },
+  { name: "tabs", config: tabsConfig },
+  { name: "dialog", config: dialogConfig },
+  { name: "input", config: inputConfig },
+  { name: "select", config: selectConfig },
+  { name: "number", config: numberConfig },
+  { name: "radio", config: radioConfig },
+  { name: "checkbox", config: checkboxConfig },
+  { name: "date", config: dateConfig },
+  { name: "textarea", config: textareaConfig },
+  { name: "title", config: titleConfig },
+  { name: "divider", config: dividerConfig },
+  { name: "spacer", config: spacerConfig },
+  { name: "toolbar-buttons", config: toolbarButtonsConfig },
+  { name: "table", config: tableConfig },
+  { name: "button", config: buttonConfig },
+  { name: "richtext", config: richtextConfig },
+  { name: "upload", config: uploadConfig },
+  { name: "banner", config: bannerConfig },
+  { name: "tree-layout", config: treeLayoutConfig },
+  { name: "date-time-slot", config: dateTimeSlotConfig },
+  { name: "file-list", config: fileListConfig },
+  { name: "transfer", config: transferConfig },
+  { name: "single-col", config: singleColConfig },
+  { name: "double-col", config: doubleColConfig },
+  { name: "triple-col", config: tripleColConfig },
+  { name: "quad-col", config: quadColConfig },
+  { name: "row-container", config: rowContainerConfig },
+  { name: "switch", config: switchConfig },
+  { name: "cascader", config: cascaderConfig },
+  { name: "time-picker", config: timePickerConfig },
+  { name: "slider", config: sliderConfig },
+  { name: "rate", config: rateConfig },
+  { name: "color-picker", config: colorPickerConfig },
+  { name: "bar-chart", config: barChartConfig },
+  { name: "stacked-bar-chart", config: stackedBarChartConfig },
+  { name: "horizontal-bar-chart", config: horizontalBarChartConfig },
+  { name: "line-chart", config: lineChartConfig },
+  { name: "area-chart", config: areaChartConfig },
+  { name: "pie-chart", config: pieChartConfig },
+  { name: "donut-chart", config: donutChartConfig },
+  { name: "scatter-chart", config: scatterChartConfig },
+  { name: "bubble-chart", config: bubbleChartConfig },
+  { name: "radar", config: radarConfig },
+  { name: "filled-radar", config: filledRadarConfig },
+  { name: "gauge", config: gaugeConfig },
+  { name: "multi-gauge", config: multiGaugeConfig },
+  { name: "heatmap", config: heatmapConfig },
+  { name: "funnel", config: funnelConfig },
+  { name: "compare-funnel", config: compareFunnelConfig },
+  { name: "candlestick", config: candlestickConfig },
+  { name: "statistic", config: statisticConfig },
+];
 
 // =====================================================================
 // Tests
 // =====================================================================
 
-describe('Widget Registry & Loading', () => {
+describe("Widget Registry & Loading", () => {
   beforeEach(() => {
     // registerAllWidgets is idempotent — Map.set replaces existing entries
-    registerAllWidgets()
-  })
+    registerAllWidgets();
+  });
 
-  it('registers all expected widget types', () => {
-    const all = getAllWidgets()
-    expect(all.length).toBeGreaterThanOrEqual(80)
-  })
+  it("registers all expected widget types", () => {
+    const all = getAllWidgets();
+    expect(all.length).toBeGreaterThanOrEqual(80);
+  });
 
-  it('getComponentMap returns a component for every registered type', () => {
-    const compMap = getComponentMap()
+  it("getComponentMap returns a component for every registered type", () => {
+    const compMap = getComponentMap();
     for (const type of REGISTERED_TYPES) {
-      expect(compMap[type], `compMap should have entry for type "${type}"`).toBeDefined()
-      expect(typeof compMap[type], `compMap["${type}"] should be a component (object/function)`).toBe('object')
+      expect(
+        compMap[type],
+        `compMap should have entry for type "${type}"`,
+      ).toBeDefined();
+      expect(
+        typeof compMap[type],
+        `compMap["${type}"] should be a component (object/function)`,
+      ).toBe("object");
     }
-  })
+  });
 
-  it('getWidget returns the correct entry for each type', () => {
+  it("getWidget returns the correct entry for each type", () => {
     for (const type of REGISTERED_TYPES) {
-      const entry = getWidget(type)
-      expect(entry, `getWidget("${type}") should exist`).toBeDefined()
-      expect(entry!.type).toBe(type)
-      expect(typeof entry!.component).toBe('object')
-      expect(typeof entry!.create).toBe('function')
-      expect(entry!.config).toBeDefined()
+      const entry = getWidget(type);
+      expect(entry, `getWidget("${type}") should exist`).toBeDefined();
+      expect(entry!.type).toBe(type);
+      expect(typeof entry!.component).toBe("object");
+      expect(typeof entry!.create).toBe("function");
+      expect(entry!.config).toBeDefined();
     }
-  })
+  });
 
-  it('createWidget returns a valid Widget for each type', () => {
+  it("createWidget returns a valid Widget for each type", () => {
     for (const type of REGISTERED_TYPES) {
-      const widget = createWidget(type, `test_${type}_001`)
-      expect(widget, `createWidget("${type}") should not be null`).not.toBeNull()
-      expect(widget!.id).toBe(`test_${type}_001`)
-      expect(widget!.type).toBe(type)
-      expect(widget!.position).toBeDefined()
-      expect(typeof widget!.position.x).toBe('number')
-      expect(typeof widget!.position.y).toBe('number')
-      expect(typeof widget!.position.w).toBe('number')
-      expect(typeof widget!.position.h).toBe('number')
+      const widget = createWidget(type, `test_${type}_001`);
+      expect(
+        widget,
+        `createWidget("${type}") should not be null`,
+      ).not.toBeNull();
+      expect(widget!.id).toBe(`test_${type}_001`);
+      expect(widget!.type).toBe(type);
+      expect(widget!.position).toBeDefined();
+      expect(typeof widget!.position.x).toBe("number");
+      expect(typeof widget!.position.y).toBe("number");
+      expect(typeof widget!.position.w).toBe("number");
+      expect(typeof widget!.position.h).toBe("number");
     }
-  })
+  });
 
-  it('createWidget returns null for unknown type', () => {
-    const widget = createWidget('unknown-type' as WidgetSchemaType, 'test_unknown')
-    expect(widget).toBeNull()
-  })
+  it("createWidget returns null for unknown type", () => {
+    const widget = createWidget(
+      "unknown-type" as WidgetSchemaType,
+      "test_unknown",
+    );
+    expect(widget).toBeNull();
+  });
 
-  it('getWidgetsByGroup correctly filters by group', () => {
-    const containers = getWidgetsByGroup('container')
-    expect(containers.length).toBeGreaterThanOrEqual(1)
+  it("getWidgetsByGroup correctly filters by group", () => {
+    const containers = getWidgetsByGroup("container");
+    expect(containers.length).toBeGreaterThanOrEqual(1);
     for (const w of containers) {
-      expect(w.group).toBe('container')
+      expect(w.group).toBe("container");
     }
 
-    const basics = getWidgetsByGroup('form')
-    expect(basics.length).toBeGreaterThanOrEqual(1)
+    const basics = getWidgetsByGroup("form");
+    expect(basics.length).toBeGreaterThanOrEqual(1);
     for (const w of basics) {
-      expect(w.group).toBe('form')
+      expect(w.group).toBe("form");
     }
-  })
+  });
 
-  it('all registered types are represented in REGISTERED_TYPES', () => {
-    const all = getAllWidgets()
-    const registeredTypes = all.map(w => w.type)
+  it("all registered types are represented in REGISTERED_TYPES", () => {
+    const all = getAllWidgets();
+    const registeredTypes = all.map((w) => w.type);
     for (const t of REGISTERED_TYPES) {
-      expect(registeredTypes).toContain(t)
+      expect(registeredTypes).toContain(t);
     }
-  })
+  });
 
   // --- contexts（可用画布模式）声明式过滤 ---
 
-  it('config.contexts 透传到 registry availableIn', () => {
+  it("config.contexts 透传到 registry availableIn", () => {
     // card 声明 contexts: ['free'] -> availableIn 应为 ['free']
-    const card = getWidget('card')!
-    expect(card.availableIn).toEqual(['free'])
+    const card = getWidget("card")!;
+    expect(card.availableIn).toEqual(["free"]);
     // row-container 声明 contexts: ['flex']
-    const row = getWidget('row-container')!
-    expect(row.availableIn).toEqual(['flex'])
-  })
+    const row = getWidget("row-container")!;
+    expect(row.availableIn).toEqual(["flex"]);
+  });
 
-  it('未声明 contexts 的 widget availableIn 为 undefined（双模式可用）', () => {
-    const input = getWidget('input')!
-    expect(input.availableIn).toBeUndefined()
-  })
+  it("未声明 contexts 的 widget availableIn 为 undefined（双模式可用）", () => {
+    const input = getWidget("input")!;
+    expect(input.availableIn).toBeUndefined();
+  });
 
-  it('flex 模式布局类 widget 应被隐藏（availableIn 不含 flex）', () => {
-    const flexHidden = ['card', 'form', 'tabs', 'single-col', 'double-col', 'triple-col', 'quad-col', 'spacer', 'form-steps', 'tab-container', 'tree-layout']
+  it("flex 模式布局类 widget 应被隐藏（availableIn 不含 flex）", () => {
+    const flexHidden = [
+      "card",
+      "form",
+      "tabs",
+      "single-col",
+      "double-col",
+      "triple-col",
+      "quad-col",
+      "spacer",
+      "form-steps",
+      "tab-container",
+      "tree-layout",
+    ];
     for (const type of flexHidden) {
-      const entry = getWidget(type)!
-      expect(entry.availableIn, `${type} 应声明 contexts 且不含 flex`).toEqual(['free'])
+      const entry = getWidget(type)!;
+      expect(entry.availableIn, `${type} 应声明 contexts 且不含 flex`).toEqual([
+        "free",
+      ]);
     }
-  })
+  });
 
-  it('row-container 仅 flex 可用，free 模式应被隐藏', () => {
-    const entry = getWidget('row-container')!
-    expect(entry.availableIn).toEqual(['flex'])
-  })
+  it("row-container 仅 flex 可用，free 模式应被隐藏", () => {
+    const entry = getWidget("row-container")!;
+    expect(entry.availableIn).toEqual(["flex"]);
+  });
 
-  it('createWidget row-container 生成带 span 默认结构的 Widget', () => {
-    const w = createWidget('row-container', 'rc_test')!
-    expect(w.type).toBe('row-container')
-    expect(w.children).toEqual([])
-    expect(w.props?.gutter).toBe(12)
-    expect(w.style?.width).toBe('100%')
-  })
-})
+  it("createWidget row-container 生成带 span 默认结构的 Widget", () => {
+    const w = createWidget("row-container", "rc_test")!;
+    expect(w.type).toBe("row-container");
+    expect(w.children).toEqual([]);
+    expect(w.props?.gutter).toBe(12);
+    expect(w.style?.width).toBe("100%");
+  });
+});
 
 // =====================================================================
 // Widget Config Validation
 // =====================================================================
 
-describe('Widget Config Validation', () => {
+describe("Widget Config Validation", () => {
   for (const { name, config } of ALL_CONFIGS) {
     describe(`${name} config`, () => {
-      it('has name (string)', () => {
-        expect(typeof config.name).toBe('string')
-        expect((config.name as string).length).toBeGreaterThan(0)
-      })
+      it("has name (string)", () => {
+        expect(typeof config.name).toBe("string");
+        expect((config.name as string).length).toBeGreaterThan(0);
+      });
 
-      it('has displayName (string)', () => {
-        expect(typeof config.displayName).toBe('string')
-        expect((config.displayName as string).length).toBeGreaterThan(0)
-      })
+      it("has displayName (string)", () => {
+        expect(typeof config.displayName).toBe("string");
+        expect((config.displayName as string).length).toBeGreaterThan(0);
+      });
 
-      it('has description (string)', () => {
-        expect(typeof config.description).toBe('string')
-        expect((config.description as string).length).toBeGreaterThan(0)
-      })
+      it("has description (string)", () => {
+        expect(typeof config.description).toBe("string");
+        expect((config.description as string).length).toBeGreaterThan(0);
+      });
 
-      it('has propertyPanel with basic, style, and props arrays', () => {
-        expect(config.propertyPanel).toBeDefined()
-        expect(Array.isArray((config.propertyPanel as any).basic)).toBe(true)
-        expect(Array.isArray((config.propertyPanel as any).style)).toBe(true)
-        expect(Array.isArray((config.propertyPanel as any).props)).toBe(true)
-      })
+      it("has propertyPanel with basic, style, and props arrays", () => {
+        expect(config.propertyPanel).toBeDefined();
+        expect(Array.isArray((config.propertyPanel as any).basic)).toBe(true);
+        expect(Array.isArray((config.propertyPanel as any).style)).toBe(true);
+        expect(Array.isArray((config.propertyPanel as any).props)).toBe(true);
+      });
 
-      it('has defaultStyle (object)', () => {
-        expect(config.defaultStyle).toBeDefined()
-        expect(typeof config.defaultStyle).toBe('object')
-      })
+      it("has defaultStyle (object)", () => {
+        expect(config.defaultStyle).toBeDefined();
+        expect(typeof config.defaultStyle).toBe("object");
+      });
 
-      it('has defaultProps (object)', () => {
-        expect(config.defaultProps).toBeDefined()
-        expect(typeof config.defaultProps).toBe('object')
-      })
-    })
+      it("has defaultProps (object)", () => {
+        expect(config.defaultProps).toBeDefined();
+        expect(typeof config.defaultProps).toBe("object");
+      });
+    });
   }
 
-  it('input config.propertyPanel.basic contains field, label, defaultValue', () => {
-    const basic = (inputConfig.propertyPanel as any).basic
-    expect(basic).toContain('field')
-    expect(basic).toContain('label')
-    expect(basic).toContain('defaultValue')
-  })
+  it("input config.propertyPanel.basic contains field, label, defaultValue", () => {
+    const basic = (inputConfig.propertyPanel as any).basic;
+    expect(basic).toContain("field");
+    expect(basic).toContain("label");
+    expect(basic).toContain("defaultValue");
+  });
 
-  it('input config.propertyPanel.props has placeholder entry', () => {
-    const props = (inputConfig.propertyPanel as any).props
-    const placeholder = props.find((p: any) => p.key === 'placeholder')
-    expect(placeholder).toBeDefined()
-    expect(placeholder.type).toBe('input')
-  })
+  it("input config.propertyPanel.props has placeholder entry", () => {
+    const props = (inputConfig.propertyPanel as any).props;
+    const placeholder = props.find((p: any) => p.key === "placeholder");
+    expect(placeholder).toBeDefined();
+    expect(placeholder.type).toBe("input");
+  });
 
-  it('select config.propertyPanel.basic contains options', () => {
-    const basic = (selectConfig.propertyPanel as any).basic
-    expect(basic).toContain('options')
-  })
+  it("select config.propertyPanel.basic contains options", () => {
+    const basic = (selectConfig.propertyPanel as any).basic;
+    expect(basic).toContain("options");
+  });
 
-  it('card config.propertyPanel.basic has title/shadow/showHeader entries', () => {
-    const basic = (cardConfig.propertyPanel as any).basic
-    const keys = basic.map((b: any) => b.key)
-    expect(keys).toContain('title')
-    expect(keys).toContain('shadow')
-    expect(keys).toContain('showHeader')
-  })
+  it("card config.propertyPanel.basic has title/shadow/showHeader entries", () => {
+    const basic = (cardConfig.propertyPanel as any).basic;
+    const keys = basic.map((b: any) => b.key);
+    expect(keys).toContain("title");
+    expect(keys).toContain("shadow");
+    expect(keys).toContain("showHeader");
+  });
 
-  it('publicStylePanel contains standard style keys', () => {
-    expect(publicStylePanel).toContain('margin')
-    expect(publicStylePanel).toContain('padding')
-    expect(publicStylePanel).toContain('backgroundColor')
-    expect(publicStylePanel).toContain('borderRadius')
-    expect(publicStylePanel).toContain('fontSize')
-    expect(publicStylePanel).toContain('color')
-  })
-})
+  it("publicStylePanel contains standard style keys", () => {
+    expect(publicStylePanel).toContain("margin");
+    expect(publicStylePanel).toContain("padding");
+    expect(publicStylePanel).toContain("backgroundColor");
+    expect(publicStylePanel).toContain("borderRadius");
+    expect(publicStylePanel).toContain("fontSize");
+    expect(publicStylePanel).toContain("color");
+  });
+});
 
 // =====================================================================
 // Widget Default Schema (createDefaultSchema from schemaDefaults)
 // =====================================================================
 
-describe('Widget Default Schema', () => {
+describe("Widget Default Schema", () => {
   const formComponentTypes: SchemaType[] = [
-    'input', 'number', 'select', 'radio', 'checkbox',
-    'date', 'textarea', 'richtext', 'upload', 'date-time-slot',
-  ]
+    "input",
+    "number",
+    "select",
+    "radio",
+    "checkbox",
+    "date",
+    "textarea",
+    "richtext",
+    "upload",
+    "date-time-slot",
+  ];
 
   const layoutTypes: SchemaType[] = [
-    'card', 'title', 'divider', 'spacer', 'tabs', 'dialog',
-    'tree-layout',
-  ]
+    "card",
+    "title",
+    "divider",
+    "spacer",
+    "tabs",
+    "dialog",
+    "tree-layout",
+  ];
 
-  const noFieldTypes: SchemaType[] = [
-    'banner', 'file-list', 'transfer',
-  ]
+  const noFieldTypes: SchemaType[] = ["banner", "file-list", "transfer"];
 
   for (const type of formComponentTypes) {
     describe(`type="${type}"`, () => {
-      it('creates a valid schema with type and field', () => {
-        const schema = createDefaultSchema(type)
-        expect(schema.type).toBe(type)
-        expect(schema.field).toBeDefined()
-        expect(typeof schema.field).toBe('string')
-        expect(schema.field!.length).toBeGreaterThan(0)
-      })
+      it("creates a valid schema with type and field", () => {
+        const schema = createDefaultSchema(type);
+        expect(schema.type).toBe(type);
+        expect(schema.field).toBeDefined();
+        expect(typeof schema.field).toBe("string");
+        expect(schema.field!.length).toBeGreaterThan(0);
+      });
 
-      it('generates unique field names on each call', () => {
-        const s1 = createDefaultSchema(type)
-        const s2 = createDefaultSchema(type)
-        expect(s1.field).not.toBe(s2.field)
-      })
-    })
+      it("generates unique field names on each call", () => {
+        const s1 = createDefaultSchema(type);
+        const s2 = createDefaultSchema(type);
+        expect(s1.field).not.toBe(s2.field);
+      });
+    });
   }
 
   for (const type of layoutTypes) {
     describe(`type="${type}"`, () => {
-      it('creates a valid schema with correct type', () => {
-        const schema = createDefaultSchema(type)
-        expect(schema.type).toBe(type)
-      })
-    })
+      it("creates a valid schema with correct type", () => {
+        const schema = createDefaultSchema(type);
+        expect(schema.type).toBe(type);
+      });
+    });
   }
 
   for (const type of noFieldTypes) {
     describe(`type="${type}"`, () => {
-      it('creates a valid schema with correct type and no field', () => {
-        const schema = createDefaultSchema(type)
-        expect(schema.type).toBe(type)
-        expect(schema.field).toBeUndefined()
-      })
-    })
+      it("creates a valid schema with correct type and no field", () => {
+        const schema = createDefaultSchema(type);
+        expect(schema.type).toBe(type);
+        expect(schema.field).toBeUndefined();
+      });
+    });
   }
 
-  it('card has label, children, and style', () => {
-    const schema = createDefaultSchema('card')
-    expect(schema.label).toBe('Card')
-    expect(Array.isArray(schema.children)).toBe(true)
-    expect(schema.style).toBeDefined()
-    expect(schema.style!.padding).toBeDefined()
-  })
+  it("card has label, children, and style", () => {
+    const schema = createDefaultSchema("card");
+    expect(schema.label).toBe("Card");
+    expect(Array.isArray(schema.children)).toBe(true);
+    expect(schema.style).toBeDefined();
+    expect(schema.style!.padding).toBeDefined();
+  });
 
-  it('select has options', () => {
-    const schema = createDefaultSchema('select')
-    expect(schema.options).toBeDefined()
-    expect(schema.options!.length).toBeGreaterThanOrEqual(2)
-    expect(schema.options![0]).toHaveProperty('label')
-    expect(schema.options![0]).toHaveProperty('value')
-  })
+  it("select has options", () => {
+    const schema = createDefaultSchema("select");
+    expect(schema.options).toBeDefined();
+    expect(schema.options!.length).toBeGreaterThanOrEqual(2);
+    expect(schema.options![0]).toHaveProperty("label");
+    expect(schema.options![0]).toHaveProperty("value");
+  });
 
-  it('radio has options', () => {
-    const schema = createDefaultSchema('radio')
-    expect(schema.options).toBeDefined()
-    expect(schema.options!.length).toBeGreaterThanOrEqual(2)
-  })
+  it("radio has options", () => {
+    const schema = createDefaultSchema("radio");
+    expect(schema.options).toBeDefined();
+    expect(schema.options!.length).toBeGreaterThanOrEqual(2);
+  });
 
-  it('checkbox has options', () => {
-    const schema = createDefaultSchema('checkbox')
-    expect(schema.options).toBeDefined()
-    expect(schema.options!.length).toBeGreaterThanOrEqual(2)
-  })
+  it("checkbox has options", () => {
+    const schema = createDefaultSchema("checkbox");
+    expect(schema.options).toBeDefined();
+    expect(schema.options!.length).toBeGreaterThanOrEqual(2);
+  });
 
-  it('input schema has label and props', () => {
-    const schema = createDefaultSchema('input')
-    expect(schema.label).toBeDefined()
-    expect(schema.props).toBeDefined()
-    expect(schema.props!.placeholder).toBeDefined()
-  })
+  it("input schema has label and props", () => {
+    const schema = createDefaultSchema("input");
+    expect(schema.label).toBeDefined();
+    expect(schema.props).toBeDefined();
+    expect(schema.props!.placeholder).toBeDefined();
+  });
 
-  it('tabs has props with tabs array and children', () => {
-    const schema = createDefaultSchema('tabs')
-    expect(schema.props).toBeDefined()
-    expect(schema.props!.tabs).toBeDefined()
-    expect(Array.isArray(schema.children)).toBe(true)
-  })
+  it("tabs has props with tabs array and children", () => {
+    const schema = createDefaultSchema("tabs");
+    expect(schema.props).toBeDefined();
+    expect(schema.props!.tabs).toBeDefined();
+    expect(Array.isArray(schema.children)).toBe(true);
+  });
 
-  it('dialog has props with title and width', () => {
-    const schema = createDefaultSchema('dialog')
-    expect(schema.props).toBeDefined()
-    expect(schema.props!.title).toBeDefined()
-    expect(schema.props!.width).toBeDefined()
-    expect(Array.isArray(schema.children)).toBe(true)
-  })
+  it("dialog has props with title and width", () => {
+    const schema = createDefaultSchema("dialog");
+    expect(schema.props).toBeDefined();
+    expect(schema.props!.title).toBeDefined();
+    expect(schema.props!.width).toBeDefined();
+    expect(Array.isArray(schema.children)).toBe(true);
+  });
 
+  it("banner has props with text, type, closable", () => {
+    const schema = createDefaultSchema("banner");
+    expect(schema.type).toBe("banner");
+    expect(schema.props).toBeDefined();
+    expect(schema.props!.text).toBe("提示信息");
+    expect(schema.props!.type).toBe("info");
+    expect(schema.props!.closable).toBe(true);
+  });
 
-  it('banner has props with text, type, closable', () => {
-    const schema = createDefaultSchema('banner')
-    expect(schema.type).toBe('banner')
-    expect(schema.props).toBeDefined()
-    expect(schema.props!.text).toBe('提示信息')
-    expect(schema.props!.type).toBe('info')
-    expect(schema.props!.closable).toBe(true)
-  })
+  it("tree-layout has children and props", () => {
+    const schema = createDefaultSchema("tree-layout");
+    expect(schema.type).toBe("tree-layout");
+    expect(schema.props!.title).toBe("侧栏面板");
+    expect(schema.props!.showSearch).toBe(true);
+    expect(Array.isArray(schema.children)).toBe(true);
+  });
 
-  it('tree-layout has children and props', () => {
-    const schema = createDefaultSchema('tree-layout')
-    expect(schema.type).toBe('tree-layout')
-    expect(schema.props!.title).toBe('侧栏面板')
-    expect(schema.props!.showSearch).toBe(true)
-    expect(Array.isArray(schema.children)).toBe(true)
-  })
+  it("date-time-slot has field and props", () => {
+    const schema = createDefaultSchema("date-time-slot");
+    expect(schema.type).toBe("date-time-slot");
+    expect(schema.field).toBeDefined();
+    expect(schema.props!.startPlaceholder).toBe("开始时间");
+    expect(schema.props!.endPlaceholder).toBe("结束时间");
+    expect(schema.props!.format).toBe("YYYY-MM-DD HH:mm:ss");
+  });
 
-  it('date-time-slot has field and props', () => {
-    const schema = createDefaultSchema('date-time-slot')
-    expect(schema.type).toBe('date-time-slot')
-    expect(schema.field).toBeDefined()
-    expect(schema.props!.startPlaceholder).toBe('开始时间')
-    expect(schema.props!.endPlaceholder).toBe('结束时间')
-    expect(schema.props!.format).toBe('YYYY-MM-DD HH:mm:ss')
-  })
+  it("file-list has props with title and permissions", () => {
+    const schema = createDefaultSchema("file-list");
+    expect(schema.type).toBe("file-list");
+    expect(schema.props!.title).toBe("附件");
+    expect(schema.props!.allowDelete).toBe(true);
+    expect(schema.props!.allowPreview).toBe(false);
+  });
 
-  it('file-list has props with title and permissions', () => {
-    const schema = createDefaultSchema('file-list')
-    expect(schema.type).toBe('file-list')
-    expect(schema.props!.title).toBe('附件')
-    expect(schema.props!.allowDelete).toBe(true)
-    expect(schema.props!.allowPreview).toBe(false)
-  })
-
-  it('transfer has props with titles and filterable', () => {
-    const schema = createDefaultSchema('transfer')
-    expect(schema.type).toBe('transfer')
-    expect(schema.props!.titles).toEqual(['待选', '已选'])
-    expect(schema.props!.filterable).toBe(true)
-  })
-
-})
+  it("transfer has props with titles and filterable", () => {
+    const schema = createDefaultSchema("transfer");
+    expect(schema.type).toBe("transfer");
+    expect(schema.props!.titles).toEqual(["待选", "已选"]);
+    expect(schema.props!.filterable).toBe(true);
+  });
+});
 
 // =====================================================================
 // Rule Engine: computeWidgetRenderState
 // =====================================================================
 
-describe('Rule Engine: computeWidgetRenderState', () => {
+describe("Rule Engine: computeWidgetRenderState", () => {
   function makeWidget(overrides: Partial<Widget> = {}): Widget {
     return {
-      id: 'test-widget-001',
-      name: 'FgInput',
-      type: 'input',
+      id: "test-widget-001",
+      name: "FgInput",
+      type: "input",
       position: { x: 0, y: 0, w: 240, h: 40 },
       props: {},
       ...overrides,
-    }
+    };
   }
 
-  it('returns visible=true for a normal widget with no rules', () => {
-    const widget = makeWidget()
-    const state = computeWidgetRenderState(widget, {})
-    expect(state.visible).toBe(true)
-    expect(state.disabled).toBe(false)
-    expect(state.required).toBe(false)
-  })
+  it("returns visible=true for a normal widget with no rules", () => {
+    const widget = makeWidget();
+    const state = computeWidgetRenderState(widget, {});
+    expect(state.visible).toBe(true);
+    expect(state.disabled).toBe(false);
+    expect(state.required).toBe(false);
+  });
 
-  it('returns visible=false when widget.hidden is true', () => {
-    const widget = makeWidget({ hidden: true })
-    const state = computeWidgetRenderState(widget, {})
-    expect(state.visible).toBe(false)
-  })
+  it("returns visible=false when widget.hidden is true", () => {
+    const widget = makeWidget({ hidden: true });
+    const state = computeWidgetRenderState(widget, {});
+    expect(state.visible).toBe(false);
+  });
 
-  it('returns disabled=true when widget.props.disabled is true', () => {
-    const widget = makeWidget({ props: { disabled: true } })
-    const state = computeWidgetRenderState(widget, {})
-    expect(state.disabled).toBe(true)
-  })
+  it("returns disabled=true when widget.props.disabled is true", () => {
+    const widget = makeWidget({ props: { disabled: true } });
+    const state = computeWidgetRenderState(widget, {});
+    expect(state.disabled).toBe(true);
+  });
 
-  it('returns required=true when validationRules has required: true', () => {
+  it("returns required=true when validationRules has required: true", () => {
     const widget = makeWidget({
-      validationRules: [{ required: true, message: 'Required field' }],
-    })
-    const state = computeWidgetRenderState(widget, {})
-    expect(state.required).toBe(true)
-  })
+      validationRules: [{ required: true, message: "Required field" }],
+    });
+    const state = computeWidgetRenderState(widget, {});
+    expect(state.required).toBe(true);
+  });
 
-  it('returns required=false when validationRules has no required rule', () => {
+  it("returns required=false when validationRules has no required rule", () => {
     const widget = makeWidget({
-      validationRules: [{ min: 3, message: 'Too short' }],
-    })
-    const state = computeWidgetRenderState(widget, {})
-    expect(state.required).toBe(false)
-  })
+      validationRules: [{ min: 3, message: "Too short" }],
+    });
+    const state = computeWidgetRenderState(widget, {});
+    expect(state.required).toBe(false);
+  });
 
-  it('executes hide rule when condition matches', () => {
+  it("executes hide rule when condition matches", () => {
     const widget = makeWidget({
-      rules: [{
-        watches: [{ type: 'field', source: 'status' }],
-        condition: 'status === "inactive"',
-        actions: [{ type: 'hide', config: {} }],
-      }],
-    })
-    const state = computeWidgetRenderState(widget, { status: 'inactive' })
-    expect(state.visible).toBe(false)
-  })
-
-  it('does not execute hide rule when condition does not match', () => {
-    const widget = makeWidget({
-      rules: [{
-        watches: [{ type: 'field', source: 'status' }],
-        condition: 'status === "inactive"',
-        actions: [{ type: 'hide', config: {} }],
-      }],
-    })
-    const state = computeWidgetRenderState(widget, { status: 'active' })
-    expect(state.visible).toBe(true)
-  })
-
-  it('executes visible rule when condition matches', () => {
-    const widget = makeWidget({
-      hidden: true,
-      rules: [{
-        watches: [{ type: 'field', source: 'show' }],
-        condition: 'show === true',
-        actions: [{ type: 'visible', config: {} }],
-      }],
-    })
-    // hidden starts as true, but visible rule overrides it
-    const state = computeWidgetRenderState(widget, { show: true })
-    expect(state.visible).toBe(true)
-  })
-
-  it('executes disabled rule when condition matches', () => {
-    const widget = makeWidget({
-      rules: [{
-        watches: [{ type: 'field', source: 'lock' }],
-        condition: 'lock === true',
-        actions: [{ type: 'disabled', config: {} }],
-      }],
-    })
-    const state = computeWidgetRenderState(widget, { lock: true })
-    expect(state.disabled).toBe(true)
-  })
-
-  it('does not execute rules when watch field is not in formData', () => {
-    const widget = makeWidget({
-      rules: [{
-        watches: [{ type: 'field', source: 'missingField' }],
-        condition: 'missingField === "x"',
-        actions: [{ type: 'hide', config: {} }],
-      }],
-    })
-    const state = computeWidgetRenderState(widget, {})
-    expect(state.visible).toBe(true)
-  })
-
-  it('handles multiple rules correctly', () => {
-    const widget = makeWidget({
-      rules: [
+      validationRules: [
         {
-          watches: [{ type: 'field', source: 'a' }],
-          condition: 'a === 1',
-          actions: [{ type: 'disabled', config: {} }],
-        },
-        {
-          watches: [{ type: 'field', source: 'b' }],
-          condition: 'b === 2',
-          actions: [{ type: 'hide', config: {} }],
+          watches: [{ type: "field", source: "status" }],
+          condition: 'status === "inactive"',
+          actions: [{ type: "hide", config: {} }],
         },
       ],
-    })
+    });
+    const state = computeWidgetRenderState(widget, { status: "inactive" });
+    expect(state.visible).toBe(false);
+  });
+
+  it("does not execute hide rule when condition does not match", () => {
+    const widget = makeWidget({
+      validationRules: [
+        {
+          watches: [{ type: "field", source: "status" }],
+          condition: 'status === "inactive"',
+          actions: [{ type: "hide", config: {} }],
+        },
+      ],
+    });
+    const state = computeWidgetRenderState(widget, { status: "active" });
+    expect(state.visible).toBe(true);
+  });
+
+  it("executes visible rule when condition matches", () => {
+    const widget = makeWidget({
+      hidden: true,
+      validationRules: [
+        {
+          watches: [{ type: "field", source: "show" }],
+          condition: "show === true",
+          actions: [{ type: "visible", config: {} }],
+        },
+      ],
+    });
+    // hidden starts as true, but visible rule overrides it
+    const state = computeWidgetRenderState(widget, { show: true });
+    expect(state.visible).toBe(true);
+  });
+
+  it("executes disabled rule when condition matches", () => {
+    const widget = makeWidget({
+      validationRules: [
+        {
+          watches: [{ type: "field", source: "lock" }],
+          condition: "lock === true",
+          actions: [{ type: "disabled", config: {} }],
+        },
+      ],
+    });
+    const state = computeWidgetRenderState(widget, { lock: true });
+    expect(state.disabled).toBe(true);
+  });
+
+  it("does not execute rules when watch field is not in formData", () => {
+    const widget = makeWidget({
+      validationRules: [
+        {
+          watches: [{ type: "field", source: "missingField" }],
+          condition: 'missingField === "x"',
+          actions: [{ type: "hide", config: {} }],
+        },
+      ],
+    });
+    const state = computeWidgetRenderState(widget, {});
+    expect(state.visible).toBe(true);
+  });
+
+  it("handles multiple rules correctly", () => {
+    const widget = makeWidget({
+      validationRules: [
+        {
+          watches: [{ type: "field", source: "a" }],
+          condition: "a === 1",
+          actions: [{ type: "disabled", config: {} }],
+        },
+        {
+          watches: [{ type: "field", source: "b" }],
+          condition: "b === 2",
+          actions: [{ type: "hide", config: {} }],
+        },
+      ],
+    });
     // Only first rule matches
-    const state1 = computeWidgetRenderState(widget, { a: 1, b: 0 })
-    expect(state1.disabled).toBe(true)
-    expect(state1.visible).toBe(true)
+    const state1 = computeWidgetRenderState(widget, { a: 1, b: 0 });
+    expect(state1.disabled).toBe(true);
+    expect(state1.visible).toBe(true);
 
     // Only second rule matches
-    const state2 = computeWidgetRenderState(widget, { a: 0, b: 2 })
-    expect(state2.disabled).toBe(false)
-    expect(state2.visible).toBe(false)
+    const state2 = computeWidgetRenderState(widget, { a: 0, b: 2 });
+    expect(state2.disabled).toBe(false);
+    expect(state2.visible).toBe(false);
 
     // Both rules match
-    const state3 = computeWidgetRenderState(widget, { a: 1, b: 2 })
-    expect(state3.disabled).toBe(true)
-    expect(state3.visible).toBe(false)
-  })
+    const state3 = computeWidgetRenderState(widget, { a: 1, b: 2 });
+    expect(state3.disabled).toBe(true);
+    expect(state3.visible).toBe(false);
+  });
 
-  it('handles empty rules array same as no rules', () => {
-    const widget = makeWidget({ rules: [] })
-    const state = computeWidgetRenderState(widget, {})
-    expect(state.visible).toBe(true)
-    expect(state.disabled).toBe(false)
-    expect(state.required).toBe(false)
-  })
+  it("handles empty rules array same as no rules", () => {
+    const widget = makeWidget({ validationRules: [] });
+    const state = computeWidgetRenderState(widget, {});
+    expect(state.visible).toBe(true);
+    expect(state.disabled).toBe(false);
+    expect(state.required).toBe(false);
+  });
 
-  it('handles malformed condition gracefully (returns false)', () => {
+  it("handles malformed condition gracefully (returns false)", () => {
     const widget = makeWidget({
-      rules: [{
-        watches: [{ type: 'field', source: 'x' }],
-        condition: 'invalid syntax !!!',
-        actions: [{ type: 'hide', config: {} }],
-      }],
-    })
+      validationRules: [
+        {
+          watches: [{ type: "field", source: "x" }],
+          condition: "invalid syntax !!!",
+          actions: [{ type: "hide", config: {} }],
+        },
+      ],
+    });
     // Should not throw — evaluateCondition catches errors and returns false
-    const state = computeWidgetRenderState(widget, { x: 1 })
-    expect(state.visible).toBe(true)
-  })
-})
+    const state = computeWidgetRenderState(widget, { x: 1 });
+    expect(state.visible).toBe(true);
+  });
+});
 
 // =====================================================================
 // Widget Store CRUD
 // =====================================================================
 
-describe('Widget Store CRUD', () => {
-  let store: ReturnType<typeof useWidgetStore>
+describe("Widget Store CRUD", () => {
+  let store: ReturnType<typeof useWidgetStore>;
 
   beforeEach(() => {
-    setActivePinia(createPinia())
-    store = useWidgetStore()
-  })
+    setActivePinia(createPinia());
+    store = useWidgetStore();
+  });
 
-  function makeWidget(id: string, type: WidgetSchemaType = 'input', overrides: Partial<Widget> = {}): Widget {
+  function makeWidget(
+    id: string,
+    type: WidgetSchemaType = "input",
+    overrides: Partial<Widget> = {},
+  ): Widget {
     return {
       id,
       name: `Fg${type}`,
@@ -694,564 +788,592 @@ describe('Widget Store CRUD', () => {
       position: { x: 0, y: 0, w: 240, h: 40, zIndex: 1 },
       props: {},
       ...overrides,
-    }
+    };
   }
 
   // --- addWidget ---
 
-  it('addWidget adds a widget to the store', () => {
-    const widget = makeWidget('w1')
-    store.addWidget(widget)
-    expect(store.widgets).toHaveLength(1)
-    expect(store.widgets[0].id).toBe('w1')
-  })
+  it("addWidget adds a widget to the store", () => {
+    const widget = makeWidget("w1");
+    store.addWidget(widget);
+    expect(store.widgets).toHaveLength(1);
+    expect(store.widgets[0].id).toBe("w1");
+  });
 
-  it('addWidget sets zIndex to max + 1', () => {
-    store.addWidget(makeWidget('w1'))
-    store.widgets[0].position.zIndex = 5
-    store.addWidget(makeWidget('w2'))
-    expect(store.widgets[1].position.zIndex).toBe(6)
-  })
+  it("addWidget sets zIndex to max + 1", () => {
+    store.addWidget(makeWidget("w1"));
+    store.widgets[0].position.zIndex = 5;
+    store.addWidget(makeWidget("w2"));
+    expect(store.widgets[1].position.zIndex).toBe(6);
+  });
 
-  it('addWidget multiple widgets accumulates correctly', () => {
-    store.addWidget(makeWidget('w1'))
-    store.addWidget(makeWidget('w2'))
-    store.addWidget(makeWidget('w3'))
-    expect(store.widgets).toHaveLength(3)
-  })
+  it("addWidget multiple widgets accumulates correctly", () => {
+    store.addWidget(makeWidget("w1"));
+    store.addWidget(makeWidget("w2"));
+    store.addWidget(makeWidget("w3"));
+    expect(store.widgets).toHaveLength(3);
+  });
 
-  it('insertRootWidgetAt inserts at the given index', () => {
-    store.addWidget(makeWidget('w1'))
-    store.addWidget(makeWidget('w2'))
-    store.insertRootWidgetAt(makeWidget('w-mid'), 1)
-    expect(store.widgets.map((w) => w.id)).toEqual(['w1', 'w-mid', 'w2'])
-  })
+  it("insertRootWidgetAt inserts at the given index", () => {
+    store.addWidget(makeWidget("w1"));
+    store.addWidget(makeWidget("w2"));
+    store.insertRootWidgetAt(makeWidget("w-mid"), 1);
+    expect(store.widgets.map((w) => w.id)).toEqual(["w1", "w-mid", "w2"]);
+  });
 
-  it('moveRootWidgetToIndex reorders root widgets', () => {
-    store.addWidget(makeWidget('w1'))
-    store.addWidget(makeWidget('w2'))
-    store.addWidget(makeWidget('w3'))
-    store.moveRootWidgetToIndex('w3', 0)
-    expect(store.widgets.map((w) => w.id)).toEqual(['w3', 'w1', 'w2'])
-    store.moveRootWidgetToIndex('w1', 3)
-    expect(store.widgets.map((w) => w.id)).toEqual(['w3', 'w2', 'w1'])
-  })
+  it("moveRootWidgetToIndex reorders root widgets", () => {
+    store.addWidget(makeWidget("w1"));
+    store.addWidget(makeWidget("w2"));
+    store.addWidget(makeWidget("w3"));
+    store.moveRootWidgetToIndex("w3", 0);
+    expect(store.widgets.map((w) => w.id)).toEqual(["w3", "w1", "w2"]);
+    store.moveRootWidgetToIndex("w1", 3);
+    expect(store.widgets.map((w) => w.id)).toEqual(["w3", "w2", "w1"]);
+  });
 
-  it('insertWidgetAt adds child into container', () => {
-    const card = makeWidget('c1', 'card')
-    store.addWidget(card)
-    store.insertWidgetAt('c1', makeWidget('w1', 'input'), 0)
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['w1'])
-  })
+  it("insertWidgetAt adds child into container", () => {
+    const card = makeWidget("c1", "card");
+    store.addWidget(card);
+    store.insertWidgetAt("c1", makeWidget("w1", "input"), 0);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["w1"]);
+  });
 
-  it('moveWidgetToIndex moves widget from root into container', () => {
-    const card = makeWidget('c1', 'card')
-    store.addWidget(card)
-    store.addWidget(makeWidget('w1', 'input'))
-    store.moveWidgetToIndex('w1', 'c1', 0)
-    expect(store.widgets.map((w) => w.id)).toEqual(['c1'])
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['w1'])
-  })
+  it("moveWidgetToIndex moves widget from root into container", () => {
+    const card = makeWidget("c1", "card");
+    store.addWidget(card);
+    store.addWidget(makeWidget("w1", "input"));
+    store.moveWidgetToIndex("w1", "c1", 0);
+    expect(store.widgets.map((w) => w.id)).toEqual(["c1"]);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["w1"]);
+  });
 
-  it('insertWidgetAt assigns colIndex when inserting into double-col', () => {
-    const cols = makeWidget('c1', 'double-col')
-    store.addWidget(cols)
-    store.insertWidgetAt('c1', makeWidget('w1', 'input'), 0, { colIndex: 1 })
-    expect(store.widgets[0].children?.[0].colIndex).toBe(1)
-  })
+  it("insertWidgetAt assigns colIndex when inserting into double-col", () => {
+    const cols = makeWidget("c1", "double-col");
+    store.addWidget(cols);
+    store.insertWidgetAt("c1", makeWidget("w1", "input"), 0, { colIndex: 1 });
+    expect(store.widgets[0].children?.[0].colIndex).toBe(1);
+  });
 
-  it('insertWidgetAt assigns tabKey when inserting into tabs container', () => {
-    const tabs = makeWidget('t1', 'tabs')
+  it("insertWidgetAt assigns tabKey when inserting into tabs container", () => {
+    const tabs = makeWidget("t1", "tabs");
     tabs.props = {
-      tabs: [{ key: 'tab1', label: 'Tab1' }, { key: 'tab2', label: 'Tab2' }],
-      activeKey: 'tab2',
-    }
-    store.addWidget(tabs)
-    store.insertWidgetAt('t1', makeWidget('w1', 'input'), 0)
-    expect(store.widgets[0].children?.[0].tabKey).toBe('tab2')
-  })
+      tabs: [
+        { key: "tab1", label: "Tab1" },
+        { key: "tab2", label: "Tab2" },
+      ],
+      activeKey: "tab2",
+    };
+    store.addWidget(tabs);
+    store.insertWidgetAt("t1", makeWidget("w1", "input"), 0);
+    expect(store.widgets[0].children?.[0].tabKey).toBe("tab2");
+  });
 
-  it('moveWidgetToIndex reorders siblings inside container', () => {
-    const card = makeWidget('c1', 'card')
-    card.children = [makeWidget('w1', 'input'), makeWidget('w2', 'input')]
-    store.addWidget(card)
-    store.moveWidgetToIndex('w2', 'c1', 0)
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['w2', 'w1'])
-  })
+  it("moveWidgetToIndex reorders siblings inside container", () => {
+    const card = makeWidget("c1", "card");
+    card.children = [makeWidget("w1", "input"), makeWidget("w2", "input")];
+    store.addWidget(card);
+    store.moveWidgetToIndex("w2", "c1", 0);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["w2", "w1"]);
+  });
 
   // --- 容器嵌套（dialog 装表单、card 装 tabs、tabs 嵌套 tabs 等） ---
 
-  it('insertWidgetAt 允许容器作为另一容器的子节点', () => {
-    const dialog = makeWidget('d1', 'dialog')
-    store.addWidget(dialog)
-    store.insertWidgetAt('d1', makeWidget('f1', 'form'), 0)
-    expect(store.widgets.map((w) => w.id)).toEqual(['d1'])
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['f1'])
-  })
+  it("insertWidgetAt 允许容器作为另一容器的子节点", () => {
+    const dialog = makeWidget("d1", "dialog");
+    store.addWidget(dialog);
+    store.insertWidgetAt("d1", makeWidget("f1", "form"), 0);
+    expect(store.widgets.map((w) => w.id)).toEqual(["d1"]);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["f1"]);
+  });
 
-  it('moveWidgetToIndex 允许容器移入另一容器', () => {
-    const card = makeWidget('c1', 'card')
-    store.addWidget(card)
-    store.addWidget(makeWidget('t1', 'tabs'))
-    store.moveWidgetToIndex('t1', 'c1', 0)
-    expect(store.widgets.map((w) => w.id)).toEqual(['c1'])
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['t1'])
-  })
+  it("moveWidgetToIndex 允许容器移入另一容器", () => {
+    const card = makeWidget("c1", "card");
+    store.addWidget(card);
+    store.addWidget(makeWidget("t1", "tabs"));
+    store.moveWidgetToIndex("t1", "c1", 0);
+    expect(store.widgets.map((w) => w.id)).toEqual(["c1"]);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["t1"]);
+  });
 
-  it('moveWidgetToIndex 拒绝将容器移入自己的后代（防递归环）', () => {
-    const inner = makeWidget('inner', 'card')
-    const outer = makeWidget('outer', 'card', { children: [inner] })
-    store.addWidget(outer)
-    store.moveWidgetToIndex('outer', 'inner', 0)
+  it("moveWidgetToIndex 拒绝将容器移入自己的后代（防递归环）", () => {
+    const inner = makeWidget("inner", "card");
+    const outer = makeWidget("outer", "card", { children: [inner] });
+    store.addWidget(outer);
+    store.moveWidgetToIndex("outer", "inner", 0);
     // outer 仍在根级，inner 仍是 outer 的子节点（未形成环）
-    expect(store.widgets.map((w) => w.id)).toEqual(['outer'])
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['inner'])
-  })
+    expect(store.widgets.map((w) => w.id)).toEqual(["outer"]);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["inner"]);
+  });
 
-  it('loadWidgets 保留 schema 中的嵌套容器（不再剥离到根级）', () => {
-    const form = makeWidget('f1', 'form')
-    const dialog = makeWidget('d1', 'dialog', { children: [form] })
-    store.loadWidgets([dialog])
-    expect(store.widgets.map((w) => w.id)).toEqual(['d1'])
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['f1'])
-  })
+  it("loadWidgets 保留 schema 中的嵌套容器（不再剥离到根级）", () => {
+    const form = makeWidget("f1", "form");
+    const dialog = makeWidget("d1", "dialog", { children: [form] });
+    store.loadWidgets([dialog]);
+    expect(store.widgets.map((w) => w.id)).toEqual(["d1"]);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["f1"]);
+  });
 
   // --- 容器嵌套深度限制（最多 2 层：根级容器 -> 一级子容器） ---
 
-  it('insertWidgetAt 拒绝第 3 层容器嵌套并提升到根级', () => {
-    const dialog = makeWidget('d1', 'dialog')
-    store.addWidget(dialog)
+  it("insertWidgetAt 拒绝第 3 层容器嵌套并提升到根级", () => {
+    const dialog = makeWidget("d1", "dialog");
+    store.addWidget(dialog);
     // 第 2 层：dialog -> form ✅
-    store.insertWidgetAt('d1', makeWidget('f1', 'form'), 0)
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['f1'])
+    store.insertWidgetAt("d1", makeWidget("f1", "form"), 0);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["f1"]);
     // 第 3 层：dialog -> form -> card ❌ 应被拒绝，card 提升到根级
-    store.insertWidgetAt('f1', makeWidget('c1', 'card'), 0)
-    expect(store.widgets.map((w) => w.id)).toEqual(['d1', 'c1'])
+    store.insertWidgetAt("f1", makeWidget("c1", "card"), 0);
+    expect(store.widgets.map((w) => w.id)).toEqual(["d1", "c1"]);
     // form 从未被放入子节点，children 仍为 undefined
-    expect(store.widgets[0].children?.[0].children).toBeUndefined()
-  })
+    expect(store.widgets[0].children?.[0].children).toBeUndefined();
+  });
 
-  it('moveWidgetToIndex 拒绝将容器移入已是子容器的容器', () => {
-    const dialog = makeWidget('d1', 'dialog', { children: [makeWidget('f1', 'form')] })
-    const card = makeWidget('c1', 'card')
-    store.loadWidgets([dialog, card])
+  it("moveWidgetToIndex 拒绝将容器移入已是子容器的容器", () => {
+    const dialog = makeWidget("d1", "dialog", {
+      children: [makeWidget("f1", "form")],
+    });
+    const card = makeWidget("c1", "card");
+    store.loadWidgets([dialog, card]);
     // form 已是子容器（depth=1），card 移入 form 应被拒绝，留在根级
-    store.moveWidgetToIndex('c1', 'f1', 0)
-    expect(store.widgets.map((w) => w.id)).toEqual(['d1', 'c1'])
-  })
+    store.moveWidgetToIndex("c1", "f1", 0);
+    expect(store.widgets.map((w) => w.id)).toEqual(["d1", "c1"]);
+  });
 
-  it('loadWidgets 扁平化超过 2 层的旧 schema', () => {
+  it("loadWidgets 扁平化超过 2 层的旧 schema", () => {
     // 三层嵌套：dialog -> form -> card
-    const card = makeWidget('c1', 'card')
-    const form = makeWidget('f1', 'form', { children: [card] })
-    const dialog = makeWidget('d1', 'dialog', { children: [form] })
-    store.loadWidgets([dialog])
+    const card = makeWidget("c1", "card");
+    const form = makeWidget("f1", "form", { children: [card] });
+    const dialog = makeWidget("d1", "dialog", { children: [form] });
+    store.loadWidgets([dialog]);
     // dialog -> form 保留（2 层），card 提升到根级
-    expect(store.widgets.map((w) => w.id)).toEqual(['d1', 'c1'])
-    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(['f1'])
-    expect(store.widgets[0].children?.[0].children).toEqual([])
-  })
+    expect(store.widgets.map((w) => w.id)).toEqual(["d1", "c1"]);
+    expect(store.widgets[0].children?.map((w) => w.id)).toEqual(["f1"]);
+    expect(store.widgets[0].children?.[0].children).toEqual([]);
+  });
 
   // --- row-container 栅格 ---
 
-  it('insertWidgetAt 到 row-container 时子节点填满单元格（style.width=100%）', () => {
-    const row = makeWidget('rc1', 'row-container')
-    store.addWidget(row)
-    store.insertWidgetAt('rc1', makeWidget('w1', 'input'), 0, { span: 12 })
-    const child = store.widgets[0].children?.[0]
-    expect(child?.span).toBe(12)
-    expect(child?.style?.width).toBe('100%')
-  })
+  it("insertWidgetAt 到 row-container 时子节点填满单元格（style.width=100%）", () => {
+    const row = makeWidget("rc1", "row-container");
+    store.addWidget(row);
+    store.insertWidgetAt("rc1", makeWidget("w1", "input"), 0, { span: 12 });
+    const child = store.widgets[0].children?.[0];
+    expect(child?.span).toBe(12);
+    expect(child?.style?.width).toBe("100%");
+  });
 
-  it('row-container 默认拖入子节点 span=24', () => {
-    const row = makeWidget('rc1', 'row-container')
-    store.addWidget(row)
-    store.insertWidgetAt('rc1', makeWidget('w1', 'input'), 0, { span: 24 })
-    expect(store.widgets[0].children?.[0].span).toBe(24)
-  })
+  it("row-container 默认拖入子节点 span=24", () => {
+    const row = makeWidget("rc1", "row-container");
+    store.addWidget(row);
+    store.insertWidgetAt("rc1", makeWidget("w1", "input"), 0, { span: 24 });
+    expect(store.widgets[0].children?.[0].span).toBe(24);
+  });
 
   // --- findWidget ---
 
-  it('findWidget returns the correct widget by id', () => {
-    store.addWidget(makeWidget('w1'))
-    store.addWidget(makeWidget('w2'))
-    const found = store.findWidget('w2')
-    expect(found).not.toBeNull()
-    expect(found!.id).toBe('w2')
-  })
+  it("findWidget returns the correct widget by id", () => {
+    store.addWidget(makeWidget("w1"));
+    store.addWidget(makeWidget("w2"));
+    const found = store.findWidget("w2");
+    expect(found).not.toBeNull();
+    expect(found!.id).toBe("w2");
+  });
 
-  it('findWidget returns null for non-existent id', () => {
-    store.addWidget(makeWidget('w1'))
-    expect(store.findWidget('nonexistent')).toBeNull()
-  })
+  it("findWidget returns null for non-existent id", () => {
+    store.addWidget(makeWidget("w1"));
+    expect(store.findWidget("nonexistent")).toBeNull();
+  });
 
-  it('findWidget finds nested children', () => {
-    const child = makeWidget('child1')
-    const parent = makeWidget('parent1', 'card', { children: [child] })
-    store.addWidget(parent)
+  it("findWidget finds nested children", () => {
+    const child = makeWidget("child1");
+    const parent = makeWidget("parent1", "card", { children: [child] });
+    store.addWidget(parent);
 
-    const found = store.findWidget('child1')
-    expect(found).not.toBeNull()
-    expect(found!.id).toBe('child1')
-  })
+    const found = store.findWidget("child1");
+    expect(found).not.toBeNull();
+    expect(found!.id).toBe("child1");
+  });
 
   // --- removeWidget ---
 
-  it('removeWidget removes a root-level widget', () => {
-    store.addWidget(makeWidget('w1'))
-    store.addWidget(makeWidget('w2'))
-    store.removeWidget('w1')
-    expect(store.widgets).toHaveLength(1)
-    expect(store.widgets[0].id).toBe('w2')
-  })
+  it("removeWidget removes a root-level widget", () => {
+    store.addWidget(makeWidget("w1"));
+    store.addWidget(makeWidget("w2"));
+    store.removeWidget("w1");
+    expect(store.widgets).toHaveLength(1);
+    expect(store.widgets[0].id).toBe("w2");
+  });
 
-  it('removeWidget removes a nested widget', () => {
-    const child = makeWidget('child1')
-    const parent = makeWidget('parent1', 'card', { children: [child] })
-    store.addWidget(parent)
+  it("removeWidget removes a nested widget", () => {
+    const child = makeWidget("child1");
+    const parent = makeWidget("parent1", "card", { children: [child] });
+    store.addWidget(parent);
 
-    store.removeWidget('child1')
-    const foundParent = store.findWidget('parent1')
-    expect(foundParent!.children).toHaveLength(0)
-  })
+    store.removeWidget("child1");
+    const foundParent = store.findWidget("parent1");
+    expect(foundParent!.children).toHaveLength(0);
+  });
 
-  it('removeWidget does nothing for non-existent id', () => {
-    store.addWidget(makeWidget('w1'))
-    store.removeWidget('nonexistent')
-    expect(store.widgets).toHaveLength(1)
-  })
+  it("removeWidget does nothing for non-existent id", () => {
+    store.addWidget(makeWidget("w1"));
+    store.removeWidget("nonexistent");
+    expect(store.widgets).toHaveLength(1);
+  });
 
   // --- updateWidget ---
 
-  it('updateWidget patches the widget', () => {
-    store.addWidget(makeWidget('w1'))
-    store.updateWidget('w1', { label: 'Updated Label' })
-    const found = store.findWidget('w1')
-    expect(found!.label).toBe('Updated Label')
-  })
+  it("updateWidget patches the widget", () => {
+    store.addWidget(makeWidget("w1"));
+    store.updateWidget("w1", { label: "Updated Label" });
+    const found = store.findWidget("w1");
+    expect(found!.label).toBe("Updated Label");
+  });
 
-  it('updateWidget patches nested props', () => {
-    store.addWidget(makeWidget('w1', 'input', { props: { placeholder: 'old' } }))
-    store.updateWidget('w1', { props: { placeholder: 'new', clearable: true } })
-    const found = store.findWidget('w1')
-    expect(found!.props!.placeholder).toBe('new')
-    expect(found!.props!.clearable).toBe(true)
-  })
+  it("updateWidget patches nested props", () => {
+    store.addWidget(
+      makeWidget("w1", "input", { props: { placeholder: "old" } }),
+    );
+    store.updateWidget("w1", {
+      props: { placeholder: "new", clearable: true },
+    });
+    const found = store.findWidget("w1");
+    expect(found!.props!.placeholder).toBe("new");
+    expect(found!.props!.clearable).toBe(true);
+  });
 
-  it('updateWidget does nothing for non-existent id', () => {
-    store.addWidget(makeWidget('w1'))
-    store.updateWidget('nonexistent', { label: 'test' })
-    expect(store.findWidget('w1')!.label).toBeUndefined()
-  })
+  it("updateWidget does nothing for non-existent id", () => {
+    store.addWidget(makeWidget("w1"));
+    store.updateWidget("nonexistent", { label: "test" });
+    expect(store.findWidget("w1")!.label).toBeUndefined();
+  });
 
   // --- moveWidget ---
 
-  it('moveWidget updates x and y', () => {
-    store.addWidget(makeWidget('w1'))
-    store.moveWidget('w1', 100, 200)
-    const found = store.findWidget('w1')
-    expect(found!.position.x).toBe(100)
-    expect(found!.position.y).toBe(200)
-  })
+  it("moveWidget updates x and y", () => {
+    store.addWidget(makeWidget("w1"));
+    store.moveWidget("w1", 100, 200);
+    const found = store.findWidget("w1");
+    expect(found!.position.x).toBe(100);
+    expect(found!.position.y).toBe(200);
+  });
 
-  it('moveWidget does not change w and h', () => {
-    store.addWidget(makeWidget('w1'))
-    store.moveWidget('w1', 50, 50)
-    const found = store.findWidget('w1')
-    expect(found!.position.w).toBe(240)
-    expect(found!.position.h).toBe(40)
-  })
+  it("moveWidget does not change w and h", () => {
+    store.addWidget(makeWidget("w1"));
+    store.moveWidget("w1", 50, 50);
+    const found = store.findWidget("w1");
+    expect(found!.position.w).toBe(240);
+    expect(found!.position.h).toBe(40);
+  });
 
-  it('moveWidget does nothing for non-existent id', () => {
-    store.addWidget(makeWidget('w1'))
-    store.moveWidget('nonexistent', 99, 99)
-    expect(store.findWidget('w1')!.position.x).toBe(0)
-  })
+  it("moveWidget does nothing for non-existent id", () => {
+    store.addWidget(makeWidget("w1"));
+    store.moveWidget("nonexistent", 99, 99);
+    expect(store.findWidget("w1")!.position.x).toBe(0);
+  });
 
   // --- resizeWidget ---
 
-  it('resizeWidget updates w and h', () => {
-    store.addWidget(makeWidget('w1'))
-    store.resizeWidget('w1', 500, 300)
-    const found = store.findWidget('w1')
-    expect(found!.position.w).toBe(500)
-    expect(found!.position.h).toBe(300)
-  })
+  it("resizeWidget updates w and h", () => {
+    store.addWidget(makeWidget("w1"));
+    store.resizeWidget("w1", 500, 300);
+    const found = store.findWidget("w1");
+    expect(found!.position.w).toBe(500);
+    expect(found!.position.h).toBe(300);
+  });
 
-  it('resizeWidget enforces minimum size of 20', () => {
-    store.addWidget(makeWidget('w1'))
-    store.resizeWidget('w1', 5, 10)
-    const found = store.findWidget('w1')
-    expect(found!.position.w).toBe(20)
-    expect(found!.position.h).toBe(20)
-  })
+  it("resizeWidget enforces minimum size of 20", () => {
+    store.addWidget(makeWidget("w1"));
+    store.resizeWidget("w1", 5, 10);
+    const found = store.findWidget("w1");
+    expect(found!.position.w).toBe(20);
+    expect(found!.position.h).toBe(20);
+  });
 
   // --- setZIndex ---
 
-  it('setZIndex updates zIndex', () => {
-    store.addWidget(makeWidget('w1'))
-    store.setZIndex('w1', 10)
-    expect(store.findWidget('w1')!.position.zIndex).toBe(10)
-  })
+  it("setZIndex updates zIndex", () => {
+    store.addWidget(makeWidget("w1"));
+    store.setZIndex("w1", 10);
+    expect(store.findWidget("w1")!.position.zIndex).toBe(10);
+  });
 
-  it('setZIndex enforces minimum of 1', () => {
-    store.addWidget(makeWidget('w1'))
-    store.setZIndex('w1', 0)
-    expect(store.findWidget('w1')!.position.zIndex).toBe(1)
-  })
+  it("setZIndex enforces minimum of 1", () => {
+    store.addWidget(makeWidget("w1"));
+    store.setZIndex("w1", 0);
+    expect(store.findWidget("w1")!.position.zIndex).toBe(1);
+  });
 
   // --- findParent ---
 
-  it('findParent returns null for root widget', () => {
-    store.addWidget(makeWidget('w1'))
-    expect(store.findParent('w1')).toBeNull()
-  })
+  it("findParent returns null for root widget", () => {
+    store.addWidget(makeWidget("w1"));
+    expect(store.findParent("w1")).toBeNull();
+  });
 
-  it('findParent returns parent for nested widget', () => {
-    const child = makeWidget('child1')
-    const parent = makeWidget('parent1', 'card', { children: [child] })
-    store.addWidget(parent)
+  it("findParent returns parent for nested widget", () => {
+    const child = makeWidget("child1");
+    const parent = makeWidget("parent1", "card", { children: [child] });
+    store.addWidget(parent);
 
-    const foundParent = store.findParent('child1')
-    expect(foundParent).not.toBeNull()
-    expect(foundParent!.id).toBe('parent1')
-  })
+    const foundParent = store.findParent("child1");
+    expect(foundParent).not.toBeNull();
+    expect(foundParent!.id).toBe("parent1");
+  });
 
   // --- isRootWidget ---
 
-  it('isRootWidget returns true for root-level widget', () => {
-    store.addWidget(makeWidget('w1'))
-    expect(store.isRootWidget('w1')).toBe(true)
-  })
+  it("isRootWidget returns true for root-level widget", () => {
+    store.addWidget(makeWidget("w1"));
+    expect(store.isRootWidget("w1")).toBe(true);
+  });
 
-  it('isRootWidget returns false for nested widget', () => {
-    const child = makeWidget('child1')
-    const parent = makeWidget('parent1', 'card', { children: [child] })
-    store.addWidget(parent)
-    expect(store.isRootWidget('child1')).toBe(false)
-  })
+  it("isRootWidget returns false for nested widget", () => {
+    const child = makeWidget("child1");
+    const parent = makeWidget("parent1", "card", { children: [child] });
+    store.addWidget(parent);
+    expect(store.isRootWidget("child1")).toBe(false);
+  });
 
   // --- addToContainer ---
 
-  it('addToContainer moves widget into container', () => {
-    store.addWidget(makeWidget('w1', 'input'))
-    store.addWidget(makeWidget('c1', 'card'))
-    store.addToContainer('w1', 'c1')
+  it("addToContainer moves widget into container", () => {
+    store.addWidget(makeWidget("w1", "input"));
+    store.addWidget(makeWidget("c1", "card"));
+    store.addToContainer("w1", "c1");
 
-    expect(store.widgets).toHaveLength(1) // only container at root
-    const container = store.findWidget('c1')
-    expect(container!.children).toHaveLength(1)
-    expect(container!.children![0].id).toBe('w1')
-  })
+    expect(store.widgets).toHaveLength(1); // only container at root
+    const container = store.findWidget("c1");
+    expect(container!.children).toHaveLength(1);
+    expect(container!.children![0].id).toBe("w1");
+  });
 
-  it('addToContainer prevents self-parenting', () => {
-    store.addWidget(makeWidget('c1', 'card'))
-    store.addToContainer('c1', 'c1')
-    expect(store.widgets).toHaveLength(1)
-    expect(store.findWidget('c1')!.children).toBeUndefined()
-  })
+  it("addToContainer prevents self-parenting", () => {
+    store.addWidget(makeWidget("c1", "card"));
+    store.addToContainer("c1", "c1");
+    expect(store.widgets).toHaveLength(1);
+    expect(store.findWidget("c1")!.children).toBeUndefined();
+  });
 
   // --- removeFromContainer ---
 
-  it('removeFromContainer moves widget back to root', () => {
-    const child = makeWidget('child1')
-    const parent = makeWidget('parent1', 'card', { children: [child] })
-    store.addWidget(parent)
+  it("removeFromContainer moves widget back to root", () => {
+    const child = makeWidget("child1");
+    const parent = makeWidget("parent1", "card", { children: [child] });
+    store.addWidget(parent);
 
-    store.removeFromContainer('child1')
-    expect(store.widgets).toHaveLength(2)
-    expect(store.isRootWidget('child1')).toBe(true)
-  })
+    store.removeFromContainer("child1");
+    expect(store.widgets).toHaveLength(2);
+    expect(store.isRootWidget("child1")).toBe(true);
+  });
 
   // --- reparentToRoot ---
 
-  it('reparentToRoot moves nested widget to root', () => {
-    const child = makeWidget('child1')
-    const parent = makeWidget('parent1', 'card', { children: [child] })
-    store.addWidget(parent)
+  it("reparentToRoot moves nested widget to root", () => {
+    const child = makeWidget("child1");
+    const parent = makeWidget("parent1", "card", { children: [child] });
+    store.addWidget(parent);
 
-    store.reparentToRoot('child1')
-    expect(store.isRootWidget('child1')).toBe(true)
-    expect(store.findWidget('parent1')!.children).toHaveLength(0)
-  })
+    store.reparentToRoot("child1");
+    expect(store.isRootWidget("child1")).toBe(true);
+    expect(store.findWidget("parent1")!.children).toHaveLength(0);
+  });
 
-  it('reparentToRoot does nothing for already-root widget', () => {
-    store.addWidget(makeWidget('w1'))
-    store.reparentToRoot('w1')
-    expect(store.widgets).toHaveLength(1)
-  })
+  it("reparentToRoot does nothing for already-root widget", () => {
+    store.addWidget(makeWidget("w1"));
+    store.reparentToRoot("w1");
+    expect(store.widgets).toHaveLength(1);
+  });
 
   // --- reparentToContainer ---
 
-  it('reparentToContainer moves widget to target container', () => {
-    store.addWidget(makeWidget('w1', 'input'))
-    store.addWidget(makeWidget('c1', 'card'))
-    store.reparentToContainer('w1', 'c1', 50, 100)
+  it("reparentToContainer moves widget to target container", () => {
+    store.addWidget(makeWidget("w1", "input"));
+    store.addWidget(makeWidget("c1", "card"));
+    store.reparentToContainer("w1", "c1", 50, 100);
 
-    expect(store.widgets).toHaveLength(1)
-    const container = store.findWidget('c1')
-    expect(container!.children).toHaveLength(1)
-    expect(container!.children![0].id).toBe('w1')
-    expect(container!.children![0].position.x).toBe(50)
-    expect(container!.children![0].position.y).toBe(100)
-  })
+    expect(store.widgets).toHaveLength(1);
+    const container = store.findWidget("c1");
+    expect(container!.children).toHaveLength(1);
+    expect(container!.children![0].id).toBe("w1");
+    expect(container!.children![0].position.x).toBe(50);
+    expect(container!.children![0].position.y).toBe(100);
+  });
 
-  it('reparentToContainer prevents self-parenting', () => {
-    store.addWidget(makeWidget('c1', 'card'))
-    store.reparentToContainer('c1', 'c1', 0, 0)
-    expect(store.widgets).toHaveLength(1)
-  })
+  it("reparentToContainer prevents self-parenting", () => {
+    store.addWidget(makeWidget("c1", "card"));
+    store.reparentToContainer("c1", "c1", 0, 0);
+    expect(store.widgets).toHaveLength(1);
+  });
 
   // --- collectFormValues ---
 
-  it('collectFormValues collects field values from bound widgets', () => {
-    store.addWidget(makeWidget('w1', 'input', { field: 'name', defaultValue: 'Alice', formId: 'form1' }))
-    store.addWidget(makeWidget('w2', 'number', { field: 'age', defaultValue: 30, formId: 'form1' }))
-    store.addWidget(makeWidget('w3', 'input', { field: 'other', defaultValue: 'x', formId: 'form2' }))
+  it("collectFormValues collects field values from bound widgets", () => {
+    store.addWidget(
+      makeWidget("w1", "input", {
+        field: "name",
+        defaultValue: "Alice",
+        formId: "form1",
+      }),
+    );
+    store.addWidget(
+      makeWidget("w2", "number", {
+        field: "age",
+        defaultValue: 30,
+        formId: "form1",
+      }),
+    );
+    store.addWidget(
+      makeWidget("w3", "input", {
+        field: "other",
+        defaultValue: "x",
+        formId: "form2",
+      }),
+    );
 
-    const values = store.collectFormValues('form1')
-    expect(values).toEqual({ name: 'Alice', age: 30 })
-  })
+    const values = store.collectFormValues("form1");
+    expect(values).toEqual({ name: "Alice", age: 30 });
+  });
 
-  it('collectFormValues returns empty object for no matching formId', () => {
-    store.addWidget(makeWidget('w1', 'input', { field: 'name', formId: 'form1' }))
-    const values = store.collectFormValues('nonexistent')
-    expect(values).toEqual({})
-  })
+  it("collectFormValues returns empty object for no matching formId", () => {
+    store.addWidget(
+      makeWidget("w1", "input", { field: "name", formId: "form1" }),
+    );
+    const values = store.collectFormValues("nonexistent");
+    expect(values).toEqual({});
+  });
 
   // --- bindToForm / unbindFromForm ---
 
-  it('bindToForm sets formId on widget', () => {
-    store.addWidget(makeWidget('w1'))
-    store.bindToForm('w1', 'form1')
-    expect(store.findWidget('w1')!.formId).toBe('form1')
-  })
+  it("bindToForm sets formId on widget", () => {
+    store.addWidget(makeWidget("w1"));
+    store.bindToForm("w1", "form1");
+    expect(store.findWidget("w1")!.formId).toBe("form1");
+  });
 
-  it('unbindFromForm removes formId from widget', () => {
-    store.addWidget(makeWidget('w1', 'input', { formId: 'form1' }))
-    store.unbindFromForm('w1')
-    expect(store.findWidget('w1')!.formId).toBeUndefined()
-  })
+  it("unbindFromForm removes formId from widget", () => {
+    store.addWidget(makeWidget("w1", "input", { formId: "form1" }));
+    store.unbindFromForm("w1");
+    expect(store.findWidget("w1")!.formId).toBeUndefined();
+  });
 
   // --- setTabKey / setColIndex ---
 
-  it('setTabKey sets tabKey on widget', () => {
-    store.addWidget(makeWidget('w1'))
-    store.setTabKey('w1', 'tab2')
-    expect(store.findWidget('w1')!.tabKey).toBe('tab2')
-  })
+  it("setTabKey sets tabKey on widget", () => {
+    store.addWidget(makeWidget("w1"));
+    store.setTabKey("w1", "tab2");
+    expect(store.findWidget("w1")!.tabKey).toBe("tab2");
+  });
 
-  it('setColIndex sets colIndex on widget', () => {
-    store.addWidget(makeWidget('w1'))
-    store.setColIndex('w1', 3)
-    expect(store.findWidget('w1')!.colIndex).toBe(3)
-  })
+  it("setColIndex sets colIndex on widget", () => {
+    store.addWidget(makeWidget("w1"));
+    store.setColIndex("w1", 3);
+    expect(store.findWidget("w1")!.colIndex).toBe(3);
+  });
 
   // --- loadWidgets / clearWidgets ---
 
-  it('loadWidgets replaces all widgets', () => {
-    store.addWidget(makeWidget('w1'))
-    store.loadWidgets([makeWidget('w2'), makeWidget('w3')])
-    expect(store.widgets).toHaveLength(2)
-    expect(store.widgets[0].id).toBe('w2')
-  })
+  it("loadWidgets replaces all widgets", () => {
+    store.addWidget(makeWidget("w1"));
+    store.loadWidgets([makeWidget("w2"), makeWidget("w3")]);
+    expect(store.widgets).toHaveLength(2);
+    expect(store.widgets[0].id).toBe("w2");
+  });
 
-  it('clearWidgets empties the store', () => {
-    store.addWidget(makeWidget('w1'))
-    store.addWidget(makeWidget('w2'))
-    store.clearWidgets()
-    expect(store.widgets).toHaveLength(0)
-  })
-
-})
+  it("clearWidgets empties the store", () => {
+    store.addWidget(makeWidget("w1"));
+    store.addWidget(makeWidget("w2"));
+    store.clearWidgets();
+    expect(store.widgets).toHaveLength(0);
+  });
+});
 
 // =====================================================================
 // 多选 + 批量删除（editorStore × widgetStore）
 // =====================================================================
 
-describe('Multi-select batch operations', () => {
-  let widgetStore: ReturnType<typeof useWidgetStore>
-  let editorStore: ReturnType<typeof useEditorStore>
+describe("Multi-select batch operations", () => {
+  let widgetStore: ReturnType<typeof useWidgetStore>;
+  let editorStore: ReturnType<typeof useEditorStore>;
 
   beforeEach(() => {
-    setActivePinia(createPinia())
-    widgetStore = useWidgetStore()
-    editorStore = useEditorStore()
-  })
+    setActivePinia(createPinia());
+    widgetStore = useWidgetStore();
+    editorStore = useEditorStore();
+  });
 
-  function makeWidget(id: string, type: WidgetSchemaType = 'input'): Widget {
+  function makeWidget(id: string, type: WidgetSchemaType = "input"): Widget {
     return {
       id,
       name: `Fg${type}`,
       type,
       position: { x: 0, y: 0, w: 240, h: 40, zIndex: 1 },
       props: {},
-    }
+    };
   }
 
-  it('toggleSelect 支持多选累加', () => {
-    widgetStore.addWidget(makeWidget('w1'))
-    widgetStore.addWidget(makeWidget('w2'))
-    editorStore.select('w1')
-    editorStore.toggleSelect('w2')
-    expect(editorStore.selectedIds).toEqual(['w1', 'w2'])
-  })
+  it("toggleSelect 支持多选累加", () => {
+    widgetStore.addWidget(makeWidget("w1"));
+    widgetStore.addWidget(makeWidget("w2"));
+    editorStore.select("w1");
+    editorStore.toggleSelect("w2");
+    expect(editorStore.selectedIds).toEqual(["w1", "w2"]);
+  });
 
-  it('performDeleteWidget 批量删除所有选中部件', () => {
-    widgetStore.addWidget(makeWidget('w1'))
-    widgetStore.addWidget(makeWidget('w2'))
-    widgetStore.addWidget(makeWidget('w3'))
-    editorStore.select('w1')
-    editorStore.toggleSelect('w2')
-    editorStore.performDeleteWidget()
-    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w3'])
-    expect(editorStore.selectedIds).toHaveLength(0)
-  })
+  it("performDeleteWidget 批量删除所有选中部件", () => {
+    widgetStore.addWidget(makeWidget("w1"));
+    widgetStore.addWidget(makeWidget("w2"));
+    widgetStore.addWidget(makeWidget("w3"));
+    editorStore.select("w1");
+    editorStore.toggleSelect("w2");
+    editorStore.performDeleteWidget();
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(["w3"]);
+    expect(editorStore.selectedIds).toHaveLength(0);
+  });
 
-  it('select 单选时覆盖之前的多选', () => {
-    widgetStore.addWidget(makeWidget('w1'))
-    widgetStore.addWidget(makeWidget('w2'))
-    editorStore.select('w1')
-    editorStore.toggleSelect('w2')
-    editorStore.select('w1')
-    expect(editorStore.selectedIds).toEqual(['w1'])
-  })
+  it("select 单选时覆盖之前的多选", () => {
+    widgetStore.addWidget(makeWidget("w1"));
+    widgetStore.addWidget(makeWidget("w2"));
+    editorStore.select("w1");
+    editorStore.toggleSelect("w2");
+    editorStore.select("w1");
+    expect(editorStore.selectedIds).toEqual(["w1"]);
+  });
 
-  it('performMoveSelected down 后移选中部件到同级末尾以内', () => {
-    widgetStore.addWidget(makeWidget('w1'))
-    widgetStore.addWidget(makeWidget('w2'))
-    widgetStore.addWidget(makeWidget('w3'))
-    editorStore.select('w2')
-    editorStore.performMoveSelected('down')
-    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w1', 'w3', 'w2'])
-  })
+  it("performMoveSelected down 后移选中部件到同级末尾以内", () => {
+    widgetStore.addWidget(makeWidget("w1"));
+    widgetStore.addWidget(makeWidget("w2"));
+    widgetStore.addWidget(makeWidget("w3"));
+    editorStore.select("w2");
+    editorStore.performMoveSelected("down");
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(["w1", "w3", "w2"]);
+  });
 
-  it('performMoveSelected up 前移选中部件', () => {
-    widgetStore.addWidget(makeWidget('w1'))
-    widgetStore.addWidget(makeWidget('w2'))
-    widgetStore.addWidget(makeWidget('w3'))
-    editorStore.select('w2')
-    editorStore.performMoveSelected('up')
-    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w2', 'w1', 'w3'])
-  })
+  it("performMoveSelected up 前移选中部件", () => {
+    widgetStore.addWidget(makeWidget("w1"));
+    widgetStore.addWidget(makeWidget("w2"));
+    widgetStore.addWidget(makeWidget("w3"));
+    editorStore.select("w2");
+    editorStore.performMoveSelected("up");
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(["w2", "w1", "w3"]);
+  });
 
-  it('performMoveSelected 已在边界时不越界', () => {
-    widgetStore.addWidget(makeWidget('w1'))
-    widgetStore.addWidget(makeWidget('w2'))
-    editorStore.select('w1')
-    editorStore.performMoveSelected('up')
-    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w1', 'w2'])
-    editorStore.select('w2')
-    editorStore.performMoveSelected('down')
-    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w1', 'w2'])
-  })
+  it("performMoveSelected 已在边界时不越界", () => {
+    widgetStore.addWidget(makeWidget("w1"));
+    widgetStore.addWidget(makeWidget("w2"));
+    editorStore.select("w1");
+    editorStore.performMoveSelected("up");
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(["w1", "w2"]);
+    editorStore.select("w2");
+    editorStore.performMoveSelected("down");
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(["w1", "w2"]);
+  });
 
-  it('performMoveSelected 多选时不操作', () => {
-    widgetStore.addWidget(makeWidget('w1'))
-    widgetStore.addWidget(makeWidget('w2'))
-    editorStore.select('w1')
-    editorStore.toggleSelect('w2')
-    editorStore.performMoveSelected('up')
-    expect(widgetStore.widgets.map((w) => w.id)).toEqual(['w1', 'w2'])
-  })
-})
+  it("performMoveSelected 多选时不操作", () => {
+    widgetStore.addWidget(makeWidget("w1"));
+    widgetStore.addWidget(makeWidget("w2"));
+    editorStore.select("w1");
+    editorStore.toggleSelect("w2");
+    editorStore.performMoveSelected("up");
+    expect(widgetStore.widgets.map((w) => w.id)).toEqual(["w1", "w2"]);
+  });
+});

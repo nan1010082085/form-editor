@@ -9,237 +9,274 @@
  * - 可见性/锁定快捷操作（hover 显示）
  * - 拖拽排序
  */
-import { computed, watch, ref } from 'vue'
-import type { PartialWidget, SchemaType } from '@/components/WidgetRenderer/types'
-import { buildSchemaTree } from '@/utils/schemaTransform'
-import type { SchemaTreeNode } from '@/utils/schemaTransform'
-import { BASIC_TYPES, BUSINESS_TYPES } from '@/composables/useConstant'
-import { useI18n } from '@schema-platform/platform-shared'
+import { computed, watch, ref } from "vue";
+import type {
+  PartialWidget,
+  SchemaType,
+} from "@/components/WidgetRenderer/types";
+import { buildSchemaTree } from "@/utils/schemaTransform";
+import type { SchemaTreeNode } from "@/utils/schemaTransform";
+import { useBasicTypes, useBusinessTypes } from "@/composables/useConstant";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
+
+const basicTypes = useBasicTypes();
+const businessTypes = useBusinessTypes();
 
 const props = defineProps<{
-  schema: PartialWidget[]
-  selectedPath: number[] | null
-}>()
+  schema: PartialWidget[];
+  selectedPath: number[] | null;
+}>();
 
 const emit = defineEmits<{
-  'select': [path: number[]]
-  'reorder': [payload: { sourcePath: number[]; targetPath: number[]; position: 'before' | 'after' | 'inside' }]
-  'toggle-hidden': [path: number[], hidden: boolean]
-}>()
+  select: [path: number[]];
+  reorder: [
+    payload: {
+      sourcePath: number[];
+      targetPath: number[];
+      position: "before" | "after" | "inside";
+    },
+  ];
+  "toggle-hidden": [path: number[], hidden: boolean];
+}>();
 
 // ---- Drag state ----
-const dragNodePath = ref<number[] | null>(null)
+const dragNodePath = ref<number[] | null>(null);
 
 function handleNodeDragStart(node: SchemaTreeNode) {
-  dragNodePath.value = node.path
+  dragNodePath.value = node.path;
 }
 
 function handleNodeDragEnd() {
-  dragNodePath.value = null
-}
-
-function allowDrag(_node: SchemaTreeNode): boolean {
-  return true
+  dragNodePath.value = null;
 }
 
 /** Get the category of a component type for nesting validation */
-function getCategory(type: SchemaType): 'basic' | 'business' | 'layout' {
-  if (BASIC_TYPES.has(type)) return 'basic'
-  if (BUSINESS_TYPES.has(type)) return 'business'
-  return 'layout'
+function getCategory(type: SchemaType): "basic" | "business" | "layout" {
+  if (basicTypes.value.has(type)) return "basic";
+  if (businessTypes.value.has(type)) return "business";
+  return "layout";
 }
 
-function allowDrop(draggingNode: SchemaTreeNode, dropNode: SchemaTreeNode, type: 'prev' | 'next' | 'inner'): boolean {
-  const dragPath = draggingNode.path.join(',')
-  const dropPath = dropNode.path.join(',')
-  if (dragPath === dropPath) return false
-  if (dropPath.startsWith(dragPath + ',')) return false
-  if (type === 'inner') {
-    if (!dropNode.isContainer) return false
+function allowDrop(
+  draggingNode: SchemaTreeNode,
+  dropNode: SchemaTreeNode,
+  type: "prev" | "next" | "inner",
+): boolean {
+  const dragPath = draggingNode.path.join(",");
+  const dropPath = dropNode.path.join(",");
+  if (dragPath === dropPath) return false;
+  if (dropPath.startsWith(dragPath + ",")) return false;
+  if (type === "inner") {
+    if (!dropNode.isContainer) return false;
     // Nesting rule: basic/business components cannot nest inside each other
-    const dragCat = getCategory(draggingNode.type)
-    const dropCat = getCategory(dropNode.type)
-    if (dragCat !== 'layout' && dropCat !== 'layout' && dragCat !== dropCat) return false
-    return true
+    const dragCat = getCategory(draggingNode.type);
+    const dropCat = getCategory(dropNode.type);
+    if (dragCat !== "layout" && dropCat !== "layout" && dragCat !== dropCat)
+      return false;
+    return true;
   }
   // For 'prev'/'after' drops, the parent of dropNode is the container
   // Find the parent node from the tree data
-  const parentPath = dropNode.path.slice(0, -1)
-  if (parentPath.length === 0) return true // dropping at root level
-  const parentNode = findNodeByPath(treeData.value, parentPath)
-  if (!parentNode) return true
-  const dragCat = getCategory(draggingNode.type)
-  const parentCat = getCategory(parentNode.type)
-  if (dragCat !== 'layout' && parentCat !== 'layout' && dragCat !== parentCat) return false
-  return true
+  const parentPath = dropNode.path.slice(0, -1);
+  if (parentPath.length === 0) return true; // dropping at root level
+  const parentNode = findNodeByPath(treeData.value, parentPath);
+  if (!parentNode) return true;
+  const dragCat = getCategory(draggingNode.type);
+  const parentCat = getCategory(parentNode.type);
+  if (dragCat !== "layout" && parentCat !== "layout" && dragCat !== parentCat)
+    return false;
+  return true;
 }
 
 /** Find a node in the tree by its path */
-function findNodeByPath(nodes: SchemaTreeNode[], path: number[]): SchemaTreeNode | null {
-  let current: SchemaTreeNode | undefined = nodes[path[0]]
+function findNodeByPath(
+  nodes: SchemaTreeNode[],
+  path: number[],
+): SchemaTreeNode | null {
+  let current: SchemaTreeNode | undefined = nodes[path[0]];
   for (let i = 1; i < path.length; i++) {
-    if (!current?.children) return null
-    current = current.children[path[i]]
+    if (!current?.children) return null;
+    current = current.children[path[i]];
   }
-  return current ?? null
+  return current ?? null;
 }
 
-function handleNodeDrop(draggingNode: SchemaTreeNode, dropNode: SchemaTreeNode, dropType: 'before' | 'after' | 'inner', _event: DragEvent) {
-  const sourcePath = draggingNode.path
-  let targetPath: number[]
-  let position: 'before' | 'after' | 'inside'
+function handleNodeDrop(
+  draggingNode: SchemaTreeNode,
+  dropNode: SchemaTreeNode,
+  dropType: "before" | "after" | "inner",
+  _event: DragEvent,
+) {
+  const sourcePath = draggingNode.path;
+  let targetPath: number[];
+  let position: "before" | "after" | "inside";
 
-  if (dropType === 'inner') {
-    targetPath = [...dropNode.path, 0]
-    position = 'inside'
-  } else if (dropType === 'before') {
-    targetPath = [...dropNode.path]
-    position = 'before'
+  if (dropType === "inner") {
+    targetPath = [...dropNode.path, 0];
+    position = "inside";
+  } else if (dropType === "before") {
+    targetPath = [...dropNode.path];
+    position = "before";
   } else {
-    targetPath = [...dropNode.path]
-    targetPath[targetPath.length - 1] = dropNode.path[dropNode.path.length - 1] + 1
-    position = 'after'
+    targetPath = [...dropNode.path];
+    targetPath[targetPath.length - 1] =
+      dropNode.path[dropNode.path.length - 1] + 1;
+    position = "after";
   }
 
-  emit('reorder', { sourcePath, targetPath, position })
-  dragNodePath.value = null
+  emit("reorder", { sourcePath, targetPath, position });
+  dragNodePath.value = null;
 }
 
 function getTypeLabel(type: string): string {
   const map: Record<string, string> = {
-    'card': t('editor.schemaTree.typeCard'),
-    'title': t('editor.schemaTree.typeTitle'),
-    'divider': t('editor.schemaTree.typeDivider'),
-    'spacer': t('editor.schemaTree.typeSpacer'),
-    'tabs': t('editor.schemaTree.typeTabs'),
-    'input': t('editor.schemaTree.typeInput'),
-    'number': t('editor.schemaTree.typeNumber'),
-    'select': t('editor.schemaTree.typeSelect'),
-    'radio': t('editor.schemaTree.typeRadio'),
-    'checkbox': t('editor.schemaTree.typeCheckbox'),
-    'date': t('editor.schemaTree.typeDate'),
-    'textarea': t('editor.schemaTree.typeTextarea'),
-    'richtext': t('editor.schemaTree.typeRichtext'),
-    'button-list': t('editor.schemaTree.typeButtonList'),
-    'toolbar-buttons': t('editor.schemaTree.typeToolbarButtons'),
-    'upload': t('editor.schemaTree.typeUpload'),
-    'table': t('editor.schemaTree.typeTable'),
-    'file-list': t('editor.schemaTree.typeFileList'),
-    'transfer': t('editor.schemaTree.typeTransfer'),
-    'banner': t('editor.schemaTree.typeBanner'),
-    'tree-layout': t('editor.schemaTree.typeTreeLayout'),
-    'date-time-slot': t('editor.schemaTree.typeDateTimeSlot'),
-    'dialog': t('editor.schemaTree.typeDialog'),
-  }
-  return map[type] ?? type
+    card: t("editor.schemaTree.typeCard"),
+    title: t("editor.schemaTree.typeTitle"),
+    divider: t("editor.schemaTree.typeDivider"),
+    spacer: t("editor.schemaTree.typeSpacer"),
+    tabs: t("editor.schemaTree.typeTabs"),
+    input: t("editor.schemaTree.typeInput"),
+    number: t("editor.schemaTree.typeNumber"),
+    select: t("editor.schemaTree.typeSelect"),
+    radio: t("editor.schemaTree.typeRadio"),
+    checkbox: t("editor.schemaTree.typeCheckbox"),
+    date: t("editor.schemaTree.typeDate"),
+    textarea: t("editor.schemaTree.typeTextarea"),
+    richtext: t("editor.schemaTree.typeRichtext"),
+    "button-list": t("editor.schemaTree.typeButtonList"),
+    "toolbar-buttons": t("editor.schemaTree.typeToolbarButtons"),
+    upload: t("editor.schemaTree.typeUpload"),
+    table: t("editor.schemaTree.typeTable"),
+    "file-list": t("editor.schemaTree.typeFileList"),
+    transfer: t("editor.schemaTree.typeTransfer"),
+    banner: t("editor.schemaTree.typeBanner"),
+    "tree-layout": t("editor.schemaTree.typeTreeLayout"),
+    "date-time-slot": t("editor.schemaTree.typeDateTimeSlot"),
+    dialog: t("editor.schemaTree.typeDialog"),
+  };
+  return map[type] ?? type;
 }
 
 // ---- Tree data ----
-const treeData = computed(() => buildSchemaTree(props.schema))
+const treeData = computed(() => buildSchemaTree(props.schema));
 
 // ---- Track expanded state ----
-const expandedKeys = ref<Set<string>>(new Set())
+const expandedKeys = ref<Set<string>>(new Set());
 
 watch(
   () => treeData.value,
   (nodes) => {
-    const newExpanded = new Set<string>()
+    const newExpanded = new Set<string>();
     function expandContainers(items: SchemaTreeNode[]) {
       for (const node of items) {
         if (node.isContainer && node.children.length > 0) {
-          newExpanded.add(node.id)
-          expandContainers(node.children)
+          newExpanded.add(node.id);
+          expandContainers(node.children);
         }
       }
     }
-    expandContainers(nodes)
-    expandedKeys.value = newExpanded
+    expandContainers(nodes);
+    expandedKeys.value = newExpanded;
   },
   { immediate: true },
-)
+);
 
-const expandedArray = computed(() => Array.from(expandedKeys.value))
+const expandedArray = computed(() => Array.from(expandedKeys.value));
 
 // ---- Selected node key ----
 const selectedKey = computed(() => {
-  if (!props.selectedPath) return ''
-  return props.selectedPath.join('-')
-})
+  if (!props.selectedPath) return "";
+  return props.selectedPath.join("-");
+});
 
 // ---- Locked state (editor-only, not persisted in schema) ----
-const lockedNodes = ref<Set<string>>(new Set())
+const lockedNodes = ref<Set<string>>(new Set());
 
 function isLocked(nodeId: string): boolean {
-  return lockedNodes.value.has(nodeId)
+  return lockedNodes.value.has(nodeId);
 }
 
 function toggleLock(nodeId: string) {
-  const next = new Set(lockedNodes.value)
+  const next = new Set(lockedNodes.value);
   if (next.has(nodeId)) {
-    next.delete(nodeId)
+    next.delete(nodeId);
   } else {
-    next.add(nodeId)
+    next.add(nodeId);
   }
-  lockedNodes.value = next
+  lockedNodes.value = next;
 }
 
 // ---- Hidden state helpers ----
 function isHidden(data: SchemaTreeNode): boolean {
   // Walk the schema to find the hidden flag
-  const item = getSchemaItemByPath(props.schema, data.path)
-  return item?.hidden === true
+  const item = getSchemaItemByPath(props.schema, data.path);
+  return item?.hidden === true;
 }
 
-function getSchemaItemByPath(items: PartialWidget[], path: number[]): PartialWidget | undefined {
-  if (path.length === 0) return undefined
-  let current: PartialWidget | undefined = items[path[0]]
+function getSchemaItemByPath(
+  items: PartialWidget[],
+  path: number[],
+): PartialWidget | undefined {
+  if (path.length === 0) return undefined;
+  let current: PartialWidget | undefined = items[path[0]];
   for (let i = 1; i < path.length; i++) {
-    if (!current?.children) return undefined
-    current = current.children[path[i]]
+    if (!current?.children) return undefined;
+    current = current.children[path[i]];
   }
-  return current
+  return current;
 }
 
 function handleToggleHidden(data: SchemaTreeNode, e: Event) {
-  e.stopPropagation()
-  const currentlyHidden = isHidden(data)
-  emit('toggle-hidden', data.path, !currentlyHidden)
+  e.stopPropagation();
+  const currentlyHidden = isHidden(data);
+  emit("toggle-hidden", data.path, !currentlyHidden);
 }
 
 // ---- Node icon mapping ----
 const NODE_ICONS: Record<string, string> = {
-  'card': '🃏', 'title': 'T', 'divider': '—', 'spacer': '␣',
-  'tabs': '📑', 'input': '✏️', 'number': '#',
-  'select': '▼', 'radio': '◉', 'checkbox': '☑', 'date': '📅',
-  'textarea': '📝', 'richtext': '📰',
-  'toolbar-buttons': '🔧', 'upload': '📤', 'table': '📊',
-}
+  card: "🃏",
+  title: "T",
+  divider: "—",
+  spacer: "␣",
+  tabs: "📑",
+  input: "✏️",
+  number: "#",
+  select: "▼",
+  radio: "◉",
+  checkbox: "☑",
+  date: "📅",
+  textarea: "📝",
+  richtext: "📰",
+  "toolbar-buttons": "🔧",
+  upload: "📤",
+  table: "📊",
+};
 
 function getNodeIcon(type: SchemaType): string {
-  return NODE_ICONS[type] ?? '▪'
+  return NODE_ICONS[type] ?? "▪";
 }
 
 // ---- Event handlers ----
 function handleNodeClick(node: SchemaTreeNode) {
-  if (isLocked(node.id)) return
-  emit('select', node.path)
+  if (isLocked(node.id)) return;
+  emit("select", node.path);
 }
 
 function handleToggleExpand(node: SchemaTreeNode) {
   if (expandedKeys.value.has(node.id)) {
-    expandedKeys.value.delete(node.id)
+    expandedKeys.value.delete(node.id);
   } else {
-    expandedKeys.value.add(node.id)
+    expandedKeys.value.add(node.id);
   }
 }
 </script>
 
 <template>
-  <div class="schema-tree" style="overflow: auto; height: 100%;">
+  <div class="schema-tree" style="overflow: auto; height: 100%">
     <div v-if="treeData.length === 0" class="schema-tree__empty">
-      <p>{{ t('editor.schemaTree.emptyHint') }}</p>
+      <p>{{ t("editor.schemaTree.emptyHint") }}</p>
     </div>
     <t-tree
       v-else
@@ -273,17 +310,26 @@ function handleToggleExpand(node: SchemaTreeNode) {
             @click.stop="handleToggleExpand(data)"
           >
             <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-              <path v-if="expandedKeys.has(data.id)" d="M2 3.5l3 3 3-3z"/>
-              <path v-else d="M3.5 2l3 3-3 3z"/>
+              <path v-if="expandedKeys.has(data.id)" d="M2 3.5l3 3 3-3z" />
+              <path v-else d="M3.5 2l3 3-3 3z" />
             </svg>
           </span>
-          <span v-else class="schema-tree__expand-icon schema-tree__expand-icon--placeholder" />
+          <span
+            v-else
+            class="schema-tree__expand-icon schema-tree__expand-icon--placeholder"
+          />
 
-          <span class="schema-tree__type-icon">{{ getNodeIcon(data.type) }}</span>
+          <span class="schema-tree__type-icon">{{
+            getNodeIcon(data.type)
+          }}</span>
 
-          <span class="schema-tree__type-badge">{{ getTypeLabel(data.type) }}</span>
+          <span class="schema-tree__type-badge">{{
+            getTypeLabel(data.type)
+          }}</span>
 
-          <span v-if="data.field" class="schema-tree__field">{{ data.field }}</span>
+          <span v-if="data.field" class="schema-tree__field">{{
+            data.field
+          }}</span>
 
           <!-- Hover actions -->
           <span class="schema-tree__actions">
@@ -292,14 +338,34 @@ function handleToggleExpand(node: SchemaTreeNode) {
               :title="t('editor.schemaTree.toggleVisibility')"
               @click="handleToggleHidden(data, $event)"
             >
-              <svg v-if="isHidden(data)" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 8s3-5.5 7-5.5S15 8 15 8s-3 5.5-7 5.5S1 8 1 8z"/>
-                <circle cx="8" cy="8" r="2.5"/>
-                <line x1="2" y1="14" x2="14" y2="2"/>
+              <svg
+                v-if="isHidden(data)"
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M1 8s3-5.5 7-5.5S15 8 15 8s-3 5.5-7 5.5S1 8 1 8z" />
+                <circle cx="8" cy="8" r="2.5" />
+                <line x1="2" y1="14" x2="14" y2="2" />
               </svg>
-              <svg v-else width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 8s3-5.5 7-5.5S15 8 15 8s-3 5.5-7 5.5S1 8 1 8z"/>
-                <circle cx="8" cy="8" r="2.5"/>
+              <svg
+                v-else
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M1 8s3-5.5 7-5.5S15 8 15 8s-3 5.5-7 5.5S1 8 1 8z" />
+                <circle cx="8" cy="8" r="2.5" />
               </svg>
             </button>
             <button
@@ -309,14 +375,34 @@ function handleToggleExpand(node: SchemaTreeNode) {
               @mousedown.stop
               @click.stop="toggleLock(data.id)"
             >
-              <svg v-if="isLocked(data.id)" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="7" width="10" height="7" rx="1.5"/>
-                <path d="M5 7V5a3 3 0 016 0v2"/>
+              <svg
+                v-if="isLocked(data.id)"
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="7" width="10" height="7" rx="1.5" />
+                <path d="M5 7V5a3 3 0 016 0v2" />
               </svg>
-              <svg v-else width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="7" width="10" height="7" rx="1.5"/>
-                <path d="M5 7V5a3 3 0 016 0v2"/>
-                <line x1="8" y1="10" x2="8" y2="12"/>
+              <svg
+                v-else
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="7" width="10" height="7" rx="1.5" />
+                <path d="M5 7V5a3 3 0 016 0v2" />
+                <line x1="8" y1="10" x2="8" y2="12" />
               </svg>
             </button>
           </span>
@@ -399,7 +485,9 @@ function handleToggleExpand(node: SchemaTreeNode) {
     flex-shrink: 0;
     user-select: none;
 
-    &:hover { color: var(--td-brand-color); }
+    &:hover {
+      color: var(--td-brand-color);
+    }
 
     &--placeholder {
       cursor: default;

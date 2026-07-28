@@ -14,74 +14,94 @@
  * - EditorViewLeftPanel — 左侧面板
  * - EditorViewRightPanel — 右侧属性面板
  */
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, provide } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { connect as connectSocket, onAiApply, onAiPublished } from '@schema-platform/platform-shared/socket'
-import { track, initTelemetry, reportError, useI18n } from '@schema-platform/platform-shared'
-import type { AiApplyEvent, AiPublishedEvent } from '@schema-platform/platform-shared/socket'
-import { setTriggerLabelProvider } from '@/engine/eventEngine'
-import { useSnapshot } from '@/composables/useSnapshot'
-import { useAutoSave } from '@/composables/useAutoSave'
-import { useBoardStore } from '@/stores/board'
-import { useWidgetStore } from '@/stores/widget'
-import { parseSchemaJson } from '@/utils/parseSchemaJson'
-import { useEditorStore } from '@/stores/editor'
-import { useApiStore } from '@/stores/api'
-import { registerAllWidgets } from '@/widgets'
-import { useDuplicateWidget } from '@/composables/useDuplicateWidget'
-import EditorCanvas from '@/components/Editor/EditorCanvas.vue'
-import PageTabBar from '@/components/Editor/PageTabBar.vue'
-import ZoomIndicator from '@/components/Editor/ZoomIndicator.vue'
-import EventLogPanel from '@/components/Editor/EventLogPanel.vue'
-import { setLogCollector } from '@/composables/useLogger'
-import { useEventLog } from '@/composables/useEventLog'
-import type { Widget, PreviewBreakpoint } from '@/widgets/base/types'
-import { fetchVersion } from '@/api/schemaApi'
-import SchemaVersionCompare from '@/components/SchemaVersionCompare.vue'
-import { useSchemaVersionStore } from '@/stores/schemaVersion'
-import SaveTemplateDialog from '@/components/Editor/SaveTemplateDialog.vue'
-import EditorViewToolbar from './EditorViewToolbar.vue'
-import EditorViewLeftPanel from './EditorViewLeftPanel.vue'
-import EditorViewRightPanel from './EditorViewRightPanel.vue'
-import EditorRuler from '@/components/Editor/EditorRuler.vue'
-import { useWidgetAlignment } from '@/composables/useWidgetAlignment'
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  provide,
+} from "vue";
+import { useRoute } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
+import {
+  connect as connectSocket,
+  onAiApply,
+  onAiPublished,
+} from "@schema-platform/platform-shared/socket";
+import {
+  track,
+  initTelemetry,
+  useI18n,
+} from "@schema-platform/platform-shared";
+import type {
+  AiApplyEvent,
+  AiPublishedEvent,
+} from "@schema-platform/platform-shared/socket";
+import { setTriggerLabelProvider } from "@/engine/eventEngine";
+import { useSnapshot } from "@/composables/useSnapshot";
+import { useAutoSave } from "@/composables/useAutoSave";
+import { useSchemaLoader } from "@/composables/useSchemaLoader";
+import { useBoardStore } from "@/stores/board";
+import { useWidgetStore } from "@/stores/widget";
+import { parseSchemaJson } from "@/utils/parseSchemaJson";
+import { useEditorStore } from "@/stores/editor";
+import { useApiStore } from "@/stores/api";
+import { registerAllWidgets } from "@/widgets";
+import { useDuplicateWidget } from "@/composables/useDuplicateWidget";
+import EditorCanvas from "@/components/Editor/EditorCanvas.vue";
+import PageTabBar from "@/components/Editor/PageTabBar.vue";
+import ZoomIndicator from "@/components/Editor/ZoomIndicator.vue";
+import EventLogPanel from "@/components/Editor/EventLogPanel.vue";
+import { setLogCollector } from "@/composables/useLogger";
+import { useEventLog } from "@/composables/useEventLog";
+import type { Widget, PreviewBreakpoint } from "@/widgets/base/types";
+import { fetchVersion } from "@/api/schemaApi";
+import SchemaVersionCompare from "@/components/SchemaVersionCompare.vue";
+import { useSchemaVersionStore } from "@/stores/schemaVersion";
+import SaveTemplateDialog from "@/components/Editor/SaveTemplateDialog.vue";
+import EditorViewToolbar from "./EditorViewToolbar.vue";
+import EditorViewLeftPanel from "./EditorViewLeftPanel.vue";
+import EditorViewRightPanel from "./EditorViewRightPanel.vue";
+import EditorRuler from "@/components/Editor/EditorRuler.vue";
+import { useWidgetAlignment } from "@/composables/useWidgetAlignment";
 import {
   VIEWPORT_CULLING_KEY,
   computeViewportRect,
   type ViewportRect,
-} from '@/composables/useViewportCulling'
-import { APP_CONFIGS } from '@schema-platform/platform-shared/qiankun/config'
-import styles from './EditorView.module.scss'
+} from "@/composables/useViewportCulling";
+import { APP_CONFIGS } from "@schema-platform/platform-shared/qiankun/config";
+import styles from "./EditorView.module.scss";
 
 // Register all widgets on first mount
-registerAllWidgets()
+registerAllWidgets();
 
-const { t } = useI18n()
-setTriggerLabelProvider(t)
+const { t } = useI18n();
+setTriggerLabelProvider(t);
 
-const route = useRoute()
-const router = useRouter()
-const boardStore = useBoardStore()
-const widgetStore = useWidgetStore()
-const editorStore = useEditorStore()
-const { duplicateFromClipboard } = useDuplicateWidget()
-const apiStore = useApiStore()
-const schemaVersionStore = useSchemaVersionStore()
-const { captureElement } = useSnapshot()
-const editorCanvasRef = ref<InstanceType<typeof EditorCanvas>>()
-const aiIframeRef = ref<HTMLIFrameElement>()
-const canvasScrollRef = ref<HTMLElement>()
-const viewportRect = ref<ViewportRect | null>(null)
-const { align, distribute, toggleLock, toggleHidden } = useWidgetAlignment()
+const route = useRoute();
+const boardStore = useBoardStore();
+const widgetStore = useWidgetStore();
+const editorStore = useEditorStore();
+const { duplicateFromClipboard } = useDuplicateWidget();
+const apiStore = useApiStore();
+const { loadSchemaDetail } = useSchemaLoader();
+const schemaVersionStore = useSchemaVersionStore();
+const { captureElement } = useSnapshot();
+const editorCanvasRef = ref<InstanceType<typeof EditorCanvas>>();
+const aiIframeRef = ref<HTMLIFrameElement>();
+const canvasScrollRef = ref<HTMLElement>();
+const viewportRect = ref<ViewportRect | null>(null);
+const { align, distribute, toggleLock, toggleHidden } = useWidgetAlignment();
 
-provide(VIEWPORT_CULLING_KEY, viewportRect)
+provide(VIEWPORT_CULLING_KEY, viewportRect);
 
 function updateViewportRect() {
-  const el = canvasScrollRef.value
+  const el = canvasScrollRef.value;
   if (!el) {
-    viewportRect.value = null
-    return
+    viewportRect.value = null;
+    return;
   }
   viewportRect.value = computeViewportRect(
     el.scrollLeft,
@@ -89,68 +109,71 @@ function updateViewportRect() {
     el.clientWidth,
     el.clientHeight,
     boardStore.canvas.zoom,
-  )
+  );
 }
 
-let viewportObserver: ResizeObserver | null = null
+let viewportObserver: ResizeObserver | null = null;
 
 function bindViewportListeners() {
-  const el = canvasScrollRef.value
-  if (!el) return
-  el.addEventListener('scroll', updateViewportRect, { passive: true })
-  viewportObserver = new ResizeObserver(updateViewportRect)
-  viewportObserver.observe(el)
-  updateViewportRect()
+  const el = canvasScrollRef.value;
+  if (!el) return;
+  el.addEventListener("scroll", updateViewportRect, { passive: true });
+  viewportObserver = new ResizeObserver(updateViewportRect);
+  viewportObserver.observe(el);
+  updateViewportRect();
 }
 
 function unbindViewportListeners() {
-  const el = canvasScrollRef.value
-  if (el) el.removeEventListener('scroll', updateViewportRect)
-  viewportObserver?.disconnect()
-  viewportObserver = null
+  const el = canvasScrollRef.value;
+  if (el) el.removeEventListener("scroll", updateViewportRect);
+  viewportObserver?.disconnect();
+  viewportObserver = null;
 }
 
 // 自动保存：脏数据 60 秒后自动触发保存（偏好持久化到 localStorage）
-const autoSaveEnabled = ref(localStorage.getItem('editor_auto_save') !== 'off')
+const autoSaveEnabled = ref(localStorage.getItem("editor_auto_save") !== "off");
 const { isAutoSaving } = useAutoSave({
   delayMs: 60_000,
   enabled: autoSaveEnabled,
   onSave: handleSave,
-})
+});
 function toggleAutoSave() {
-  autoSaveEnabled.value = !autoSaveEnabled.value
-  localStorage.setItem('editor_auto_save', autoSaveEnabled.value ? 'on' : 'off')
+  autoSaveEnabled.value = !autoSaveEnabled.value;
+  localStorage.setItem(
+    "editor_auto_save",
+    autoSaveEnabled.value ? "on" : "off",
+  );
 }
 
 // ================================================================
 // Layout state
 // ================================================================
 
-const leftPanelVisible = ref(true)
-const rightPanelVisible = ref(true)
-const showLogPanel = ref(false)
-const showCodePanel = ref(false)
-const showAiDrawer = ref(false)
-const showVersionCompare = ref(false)
-const previewBreakpoint = ref<PreviewBreakpoint>('desktop')
+const leftPanelVisible = ref(true);
+const rightPanelVisible = ref(true);
+const showLogPanel = ref(false);
+const showCodePanel = ref(false);
+const showAiDrawer = ref(false);
+const showVersionCompare = ref(false);
+const previewBreakpoint = ref<PreviewBreakpoint>("desktop");
 
 /** 缩放指示器右侧偏移：属性面板 300px + AI 抽屉 400px */
 const zoomRightOffset = computed(() => {
-  let offset = 0
-  if (rightPanelVisible.value) offset += 300
-  if (showAiDrawer.value) offset += 400
-  return offset
-})
+  let offset = 0;
+  if (rightPanelVisible.value) offset += 300;
+  if (showAiDrawer.value) offset += 400;
+  return offset;
+});
 
 const aiBaseUrl = import.meta.env.DEV
   ? `http://localhost:${APP_CONFIGS.ai.devPort}/index-sidebar.html`
-  : `${window.location.origin}${APP_CONFIGS.ai.basePath}index-sidebar.html`
+  : `${window.location.origin}${APP_CONFIGS.ai.basePath}index-sidebar.html`;
 
 // ================================================================
 // Mode
 // ================================================================
 
-const mode = computed(() => editorStore.mode)
+const mode = computed(() => editorStore.mode);
 
 /** Store 完整数据快照（供 code 面板展示） */
 const storeSnapshot = computed(() => {
@@ -167,129 +190,84 @@ const storeSnapshot = computed(() => {
       selectedId: editorStore.selectedId,
       isDirty: editorStore.isDirty,
     },
-  }
-  return JSON.stringify(data, null, 2)
-})
+  };
+  return JSON.stringify(data, null, 2);
+});
 
 // ================================================================
 // Load schema from API
 // ================================================================
 
-const currentEditId = ref('')
-const currentVersion = ref('')
+const currentEditId = ref("");
+const currentVersion = ref("");
 
 onMounted(async () => {
   // 接入事件日志收集器
-  const { push } = useEventLog()
-  setLogCollector(push)
+  const { push } = useEventLog();
+  setLogCollector(push);
 
-  const id = route.query.id as string | undefined
-  const editId = route.query.editId as string | undefined
-  const version = route.query.version as string | undefined
+  const id = route.query.id as string | undefined;
+  const editId = route.query.editId as string | undefined;
+  const version = route.query.version as string | undefined;
 
   if (editId && version) {
     // 加载特定版本
-    const detail = await fetchVersion(editId, version)
+    const detail = await fetchVersion(editId, version);
     if (detail) {
-      // 解析 json，支持新格式 { widgets, board } 和旧格式 Widget[]
-      const json = detail.json as unknown
-      let widgets: Widget[] = []
-      let boardConfig: { canvas?: Record<string, unknown>; variables?: unknown[]; events?: unknown[] } = {}
-
-      if (json && typeof json === 'object' && 'widgets' in json && 'board' in json) {
-        // 新格式：{ widgets: Widget[], board: { canvas, variables, events } }
-        const data = json as { widgets: Widget[]; board: { canvas?: Record<string, unknown>; variables?: unknown[]; events?: unknown[] } }
-        widgets = data.widgets
-        boardConfig = data.board || {}
-      } else {
-        // 旧格式：直接是 Widget[]
-        widgets = json as Widget[]
-      }
-
-      boardStore.loadBoard({
-        id: detail.id,
-        name: detail.name,
-        status: (detail.status as 'draft' | 'published') || 'draft',
-        canvas: boardConfig.canvas,
-        variables: boardConfig.variables as any[],
-        events: boardConfig.events as any[],
-      })
-      const layoutMode = (boardConfig.canvas as { layoutMode?: 'free' | 'flex' } | undefined)?.layoutMode ?? 'free'
-      widgetStore.loadWidgets(widgets, layoutMode)
-      editorStore.resetHistory(widgets)
-      currentEditId.value = editId
-      currentVersion.value = version
+      loadSchemaDetail(detail);
+      currentEditId.value = editId;
+      currentVersion.value = version;
     }
   } else if (id) {
-    const detail = await apiStore.fetchSchemaById(id)
+    const detail = await apiStore.fetchSchemaById(id);
     if (detail) {
-      // 解析 json，支持新格式 { widgets, board } 和旧格式 Widget[]
-      const json = detail.json as unknown
-      let widgets: Widget[] = []
-      let boardConfig: { canvas?: Record<string, unknown>; variables?: unknown[]; events?: unknown[] } = {}
-
-      if (json && typeof json === 'object' && 'widgets' in json && 'board' in json) {
-        // 新格式：{ widgets: Widget[], board: { canvas, variables, events } }
-        const data = json as { widgets: Widget[]; board: { canvas?: Record<string, unknown>; variables?: unknown[]; events?: unknown[] } }
-        widgets = data.widgets
-        boardConfig = data.board || {}
-      } else {
-        // 旧格式：直接是 Widget[]
-        widgets = json as Widget[]
-      }
-
-      boardStore.loadBoard({
-        id: detail.id,
-        name: detail.name,
-        status: (detail.status as 'draft' | 'published') || 'draft',
-        canvas: boardConfig.canvas,
-        variables: boardConfig.variables as any[],
-        events: boardConfig.events as any[],
-      })
-      const layoutMode = (boardConfig.canvas as { layoutMode?: 'free' | 'flex' } | undefined)?.layoutMode ?? 'free'
-      widgetStore.loadWidgets(widgets, layoutMode)
-      editorStore.resetHistory(widgets)
-      currentEditId.value = detail.editId
-      currentVersion.value = detail.version
+      loadSchemaDetail(detail);
+      currentEditId.value = detail.editId;
+      currentVersion.value = detail.version;
     }
   }
 
   // Set default board name if empty
   if (!boardStore.name) {
-    boardStore.name = t('editor.editorView.unnamedCanvas')
+    boardStore.name = t("editor.editorView.unnamedCanvas");
   }
 
   // 从实例列表进入时，始终为编辑模式
-  editorStore.setMode('edit')
+  editorStore.setMode("edit");
 
   // Socket: 监听 AI 推送事件
-  connectSocket()
+  connectSocket();
   onAiApply(async (data: AiApplyEvent) => {
-    if (data.type === 'schema' && Array.isArray(data.payload)) {
-      const { widgets } = parseSchemaJson(data.payload)
+    if (data.type === "schema" && Array.isArray(data.payload)) {
+      const { widgets } = parseSchemaJson(data.payload);
       // 逐个插入到当前画布，而非替换
       for (const widget of widgets) {
-        widgetStore.addWidget(widget)
+        widgetStore.addWidget(widget);
       }
-      ElMessage.success(t('editor.editorView.insertSuccess', { count: widgets.length }))
+      ElMessage.success(
+        t("editor.editorView.insertSuccess", { count: widgets.length }),
+      );
 
       // 自动保存并生成缩略图
-      await nextTick()
-      await handleSave()
+      await nextTick();
+      await handleSave();
     }
-  })
+  });
   onAiPublished((data: AiPublishedEvent) => {
-    if (data.type === 'schema') {
-      ElMessage.success(t('editor.editorView.aiPublished'))
+    if (data.type === "schema") {
+      ElMessage.success(t("editor.editorView.aiPublished"));
     }
-  })
+  });
 
-  initTelemetry()
-  await nextTick()
-  bindViewportListeners()
-})
+  initTelemetry();
+  await nextTick();
+  bindViewportListeners();
+});
 
-watch(() => boardStore.canvas.zoom, () => updateViewportRect())
+watch(
+  () => boardStore.canvas.zoom,
+  () => updateViewportRect(),
+);
 
 // ================================================================
 // AI sidebar (iframe)
@@ -297,136 +275,159 @@ watch(() => boardStore.canvas.zoom, () => updateViewportRect())
 
 function sendContextToAi() {
   const context = {
-    type: 'ai:set-context',
+    type: "ai:set-context",
     payload: {
-      source: 'editor',
+      source: "editor",
       schemaId: boardStore.id,
       editorMode: editorStore.mode,
     },
-  }
+  };
   const currentSchema = {
-    type: 'ai:current-schema',
+    type: "ai:current-schema",
     payload: widgetStore.widgets,
-  }
-  const target = aiIframeRef.value?.contentWindow ?? window
-  target.postMessage(context, '*')
-  target.postMessage(currentSchema, '*')
+  };
+  const target = aiIframeRef.value?.contentWindow ?? window;
+  target.postMessage(context, "*");
+  target.postMessage(currentSchema, "*");
 }
 
 // 监听 AI iframe 就绪信号
 function handleAiReady(event: MessageEvent) {
-  if (event.data?.type === 'ai:ready' && showAiDrawer.value) {
-    sendContextToAi()
+  if (event.data?.type === "ai:ready" && showAiDrawer.value) {
+    sendContextToAi();
   }
 }
-window.addEventListener('message', handleAiReady)
-onUnmounted(() => window.removeEventListener('message', handleAiReady))
+window.addEventListener("message", handleAiReady);
+onUnmounted(() => window.removeEventListener("message", handleAiReady));
 
 // 监听 AI drawer 开关，动态设置 iframe src
 watch(showAiDrawer, async (open) => {
   if (open) {
-    await nextTick()
+    await nextTick();
     if (aiIframeRef.value) {
       if (!aiIframeRef.value.src) {
         // 首次加载：设置 src，等 iframe 发 ai:ready 信号后再发上下文
-        aiIframeRef.value.src = aiBaseUrl
+        aiIframeRef.value.src = aiBaseUrl;
       } else {
         // 已加载过：直接发上下文
-        sendContextToAi()
+        sendContextToAi();
       }
     }
   }
-})
+});
 
 // 监听 Schema 变化，实时更新 AI sidebar
 watch(
   () => widgetStore.widgets,
   () => {
     if (showAiDrawer.value) {
-      sendContextToAi()
+      sendContextToAi();
     }
   },
   { deep: true },
-)
+);
 
 // 页面刷新/关闭拦截
 function handleBeforeUnload(e: BeforeUnloadEvent) {
   if (editorStore.isDirty) {
-    e.preventDefault()
-    e.returnValue = ''
+    e.preventDefault();
+    e.returnValue = "";
   }
 }
-window.addEventListener('beforeunload', handleBeforeUnload)
+window.addEventListener("beforeunload", handleBeforeUnload);
 onUnmounted(() => {
-  window.removeEventListener('beforeunload', handleBeforeUnload)
-  unbindViewportListeners()
-})
+  window.removeEventListener("beforeunload", handleBeforeUnload);
+  unbindViewportListeners();
+});
 
 // ================================================================
 // Keyboard shortcuts
 // ================================================================
 
 function isEditing(e: KeyboardEvent): boolean {
-  return !!(e.target as HTMLElement)?.closest('input, textarea, [contenteditable]')
+  return !!(e.target as HTMLElement)?.closest(
+    "input, textarea, [contenteditable]",
+  );
 }
 
 function handleKeyDown(e: KeyboardEvent) {
-  if (editorStore.mode !== 'edit') return
-  if (isEditing(e)) return
+  if (editorStore.mode !== "edit") return;
+  if (isEditing(e)) return;
 
-  if (e.key === 'Delete' || e.key === 'Backspace') {
+  if (e.key === "Delete" || e.key === "Backspace") {
     if (editorStore.selectedId) {
-      track('widget.delete', { widgetId: editorStore.selectedId })
-      handleDeleteWidget()
+      track("widget.delete", { widgetId: editorStore.selectedId });
+      handleDeleteWidget();
     }
   }
 
   // 对齐/分布依赖绝对坐标，仅在自由布局下生效；Flex 流式布局无意义且会污染 position 数据
-  if (e.altKey && e.shiftKey && boardStore.layoutMode === 'free') {
-    const key = e.key.toLowerCase()
-    if (key === 'l') { e.preventDefault(); align('left') }
-    if (key === 'r') { e.preventDefault(); align('right') }
-    if (key === 'c') { e.preventDefault(); align('center') }
-    if (key === 'h') { e.preventDefault(); distribute('horizontal') }
-    if (key === 'v') { e.preventDefault(); distribute('vertical') }
+  if (e.altKey && e.shiftKey && boardStore.layoutMode === "free") {
+    const key = e.key.toLowerCase();
+    if (key === "l") {
+      e.preventDefault();
+      align("left");
+    }
+    if (key === "r") {
+      e.preventDefault();
+      align("right");
+    }
+    if (key === "c") {
+      e.preventDefault();
+      align("center");
+    }
+    if (key === "h") {
+      e.preventDefault();
+      distribute("horizontal");
+    }
+    if (key === "v") {
+      e.preventDefault();
+      distribute("vertical");
+    }
   }
 
   if (e.ctrlKey && e.altKey) {
-    const key = e.key.toLowerCase()
-    if (key === 'l') { e.preventDefault(); toggleLock() }
-    if (key === 'h') { e.preventDefault(); toggleHidden() }
+    const key = e.key.toLowerCase();
+    if (key === "l") {
+      e.preventDefault();
+      toggleLock();
+    }
+    if (key === "h") {
+      e.preventDefault();
+      toggleHidden();
+    }
   }
 
   if (e.ctrlKey || e.metaKey) {
-    if (e.key === 'z' && !e.shiftKey) {
-      e.preventDefault()
-      track('editor.undo')
-      handleUndo()
+    if (e.key === "z" && !e.shiftKey) {
+      e.preventDefault();
+      track("editor.undo");
+      handleUndo();
     }
-    if (e.key === 'z' && e.shiftKey) {
-      e.preventDefault()
-      handleRedo()
+    if (e.key === "z" && e.shiftKey) {
+      e.preventDefault();
+      handleRedo();
     }
-    if (e.key === 'c') {
-      e.preventDefault()
-      handleCopyWidget()
+    if (e.key === "c") {
+      e.preventDefault();
+      handleCopyWidget();
     }
-    if (e.key === 'v') {
-      e.preventDefault()
-      handlePasteWidget()
+    if (e.key === "v") {
+      e.preventDefault();
+      handlePasteWidget();
     }
-    if (e.key === 's') {
-      e.preventDefault()
-      handleSave()
+    if (e.key === "s") {
+      e.preventDefault();
+      handleSave();
     }
     // Ctrl+Up/Down: 同级内前移/后移（flex 流式重排为主，free 也可用）
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      editorStore.performMoveSelected('up')
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      editorStore.performMoveSelected("up");
     }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      editorStore.performMoveSelected('down')
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      editorStore.performMoveSelected("down");
     }
   }
 }
@@ -435,48 +436,64 @@ function handleKeyDown(e: KeyboardEvent) {
 // Context menu dialog targets — 委托给 editorStore，PropertyPanel 监听并打开弹框
 // ================================================================
 
-function handleOpenEvent(widget: Widget) { editorStore.openConfigDialog(widget, 'events') }
-function handleOpenRule(widget: Widget) { editorStore.openConfigDialog(widget, 'rules') }
-function handleOpenApi(widget: Widget) { editorStore.openConfigDialog(widget, 'api') }
-function handleOpenVariables(widget: Widget) { editorStore.openConfigDialog(widget, 'variables') }
+function handleOpenEvent(widget: Widget) {
+  editorStore.openConfigDialog(widget, "events");
+}
+function handleOpenRule(widget: Widget) {
+  editorStore.openConfigDialog(widget, "linkages");
+}
+function handleOpenApi(widget: Widget) {
+  editorStore.openConfigDialog(widget, "api");
+}
+function handleOpenVariables(widget: Widget) {
+  editorStore.openConfigDialog(widget, "variables");
+}
 
 // ================================================================
 // Toolbar actions (委托给 editorStore 组合操作，消除重复代码)
 // ================================================================
 
-function handleUndo() { editorStore.performUndo() }
-function handleRedo() { editorStore.performRedo() }
-function handleCopyWidget() { editorStore.performCopyWidget() }
-
-function handlePasteWidget() {
-  const pasted = editorStore.paste()
-  if (!pasted) return
-  duplicateFromClipboard(pasted)
+function handleUndo() {
+  editorStore.performUndo();
+}
+function handleRedo() {
+  editorStore.performRedo();
+}
+function handleCopyWidget() {
+  editorStore.performCopyWidget();
 }
 
-function handleDeleteWidget() { editorStore.performDeleteWidget() }
+function handlePasteWidget() {
+  const pasted = editorStore.paste();
+  if (!pasted) return;
+  duplicateFromClipboard(pasted);
+}
+
+function handleDeleteWidget() {
+  editorStore.performDeleteWidget();
+}
 
 // ================================================================
 // Save
 // ================================================================
 
-const saving = ref(false)
-const publishing = ref(false)
-const COOLDOWN_MS = 2000
+const saving = ref(false);
+const publishing = ref(false);
+const COOLDOWN_MS = 2000;
 
 // 同步互斥锁，防止快速点击穿透 Vue 响应式批量更新
-let _savingLock = false
-let _publishingLock = false
+let _savingLock = false;
+let _publishingLock = false;
 
 async function handleSave() {
-  if (_savingLock) return
-  _savingLock = true
-  saving.value = true
+  if (_savingLock) return;
+  _savingLock = true;
+  saving.value = true;
   try {
-    const canvasEl = editorCanvasRef.value?.canvasRef
-    let thumbnail = ''
+    const canvasEl = editorCanvasRef.value?.canvasRef;
+    let thumbnail = "";
     if (canvasEl) {
-      thumbnail = await captureElement(canvasEl)
+      thumbnail = await captureElement(canvasEl);
     }
 
     const result = await apiStore.saveSchema(
@@ -489,23 +506,23 @@ async function handleSave() {
         variables: boardStore.variables,
         events: boardStore.events,
       },
-    )
+    );
 
     if (result) {
-      boardStore.id = result.id
-      currentEditId.value = result.editId
-      currentVersion.value = result.version
-      editorStore.markClean()
-      track('schema.save', { schemaId: result.id })
-      ElMessage.success(t('editor.editorView.saveSuccess'))
+      boardStore.id = result.id;
+      currentEditId.value = result.editId;
+      currentVersion.value = result.version;
+      editorStore.markClean();
+      track("schema.save", { schemaId: result.id });
+      ElMessage.success(t("editor.editorView.saveSuccess"));
     } else {
-      ElMessage.error(apiStore.error || t('editor.editorView.saveFailed'))
+      ElMessage.error(apiStore.error || t("editor.editorView.saveFailed"));
     }
   } finally {
     setTimeout(() => {
-      _savingLock = false
-      saving.value = false
-    }, COOLDOWN_MS)
+      _savingLock = false;
+      saving.value = false;
+    }, COOLDOWN_MS);
   }
 }
 
@@ -513,49 +530,49 @@ async function handleSave() {
 // Save as template
 // ================================================================
 
-const showSaveTemplateDialog = ref(false)
+const showSaveTemplateDialog = ref(false);
 
 function handleSaveCommand(command: string) {
-  if (command === 'save') {
-    handleSave()
-  } else if (command === 'saveAsTemplate') {
-    showSaveTemplateDialog.value = true
+  if (command === "save") {
+    handleSave();
+  } else if (command === "saveAsTemplate") {
+    showSaveTemplateDialog.value = true;
   }
 }
 
 async function handlePublish() {
-  if (!boardStore.id || _publishingLock) return
+  if (!boardStore.id || _publishingLock) return;
 
   try {
     await ElMessageBox.confirm(
-      t('editor.editorView.publishConfirm'),
-      t('editor.editorView.publishConfirmTitle'),
+      t("editor.editorView.publishConfirm"),
+      t("editor.editorView.publishConfirmTitle"),
       {
-        confirmButtonText: t('editor.editorView.publish'),
-        cancelButtonText: t('editor.editorView.cancel'),
-        type: 'info',
-      }
-    )
+        confirmButtonText: t("editor.editorView.publish"),
+        cancelButtonText: t("editor.editorView.cancel"),
+        type: "info",
+      },
+    );
 
-    _publishingLock = true
-    publishing.value = true
+    _publishingLock = true;
+    publishing.value = true;
     try {
-      await handleSave()
-      if (!boardStore.id) return
+      await handleSave();
+      if (!boardStore.id) return;
 
-      const result = await apiStore.publishSchema(boardStore.id)
+      const result = await apiStore.publishSchema(boardStore.id);
       if (result) {
-        boardStore.status = 'published'
-        track('schema.publish', { schemaId: boardStore.id })
-        ElMessage.success(t('editor.editorView.publishSuccess'))
+        boardStore.status = "published";
+        track("schema.publish", { schemaId: boardStore.id });
+        ElMessage.success(t("editor.editorView.publishSuccess"));
       } else {
-        ElMessage.error(apiStore.error || t('editor.editorView.publishFailed'))
+        ElMessage.error(apiStore.error || t("editor.editorView.publishFailed"));
       }
     } finally {
       setTimeout(() => {
-        _publishingLock = false
-        publishing.value = false
-      }, COOLDOWN_MS)
+        _publishingLock = false;
+        publishing.value = false;
+      }, COOLDOWN_MS);
     }
   } catch {
     // 用户取消
@@ -564,12 +581,14 @@ async function handlePublish() {
 
 async function handleSavePreview(dataUrl: string) {
   if (!boardStore.id) {
-    ElMessage.warning(t('editor.editorView.saveCanvasFirst'))
-    return
+    ElMessage.warning(t("editor.editorView.saveCanvasFirst"));
+    return;
   }
-  const result = await apiStore.updateSchema(boardStore.id, { thumbnail: dataUrl })
+  const result = await apiStore.updateSchema(boardStore.id, {
+    thumbnail: dataUrl,
+  });
   if (result) {
-    ElMessage.success(t('editor.editorView.previewSaved'))
+    ElMessage.success(t("editor.editorView.previewSaved"));
   }
 }
 
@@ -579,19 +598,19 @@ async function handleSavePreview(dataUrl: string) {
 
 async function handleOpenVersionCompare() {
   if (!currentEditId.value) {
-    ElMessage.warning(t('editor.editorView.versionHistoryHint'))
-    return
+    ElMessage.warning(t("editor.editorView.versionHistoryHint"));
+    return;
   }
-  await schemaVersionStore.init(currentEditId.value, currentVersion.value)
-  showVersionCompare.value = true
+  await schemaVersionStore.init(currentEditId.value, currentVersion.value);
+  showVersionCompare.value = true;
 }
 
 function handleVersionLoaded(version: string) {
-  currentVersion.value = version
+  currentVersion.value = version;
 }
 
 function handleVersionLoadedFromToolbar(version: string) {
-  currentVersion.value = version
+  currentVersion.value = version;
 }
 </script>
 
@@ -640,7 +659,10 @@ function handleVersionLoadedFromToolbar(version: string) {
       <!-- Center: canvas + debug panels -->
       <div :class="styles.center">
         <PageTabBar v-if="mode === 'edit'" />
-        <EditorRuler v-if="mode === 'edit' && boardStore.layoutMode === 'free'" :scroll-container="canvasScrollRef" />
+        <EditorRuler
+          v-if="mode === 'edit' && boardStore.layoutMode === 'free'"
+          :scroll-container="canvasScrollRef"
+        />
         <div ref="canvasScrollRef" :class="styles.canvasScroll">
           <EditorCanvas
             ref="editorCanvasRef"
@@ -660,10 +682,21 @@ function handleVersionLoadedFromToolbar(version: string) {
         <EventLogPanel v-if="mode !== 'edit' && showLogPanel" />
 
         <!-- Store 数据面板（全屏覆盖） -->
-        <div v-if="mode !== 'edit' && showCodePanel" :class="styles.codeOverlay">
+        <div
+          v-if="mode !== 'edit' && showCodePanel"
+          :class="styles.codeOverlay"
+        >
           <div :class="styles.codeHeader">
-            <span :class="styles.codeTitle">{{ t('editor.editorView.storeData') }}</span>
-            <el-button type="danger" text size="small" @click="showCodePanel = false">{{ t('editor.editorView.close') }}</el-button>
+            <span :class="styles.codeTitle">{{
+              t("editor.editorView.storeData")
+            }}</span>
+            <el-button
+              type="danger"
+              text
+              size="small"
+              @click="showCodePanel = false"
+              >{{ t("editor.editorView.close") }}</el-button
+            >
           </div>
           <div :class="styles.codeScroll">
             <pre :class="styles.codePre">{{ storeSnapshot }}</pre>

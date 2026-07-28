@@ -1,109 +1,121 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useI18n } from '@schema-platform/platform-shared'
+import { inject, ref } from "vue";
+import { widgetDataKey } from "../base/types";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useI18n } from "@schema-platform/platform-shared";
 
-import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
+import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const { isDisabled } = useWidgetRenderState()
-const { controlStyle: dynamicStyle } = useWidgetControlSize(40)
+const widgetData = inject(widgetDataKey)!;
+const { isDisabled } = useWidgetRenderState();
+const { controlStyle: dynamicStyle } = useWidgetControlSize(40);
 
 interface UserItem {
-  id: string
-  username: string
-  displayName: string
-  roles: string[]
+  id: string;
+  username: string;
+  displayName: string;
+  roles: string[];
 }
 
-const options = ref<UserItem[]>([])
-const loading = ref(false)
-const page = ref(1)
-const hasMore = ref(true)
+const options = ref<UserItem[]>([]);
+const loading = ref(false);
+const page = ref(1);
+const hasMore = ref(true);
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-  get label() {
-    const val = wd.value.defaultValue
-    if (!val) return ''
-    if (Array.isArray(val)) {
-      return val.map(v => {
-        const found = options.value.find(u => u.id === v)
-        return found?.displayName ?? found?.username ?? v
-      }).join(', ')
-    }
-    const found = options.value.find(u => u.id === val)
-    return found?.displayName ?? found?.username ?? ''
+  get value() {
+    return wd.value.defaultValue;
   },
-}))
+  get label() {
+    const val = wd.value.defaultValue;
+    if (!val) return "";
+    if (Array.isArray(val)) {
+      return val
+        .map((v) => {
+          const found = options.value.find((u) => u.id === v);
+          return found?.displayName ?? found?.username ?? v;
+        })
+        .join(", ");
+    }
+    const found = options.value.find((u) => u.id === val);
+    return found?.displayName ?? found?.username ?? "";
+  },
+}));
 
-const selectRef = ref<{ $el?: HTMLElement }>()
+const selectRef = ref<{ $el?: HTMLElement }>();
 
 function forwardNativeChange() {
-  selectRef.value?.$el?.dispatchEvent(new Event('change', { bubbles: true }))
+  selectRef.value?.$el?.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
 function getFlowApiBase(): string {
-  return (widgetData.value.props?.apiBaseUrl as string)
-    || (import.meta.env.VITE_FLOW_API_BASE_URL as string)
-    || ''
+  return (
+    (widgetData.value.props?.apiBaseUrl as string) ||
+    (import.meta.env.VITE_FLOW_API_BASE_URL as string) ||
+    ""
+  );
 }
 
 function getToken(): string {
-  return localStorage.getItem('token') || ''
+  return localStorage.getItem("token") || "";
 }
 
 async function fetchUsers(query: string, reset = false) {
   if (reset) {
-    page.value = 1
-    options.value = []
-    hasMore.value = true
+    page.value = 1;
+    options.value = [];
+    hasMore.value = true;
   }
-  if (!hasMore.value) return
+  if (!hasMore.value) return;
 
-  loading.value = true
+  loading.value = true;
   try {
-    const base = getFlowApiBase()
-    const params = new URLSearchParams({ q: query || '', page: String(page.value), pageSize: '20' })
+    const base = getFlowApiBase();
+    const params = new URLSearchParams({
+      q: query || "",
+      page: String(page.value),
+      pageSize: "20",
+    });
     const res = await fetch(`${base}/users?${params}`, {
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
       },
-    })
-    const json = await res.json()
+    });
+    const json = await res.json();
     if (json.success && json.data) {
-      const items = json.data.items || []
+      const items = json.data.items || [];
       if (reset) {
-        options.value = items
+        options.value = items;
       } else {
-        options.value = [...options.value, ...items]
+        options.value = [...options.value, ...items];
       }
-      hasMore.value = items.length >= 20
+      hasMore.value = items.length >= 20;
     }
   } catch {
-    if (reset) options.value = []
+    if (reset) options.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 async function remoteSearch(query: string) {
-  await fetchUsers(query, true)
+  await fetchUsers(query, true);
 }
 
 function loadMore() {
-  if (!hasMore.value || loading.value) return
-  page.value++
-  fetchUsers('', false)
+  if (!hasMore.value || loading.value) return;
+  page.value++;
+  fetchUsers("", false);
 }
 
 function getUserLabel(user: UserItem): string {
-  return user.displayName ? `${user.displayName}(${user.username})` : user.username
+  return user.displayName
+    ? `${user.displayName}(${user.username})`
+    : user.username;
 }
 </script>
 
@@ -112,7 +124,10 @@ function getUserLabel(user: UserItem): string {
     ref="selectRef"
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || t('editor.approvalUserPicker.placeholder')"
+    :placeholder="
+      (widgetData.props?.placeholder as string) ||
+      t('editor.approvalUserPicker.placeholder')
+    "
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :multiple="(widgetData.props?.multiple as boolean) || false"

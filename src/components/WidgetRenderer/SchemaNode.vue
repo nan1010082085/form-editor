@@ -15,39 +15,68 @@
  *   避免每个 SchemaNode 独立创建 useLinkage 实例
  * - 使用缓存的组件映射表
  */
-import { computed, inject, provide, ref, onMounted, onUnmounted, type ComputedRef, type ComponentPublicInstance } from 'vue'
-import { widgetDataKey, widgetStyleKey, widgetRenderStateKey, formContextKey, widgetBoundsKey, parentBoundsKey, type WidgetBounds } from '../../widgets/base/types'
-import type { Widget, SchemaType, LinkageState, PreviewBreakpoint } from '../../widgets/base/types'
-import type { FormData, EventExecutionContext } from './types'
-import { EVENT_CONTEXT_KEY, DIALOG_REGISTRY_KEY, FORM_GRID_LINKAGE_KEY, FORM_GRID_FORM_KEY, PREVIEW_BREAKPOINT_KEY, FORM_GRID_T_KEY } from './types'
-import { useResponsivePosition } from '../../composables/useResponsivePosition'
-import { getComponentMap } from '../../widgets/registry'
-import { useWidgetStore } from '../../stores/widget'
-import { useEditorStore } from '../../stores/editor'
-import { useBoardStore } from '../../stores/board'
-import { triggerWidgetEvent } from '../../engine/eventEngine'
-import { useLogger } from '../../composables/useLogger'
-import { useWidgetAnimation } from '../../composables/useWidgetAnimation'
-import SchemaRender from './SchemaRender.vue'
-import WidgetErrorBoundary from './WidgetErrorBoundary.vue'
-import AppDialog from '@schema-platform/platform-shared/components/common/AppDialog.vue'
-import styles from './SchemaNode.module.scss'
+import {
+  computed,
+  inject,
+  provide,
+  ref,
+  onMounted,
+  onUnmounted,
+  type ComputedRef,
+  type ComponentPublicInstance,
+} from "vue";
+import {
+  widgetDataKey,
+  widgetStyleKey,
+  widgetRenderStateKey,
+  formContextKey,
+  widgetBoundsKey,
+  parentBoundsKey,
+  type WidgetBounds,
+} from "../../widgets/base/types";
+import type {
+  Widget,
+  SchemaType,
+  LinkageState,
+  PreviewBreakpoint,
+} from "../../widgets/base/types";
+import type { FormData, EventExecutionContext } from "./types";
+import {
+  EVENT_CONTEXT_KEY,
+  DIALOG_REGISTRY_KEY,
+  FORM_GRID_LINKAGE_KEY,
+  FORM_GRID_FORM_KEY,
+  PREVIEW_BREAKPOINT_KEY,
+  FORM_GRID_T_KEY,
+} from "./types";
+import { useResponsivePosition } from "../../composables/useResponsivePosition";
+import { getComponentMap } from "../../widgets/registry";
+import { useWidgetStore } from "../../stores/widget";
+import { useEditorStore } from "../../stores/editor";
+import { useBoardStore } from "../../stores/board";
+import { triggerWidgetEvent } from "../../engine/eventEngine";
+import { useLogger } from "../../composables/useLogger";
+import { useWidgetAnimation } from "../../composables/useWidgetAnimation";
+import SchemaRender from "./SchemaRender.vue";
+import WidgetErrorBoundary from "./WidgetErrorBoundary.vue";
+import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
+import styles from "./SchemaNode.module.scss";
 
 const props = defineProps<{
-  widget: Widget
-  mode?: 'edit' | 'preview'
-  canvasOffsetX?: number
-  canvasOffsetY?: number
-}>()
+  widget: Widget;
+  mode?: "edit" | "preview";
+  canvasOffsetX?: number;
+  canvasOffsetY?: number;
+}>();
 
 /** 组件映射表 — 缓存版本，避免每次 mount 创建新对象 */
-const compMap = getComponentMap()
+const compMap = getComponentMap();
 
-import { useAllContainerTypes } from '../../composables/useConstant'
+import { useAllContainerTypes } from "../../composables/useConstant";
 
 /** 获取容器组件类型集合（动态） */
 function getContainerTypes() {
-  return useAllContainerTypes()
+  return useAllContainerTypes();
 }
 
 /**
@@ -58,9 +87,12 @@ function getContainerTypes() {
  * 保证 overlay 坐标系与渲染坐标系一致。
  */
 const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
-  'single-col', 'double-col', 'triple-col', 'quad-col',
-  'tree-layout',
-])
+  "single-col",
+  "double-col",
+  "triple-col",
+  "quad-col",
+  "tree-layout",
+]);
 
 /**
  * 交互式容器：内部有可交互 UI（tab headers、dialog body），
@@ -68,193 +100,243 @@ const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
  * 选中逻辑由 wrapper @click 处理，而非 hitArea。
  */
 const INTERACTIVE_CONTAINER_TYPES: ReadonlySet<SchemaType> = new Set([
-  'tabs', 'dialog',
-])
+  "tabs",
+  "dialog",
+]);
 
 // ---- 组件类型集合 ----
 
 /** 表单类组件（支持 change 事件） */
 const FORM_COMPONENT_TYPES: ReadonlySet<SchemaType> = new Set([
-  'input', 'select', 'number', 'radio', 'checkbox',
-  'date', 'textarea', 'richtext', 'upload',
-  'date-time-slot', 'switch', 'slider', 'rate',
-  'cascader', 'color-picker', 'time-picker',
-])
+  "input",
+  "select",
+  "number",
+  "radio",
+  "checkbox",
+  "date",
+  "textarea",
+  "richtext",
+  "upload",
+  "date-time-slot",
+  "switch",
+  "slider",
+  "rate",
+  "cascader",
+  "color-picker",
+  "time-picker",
+]);
 
 /** 输入类组件（支持 focus/blur 事件） */
 const INPUT_COMPONENT_TYPES: ReadonlySet<SchemaType> = new Set([
-  'input', 'select', 'number', 'textarea', 'richtext',
-])
+  "input",
+  "select",
+  "number",
+  "textarea",
+  "richtext",
+]);
 
 /** 可点击组件（支持 click 事件） */
 const CLICKABLE_TYPES: ReadonlySet<SchemaType> = new Set([
-  'button', 'title', 'divider', 'spacer', 'banner',
-])
+  "button",
+  "title",
+  "divider",
+  "spacer",
+  "banner",
+]);
 
-const logger = useLogger('SchemaNode')
+const logger = useLogger("SchemaNode");
 
 // ---- Provide/Inject ----
 
 /** Provide 当前 Widget 数据给子组件 */
-const widgetData = computed(() => props.widget)
-provide(widgetDataKey, widgetData as ComputedRef<Widget>)
+const widgetData = computed(() => props.widget);
+provide(widgetDataKey, widgetData as ComputedRef<Widget>);
 
 /** Provide 当前 Widget 样式配置 */
-const widgetStyle = computed(() => props.widget.style ?? {})
-provide(widgetStyleKey, widgetStyle as ComputedRef<Record<string, unknown>>)
+const widgetStyle = computed(() => props.widget.style ?? {});
+provide(widgetStyleKey, widgetStyle as ComputedRef<Record<string, unknown>>);
 
 // ---- 渲染逻辑 ----
 
 /** 是否编辑模式 */
-const isEditMode = computed(() => props.mode === 'edit')
+const isEditMode = computed(() => props.mode === "edit");
 
 /** 是否容器组件 */
-const isContainer = computed(() =>
-  getContainerTypes().has(props.widget.type),
-)
+const isContainer = computed(() => getContainerTypes().has(props.widget.type));
 
 /** 是否自渲染容器（内部已渲染 children，无需 childrenLayer） */
 const isSelfRendering = computed(() =>
   SELF_RENDERING_CONTAINERS.has(props.widget.type),
-)
+);
 
 /** 解析组件 */
-const resolvedComponent = computed(() => compMap[props.widget.type])
+const resolvedComponent = computed(() => compMap[props.widget.type]);
 
 // ---- Tabs activeKey 支持 ----
 
 /** tabs 容器组件 ref，用于读取 activeKey */
-const containerRef = ref<ComponentPublicInstance | null>(null)
+const containerRef = ref<ComponentPublicInstance | null>(null);
 
 /** 当前 tabs 容器的 activeKey（仅 tabs 容器有效） */
 const activeTabKey = computed(() => {
-  if (props.widget.type !== 'tabs') return null
-  const instance = containerRef.value as Record<string, unknown> | null
-  if (!instance) return null
+  if (props.widget.type !== "tabs") return null;
+  const instance = containerRef.value as Record<string, unknown> | null;
+  if (!instance) return null;
   // activeKey is exposed via defineExpose on FgTabs
-  return (instance as { activeKey?: { value?: string } })?.activeKey?.value ?? null
-})
+  return (
+    (instance as { activeKey?: { value?: string } })?.activeKey?.value ?? null
+  );
+});
 
 /** 过滤后的子部件列表：tabs 容器按 tabKey 过滤，其他容器全量 */
 const filteredChildren = computed(() => {
-  if (!props.widget.children?.length) return []
-  if (props.widget.type !== 'tabs' || activeTabKey.value === null) return props.widget.children
-  return props.widget.children.filter(c => (c as { tabKey?: string }).tabKey === activeTabKey.value)
-})
+  if (!props.widget.children?.length) return [];
+  if (props.widget.type !== "tabs" || activeTabKey.value === null)
+    return props.widget.children;
+  return props.widget.children.filter(
+    (c) => (c as { tabKey?: string }).tabKey === activeTabKey.value,
+  );
+});
 
 // ---- 规则引擎 ----
 
-const widgetStore = useWidgetStore()
-const editorStore = useEditorStore()
-const boardStore = useBoardStore()
+const widgetStore = useWidgetStore();
+const editorStore = useEditorStore();
+const boardStore = useBoardStore();
 
 /** 父容器像素尺寸（嵌套部件 % 换算基准，根级默认为画布） */
-const parentBounds = inject(parentBoundsKey, computed<WidgetBounds>(() => ({
-  widthPx: boardStore.getCanvasWidthPx(),
-  heightPx: boardStore.getCanvasHeightPx(),
-})))
+const parentBounds = inject(
+  parentBoundsKey,
+  computed<WidgetBounds>(() => ({
+    widthPx: boardStore.getCanvasWidthPx(),
+    heightPx: boardStore.getCanvasHeightPx(),
+  })),
+);
 
 /** 当前部件解析尺寸 — 与 EditorOverlay hitArea 算法一致 */
 const resolvedBounds = computed<WidgetBounds>(() => {
-  const pos = resolvedPosition.value
-  const parentW = parentBounds.value.widthPx
-  const parentH = parentBounds.value.heightPx
-  const w = pos.wUnit === '%' ? parentW * pos.w / 100 : pos.w
-  const h = pos.hUnit === '%' ? parentH * pos.h / 100 : pos.h
-  return { widthPx: w, heightPx: h }
-})
+  const pos = resolvedPosition.value;
+  const parentW = parentBounds.value.widthPx;
+  const parentH = parentBounds.value.heightPx;
+  const w = pos.wUnit === "%" ? (parentW * pos.w) / 100 : pos.w;
+  const h = pos.hUnit === "%" ? (parentH * pos.h) / 100 : pos.h;
+  return { widthPx: w, heightPx: h };
+});
 
-provide(widgetBoundsKey, resolvedBounds)
-provide(parentBoundsKey, resolvedBounds)
+provide(widgetBoundsKey, resolvedBounds);
+provide(parentBoundsKey, resolvedBounds);
 
 /** 交互式容器空白区域点击 → 选中容器 */
 function handleInteractiveContainerClick() {
-  editorStore.select(props.widget.id)
+  editorStore.select(props.widget.id);
 }
 
 // ---- 预览模式：弹窗注册 + 事件拦截 ----
 
 /** 弹窗注册表（从 EditorCanvas 或 WidgetRenderer 注入） */
-const dialogRegistry = inject(DIALOG_REGISTRY_KEY, null)
+const dialogRegistry = inject(DIALOG_REGISTRY_KEY, null);
 
 /** dialog 类型的可见性（预览模式下默认隐藏，通过事件打开） */
-const dialogVisible = ref(false)
+const dialogVisible = ref(false);
 
 /** 注册/注销 dialog 到注册表 */
 onMounted(() => {
-  if (!isEditMode.value && props.widget.type === 'dialog' && props.widget.id && dialogRegistry) {
-    dialogRegistry.set(props.widget.id, (visible: boolean) => { dialogVisible.value = visible })
+  if (
+    !isEditMode.value &&
+    props.widget.type === "dialog" &&
+    props.widget.id &&
+    dialogRegistry
+  ) {
+    dialogRegistry.set(props.widget.id, (visible: boolean) => {
+      dialogVisible.value = visible;
+    });
   }
-})
+});
 onUnmounted(() => {
-  if (!isEditMode.value && props.widget.type === 'dialog' && props.widget.id && dialogRegistry) {
-    dialogRegistry.delete(props.widget.id)
+  if (
+    !isEditMode.value &&
+    props.widget.type === "dialog" &&
+    props.widget.id &&
+    dialogRegistry
+  ) {
+    dialogRegistry.delete(props.widget.id);
   }
-})
+});
 
 /** 翻译函数（从 WidgetRenderer 注入） */
-const t = inject(FORM_GRID_T_KEY, (key: string) => key)
+const t = inject(FORM_GRID_T_KEY, (key: string) => key);
 
 /** 事件执行上下文（预览模式从 EditorCanvas/WidgetRenderer 注入） */
-const eventCtx = inject(EVENT_CONTEXT_KEY, null)
+const eventCtx = inject(EVENT_CONTEXT_KEY, null);
 
 /** 响应式断点（预览/发布模式从 EditorCanvas 注入） */
-const previewBreakpoint = inject(PREVIEW_BREAKPOINT_KEY, ref<PreviewBreakpoint>('desktop'))
+const previewBreakpoint = inject(
+  PREVIEW_BREAKPOINT_KEY,
+  ref<PreviewBreakpoint>("desktop"),
+);
 
 /** 响应式位置解析 */
-const widgetRef = computed(() => props.widget)
+const widgetRef = computed(() => props.widget);
 const { resolvedPosition } = useResponsivePosition({
   widget: widgetRef,
   breakpoint: previewBreakpoint,
   isPreviewMode: computed(() => !isEditMode.value),
-})
+});
 
 /** 顶层 formData（absolute 布局联动/提交聚合） */
-const formGridData = inject(FORM_GRID_FORM_KEY, null)
+const formGridData = inject(FORM_GRID_FORM_KEY, null);
 
 /** 预览模式统一事件触发 */
 async function handlePreviewEvent(trigger: string, _value?: unknown) {
-  if (trigger === 'change' && props.widget.field && formGridData) {
-    formGridData[props.widget.field] = props.widget.defaultValue as FormData[string]
+  if (trigger === "change" && props.widget.field && formGridData) {
+    formGridData[props.widget.field] = props.widget
+      .defaultValue as FormData[string];
   }
-  if (!eventCtx) return
-  await triggerWidgetEvent(props.widget, trigger, eventCtx)
+  if (!eventCtx) return;
+  await triggerWidgetEvent(props.widget, trigger, eventCtx);
 }
 
 /** 构建编辑器模式的事件执行上下文（编辑器仅做配置验证，不实际执行复杂逻辑） */
 function buildEditorEventContext(): EventExecutionContext {
   return {
-    findWidget: (id: string) => widgetStore.findWidget(id) as Widget | undefined,
-    updateWidget: (id: string, patch: Partial<Widget>) => widgetStore.updateWidget(id, patch),
+    findWidget: (id: string) =>
+      widgetStore.findWidget(id) as Widget | undefined,
+    updateWidget: (id: string, patch: Partial<Widget>) =>
+      widgetStore.updateWidget(id, patch),
     openDialog: (target: string) => editorStore.openDialogEditor(target),
     closeDialog: () => editorStore.closeDialogEditor(),
     submitForm: () => {
-      const form = widgetStore.widgets.find((w: Widget) => w.type === 'form')
-      if (form) logger.event('Form submit:', widgetStore.collectFormValues(form.id))
+      const form = widgetStore.widgets.find((w: Widget) => w.type === "form");
+      if (form)
+        logger.event("Form submit:", widgetStore.collectFormValues(form.id));
     },
     resetForm: () => {
-      const form = widgetStore.widgets.find((w: Widget) => w.type === 'form')
+      const form = widgetStore.widgets.find((w: Widget) => w.type === "form");
       if (form?.children) {
         for (const child of form.children) {
-          if (child.field) widgetStore.updateWidget(child.id, { defaultValue: child.defaultValue })
+          if (child.field)
+            widgetStore.updateWidget(child.id, {
+              defaultValue: child.defaultValue,
+            });
         }
       }
     },
     getFormData: () => formData.value,
-    emit: (eventName: string, payload?: unknown) => logger.event('Emit:', eventName, payload),
-    confirm: (message: string) => Promise.resolve(),
+    emit: (eventName: string, payload?: unknown) =>
+      logger.event("Emit:", eventName, payload),
+    confirm: (_message: string) => Promise.resolve(),
     variables: {},
     setVariable: () => {},
     getVariable: () => undefined,
     exposed: {},
     triggerEvent: () => {},
-  }
+  };
 }
 
 /** 统一事件触发：由 SchemaNode 拦截并分发，部件无需自行调用 */
 async function handleWidgetEvent(trigger: string, _value?: unknown) {
-  logger.debug(`trigger=${trigger}`, props.widget.id)
-  await triggerWidgetEvent(props.widget, trigger, buildEditorEventContext())
+  logger.debug(`trigger=${trigger}`, props.widget.id);
+  await triggerWidgetEvent(props.widget, trigger, buildEditorEventContext());
 }
 
 /**
@@ -262,10 +344,10 @@ async function handleWidgetEvent(trigger: string, _value?: unknown) {
  * 延迟计算：仅在事件触发时按需收集，避免每次渲染都 O(n) 遍历。
  */
 const formData = computed<FormData>(() => {
-  const formId = props.widget.formId
-  if (!formId) return {}
-  return widgetStore.collectFormValues(formId) as FormData
-})
+  const formId = props.widget.formId;
+  if (!formId) return {};
+  return widgetStore.collectFormValues(formId) as FormData;
+});
 
 // formData 在编辑模式下仅供 buildEditorEventContext 使用，
 // 通过 lazy computed 避免在 render 路径中触发
@@ -277,86 +359,111 @@ const formData = computed<FormData>(() => {
  * 而非每个 SchemaNode 独立创建 useLinkage 实例。
  * widget.hidden / widget.disabled 作为静态属性覆盖（优先于联动状态）。
  */
-const DEFAULT_LINKAGE_STATE: LinkageState = { visible: true, disabled: false, required: false }
-const linkageStateMap = inject(FORM_GRID_LINKAGE_KEY, null)
+const DEFAULT_LINKAGE_STATE: LinkageState = {
+  visible: true,
+  disabled: false,
+  required: false,
+};
+const linkageStateMap = inject(FORM_GRID_LINKAGE_KEY, null);
 
 const renderState = computed(() => {
-  const field = props.widget.field
-  const linkageState = field ? linkageStateMap?.value.get(field) : undefined
-  const base = linkageState ?? DEFAULT_LINKAGE_STATE
+  const field = props.widget.field;
+  const linkageState = field ? linkageStateMap?.value.get(field) : undefined;
+  const base = linkageState ?? DEFAULT_LINKAGE_STATE;
   // hidden 静态属性覆盖：hidden=true 时强制不可见
   if (props.widget.hidden) {
-    return { ...base, visible: false }
+    return { ...base, visible: false };
   }
   // 响应式断点隐藏：当前断点配置了 hidden=true
   if (resolvedPosition.value.hidden) {
-    return { ...base, visible: false }
+    return { ...base, visible: false };
   }
   // disabled 属性覆盖（规则引擎动态设置）
   if (props.widget.disabled) {
-    return { ...base, disabled: true }
+    return { ...base, disabled: true };
   }
-  return base
-})
+  return base;
+});
 
-provide(widgetRenderStateKey, renderState)
+provide(widgetRenderStateKey, renderState);
 
 // ---- 表单校验 ----
 
 /** 注入表单上下文（仅在 FgForm 内部时有值） */
-const formCtx = inject(formContextKey, null)
+const formCtx = inject(formContextKey, null);
 
 /** 当前 base 组件是否需要包裹 el-form-item（有 field + validationRules 且在表单内） */
 const needsFormItem = computed(() => {
-  if (!formCtx) return false
-  if (!props.widget.field) return false
-  return (props.widget.validationRules?.length ?? 0) > 0
-})
+  if (!formCtx) return false;
+  if (!props.widget.field) return false;
+  return (props.widget.validationRules?.length ?? 0) > 0;
+});
 
 /**
  * 位置样式：position: absolute + left/top（不用 transform）
  * 合并 widget.style 中的 CSS 属性（边框、圆角、内外边距、背景色、对齐等）
  */
 const CSS_STYLE_KEYS: ReadonlySet<string> = new Set([
-  'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
-  'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-  'border', 'borderTop', 'borderRight', 'borderBottom', 'borderLeft',
-  'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius',
-  'backgroundColor', 'boxShadow', 'opacity',
-  'fontSize', 'fontWeight', 'color', 'textAlign',
-])
+  "margin",
+  "marginTop",
+  "marginRight",
+  "marginBottom",
+  "marginLeft",
+  "padding",
+  "paddingTop",
+  "paddingRight",
+  "paddingBottom",
+  "paddingLeft",
+  "border",
+  "borderTop",
+  "borderRight",
+  "borderBottom",
+  "borderLeft",
+  "borderRadius",
+  "borderTopLeftRadius",
+  "borderTopRightRadius",
+  "borderBottomRightRadius",
+  "borderBottomLeftRadius",
+  "backgroundColor",
+  "boxShadow",
+  "opacity",
+  "fontSize",
+  "fontWeight",
+  "color",
+  "textAlign",
+]);
 
-const isPreviewOrPublish = computed(() => !isEditMode.value)
+const isPreviewOrPublish = computed(() => !isEditMode.value);
 
 const { animationStyle } = useWidgetAnimation(
   widgetStyle as ComputedRef<Record<string, unknown>>,
   isPreviewOrPublish,
-)
+);
 
 const wrapperStyle = computed(() => {
-  const pos = resolvedPosition.value
+  const pos = resolvedPosition.value;
   const style: Record<string, string | number> = {
-    position: 'absolute',
+    position: "absolute",
     left: `${pos.x}${pos.xUnit}`,
     top: `${pos.y}${pos.yUnit}`,
     width: `${pos.w}${pos.wUnit}`,
     height: `${pos.h}${pos.hUnit}`,
-  }
+  };
   if (pos.zIndex !== undefined) {
-    style.zIndex = pos.zIndex
+    style.zIndex = pos.zIndex;
   }
   // 合并 widget.style 中的 CSS 属性到 wrapper
-  const ws = props.widget.style
+  const ws = props.widget.style;
   if (ws) {
     for (const key of CSS_STYLE_KEYS) {
-      const val = (ws as Record<string, unknown>)[key]
-      if (val !== undefined && val !== '') {
-        style[key] = val as string | number
+      const val = (ws as Record<string, unknown>)[key];
+      if (val !== undefined && val !== "") {
+        style[key] = val as string | number;
       }
     }
   }
-  return style
-})
+  return style;
+});
 </script>
 
 <template>
@@ -368,21 +475,27 @@ const wrapperStyle = computed(() => {
       <div
         v-if="isEditMode"
         :data-widget-id="widget.id"
-        :class="[styles.nodeWrapper, styles.nodeWrapperContainer, styles.nodeWrapperEdit, styles.interactiveContainer]"
+        :class="[
+          styles.nodeWrapper,
+          styles.nodeWrapperContainer,
+          styles.nodeWrapperEdit,
+          styles.interactiveContainer,
+        ]"
         :style="wrapperStyle"
         @click.stop="handleInteractiveContainerClick()"
       >
         <component
           v-if="resolvedComponent"
-          :ref="(el: ComponentPublicInstance | null) => { containerRef = el }"
+          :ref="
+            (el: ComponentPublicInstance | null) => {
+              containerRef = el;
+            }
+          "
           :is="resolvedComponent"
           :widget="widget"
           :editable="true"
         />
-        <div
-          v-if="filteredChildren.length"
-          :class="styles.childrenLayer"
-        >
+        <div v-if="filteredChildren.length" :class="styles.childrenLayer">
           <SchemaRender
             :widgets="filteredChildren"
             :mode="mode"
@@ -396,7 +509,11 @@ const wrapperStyle = computed(() => {
       <AppDialog
         v-else
         v-model="dialogVisible"
-        :title="(widget.props?.title as string) || widget.label || t('dialog.defaultTitle')"
+        :title="
+          (widget.props?.title as string) ||
+          widget.label ||
+          t('dialog.defaultTitle')
+        "
         :width="(widget.props?.width as string) || '600px'"
         :draggable="widget.props?.draggable !== false"
         :show-fullscreen-btn="widget.props?.showFullscreenBtn !== false"
@@ -413,10 +530,10 @@ const wrapperStyle = computed(() => {
         </template>
         <template v-if="widget.props?.showFooter !== false" #footer>
           <el-button @click="dialogVisible = false">
-            {{ (widget.props?.cancelText as string) || t('dialog.cancel') }}
+            {{ (widget.props?.cancelText as string) || t("dialog.cancel") }}
           </el-button>
           <el-button type="primary" @click="dialogVisible = false">
-            {{ (widget.props?.confirmText as string) || t('dialog.confirm') }}
+            {{ (widget.props?.confirmText as string) || t("dialog.confirm") }}
           </el-button>
         </template>
       </AppDialog>
@@ -431,16 +548,29 @@ const wrapperStyle = computed(() => {
         styles.nodeWrapperContainer,
         {
           [styles.nodeWrapperEdit]: isEditMode,
-          [styles.interactiveContainer]: INTERACTIVE_CONTAINER_TYPES.has(widget.type),
+          [styles.interactiveContainer]: INTERACTIVE_CONTAINER_TYPES.has(
+            widget.type,
+          ),
         },
       ]"
       :style="[wrapperStyle, animationStyle]"
-      @click.stop="INTERACTIVE_CONTAINER_TYPES.has(widget.type) && handleInteractiveContainerClick()"
+      @click.stop="
+        INTERACTIVE_CONTAINER_TYPES.has(widget.type) &&
+        handleInteractiveContainerClick()
+      "
     >
       <!-- 容器组件自身渲染（卡片标题、表单包裹等） -->
-      <WidgetErrorBoundary v-if="resolvedComponent" :widget-type="widget.type" :widget-id="widget.id">
+      <WidgetErrorBoundary
+        v-if="resolvedComponent"
+        :widget-type="widget.type"
+        :widget-id="widget.id"
+      >
         <component
-          :ref="(el: ComponentPublicInstance | null) => { containerRef = el }"
+          :ref="
+            (el: ComponentPublicInstance | null) => {
+              containerRef = el;
+            }
+          "
           :is="resolvedComponent"
           :widget="widget"
           :editable="isEditMode"
@@ -461,13 +591,12 @@ const wrapperStyle = computed(() => {
       </WidgetErrorBoundary>
       <!-- 非 form 容器：子部件层绝对定位 -->
       <div
-        v-if="filteredChildren.length && !isSelfRendering && widget.type !== 'form'"
+        v-if="
+          filteredChildren.length && !isSelfRendering && widget.type !== 'form'
+        "
         :class="styles.childrenLayer"
       >
-        <SchemaRender
-          :widgets="filteredChildren"
-          :mode="mode"
-        />
+        <SchemaRender :widgets="filteredChildren" :mode="mode" />
       </div>
     </div>
 
@@ -477,12 +606,31 @@ const wrapperStyle = computed(() => {
     <div
       v-else
       :data-widget-id="widget.id"
-      :class="[styles.nodeWrapper, styles.nodeWrapperBase, { [styles.nodeWrapperEdit]: isEditMode }]"
+      :class="[
+        styles.nodeWrapper,
+        styles.nodeWrapperBase,
+        { [styles.nodeWrapperEdit]: isEditMode },
+      ]"
       :style="[wrapperStyle, animationStyle]"
-      @change="FORM_COMPONENT_TYPES.has(widget.type) && (isEditMode ? handleWidgetEvent('change', $event) : handlePreviewEvent('change', $event))"
-      @focus="INPUT_COMPONENT_TYPES.has(widget.type) && (isEditMode ? handleWidgetEvent('focus') : handlePreviewEvent('focus'))"
-      @blur="INPUT_COMPONENT_TYPES.has(widget.type) && (isEditMode ? handleWidgetEvent('blur') : handlePreviewEvent('blur'))"
-      @click="isEditMode && CLICKABLE_TYPES.has(widget.type) && handleWidgetEvent('click')"
+      @change="
+        FORM_COMPONENT_TYPES.has(widget.type) &&
+        (isEditMode
+          ? handleWidgetEvent('change', $event)
+          : handlePreviewEvent('change', $event))
+      "
+      @focus="
+        INPUT_COMPONENT_TYPES.has(widget.type) &&
+        (isEditMode ? handleWidgetEvent('focus') : handlePreviewEvent('focus'))
+      "
+      @blur="
+        INPUT_COMPONENT_TYPES.has(widget.type) &&
+        (isEditMode ? handleWidgetEvent('blur') : handlePreviewEvent('blur'))
+      "
+      @click="
+        isEditMode &&
+        CLICKABLE_TYPES.has(widget.type) &&
+        handleWidgetEvent('click')
+      "
     >
       <!-- 表单校验：有 field + validationRules 时包裹 el-form-item -->
       <el-form-item
@@ -491,18 +639,20 @@ const wrapperStyle = computed(() => {
         :prop="widget.field"
         :rules="widget.validationRules"
       >
-        <WidgetErrorBoundary v-if="resolvedComponent" :widget-type="widget.type" :widget-id="widget.id">
-          <component
-            :is="resolvedComponent"
-            :widget="widget"
-          />
+        <WidgetErrorBoundary
+          v-if="resolvedComponent"
+          :widget-type="widget.type"
+          :widget-id="widget.id"
+        >
+          <component :is="resolvedComponent" :widget="widget" />
         </WidgetErrorBoundary>
       </el-form-item>
-      <WidgetErrorBoundary v-else-if="resolvedComponent" :widget-type="widget.type" :widget-id="widget.id">
-        <component
-          :is="resolvedComponent"
-          :widget="widget"
-        />
+      <WidgetErrorBoundary
+        v-else-if="resolvedComponent"
+        :widget-type="widget.type"
+        :widget-id="widget.id"
+      >
+        <component :is="resolvedComponent" :widget="widget" />
       </WidgetErrorBoundary>
     </div>
   </template>

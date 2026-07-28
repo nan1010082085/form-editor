@@ -15,7 +15,7 @@ export function viewportToCanvas(
   return {
     x: (clientX - canvasRect.left + scrollLeft) / (zoom / 100),
     y: (clientY - canvasRect.top + scrollTop) / (zoom / 100),
-  }
+  };
 }
 
 /** canvas 坐标转容器本地坐标 */
@@ -28,7 +28,7 @@ export function canvasToLocal(
   return {
     x: canvasX - containerX,
     y: canvasY - containerY,
-  }
+  };
 }
 
 /** 容器本地坐标转 canvas 坐标 */
@@ -41,7 +41,7 @@ export function localToCanvas(
   return {
     x: localX + containerX,
     y: localY + containerY,
-  }
+  };
 }
 
 /** 根级组件边界约束 */
@@ -56,7 +56,7 @@ export function constrainToCanvasBounds(
   return {
     x: Math.max(0, Math.min(x, canvasWidth - w)),
     y: Math.max(0, Math.min(y, canvasHeight - h)),
-  }
+  };
 }
 
 /** 拖拽 delta 缩放补偿 */
@@ -68,5 +68,5 @@ export function scaleDelta(
   return {
     dx: deltaX / (zoom / 100),
     dy: deltaY / (zoom / 100),
-  }
+  };
 }

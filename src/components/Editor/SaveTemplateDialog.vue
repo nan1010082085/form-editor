@@ -4,58 +4,61 @@
  *
  * 将画布上的 Widget 树保存为模板。
  */
-import { ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { createTemplate } from '@/api/schemaApi'
-import type { TemplateCategory } from '@/api/schemaApi'
-import { useI18n } from '@schema-platform/platform-shared'
+import { ref, watch } from "vue";
+import { ElMessage } from "element-plus";
+import { createTemplate } from "@/api/schemaApi";
+import type { TemplateCategory } from "@/api/schemaApi";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const props = defineProps<{
-  visible: boolean
-  widgets: Record<string, unknown>[]
-}>()
+  visible: boolean;
+  widgets: Record<string, unknown>[];
+}>();
 
 const emit = defineEmits<{
-  'update:visible': [value: boolean]
-  close: []
-  saved: []
-}>()
+  "update:visible": [value: boolean];
+  close: [];
+  saved: [];
+}>();
 
-const formRef = ref()
-const name = ref('')
-const description = ref('')
-const category = ref<TemplateCategory>('other')
-const tagsInput = ref('')
-const saving = ref(false)
+const formRef = ref();
+const name = ref("");
+const description = ref("");
+const category = ref<TemplateCategory>("other");
+const tagsInput = ref("");
+const saving = ref(false);
 
-watch(() => props.visible, (val) => {
-  if (val) {
-    name.value = ''
-    description.value = ''
-    category.value = 'other'
-    tagsInput.value = ''
-  }
-})
+watch(
+  () => props.visible,
+  (val) => {
+    if (val) {
+      name.value = "";
+      description.value = "";
+      category.value = "other";
+      tagsInput.value = "";
+    }
+  },
+);
 
 function handleClose() {
-  emit('update:visible', false)
-  emit('close')
+  emit("update:visible", false);
+  emit("close");
 }
 
 async function handleSave() {
   if (!name.value.trim()) {
-    ElMessage.warning(t('editor.saveTemplate.nameRequired'))
-    return
+    ElMessage.warning(t("editor.saveTemplate.nameRequired"));
+    return;
   }
 
-  saving.value = true
+  saving.value = true;
   try {
     const tags = tagsInput.value
-      .split(',')
-      .map(t => t.trim())
-      .filter(Boolean)
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
 
     await createTemplate({
       name: name.value.trim(),
@@ -63,16 +66,18 @@ async function handleSave() {
       category: category.value,
       widgets: props.widgets,
       tags,
-    })
+    });
 
-    ElMessage.success(t('editor.saveTemplate.saveSuccess'))
-    emit('saved')
-    emit('update:visible', false)
-    emit('close')
+    ElMessage.success(t("editor.saveTemplate.saveSuccess"));
+    emit("saved");
+    emit("update:visible", false);
+    emit("close");
   } catch (err) {
-    ElMessage.error(err instanceof Error ? err.message : t('editor.saveTemplate.saveFailed'))
+    ElMessage.error(
+      err instanceof Error ? err.message : t("editor.saveTemplate.saveFailed"),
+    );
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 </script>
@@ -89,7 +94,12 @@ async function handleSave() {
   >
     <el-form ref="formRef" label-width="70px" label-position="left">
       <el-form-item :label="t('editor.saveTemplate.name')" required>
-        <el-input v-model="name" :placeholder="t('editor.saveTemplate.namePlaceholder')" maxlength="100" show-word-limit />
+        <el-input
+          v-model="name"
+          :placeholder="t('editor.saveTemplate.namePlaceholder')"
+          maxlength="100"
+          show-word-limit
+        />
       </el-form-item>
 
       <el-form-item :label="t('editor.saveTemplate.description')">
@@ -105,21 +115,40 @@ async function handleSave() {
 
       <el-form-item :label="t('editor.saveTemplate.category')">
         <el-select v-model="category" style="width: 100%">
-          <el-option :label="t('editor.saveTemplate.categoryForm')" value="form" />
-          <el-option :label="t('editor.saveTemplate.categoryReport')" value="report" />
-          <el-option :label="t('editor.saveTemplate.categoryLayout')" value="layout" />
-          <el-option :label="t('editor.saveTemplate.categoryOther')" value="other" />
+          <el-option
+            :label="t('editor.saveTemplate.categoryForm')"
+            value="form"
+          />
+          <el-option
+            :label="t('editor.saveTemplate.categoryReport')"
+            value="report"
+          />
+          <el-option
+            :label="t('editor.saveTemplate.categoryLayout')"
+            value="layout"
+          />
+          <el-option
+            :label="t('editor.saveTemplate.categoryOther')"
+            value="other"
+          />
         </el-select>
       </el-form-item>
 
       <el-form-item :label="t('editor.saveTemplate.tags')">
-        <el-input v-model="tagsInput" :placeholder="t('editor.saveTemplate.tagsPlaceholder')" />
+        <el-input
+          v-model="tagsInput"
+          :placeholder="t('editor.saveTemplate.tagsPlaceholder')"
+        />
       </el-form-item>
     </el-form>
 
     <template #footer>
-      <el-button @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
-      <el-button type="primary" :loading="saving" @click="handleSave">{{ t('editor.common.save') }}</el-button>
+      <el-button @click="handleClose">{{
+        t("editor.common.cancel")
+      }}</el-button>
+      <el-button type="primary" :loading="saving" @click="handleSave">{{
+        t("editor.common.save")
+      }}</el-button>
     </template>
   </el-dialog>
 </template>

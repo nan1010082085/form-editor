@@ -1,3 +1,3 @@
-export { FgInput } from '../input'
-export { createInputWidget } from '../input'
-export { inputConfig } from '../input'
+export { FgInput } from "../input";
+export { createInputWidget } from "../input";
+export { inputConfig } from "../input";

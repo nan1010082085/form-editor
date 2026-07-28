@@ -4,37 +4,37 @@
  * 使用 useDataLoading 统一 loading/error 状态管理。
  * 仅在数据获取区域显示 loading（配合 v-loading 使用）。
  */
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { useDataLoading } from '@schema-platform/platform-shared/utils/useDataLoading'
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import { useDataLoading } from "@schema-platform/platform-shared/utils/useDataLoading";
 import {
   fetchTemplates,
   applyTemplate,
   createTemplate,
   deleteTemplate,
-} from '@/utils/apiClient'
-import type { TemplateItem, TemplateCategory } from '@/utils/apiClient'
+} from "@/utils/apiClient";
+import type { TemplateItem, TemplateCategory } from "@/utils/apiClient";
 
-export const useTemplateStore = defineStore('template', () => {
+export const useTemplateStore = defineStore("template", () => {
   // ================================================================
   // 数据
   // ================================================================
 
-  const templates = ref<TemplateItem[]>([])
-  const total = ref(0)
-  const { loading, error, withLoading } = useDataLoading({ timeout: 15000 })
+  const templates = ref<TemplateItem[]>([]);
+  const total = ref(0);
+  const { loading, error, withLoading } = useDataLoading({ timeout: 15000 });
 
   // ================================================================
   // 筛选 / 分页
   // ================================================================
 
-  const searchKeyword = ref('')
-  const selectedCategory = ref('')
-  const page = ref(1)
-  const pageSize = ref(20)
+  const searchKeyword = ref("");
+  const selectedCategory = ref("");
+  const page = ref(1);
+  const pageSize = ref(20);
 
-  const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
-  const hasMore = computed(() => page.value < totalPages.value)
+  const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
+  const hasMore = computed(() => page.value < totalPages.value);
 
   // ================================================================
   // 加载模板
@@ -47,10 +47,10 @@ export const useTemplateStore = defineStore('template', () => {
         category: selectedCategory.value || undefined,
         page: page.value,
         pageSize: pageSize.value,
-      })
-      templates.value = res.items
-      total.value = res.total
-    })
+      });
+      templates.value = res.items;
+      total.value = res.total;
+    });
   }
 
   // ================================================================
@@ -58,34 +58,36 @@ export const useTemplateStore = defineStore('template', () => {
   // ================================================================
 
   function setSearch(keyword: string): void {
-    searchKeyword.value = keyword
-    page.value = 1
+    searchKeyword.value = keyword;
+    page.value = 1;
   }
 
   function setCategory(category: string): void {
-    selectedCategory.value = category
-    page.value = 1
+    selectedCategory.value = category;
+    page.value = 1;
   }
 
   function setPage(newPage: number): void {
-    page.value = newPage
+    page.value = newPage;
   }
 
   function resetFilters(): void {
-    searchKeyword.value = ''
-    selectedCategory.value = ''
-    page.value = 1
+    searchKeyword.value = "";
+    selectedCategory.value = "";
+    page.value = 1;
   }
 
   // ================================================================
   // 应用模板
   // ================================================================
 
-  async function applyTemplateById(id: string): Promise<Record<string, unknown>[]> {
-    const result = await applyTemplate(id)
+  async function applyTemplateById(
+    id: string,
+  ): Promise<Record<string, unknown>[]> {
+    const result = await applyTemplate(id);
     // 刷新列表以更新 usageCount
-    loadTemplates()
-    return result.widgets
+    loadTemplates();
+    return result.widgets;
   }
 
   // ================================================================
@@ -93,17 +95,17 @@ export const useTemplateStore = defineStore('template', () => {
   // ================================================================
 
   async function saveTemplate(payload: {
-    name: string
-    description?: string
-    category?: TemplateCategory
-    widgets: Record<string, unknown>[]
-    tags?: string[]
-    thumbnail?: string
+    name: string;
+    description?: string;
+    category?: TemplateCategory;
+    widgets: Record<string, unknown>[];
+    tags?: string[];
+    thumbnail?: string;
   }): Promise<TemplateItem> {
-    const template = await createTemplate(payload)
+    const template = await createTemplate(payload);
     // 刷新列表
-    loadTemplates()
-    return template
+    loadTemplates();
+    return template;
   }
 
   // ================================================================
@@ -111,9 +113,9 @@ export const useTemplateStore = defineStore('template', () => {
   // ================================================================
 
   async function removeTemplate(id: string): Promise<void> {
-    await deleteTemplate(id)
+    await deleteTemplate(id);
     // 刷新列表
-    loadTemplates()
+    loadTemplates();
   }
 
   // ================================================================
@@ -142,5 +144,5 @@ export const useTemplateStore = defineStore('template', () => {
     applyTemplateById,
     saveTemplate,
     removeTemplate,
-  }
-})
+  };
+});

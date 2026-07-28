@@ -1,90 +1,88 @@
 <script setup lang="ts">
 /** E-20 — Adhoc 查询构建器 */
-import { inject, computed, ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
-import { widgetDataKey } from '../base/types'
-import { EVENT_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { WIDGET_SURFACE_KEY, type WidgetSurface } from '../base/widgetMock'
-import type { AdhocQueryField, AdhocCondition } from './config'
-import { buildAdhocFilterParams, emptyAdhocCondition } from './adhocQueryUtils'
-import styles from './style.module.scss'
+import { inject, computed, ref, reactive } from "vue";
+import { ElMessage } from "element-plus";
+import { widgetDataKey } from "../base/types";
+import { EVENT_CONTEXT_KEY } from "../../components/WidgetRenderer/types";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { WIDGET_SURFACE_KEY, type WidgetSurface } from "../base/widgetMock";
+import type { AdhocQueryField, AdhocCondition } from "./config";
+import { buildAdhocFilterParams, emptyAdhocCondition } from "./adhocQueryUtils";
+import styles from "./style.module.scss";
 
-const widgetData = inject(widgetDataKey)!
-const surface = inject(WIDGET_SURFACE_KEY, 'runtime' as WidgetSurface)
-const eventCtx = inject(EVENT_CONTEXT_KEY, null)
+const widgetData = inject(widgetDataKey)!;
+const surface = inject(WIDGET_SURFACE_KEY, "runtime" as WidgetSurface);
+const eventCtx = inject(EVENT_CONTEXT_KEY, null);
 
-const fields = computed<AdhocQueryField[]>(() =>
-  (widgetData.value.props?.fields as AdhocQueryField[]) ?? [],
-)
+const fields = computed<AdhocQueryField[]>(
+  () => (widgetData.value.props?.fields as AdhocQueryField[]) ?? [],
+);
 
 const targetTableId = computed(() =>
-  String(widgetData.value.props?.targetTableId ?? ''),
-)
+  String(widgetData.value.props?.targetTableId ?? ""),
+);
 
-const conditions = ref<AdhocCondition[]>([emptyAdhocCondition()])
-const lastParams = reactive<Record<string, unknown>>({})
+const conditions = ref<AdhocCondition[]>([emptyAdhocCondition()]);
+const lastParams = reactive<Record<string, unknown>>({});
 
 useExposeWidget(() => ({
-  get lastParams() { return { ...lastParams } },
+  get lastParams() {
+    return { ...lastParams };
+  },
   reset: () => resetQuery(),
-}))
+}));
 
 function pushCondition() {
-  conditions.value.push(emptyAdhocCondition())
+  conditions.value.push(emptyAdhocCondition());
 }
 
 function removeCondition(index: number) {
   if (conditions.value.length <= 1) {
-    conditions.value[0] = emptyAdhocCondition()
-    return
+    conditions.value[0] = emptyAdhocCondition();
+    return;
   }
-  conditions.value.splice(index, 1)
+  conditions.value.splice(index, 1);
 }
 
 function fieldMeta(fieldKey: string): AdhocQueryField | undefined {
-  return fields.value.find((f) => f.field === fieldKey)
+  return fields.value.find((f) => f.field === fieldKey);
 }
 
 function applyToTarget(params: Record<string, unknown>) {
-  const tableId = targetTableId.value
-  if (!tableId || !eventCtx) return
-  const setter = eventCtx.exposed?.[tableId]?.['set-search-params']
-  if (typeof setter === 'function') {
-    ;(setter as (p: Record<string, unknown>) => void)(params)
-    return
+  const tableId = targetTableId.value;
+  if (!tableId || !eventCtx) return;
+  const setter = eventCtx.exposed?.[tableId]?.["set-search-params"];
+  if (typeof setter === "function") {
+    (setter as (p: Record<string, unknown>) => void)(params);
+    return;
   }
-  eventCtx.triggerEvent?.(tableId, 'refresh')
+  eventCtx.triggerEvent?.(tableId, "refresh");
 }
 
 function applyQuery() {
-  const params = buildAdhocFilterParams(conditions.value)
-  Object.assign(lastParams, params)
-  if (surface === 'editor') {
-    ElMessage.info(`设计器预览：查询参数 ${JSON.stringify(params)}`)
-    return
+  const params = buildAdhocFilterParams(conditions.value);
+  Object.assign(lastParams, params);
+  if (surface === "editor") {
+    ElMessage.info(`设计器预览：查询参数 ${JSON.stringify(params)}`);
+    return;
   }
-  applyToTarget(params)
+  applyToTarget(params);
 }
 
 function resetQuery() {
-  conditions.value = [emptyAdhocCondition()]
-  Object.keys(lastParams).forEach((k) => delete lastParams[k])
-  if (surface === 'editor') {
-    ElMessage.info('设计器预览：已重置条件')
-    return
+  conditions.value = [emptyAdhocCondition()];
+  Object.keys(lastParams).forEach((k) => delete lastParams[k]);
+  if (surface === "editor") {
+    ElMessage.info("设计器预览：已重置条件");
+    return;
   }
-  applyToTarget({})
+  applyToTarget({});
 }
 </script>
 
 <template>
   <div :class="styles.container">
-    <div
-      v-for="(row, index) in conditions"
-      :key="index"
-      :class="styles.row"
-    >
+    <div v-for="(row, index) in conditions" :key="index" :class="styles.row">
       <el-select
         v-model="row.field"
         :class="styles.fieldSelect"

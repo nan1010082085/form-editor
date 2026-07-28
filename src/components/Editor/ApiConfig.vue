@@ -5,161 +5,177 @@
  * 左侧：分组卡片表单（请求配置 / 数据映射 / 加载策略）
  * 右侧：测试连接面板（独立区域，不跟随表单滚动）
  */
-import { ref, computed } from 'vue'
-import { requestExternalUrl } from '@/api/requestApi'
-import { inferFieldsFromJson, fieldInferencesToSchema } from '@/utils/jsonToSchema'
-import { normalizeListResponse } from '@/utils/responseNormalizer'
-import type { SchemaApiConfig, PartialWidget } from '@/components/WidgetRenderer/types'
-import styles from './ApiConfig.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { ref, computed } from "vue";
+import { requestExternalUrl } from "@/api/requestApi";
+import {
+  inferFieldsFromJson,
+  fieldInferencesToSchema,
+} from "@/utils/jsonToSchema";
+import { normalizeListResponse } from "@/utils/responseNormalizer";
+import type {
+  SchemaApiConfig,
+  PartialWidget,
+} from "@/components/WidgetRenderer/types";
+import styles from "./ApiConfig.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const props = defineProps<{
-  api: SchemaApiConfig | undefined
-}>()
+  api: SchemaApiConfig | undefined;
+}>();
 
 const emit = defineEmits<{
-  'update:api': [api: SchemaApiConfig | undefined]
-  'generate-schema': [schema: PartialWidget[]]
-  'remove-config': []
-}>()
+  "update:api": [api: SchemaApiConfig | undefined];
+  "generate-schema": [schema: PartialWidget[]];
+  "remove-config": [];
+}>();
 
 // ---- Local state for JSON params editing ----
-const paramsText = ref(props.api?.params ? JSON.stringify(props.api.params, null, 2) : '')
-const paramsError = ref('')
+const paramsText = ref(
+  props.api?.params ? JSON.stringify(props.api.params, null, 2) : "",
+);
+const paramsError = ref("");
 
 // ---- Local state for body JSON editing ----
-const bodyText = ref(props.api?.body ? JSON.stringify(props.api.body, null, 2) : '')
-const bodyError = ref('')
+const bodyText = ref(
+  props.api?.body ? JSON.stringify(props.api.body, null, 2) : "",
+);
+const bodyError = ref("");
 
 // ---- Local state for headers editing ----
-interface HeaderRow { key: string; value: string }
+interface HeaderRow {
+  key: string;
+  value: string;
+}
 const headerRows = ref<HeaderRow[]>(
   props.api?.headers
     ? Object.entries(props.api.headers).map(([key, value]) => ({ key, value }))
-    : [{ key: '', value: '' }],
-)
+    : [{ key: "", value: "" }],
+);
 
 // ---- Test connection state ----
-const testing = ref(false)
+const testing = ref(false);
 interface TestResult {
-  success: boolean
-  message: string
-  responsePreview?: string
-  suggestedDataPath?: string
-  parsedOptions?: Array<{ label: string; value: string }>
+  success: boolean;
+  message: string;
+  responsePreview?: string;
+  suggestedDataPath?: string;
+  parsedOptions?: Array<{ label: string; value: string }>;
 }
-const testResult = ref<TestResult | null>(null)
-const rawResponse = ref<unknown>(null)
+const testResult = ref<TestResult | null>(null);
+const rawResponse = ref<unknown>(null);
 
 // ---- Computed ----
-const hasApi = computed(() => !!props.api)
-const isPost = computed(() => (props.api?.method ?? 'get') === 'post')
+const hasApi = computed(() => !!props.api);
+const isPost = computed(() => (props.api?.method ?? "get") === "post");
 
 // ---- Emit helpers ----
 function emitApi(patch: Partial<SchemaApiConfig>) {
-  const base: SchemaApiConfig = props.api ?? { url: '' }
-  emit('update:api', { ...base, ...patch })
+  const base: SchemaApiConfig = props.api ?? { url: "" };
+  emit("update:api", { ...base, ...patch });
 }
 
-function emitApiField<K extends keyof SchemaApiConfig>(field: K, value: SchemaApiConfig[K]) {
-  emitApi({ [field]: value })
+function emitApiField<K extends keyof SchemaApiConfig>(
+  field: K,
+  value: SchemaApiConfig[K],
+) {
+  emitApi({ [field]: value });
 }
 
 // ---- Enable API ----
 function enableApi() {
-  emit('update:api', { url: '', method: 'get' })
+  emit("update:api", { url: "", method: "get" });
 }
 
 // ---- Params JSON handling ----
 function handleParamsChange(text: string) {
-  paramsText.value = text
+  paramsText.value = text;
   if (!text.trim()) {
-    paramsError.value = ''
-    emitApiField('params', undefined)
-    return
+    paramsError.value = "";
+    emitApiField("params", undefined);
+    return;
   }
   try {
-    const parsed = JSON.parse(text) as Record<string, unknown>
-    paramsError.value = ''
-    emitApiField('params', parsed)
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    paramsError.value = "";
+    emitApiField("params", parsed);
   } catch {
-    paramsError.value = t('editor.api.invalidJson')
+    paramsError.value = t("editor.api.invalidJson");
   }
 }
 
 // ---- Body JSON handling ----
 function handleBodyChange(text: string) {
-  bodyText.value = text
+  bodyText.value = text;
   if (!text.trim()) {
-    bodyError.value = ''
-    emitApiField('body', undefined)
-    return
+    bodyError.value = "";
+    emitApiField("body", undefined);
+    return;
   }
   try {
-    const parsed = JSON.parse(text) as Record<string, unknown>
-    bodyError.value = ''
-    emitApiField('body', parsed)
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    bodyError.value = "";
+    emitApiField("body", parsed);
   } catch {
-    bodyError.value = t('editor.api.invalidJson')
+    bodyError.value = t("editor.api.invalidJson");
   }
 }
 
 // ---- Headers handling ----
 function addHeaderRow() {
-  headerRows.value.push({ key: '', value: '' })
+  headerRows.value.push({ key: "", value: "" });
 }
 
 function removeHeaderRow(index: number) {
-  headerRows.value.splice(index, 1)
-  syncHeaders()
+  headerRows.value.splice(index, 1);
+  syncHeaders();
 }
 
 function handleHeaderKeyChange(index: number, val: string) {
-  headerRows.value[index].key = val
-  syncHeaders()
+  headerRows.value[index].key = val;
+  syncHeaders();
 }
 
 function handleHeaderValueChange(index: number, val: string) {
-  headerRows.value[index].value = val
-  syncHeaders()
+  headerRows.value[index].value = val;
+  syncHeaders();
 }
 
 function syncHeaders() {
-  const result: Record<string, string> = {}
+  const result: Record<string, string> = {};
   for (const row of headerRows.value) {
-    const k = row.key.trim()
-    if (k) result[k] = row.value
+    const k = row.key.trim();
+    if (k) result[k] = row.value;
   }
-  emitApiField('headers', Object.keys(result).length > 0 ? result : undefined)
+  emitApiField("headers", Object.keys(result).length > 0 ? result : undefined);
 }
 
 // ---- Test connection ----
-function findArrayPaths(obj: unknown, prefix = ''): string[] {
-  if (!obj || typeof obj !== 'object') return []
-  const paths: string[] = []
-  const keys = ['data', 'list', 'rows', 'items', 'records', 'result'] as const
+function findArrayPaths(obj: unknown, prefix = ""): string[] {
+  if (!obj || typeof obj !== "object") return [];
+  const paths: string[] = [];
+  const keys = ["data", "list", "rows", "items", "records", "result"] as const;
   for (const key of keys) {
     if (key in (obj as Record<string, unknown>)) {
-      const path = prefix ? `${prefix}.${key}` : key
-      const val = (obj as Record<string, unknown>)[key]
+      const path = prefix ? `${prefix}.${key}` : key;
+      const val = (obj as Record<string, unknown>)[key];
       if (Array.isArray(val)) {
-        paths.push(path)
-      } else if (val && typeof val === 'object') {
-        paths.push(...findArrayPaths(val, path))
+        paths.push(path);
+      } else if (val && typeof val === "object") {
+        paths.push(...findArrayPaths(val, path));
       }
     }
   }
-  return paths
+  return paths;
 }
 
 function formatResponsePreview(res: unknown): string {
   try {
-    return JSON.stringify(res, null, 2)
+    return JSON.stringify(res, null, 2);
   } catch {
-    return String(res)
+    return String(res);
   }
 }
 
@@ -168,87 +184,110 @@ function detectSuggestedDataPath(
   currentDataPath: string | undefined,
   extractedData: unknown[],
 ): string | undefined {
-  if (extractedData.length > 0 && currentDataPath) return undefined
-  if (!res || typeof res !== 'object' || Array.isArray(res)) return undefined
-  const paths = findArrayPaths(res)
-  const filtered = currentDataPath ? paths.filter(p => p !== currentDataPath) : paths
-  return filtered.length > 0 ? filtered[0] : undefined
+  if (extractedData.length > 0 && currentDataPath) return undefined;
+  if (!res || typeof res !== "object" || Array.isArray(res)) return undefined;
+  const paths = findArrayPaths(res);
+  const filtered = currentDataPath
+    ? paths.filter((p) => p !== currentDataPath)
+    : paths;
+  return filtered.length > 0 ? filtered[0] : undefined;
 }
 
 async function testConnection() {
-  if (!props.api?.url) return
-  testing.value = true
-  testResult.value = null
-  rawResponse.value = null
+  if (!props.api?.url) return;
+  testing.value = true;
+  testResult.value = null;
+  rawResponse.value = null;
   try {
-    const method = props.api.method ?? 'get'
+    const method = props.api.method ?? "get";
     const res: unknown = await requestExternalUrl(
       method,
       props.api.url,
-      method === 'post' ? props.api.body : props.api.params,
+      method === "post" ? props.api.body : props.api.params,
       props.api.headers,
       props.api.timeout,
-    )
+    );
 
-    rawResponse.value = res
-    const { data: extractedData } = normalizeListResponse(res, { dataPath: props.api.dataPath })
+    rawResponse.value = res;
+    const { data: extractedData } = normalizeListResponse(res, {
+      dataPath: props.api.dataPath,
+    });
 
-    const parsedOptions = extractedData.slice(0, 5).map(item => ({
-      label: String(item[props.api?.labelKey ?? 'label'] ?? ''),
-      value: String(item[props.api?.valueKey ?? 'value'] ?? ''),
-    }))
+    const parsedOptions = extractedData.slice(0, 5).map((item) => ({
+      label: String(item[props.api?.labelKey ?? "label"] ?? ""),
+      value: String(item[props.api?.valueKey ?? "value"] ?? ""),
+    }));
 
-    const responsePreview = formatResponsePreview(res)
-    const suggestedDataPath = detectSuggestedDataPath(res, props.api.dataPath, extractedData)
+    const responsePreview = formatResponsePreview(res);
+    const suggestedDataPath = detectSuggestedDataPath(
+      res,
+      props.api.dataPath,
+      extractedData,
+    );
 
     if (extractedData.length === 0) {
-      const errorParts = [t('editor.api.noDataArray')]
+      const errorParts = [t("editor.api.noDataArray")];
       if (suggestedDataPath) {
-        errorParts.push(t('editor.api.suggestSetPath', { path: suggestedDataPath }))
-      } else if (res && typeof res === 'object' && !Array.isArray(res)) {
-        const keys = Object.keys(res as Record<string, unknown>)
-        errorParts.push(t('editor.api.responseFields', { fields: keys.join(', ') }))
+        errorParts.push(
+          t("editor.api.suggestSetPath", { path: suggestedDataPath }),
+        );
+      } else if (res && typeof res === "object" && !Array.isArray(res)) {
+        const keys = Object.keys(res as Record<string, unknown>);
+        errorParts.push(
+          t("editor.api.responseFields", { fields: keys.join(", ") }),
+        );
       }
-      testResult.value = { success: false, message: errorParts.join('. '), responsePreview }
+      testResult.value = {
+        success: false,
+        message: errorParts.join(". "),
+        responsePreview,
+      };
     } else {
       testResult.value = {
         success: true,
-        message: t('editor.api.testSuccess', { count: extractedData.length }),
+        message: t("editor.api.testSuccess", { count: extractedData.length }),
         responsePreview,
         suggestedDataPath,
         parsedOptions,
-      }
+      };
     }
   } catch (e: unknown) {
-    rawResponse.value = null
-    testResult.value = { success: false, message: e instanceof Error ? e.message : t('editor.api.requestFailed') }
+    rawResponse.value = null;
+    testResult.value = {
+      success: false,
+      message: e instanceof Error ? e.message : t("editor.api.requestFailed"),
+    };
   } finally {
-    testing.value = false
+    testing.value = false;
   }
 }
 
 function applySuggestedDataPath() {
   if (testResult.value?.suggestedDataPath) {
-    emitApiField('dataPath', testResult.value.suggestedDataPath)
+    emitApiField("dataPath", testResult.value.suggestedDataPath);
   }
 }
 
 function analyzeAndGenerateSchema() {
-  if (!rawResponse.value) return
-  const { data: dataSource } = normalizeListResponse(rawResponse.value, { dataPath: props.api?.dataPath })
-  const inferences = inferFieldsFromJson(dataSource)
-  const schema = fieldInferencesToSchema(inferences)
-  emit('generate-schema', schema)
+  if (!rawResponse.value) return;
+  const { data: dataSource } = normalizeListResponse(rawResponse.value, {
+    dataPath: props.api?.dataPath,
+  });
+  const inferences = inferFieldsFromJson(dataSource);
+  const schema = fieldInferencesToSchema(inferences);
+  emit("generate-schema", schema);
 }
 
-defineExpose({ testConnection, testing })
+defineExpose({ testConnection, testing });
 </script>
 
 <template>
   <div :class="styles.root">
     <!-- 未配置时的入口 -->
     <div v-if="!hasApi" :class="styles.toggle">
-      <el-button type="primary" plain @click="enableApi">{{ t('editor.api.configApi') }}</el-button>
+      <el-button type="primary" plain @click="enableApi">{{
+        t("editor.api.configApi")
+      }}</el-button>
     </div>
 
     <!-- 左右分栏 -->
@@ -257,17 +296,26 @@ defineExpose({ testConnection, testing })
       <div :class="styles.form">
         <!-- 移除配置 -->
         <div :class="styles.removeRow">
-          <el-button type="danger" link size="small" @click="emit('remove-config')">
-            {{ t('editor.api.removeConfig') }}
+          <el-button
+            type="danger"
+            link
+            size="small"
+            @click="emit('remove-config')"
+          >
+            {{ t("editor.api.removeConfig") }}
           </el-button>
         </div>
 
         <!-- 分组 1：请求配置 -->
         <div :class="styles.card">
-          <div :class="styles.cardTitle">{{ t('editor.api.requestConfig') }}</div>
+          <div :class="styles.cardTitle">
+            {{ t("editor.api.requestConfig") }}
+          </div>
           <!-- URL -->
           <div :class="styles.row">
-            <label :class="styles.label">URL <span :class="styles.required">*</span></label>
+            <label :class="styles.label"
+              >URL <span :class="styles.required">*</span></label
+            >
             <el-input
               :model-value="api?.url ?? ''"
               placeholder="/api/options"
@@ -278,30 +326,36 @@ defineExpose({ testConnection, testing })
 
           <!-- 请求方法 + 超时并排 -->
           <div :class="styles.row">
-            <label :class="styles.label">{{ t('editor.api.method') }}</label>
+            <label :class="styles.label">{{ t("editor.api.method") }}</label>
             <el-select
               :model-value="api?.method ?? 'get'"
               style="flex: 1"
-              @update:model-value="(v: string) => emitApiField('method', v as 'get' | 'post')"
+              @update:model-value="
+                (v: string) => emitApiField('method', v as 'get' | 'post')
+              "
             >
               <el-option label="GET" value="get" />
               <el-option label="POST" value="post" />
             </el-select>
-            <label :class="styles.label">{{ t('editor.api.timeout') }}</label>
+            <label :class="styles.label">{{ t("editor.api.timeout") }}</label>
             <el-input-number
               :model-value="api?.timeout ?? 5000"
               :min="1000"
               :step="1000"
               controls-position="right"
               style="flex: 1"
-              @update:model-value="(v: number) => emitApiField('timeout', v ?? 5000)"
+              @update:model-value="
+                (v: number) => emitApiField('timeout', v ?? 5000)
+              "
             />
           </div>
 
           <!-- 查询参数 -->
           <div :class="styles.row">
-            <label :class="styles.label">{{ t('editor.api.params') }}</label>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+            <label :class="styles.label">{{ t("editor.api.params") }}</label>
+            <div
+              style="flex: 1; display: flex; flex-direction: column; gap: 4px"
+            >
               <el-input
                 type="textarea"
                 :model-value="paramsText"
@@ -310,35 +364,41 @@ defineExpose({ testConnection, testing })
                 :class="{ 'is-error': !!paramsError }"
                 @update:model-value="(v: string) => handleParamsChange(v)"
               />
-              <div v-if="paramsError" :class="styles.error">{{ paramsError }}</div>
+              <div v-if="paramsError" :class="styles.error">
+                {{ paramsError }}
+              </div>
             </div>
           </div>
 
           <!-- 请求头 Headers -->
           <div :class="styles.row">
-            <label :class="styles.label">{{ t('editor.api.headers') }}</label>
+            <label :class="styles.label">{{ t("editor.api.headers") }}</label>
             <div :class="styles.kvList" style="flex: 1">
-              <div v-for="(row, idx) in headerRows" :key="idx" :class="styles.kvRow">
+              <div
+                v-for="(row, idx) in headerRows"
+                :key="idx"
+                :class="styles.kvRow"
+              >
                 <el-input
                   :model-value="row.key"
                   placeholder="Header-Name"
-                  @update:model-value="(v: string) => handleHeaderKeyChange(idx, v)"
+                  @update:model-value="
+                    (v: string) => handleHeaderKeyChange(idx, v)
+                  "
                 />
                 <el-input
                   :model-value="row.value"
                   placeholder="value"
-                  @update:model-value="(v: string) => handleHeaderValueChange(idx, v)"
+                  @update:model-value="
+                    (v: string) => handleHeaderValueChange(idx, v)
+                  "
                 />
-                <el-button
-                  type="danger"
-                  link
-                  @click="removeHeaderRow(idx)"
-                >
+                <el-button type="danger" link @click="removeHeaderRow(idx)">
                   <AppIcon name="delete" />
                 </el-button>
               </div>
               <el-button size="small" link type="primary" @click="addHeaderRow">
-                {{ t('editor.api.add') }}
+                {{ t("editor.api.add") }}
               </el-button>
             </div>
           </div>
@@ -346,7 +406,9 @@ defineExpose({ testConnection, testing })
           <!-- 请求体 Body（仅 POST） -->
           <div v-if="isPost" :class="styles.row">
             <label :class="styles.label">Body</label>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+            <div
+              style="flex: 1; display: flex; flex-direction: column; gap: 4px"
+            >
               <el-input
                 type="textarea"
                 :model-value="bodyText"
@@ -362,51 +424,57 @@ defineExpose({ testConnection, testing })
 
         <!-- 分组 2：数据映射 -->
         <div :class="styles.card">
-          <div :class="styles.cardTitle">{{ t('editor.api.dataMapping') }}</div>
+          <div :class="styles.cardTitle">{{ t("editor.api.dataMapping") }}</div>
           <div :class="styles.row">
-            <label :class="styles.label">{{ t('editor.api.path') }}</label>
+            <label :class="styles.label">{{ t("editor.api.path") }}</label>
             <el-input
               :model-value="api?.dataPath ?? ''"
               placeholder="result.records"
               style="flex: 1"
-              @update:model-value="(v: string) => emitApiField('dataPath', v || undefined)"
+              @update:model-value="
+                (v: string) => emitApiField('dataPath', v || undefined)
+              "
             />
           </div>
           <div :class="styles.row">
-            <label :class="styles.label">{{ t('editor.api.label') }}</label>
+            <label :class="styles.label">{{ t("editor.api.label") }}</label>
             <el-input
               :model-value="api?.labelKey ?? 'label'"
               placeholder="label"
               style="flex: 1"
               @update:model-value="(v: string) => emitApiField('labelKey', v)"
             />
-            <label :class="styles.label">{{ t('editor.api.value') }}</label>
+            <label :class="styles.label">{{ t("editor.api.value") }}</label>
             <el-input
               :model-value="api?.valueKey ?? 'value'"
               placeholder="value"
               style="flex: 1"
               @update:model-value="(v: string) => emitApiField('valueKey', v)"
             />
-            <label :class="styles.label">{{ t('editor.api.children') }}</label>
+            <label :class="styles.label">{{ t("editor.api.children") }}</label>
             <el-input
               :model-value="api?.childrenKey ?? ''"
               placeholder="children"
               style="flex: 1"
-              @update:model-value="(v: string) => emitApiField('childrenKey', v || undefined)"
+              @update:model-value="
+                (v: string) => emitApiField('childrenKey', v || undefined)
+              "
             />
           </div>
         </div>
 
         <!-- 分组 3：加载策略 -->
         <div :class="styles.card">
-          <div :class="styles.cardTitle">{{ t('editor.api.loadStrategy') }}</div>
+          <div :class="styles.cardTitle">
+            {{ t("editor.api.loadStrategy") }}
+          </div>
           <div :class="styles.row">
-            <label :class="styles.label">{{ t('editor.api.load') }}</label>
+            <label :class="styles.label">{{ t("editor.api.load") }}</label>
             <el-switch
               :model-value="api?.immediate !== false"
               @update:model-value="(v: boolean) => emitApiField('immediate', v)"
             />
-            <label :class="styles.label">{{ t('editor.api.cache') }}</label>
+            <label :class="styles.label">{{ t("editor.api.cache") }}</label>
             <el-input-number
               :model-value="api?.ttl ?? 0"
               :min="0"
@@ -417,11 +485,13 @@ defineExpose({ testConnection, testing })
             />
           </div>
           <div :class="styles.row">
-            <label :class="styles.label">{{ t('editor.api.retry') }}</label>
+            <label :class="styles.label">{{ t("editor.api.retry") }}</label>
             <div style="display: flex; align-items: center; gap: 8px; flex: 1">
               <el-switch
                 :model-value="api?.enableRetry ?? false"
-                @update:model-value="(v: boolean) => emitApiField('enableRetry', v)"
+                @update:model-value="
+                  (v: boolean) => emitApiField('enableRetry', v)
+                "
               />
               <el-input-number
                 v-if="api?.enableRetry"
@@ -430,14 +500,22 @@ defineExpose({ testConnection, testing })
                 :max="5"
                 controls-position="right"
                 style="width: 100px"
-                @update:model-value="(v: number) => emitApiField('retryCount', v ?? 3)"
+                @update:model-value="
+                  (v: number) => emitApiField('retryCount', v ?? 3)
+                "
               />
             </div>
-            <label :class="styles.label">{{ t('editor.api.policy') }}</label>
+            <label :class="styles.label">{{ t("editor.api.policy") }}</label>
             <el-select
               :model-value="api?.cacheLevel ?? 'memory'"
               style="flex: 1"
-              @update:model-value="(v: string) => emitApiField('cacheLevel', v as 'memory' | 'indexeddb' | 'both')"
+              @update:model-value="
+                (v: string) =>
+                  emitApiField(
+                    'cacheLevel',
+                    v as 'memory' | 'indexeddb' | 'both',
+                  )
+              "
             >
               <el-option :label="t('editor.api.memory')" value="memory" />
               <el-option label="IndexedDB" value="indexeddb" />
@@ -445,12 +523,13 @@ defineExpose({ testConnection, testing })
             </el-select>
           </div>
         </div>
-
       </div>
 
       <!-- 右侧测试面板 -->
       <div :class="styles.test">
-        <div :class="styles.testTitle">{{ t('editor.api.testConnection') }}</div>
+        <div :class="styles.testTitle">
+          {{ t("editor.api.testConnection") }}
+        </div>
         <div :class="styles.testBody">
           <el-button
             type="primary"
@@ -458,7 +537,9 @@ defineExpose({ testConnection, testing })
             style="width: 100%"
             @click="testConnection"
           >
-            {{ testing ? t('editor.api.testing') : t('editor.api.testConnection') }}
+            {{
+              testing ? t("editor.api.testing") : t("editor.api.testConnection")
+            }}
           </el-button>
 
           <!-- 成功结果 -->
@@ -469,16 +550,34 @@ defineExpose({ testConnection, testing })
             </div>
 
             <!-- 响应结构预览 -->
-            <div v-if="testResult.responsePreview" :class="styles.previewSection">
-              <div :class="styles.previewLabel">{{ t('editor.api.responseStructure') }}</div>
-              <pre :class="styles.previewCode">{{ testResult.responsePreview }}</pre>
+            <div
+              v-if="testResult.responsePreview"
+              :class="styles.previewSection"
+            >
+              <div :class="styles.previewLabel">
+                {{ t("editor.api.responseStructure") }}
+              </div>
+              <pre :class="styles.previewCode">{{
+                testResult.responsePreview
+              }}</pre>
             </div>
 
             <!-- 解析预览 -->
-            <div v-if="testResult.parsedOptions && testResult.parsedOptions.length > 0" :class="styles.previewSection">
-              <div :class="styles.previewLabel">{{ t('editor.api.parsePreview') }}</div>
+            <div
+              v-if="
+                testResult.parsedOptions && testResult.parsedOptions.length > 0
+              "
+              :class="styles.previewSection"
+            >
+              <div :class="styles.previewLabel">
+                {{ t("editor.api.parsePreview") }}
+              </div>
               <div :class="styles.optionsList">
-                <div v-for="(opt, idx) in testResult.parsedOptions" :key="idx" :class="styles.optionItem">
+                <div
+                  v-for="(opt, idx) in testResult.parsedOptions"
+                  :key="idx"
+                  :class="styles.optionItem"
+                >
                   <span :class="styles.optionLabel">{{ opt.label }}</span>
                   <span :class="styles.optionValue">{{ opt.value }}</span>
                 </div>
@@ -487,15 +586,28 @@ defineExpose({ testConnection, testing })
 
             <!-- 建议数据路径 -->
             <div v-if="testResult.suggestedDataPath" :class="styles.suggestion">
-              <span>{{ t('editor.api.suggestedPath') }} <code>{{ testResult.suggestedDataPath }}</code></span>
-              <el-button size="small" type="primary" link @click="applySuggestedDataPath">
-                {{ t('editor.api.apply') }}
+              <span
+                >{{ t("editor.api.suggestedPath") }}
+                <code>{{ testResult.suggestedDataPath }}</code></span
+              >
+              <el-button
+                size="small"
+                type="primary"
+                link
+                @click="applySuggestedDataPath"
+              >
+                {{ t("editor.api.apply") }}
               </el-button>
             </div>
 
             <!-- 分析按钮 -->
-            <el-button type="success" plain style="width: 100%; margin-top: 8px" @click="analyzeAndGenerateSchema">
-              {{ t('editor.api.analyzeAndGenerate') }}
+            <el-button
+              type="success"
+              plain
+              style="width: 100%; margin-top: 8px"
+              @click="analyzeAndGenerateSchema"
+            >
+              {{ t("editor.api.analyzeAndGenerate") }}
             </el-button>
           </template>
 
@@ -506,15 +618,33 @@ defineExpose({ testConnection, testing })
               <span>{{ testResult.message }}</span>
             </div>
 
-            <div v-if="testResult.responsePreview" :class="styles.previewSection">
-              <div :class="styles.previewLabel">{{ t('editor.api.responseContent') }}</div>
-              <pre :class="[styles.previewCode, styles.previewCodeError]">{{ testResult.responsePreview }}</pre>
+            <div
+              v-if="testResult.responsePreview"
+              :class="styles.previewSection"
+            >
+              <div :class="styles.previewLabel">
+                {{ t("editor.api.responseContent") }}
+              </div>
+              <pre :class="[styles.previewCode, styles.previewCodeError]">{{
+                testResult.responsePreview
+              }}</pre>
             </div>
 
-            <div v-if="testResult.suggestedDataPath" :class="styles.suggestionError">
-              <span>{{ t('editor.api.suggestedPath') }} <code>{{ testResult.suggestedDataPath }}</code></span>
-              <el-button size="small" type="primary" link @click="applySuggestedDataPath">
-                {{ t('editor.api.apply') }}
+            <div
+              v-if="testResult.suggestedDataPath"
+              :class="styles.suggestionError"
+            >
+              <span
+                >{{ t("editor.api.suggestedPath") }}
+                <code>{{ testResult.suggestedDataPath }}</code></span
+              >
+              <el-button
+                size="small"
+                type="primary"
+                link
+                @click="applySuggestedDataPath"
+              >
+                {{ t("editor.api.apply") }}
               </el-button>
             </div>
           </template>

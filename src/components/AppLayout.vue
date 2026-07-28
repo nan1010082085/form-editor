@@ -4,25 +4,26 @@
  *
  * 侧边栏导航 + 主内容区。编辑器/预览/发布页不使用此布局。
  */
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import styles from './AppLayout.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useQiankunShell } from '@schema-platform/platform-shared/qiankun'
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import styles from "./AppLayout.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useQiankunShell } from "@schema-platform/platform-shared/qiankun";
 
-const route = useRoute()
-const router = useRouter()
-const { isQiankunSubApp, shouldHideSubAppMenu, goToShellHome } = useQiankunShell()
+const route = useRoute();
+const router = useRouter();
+const { isQiankunSubApp, shouldHideSubAppMenu, goToShellHome } =
+  useQiankunShell();
 
 const navItems = [
-  { path: '/instances', label: '实例管理', icon: 'odometer' },
-  { path: '/templates', label: '模板库', icon: 'grid' },
-]
+  { path: "/instances", label: "实例管理", icon: "odometer" },
+  { path: "/templates", label: "模板库", icon: "grid" },
+];
 
 const activeNav = computed(() => {
-  if (route.path.startsWith('/templates')) return '/templates'
-  return route.path
-})
+  if (route.path.startsWith("/templates")) return "/templates";
+  return route.path;
+});
 </script>
 
 <template>
@@ -38,14 +39,20 @@ const activeNav = computed(() => {
           v-for="item in navItems"
           :key="item.path"
           :to="item.path"
-          :class="[styles.navItem, activeNav === item.path && styles.navItemActive]"
+          :class="[
+            styles.navItem,
+            activeNav === item.path && styles.navItemActive,
+          ]"
         >
           <AppIcon :name="item.icon" :size="18" />
           <span>{{ item.label }}</span>
         </router-link>
       </nav>
 
-      <div v-if="isQiankunSubApp && !shouldHideSubAppMenu" :class="styles.sidebarFooter">
+      <div
+        v-if="isQiankunSubApp && !shouldHideSubAppMenu"
+        :class="styles.sidebarFooter"
+      >
         <button
           type="button"
           :class="[styles.navItem, styles.footerItem]"

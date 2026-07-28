@@ -1,3 +1,3 @@
-export { FgCheckbox } from '../checkbox'
-export { createCheckboxWidget } from '../checkbox'
-export { checkboxConfig } from '../checkbox'
+export { FgCheckbox } from "../checkbox";
+export { createCheckboxWidget } from "../checkbox";
+export { checkboxConfig } from "../checkbox";

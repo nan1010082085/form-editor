@@ -9,18 +9,22 @@
  * - 轻量：仅采集事件名 + schemaId + 少量属性，不采集敏感数据
  * - 幂等：server 端点未就绪时静默降级，不影响业务
  */
-import { reportTelemetry, type TelemetryEvent } from '@/api/telemetryApi'
+import { reportTelemetry, type TelemetryEvent } from "@/api/telemetryApi";
 
 export function useTelemetry() {
   /** 记录一次关键行为（fire-and-forget） */
   function track(event: TelemetryEvent, props?: Record<string, unknown>): void {
-    void reportTelemetry(event, { props })
+    void reportTelemetry(event, { props });
   }
 
   /** 记录带 schemaId 的关键行为 */
-  function trackSchema(event: TelemetryEvent, schemaId: string, props?: Record<string, unknown>): void {
-    void reportTelemetry(event, { schemaId, props })
+  function trackSchema(
+    event: TelemetryEvent,
+    schemaId: string,
+    props?: Record<string, unknown>,
+  ): void {
+    void reportTelemetry(event, { schemaId, props });
   }
 
-  return { track, trackSchema }
+  return { track, trackSchema };
 }

@@ -23,13 +23,18 @@
  * })
  * ```
  */
-import { it, expect, beforeEach } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { useWidgetStore } from '@/stores/widget'
-import { registerAllWidgets } from '@/widgets/index'
-import { createWidget } from '@/widgets/registry'
-import { evaluateCondition } from '@/engine/eventEngine'
-import type { SchemaType, Widget, WidgetEvent, WidgetRenderState } from '@/widgets/base/types'
+import { it, expect, beforeEach } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+import { useWidgetStore } from "@/stores/widget";
+import { registerAllWidgets } from "@/widgets/index";
+import { createWidget } from "@/widgets/registry";
+import { evaluateCondition } from "@/engine/eventEngine";
+import type {
+  SchemaType,
+  Widget,
+  WidgetEvent,
+  WidgetRenderState,
+} from "@/widgets/base/types";
 
 /**
  * 计算 Widget 的渲染状态（visible / disabled / required）。
@@ -46,42 +51,43 @@ export function computeWidgetRenderState(
   formData: Record<string, unknown>,
   exposed?: Record<string, Record<string, unknown>>,
 ): WidgetRenderState {
-  const staticDisabled = (widget.props?.disabled as boolean) ?? false
-  const staticRequired = widget.validationRules?.some((r) => r.required) ?? false
+  const staticDisabled = (widget.props?.disabled as boolean) ?? false;
+  const staticRequired =
+    widget.validationRules?.some((r) => r.required) ?? false;
 
-  if (!widget.rules?.length) {
+  if (!widget.validationRules?.length) {
     return {
       visible: !widget.hidden,
       disabled: staticDisabled,
       required: staticRequired,
-    }
+    };
   }
 
-  let visible = !widget.hidden
-  let disabled = staticDisabled
+  let visible = !widget.hidden;
+  let disabled = staticDisabled;
 
-  for (const rule of widget.rules) {
-    const shouldExecute = rule.watches.some((watch) => {
-      if (watch.type === 'field') {
-        return watch.source in formData
+  for (const rule of widget.validationRules) {
+    const shouldExecute = rule.watches?.some((watch) => {
+      if (watch.type === "field") {
+        return watch.source in formData;
       }
-      return false
-    })
-    if (!shouldExecute) continue
+      return false;
+    });
+    if (!shouldExecute) continue;
 
-    if (!evaluateCondition(rule.condition, formData, exposed)) continue
+    if (!evaluateCondition(rule.condition ?? "", formData, exposed)) continue;
 
-    for (const action of rule.actions) {
+    for (const action of rule.actions ?? []) {
       switch (action.type) {
-        case 'hide':
-          visible = false
-          break
-        case 'visible':
-          visible = true
-          break
-        case 'disabled':
-          disabled = true
-          break
+        case "hide":
+          visible = false;
+          break;
+        case "visible":
+          visible = true;
+          break;
+        case "disabled":
+          disabled = true;
+          break;
       }
     }
   }
@@ -90,17 +96,17 @@ export function computeWidgetRenderState(
     visible,
     disabled,
     required: staticRequired,
-  }
+  };
 }
 
 export function createWidgetTestHarness(type: SchemaType) {
-  let store: ReturnType<typeof useWidgetStore>
+  let store: ReturnType<typeof useWidgetStore>;
 
   beforeEach(() => {
-    setActivePinia(createPinia())
-    registerAllWidgets()
-    store = useWidgetStore()
-  })
+    setActivePinia(createPinia());
+    registerAllWidgets();
+    store = useWidgetStore();
+  });
 
   return {
     getStore: () => store,
@@ -109,68 +115,72 @@ export function createWidgetTestHarness(type: SchemaType) {
 
     testDragToCanvas() {
       it(`[${type}] 拖放到画布 → store 中存在`, () => {
-        const widget = createWidget(type, `test_${type}`)
-        expect(widget).not.toBeNull()
-        store.addWidget(widget!)
-        const found = store.findWidget(`test_${type}`)
-        expect(found).toBeDefined()
-        expect(found!.type).toBe(type)
-      })
+        const widget = createWidget(type, `test_${type}`);
+        expect(widget).not.toBeNull();
+        store.addWidget(widget!);
+        const found = store.findWidget(`test_${type}`);
+        expect(found).toBeDefined();
+        expect(found!.type).toBe(type);
+      });
     },
 
     testDragToContainer() {
       it(`[${type}] 拖入容器 → children 包含`, () => {
-        const widget = createWidget(type, `test_${type}`)
-        const container = createWidget('card', 'container_1')
-        store.addWidget(container!)
-        store.addWidget(widget!)
-        store.addToContainer(`test_${type}`, 'container_1')
-        const parent = store.findWidget('container_1')
-        expect(parent!.children).toHaveLength(1)
-        expect(parent!.children![0].type).toBe(type)
-      })
+        const widget = createWidget(type, `test_${type}`);
+        const container = createWidget("card", "container_1");
+        store.addWidget(container!);
+        store.addWidget(widget!);
+        store.addToContainer(`test_${type}`, "container_1");
+        const parent = store.findWidget("container_1");
+        expect(parent!.children).toHaveLength(1);
+        expect(parent!.children![0].type).toBe(type);
+      });
     },
 
     testDragOutFromContainer() {
       it(`[${type}] 从容器拖出 → 回到 root`, () => {
-        const widget = createWidget(type, `test_${type}`)
-        const container = createWidget('card', 'container_1')
-        store.addWidget(container!)
-        store.addWidget(widget!)
-        store.addToContainer(`test_${type}`, 'container_1')
-        store.removeFromContainer(`test_${type}`)
-        expect(store.isRootWidget(`test_${type}`)).toBe(true)
-      })
+        const widget = createWidget(type, `test_${type}`);
+        const container = createWidget("card", "container_1");
+        store.addWidget(container!);
+        store.addWidget(widget!);
+        store.addToContainer(`test_${type}`, "container_1");
+        store.removeFromContainer(`test_${type}`);
+        expect(store.isRootWidget(`test_${type}`)).toBe(true);
+      });
     },
 
     // Dimension 2: Property binding -------------------------------------------
 
-    testPropertyBinding(propKey: string, value: unknown, assertFn: (widget: Widget) => void) {
+    testPropertyBinding(
+      propKey: string,
+      value: unknown,
+      assertFn: (widget: Widget) => void,
+    ) {
       it(`[${type}] 属性 ${propKey} 生效`, () => {
-        const widget = createWidget(type, `test_${type}`)
-        store.addWidget(widget!)
-        store.updateWidget(`test_${type}`, { props: { [propKey]: value } })
-        assertFn(store.findWidget(`test_${type}`)!)
-      })
+        const widget = createWidget(type, `test_${type}`);
+        store.addWidget(widget!);
+        store.updateWidget(`test_${type}`, { props: { [propKey]: value } });
+        assertFn(store.findWidget(`test_${type}`)!);
+      });
     },
 
     // Dimension 3: Event trigger ----------------------------------------------
 
     testEventTrigger(trigger: string) {
       it(`[${type}] 事件 ${trigger} 触发`, () => {
-        const widget = createWidget(type, `test_${type}`)
-        store.addWidget(widget!)
+        const widget = createWidget(type, `test_${type}`);
+        store.addWidget(widget!);
 
         const event: WidgetEvent = {
           trigger,
-          actions: [{ type: 'show', target: 'some_target' }],
-        }
-        store.updateWidget(`test_${type}`, { events: [event] })
+          actions: [{ type: "show", target: "some_target" }],
+        };
+        store.updateWidget(`test_${type}`, { events: [event] });
 
-        const found = store.findWidget(`test_${type}`)
-        expect(found!.events).toHaveLength(1)
-        expect(found!.events![0].trigger).toBe(trigger)
-      })
+        const found = store.findWidget(`test_${type}`);
+        expect(found!.events).toHaveLength(1);
+        expect(found!.events![0].trigger).toBe(trigger);
+      });
     },
 
     // Dimension 4: Linkage ----------------------------------------------------
@@ -180,32 +190,32 @@ export function createWidgetTestHarness(type: SchemaType) {
       expected: { visible?: boolean; disabled?: boolean },
     ) {
       it(`[${type}] linkage 生效`, () => {
-        const widget = createWidget(type, `test_${type}`)
-        store.addWidget(widget!)
-        const found = store.findWidget(`test_${type}`)!
-        const state = computeWidgetRenderState(found, formData)
+        const widget = createWidget(type, `test_${type}`);
+        store.addWidget(widget!);
+        const found = store.findWidget(`test_${type}`)!;
+        const state = computeWidgetRenderState(found, formData);
         if (expected.visible !== undefined) {
-          expect(state.visible).toBe(expected.visible)
+          expect(state.visible).toBe(expected.visible);
         }
         if (expected.disabled !== undefined) {
-          expect(state.disabled).toBe(expected.disabled)
+          expect(state.disabled).toBe(expected.disabled);
         }
-      })
+      });
     },
 
     // Dimension 5: Datasource -------------------------------------------------
 
     testDatasourceConfig() {
       it(`[${type}] 支持数据源配置`, () => {
-        const widget = createWidget(type, `test_${type}`)
-        store.addWidget(widget!)
+        const widget = createWidget(type, `test_${type}`);
+        store.addWidget(widget!);
         store.updateWidget(`test_${type}`, {
-          api: { url: '/api/options', method: 'get' },
-        })
-        const found = store.findWidget(`test_${type}`)
-        expect(found!.api).toBeDefined()
-        expect(found!.api!.url).toBe('/api/options')
-      })
+          api: { url: "/api/options", method: "get" },
+        });
+        const found = store.findWidget(`test_${type}`);
+        expect(found!.api).toBeDefined();
+        expect(found!.api!.url).toBe("/api/options");
+      });
     },
-  }
+  };
 }

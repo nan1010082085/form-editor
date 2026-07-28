@@ -4,44 +4,55 @@
  *
  * Table display with search, type filter, pagination, create/edit/delete.
  */
-import { onMounted, ref, watch } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { useCredentialStore } from '@/stores/credential'
-import CredentialFormDialog from '@/components/Credential/CredentialFormDialog.vue'
-import type { CredentialItem, CredentialDetail, CredentialType } from '@/types/credential'
-import { CREDENTIAL_TYPE_LABELS } from '@/types/credential'
-import styles from './CredentialListView.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { onMounted, ref, watch } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { useCredentialStore } from "@/stores/credential";
+import CredentialFormDialog from "@/components/Credential/CredentialFormDialog.vue";
+import type {
+  CredentialItem,
+  CredentialDetail,
+  CredentialType,
+} from "@/types/credential";
+import { CREDENTIAL_TYPE_LABELS } from "@/types/credential";
+import styles from "./CredentialListView.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const credentialStore = useCredentialStore()
-const { t } = useI18n()
+const credentialStore = useCredentialStore();
+const { t } = useI18n();
 
-const searchInput = ref('')
-let searchTimer: ReturnType<typeof setTimeout> | null = null
+const searchInput = ref("");
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const typeOptions = [
-  { label: 'All Types', value: '' },
-  ...Object.entries(CREDENTIAL_TYPE_LABELS).map(([value, label]) => ({ label, value })),
-]
+  { label: "All Types", value: "" },
+  ...Object.entries(CREDENTIAL_TYPE_LABELS).map(([value, label]) => ({
+    label,
+    value,
+  })),
+];
 
-const activeType = ref<CredentialType | ''>('')
+const activeType = ref<CredentialType | "">("");
 
 // Dialog state
-const formDialogVisible = ref(false)
-const editingCredential = ref<CredentialDetail | null>(null)
+const formDialogVisible = ref(false);
+const editingCredential = ref<CredentialDetail | null>(null);
 
 // Data loading
 onMounted(() => {
-  credentialStore.fetchCredentials()
-})
+  credentialStore.fetchCredentials();
+});
 
 function handleSearch(val: string) {
-  searchInput.value = val
-  if (searchTimer) clearTimeout(searchTimer)
+  searchInput.value = val;
+  if (searchTimer) clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
-    credentialStore.fetchCredentials({ search: val, type: activeType.value, page: 1 })
-  }, 300)
+    credentialStore.fetchCredentials({
+      search: val,
+      type: activeType.value,
+      page: 1,
+    });
+  }, 300);
 }
 
 watch(activeType, (val) => {
@@ -49,30 +60,32 @@ watch(activeType, (val) => {
     search: searchInput.value || undefined,
     type: val,
     page: 1,
-  })
-})
+  });
+});
 
 function handlePageChange(page: number) {
   credentialStore.fetchCredentials({
     search: searchInput.value || undefined,
     type: activeType.value,
     page,
-  })
+  });
 }
 
 // CRUD operations
 function openCreateDialog() {
-  editingCredential.value = null
-  formDialogVisible.value = true
+  editingCredential.value = null;
+  formDialogVisible.value = true;
 }
 
 async function openEditDialog(credential: CredentialItem) {
-  const detail = await credentialStore.fetchCredentialById(credential.id)
+  const detail = await credentialStore.fetchCredentialById(credential.id);
   if (detail) {
-    editingCredential.value = detail
-    formDialogVisible.value = true
+    editingCredential.value = detail;
+    formDialogVisible.value = true;
   } else {
-    ElMessage.error(credentialStore.error || 'Failed to fetch credential details')
+    ElMessage.error(
+      credentialStore.error || "Failed to fetch credential details",
+    );
   }
 }
 
@@ -80,12 +93,16 @@ async function handleDelete(credential: CredentialItem) {
   try {
     await ElMessageBox.confirm(
       `Delete credential "${credential.name}"? This cannot be undone.`,
-      'Confirm Delete',
-      { confirmButtonText: 'Delete', cancelButtonText: 'Cancel', type: 'warning' },
-    )
-    const ok = await credentialStore.deleteCredential(credential.id)
-    if (ok) ElMessage.success('Credential deleted')
-    else ElMessage.error(credentialStore.error || 'Delete failed')
+      "Confirm Delete",
+      {
+        confirmButtonText: "Delete",
+        cancelButtonText: "Cancel",
+        type: "warning",
+      },
+    );
+    const ok = await credentialStore.deleteCredential(credential.id);
+    if (ok) ElMessage.success("Credential deleted");
+    else ElMessage.error(credentialStore.error || "Delete failed");
   } catch {
     // user cancelled
   }
@@ -95,25 +112,27 @@ function handleSaved() {
   credentialStore.fetchCredentials({
     search: searchInput.value || undefined,
     type: activeType.value,
-  })
+  });
 }
 
 // Helpers
 function formatDate(d: string): string {
-  return new Date(d).toLocaleString('zh-CN')
+  return new Date(d).toLocaleString("zh-CN");
 }
 
 function typeLabel(type: CredentialType): string {
-  return CREDENTIAL_TYPE_LABELS[type] ?? type
+  return CREDENTIAL_TYPE_LABELS[type] ?? type;
 }
 
-function typeTagType(type: CredentialType): '' | 'success' | 'warning' | 'info' {
-  const map: Record<CredentialType, '' | 'success' | 'warning' | 'info'> = {
-    api_key: 'success',
-    basic_auth: 'info',
-    bearer_token: 'warning',
-  }
-  return map[type]
+function typeTagType(
+  type: CredentialType,
+): "" | "success" | "warning" | "info" {
+  const map: Record<CredentialType, "" | "success" | "warning" | "info"> = {
+    api_key: "success",
+    basic_auth: "info",
+    bearer_token: "warning",
+  };
+  return map[type];
 }
 </script>
 
@@ -125,10 +144,13 @@ function typeTagType(type: CredentialType): '' | 'success' | 'warning' | 'info' 
         <div :class="styles.titleRow">
           <div>
             <h1 :class="styles.title">Credentials</h1>
-            <p :class="styles.subtitle">Manage API keys, tokens, and authentication credentials</p>
+            <p :class="styles.subtitle">
+              Manage API keys, tokens, and authentication credentials
+            </p>
           </div>
           <div :class="styles.headerActions">
-            <el-button type="primary" :icon="Plus" @click="openCreateDialog">
+            <el-button type="primary" @click="openCreateDialog">
+              <AppIcon name="plus" />
               Create Credential
             </el-button>
           </div>
@@ -142,10 +164,11 @@ function typeTagType(type: CredentialType): '' | 'success' | 'warning' | 'info' 
               placeholder="Search by name..."
               clearable
               :class="styles.searchInput"
-              :prefix-icon="Search"
               @input="handleSearch"
               @clear="handleSearch('')"
-            />
+            >
+              <template #prefix><AppIcon name="search" /></template>
+            </el-input>
             <el-select v-model="activeType" :class="styles.typeSelect">
               <el-option
                 v-for="opt in typeOptions"
@@ -159,7 +182,10 @@ function typeTagType(type: CredentialType): '' | 'success' | 'warning' | 'info' 
       </div>
 
       <!-- Loading -->
-      <div v-if="credentialStore.loading && !credentialStore.hasCredentials" :class="styles.tableWrapper">
+      <div
+        v-if="credentialStore.loading && !credentialStore.hasCredentials"
+        :class="styles.tableWrapper"
+      >
         <el-skeleton :rows="8" animated />
       </div>
 
@@ -169,8 +195,11 @@ function typeTagType(type: CredentialType): '' | 'success' | 'warning' | 'info' 
           <AppIcon name="key" :size="64" />
         </div>
         <h2 :class="styles.emptyTitle">No credentials yet</h2>
-        <p :class="styles.emptyDesc">Create your first credential to get started</p>
-        <el-button type="primary" :icon="Plus" @click="openCreateDialog">
+        <p :class="styles.emptyDesc">
+          Create your first credential to get started
+        </p>
+        <el-button type="primary" @click="openCreateDialog">
+          <AppIcon name="plus" />
           Create Credential
         </el-button>
       </div>
@@ -183,10 +212,17 @@ function typeTagType(type: CredentialType): '' | 'success' | 'warning' | 'info' 
           row-key="id"
           :class="styles.table"
         >
-          <el-table-column prop="name" label="Name" min-width="200" show-overflow-tooltip />
+          <el-table-column
+            prop="name"
+            label="Name"
+            min-width="200"
+            show-overflow-tooltip
+          />
           <el-table-column prop="type" label="Type" width="140">
             <template #default="{ row }">
-              <el-tag :type="typeTagType(row.type)" size="small">{{ typeLabel(row.type) }}</el-tag>
+              <el-tag :type="typeTagType(row.type)" size="small">{{
+                typeLabel(row.type)
+              }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="createdAt" label="Created" width="170">
@@ -199,16 +235,28 @@ function typeTagType(type: CredentialType): '' | 'success' | 'warning' | 'info' 
               {{ formatDate(row.updatedAt) }}
             </template>
           </el-table-column>
-          <el-table-column label="Actions" width="150" fixed="right" align="center">
+          <el-table-column
+            label="Actions"
+            width="150"
+            fixed="right"
+            align="center"
+          >
             <template #default="{ row }">
-              <el-button link type="primary" @click="openEditDialog(row)">{{ t('editor.credential.edit') }}</el-button>
-              <el-button link type="danger" @click="handleDelete(row)">{{ t('editor.credential.delete') }}</el-button>
+              <el-button link type="primary" @click="openEditDialog(row)">{{
+                t("editor.credential.edit")
+              }}</el-button>
+              <el-button link type="danger" @click="handleDelete(row)">{{
+                t("editor.credential.delete")
+              }}</el-button>
             </template>
           </el-table-column>
         </el-table>
 
         <!-- Pagination -->
-        <div v-if="credentialStore.pagination.total > 0" :class="styles.pagination">
+        <div
+          v-if="credentialStore.pagination.total > 0"
+          :class="styles.pagination"
+        >
           <el-pagination
             v-model:current-page="credentialStore.pagination.page"
             :page-size="credentialStore.pagination.pageSize"

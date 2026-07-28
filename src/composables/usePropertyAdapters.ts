@@ -9,60 +9,63 @@
  *
  * 配合 PropertyPanel / PropertyField 使用。
  */
-import type { Widget } from '../widgets/base/types'
-import { ANIMATION_OPTIONS } from '../utils/widgetAnimations'
+import type { Widget } from "../widgets/base/types";
+import { ANIMATION_OPTIONS } from "../utils/widgetAnimations";
 
 // ---- Style metadata maps ----
 
 const STYLE_LABEL_MAP: Record<string, string> = {
-  width: '宽度',
-  height: '高度',
-  margin: '外边距',
-  padding: '内边距',
-  backgroundColor: '背景色',
-  background: '背景',
-  border: '边框',
-  borderRadius: '圆角',
-  boxShadow: '阴影',
-  fontSize: '字号',
-  fontWeight: '字重',
-  color: '颜色',
-  animationPreset: '入场动画',
-  animationDelay: '动画延迟',
-  animationDuration: '动画时长',
-}
+  width: "宽度",
+  height: "高度",
+  margin: "外边距",
+  padding: "内边距",
+  backgroundColor: "背景色",
+  background: "背景",
+  border: "边框",
+  borderRadius: "圆角",
+  boxShadow: "阴影",
+  fontSize: "字号",
+  fontWeight: "字重",
+  color: "颜色",
+  animationPreset: "入场动画",
+  animationDelay: "动画延迟",
+  animationDuration: "动画时长",
+};
 
-const COLOR_STYLE_PROPS = new Set(['color', 'backgroundColor'])
-const TEXT_STYLE_PROPS = new Set(['width', 'height', 'fontSize'])
-const SELECT_STYLE_PROPS = new Set(['fontWeight', 'animationPreset'])
-const BORDER_STYLE_PROPS = new Set(['border'])
-const BORDER_RADIUS_STYLE_PROPS = new Set(['borderRadius'])
-const SPACING_MARGIN_PROPS = new Set(['margin'])
-const SPACING_PADDING_PROPS = new Set(['padding'])
-const SHADOW_STYLE_PROPS = new Set(['boxShadow'])
-const BACKGROUND_STYLE_PROPS = new Set(['background'])
-const NUMBER_STYLE_PROPS = new Set(['animationDelay', 'animationDuration'])
+const COLOR_STYLE_PROPS = new Set(["color", "backgroundColor"]);
+const TEXT_STYLE_PROPS = new Set(["width", "height", "fontSize"]);
+const SELECT_STYLE_PROPS = new Set(["fontWeight", "animationPreset"]);
+const BORDER_STYLE_PROPS = new Set(["border"]);
+const BORDER_RADIUS_STYLE_PROPS = new Set(["borderRadius"]);
+const SPACING_MARGIN_PROPS = new Set(["margin"]);
+const SPACING_PADDING_PROPS = new Set(["padding"]);
+const SHADOW_STYLE_PROPS = new Set(["boxShadow"]);
+const BACKGROUND_STYLE_PROPS = new Set(["background"]);
+const NUMBER_STYLE_PROPS = new Set(["animationDelay", "animationDuration"]);
 
-const STYLE_OPTIONS_MAP: Record<string, { label: string; value: string | number }[]> = {
+const STYLE_OPTIONS_MAP: Record<
+  string,
+  { label: string; value: string | number }[]
+> = {
   fontWeight: [
-    { label: '正常', value: 'normal' },
-    { label: '粗体', value: 'bold' },
+    { label: "正常", value: "normal" },
+    { label: "粗体", value: "bold" },
   ],
   animationPreset: ANIMATION_OPTIONS,
-}
+};
 
 // ---- Props metadata maps ----
 
 const BOOLEAN_PROPS = new Set([
-  'disabled',
-  'readonly',
-  'clearable',
-  'multiple',
-  'filterable',
-  'showPassword',
-  'showWordLimit',
-  'showHeader',
-])
+  "disabled",
+  "readonly",
+  "clearable",
+  "multiple",
+  "filterable",
+  "showPassword",
+  "showWordLimit",
+  "showHeader",
+]);
 
 // ---- Composable ----
 
@@ -75,84 +78,90 @@ export function usePropertyAdapters() {
    *    'field' → widget.field
    */
   function readProperty(widget: Widget, path: string): unknown {
-    const parts = path.split('.')
-    let current: unknown = widget
+    const parts = path.split(".");
+    let current: unknown = widget;
     for (const part of parts) {
-      if (current == null || typeof current !== 'object') return undefined
-      current = (current as Record<string, unknown>)[part]
+      if (current == null || typeof current !== "object") return undefined;
+      current = (current as Record<string, unknown>)[part];
     }
-    return current
+    return current;
   }
 
   /**
    * 写入 Widget 属性（支持 dot-notation 路径）
    * 返回 patch 对象，由调用方传给 widgetStore.updateWidget
    */
-  function writeProperty(widget: Widget, path: string, value: unknown): Partial<Widget> {
-    const parts = path.split('.')
+  function writeProperty(
+    widget: Widget,
+    path: string,
+    value: unknown,
+  ): Partial<Widget> {
+    const parts = path.split(".");
 
     if (parts.length === 1) {
-      return { [parts[0]]: value }
+      return { [parts[0]]: value };
     }
 
-    if (parts[0] === 'position') {
+    if (parts[0] === "position") {
       return {
         position: { ...widget.position, [parts[1]]: value },
-      }
+      };
     }
 
-    if (parts[0] === 'style') {
+    if (parts[0] === "style") {
       return {
         style: { ...(widget.style ?? {}), [parts[1]]: value },
-      }
+      };
     }
 
-    if (parts[0] === 'props') {
+    if (parts[0] === "props") {
       return {
         props: { ...(widget.props ?? {}), [parts[1]]: value },
-      }
+      };
     }
 
-    return {}
+    return {};
   }
 
   /**
    * 样式属性 → 中文标签
    */
   function getStyleLabel(prop: string): string {
-    return STYLE_LABEL_MAP[prop] || prop
+    return STYLE_LABEL_MAP[prop] || prop;
   }
 
   /**
    * 样式属性 → PropertyField 输入类型
    */
   function getStyleInputType(prop: string): string {
-    if (COLOR_STYLE_PROPS.has(prop)) return 'color'
-    if (SELECT_STYLE_PROPS.has(prop)) return 'select'
-    if (NUMBER_STYLE_PROPS.has(prop)) return 'number'
-    if (BORDER_STYLE_PROPS.has(prop)) return 'border-editor'
-    if (BORDER_RADIUS_STYLE_PROPS.has(prop)) return 'border-radius-editor'
-    if (SPACING_MARGIN_PROPS.has(prop)) return 'spacing-margin-editor'
-    if (SPACING_PADDING_PROPS.has(prop)) return 'spacing-padding-editor'
-    if (SHADOW_STYLE_PROPS.has(prop)) return 'shadow-editor'
-    if (BACKGROUND_STYLE_PROPS.has(prop)) return 'background-editor'
-    if (TEXT_STYLE_PROPS.has(prop)) return 'text'
-    return 'text'
+    if (COLOR_STYLE_PROPS.has(prop)) return "color";
+    if (SELECT_STYLE_PROPS.has(prop)) return "select";
+    if (NUMBER_STYLE_PROPS.has(prop)) return "number";
+    if (BORDER_STYLE_PROPS.has(prop)) return "border-editor";
+    if (BORDER_RADIUS_STYLE_PROPS.has(prop)) return "border-radius-editor";
+    if (SPACING_MARGIN_PROPS.has(prop)) return "spacing-margin-editor";
+    if (SPACING_PADDING_PROPS.has(prop)) return "spacing-padding-editor";
+    if (SHADOW_STYLE_PROPS.has(prop)) return "shadow-editor";
+    if (BACKGROUND_STYLE_PROPS.has(prop)) return "background-editor";
+    if (TEXT_STYLE_PROPS.has(prop)) return "text";
+    return "text";
   }
 
   /**
    * 组件 props → PropertyField 输入类型
    */
   function getPropInputType(prop: string): string {
-    if (BOOLEAN_PROPS.has(prop)) return 'switch'
-    return 'text'
+    if (BOOLEAN_PROPS.has(prop)) return "switch";
+    return "text";
   }
 
   /**
    * 样式属性 → 下拉选项（仅 select 类型有值）
    */
-  function getStyleOptions(prop: string): { label: string; value: string | number }[] | undefined {
-    return STYLE_OPTIONS_MAP[prop]
+  function getStyleOptions(
+    prop: string,
+  ): { label: string; value: string | number }[] | undefined {
+    return STYLE_OPTIONS_MAP[prop];
   }
 
   return {
@@ -162,5 +171,5 @@ export function usePropertyAdapters() {
     getStyleInputType,
     getPropInputType,
     getStyleOptions,
-  }
+  };
 }

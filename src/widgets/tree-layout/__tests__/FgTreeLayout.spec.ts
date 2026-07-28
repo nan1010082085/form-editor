@@ -1,147 +1,153 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { mount } from '@vue/test-utils'
-import { computed } from 'vue'
-import ElementPlus from 'element-plus'
-import { useWidgetStore } from '@/stores/widget'
-import { registerAllWidgets } from '@/widgets/index'
-import { createWidget, getWidget } from '@/widgets/registry'
-import { widgetDataKey, widgetStyleKey } from '../../base/types'
-import FgTreeLayout from '../FgTreeLayout.vue'
-import { treeLayoutConfig } from '../config'
+import { describe, it, expect, beforeEach } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+import { mount } from "@vue/test-utils";
+import { computed } from "vue";
+import ElementPlus from "element-plus";
+import { useWidgetStore } from "@/stores/widget";
+import { registerAllWidgets } from "@/widgets/index";
+import { createWidget, getWidget } from "@/widgets/registry";
+import { widgetDataKey, widgetStyleKey } from "../../base/types";
+import FgTreeLayout from "../FgTreeLayout.vue";
+import { treeLayoutConfig } from "../config";
 
-describe('FgTreeLayout', () => {
-  let store: ReturnType<typeof useWidgetStore>
+describe("FgTreeLayout", () => {
+  let store: ReturnType<typeof useWidgetStore>;
 
   beforeEach(() => {
-    setActivePinia(createPinia())
-    registerAllWidgets()
-    store = useWidgetStore()
-  })
+    setActivePinia(createPinia());
+    registerAllWidgets();
+    store = useWidgetStore();
+  });
 
   function mountWidget(overrides: Record<string, unknown> = {}) {
-    const widget = createWidget('tree-layout', 'test_widget')!
-    Object.assign(widget, overrides)
-    store.addWidget(widget)
+    const widget = createWidget("tree-layout", "test_widget")!;
+    Object.assign(widget, overrides);
+    store.addWidget(widget);
     return mount(FgTreeLayout, {
       global: {
         plugins: [ElementPlus],
         provide: {
-          [widgetDataKey as symbol]: computed(() => store.findWidget('test_widget')!),
-          [widgetStyleKey as symbol]: computed(() => store.findWidget('test_widget')!.style ?? {}),
+          [widgetDataKey as symbol]: computed(
+            () => store.findWidget("test_widget")!,
+          ),
+          [widgetStyleKey as symbol]: computed(
+            () => store.findWidget("test_widget")!.style ?? {},
+          ),
         },
       },
-    })
+    });
   }
 
   // Store CRUD
-  describe('store CRUD', () => {
-    it('创建后 store 中存在', () => {
-      const widget = createWidget('tree-layout', 'test_tree')
-      store.addWidget(widget!)
-      expect(store.findWidget('test_tree')).toBeDefined()
-    })
+  describe("store CRUD", () => {
+    it("创建后 store 中存在", () => {
+      const widget = createWidget("tree-layout", "test_tree");
+      store.addWidget(widget!);
+      expect(store.findWidget("test_tree")).toBeDefined();
+    });
 
-    it('更新 title 后 store 中同步', () => {
-      const widget = createWidget('tree-layout', 'test_tree')!
-      store.addWidget(widget)
-      store.updateWidget('test_tree', { props: { ...widget.props, title: '组织架构' } })
-      expect(store.findWidget('test_tree')!.props!.title).toBe('组织架构')
-    })
+    it("更新 title 后 store 中同步", () => {
+      const widget = createWidget("tree-layout", "test_tree")!;
+      store.addWidget(widget);
+      store.updateWidget("test_tree", {
+        props: { ...widget.props, title: "组织架构" },
+      });
+      expect(store.findWidget("test_tree")!.props!.title).toBe("组织架构");
+    });
 
-    it('删除后 store 中不存在', () => {
-      const widget = createWidget('tree-layout', 'test_tree')!
-      store.addWidget(widget)
-      store.removeWidget('test_tree')
-      expect(store.findWidget('test_tree')).toBeNull()
-    })
-  })
+    it("删除后 store 中不存在", () => {
+      const widget = createWidget("tree-layout", "test_tree")!;
+      store.addWidget(widget);
+      store.removeWidget("test_tree");
+      expect(store.findWidget("test_tree")).toBeNull();
+    });
+  });
 
   // Title prop
-  describe('title 属性', () => {
-    it('默认显示侧栏面板', () => {
-      const wrapper = mountWidget()
-      expect(wrapper.text()).toContain('侧栏面板')
-    })
+  describe("title 属性", () => {
+    it("默认显示侧栏面板", () => {
+      const wrapper = mountWidget();
+      expect(wrapper.text()).toContain("侧栏面板");
+    });
 
-    it('自定义标题', () => {
-      const wrapper = mountWidget({ props: { title: '部门列表' } })
-      expect(wrapper.text()).toContain('部门列表')
-    })
-  })
+    it("自定义标题", () => {
+      const wrapper = mountWidget({ props: { title: "部门列表" } });
+      expect(wrapper.text()).toContain("部门列表");
+    });
+  });
 
   // ShowSearch prop
-  describe('showSearch 属性', () => {
-    it('默认显示搜索框', () => {
-      const wrapper = mountWidget()
-      expect(wrapper.find('input').exists()).toBe(true)
-    })
+  describe("showSearch 属性", () => {
+    it("默认显示搜索框", () => {
+      const wrapper = mountWidget();
+      expect(wrapper.find("input").exists()).toBe(true);
+    });
 
-    it('showSearch=false 隐藏搜索框', () => {
-      const wrapper = mountWidget({ props: { showSearch: false } })
-      expect(wrapper.find('input').exists()).toBe(false)
-    })
-  })
+    it("showSearch=false 隐藏搜索框", () => {
+      const wrapper = mountWidget({ props: { showSearch: false } });
+      expect(wrapper.find("input").exists()).toBe(false);
+    });
+  });
 
   // Container — child management
-  describe('容器子组件管理', () => {
-    it('支持容纳子组件', () => {
-      const tree = createWidget('tree-layout', 'test_tree')
-      const input = createWidget('input', 'child_1')
-      store.addWidget(tree!)
-      store.addWidget(input!)
-      store.addToContainer('child_1', 'test_tree')
-      expect(store.findWidget('test_tree')!.children).toHaveLength(1)
-    })
+  describe("容器子组件管理", () => {
+    it("支持容纳子组件", () => {
+      const tree = createWidget("tree-layout", "test_tree");
+      const input = createWidget("input", "child_1");
+      store.addWidget(tree!);
+      store.addWidget(input!);
+      store.addToContainer("child_1", "test_tree");
+      expect(store.findWidget("test_tree")!.children).toHaveLength(1);
+    });
 
-    it('支持移除子组件', () => {
-      const tree = createWidget('tree-layout', 'test_tree')
-      const input = createWidget('input', 'child_1')
-      store.addWidget(tree!)
-      store.addWidget(input!)
-      store.addToContainer('child_1', 'test_tree')
-      store.removeFromContainer('child_1')
-      expect(store.isRootWidget('child_1')).toBe(true)
-      expect(store.findWidget('test_tree')!.children).toHaveLength(0)
-    })
+    it("支持移除子组件", () => {
+      const tree = createWidget("tree-layout", "test_tree");
+      const input = createWidget("input", "child_1");
+      store.addWidget(tree!);
+      store.addWidget(input!);
+      store.addToContainer("child_1", "test_tree");
+      store.removeFromContainer("child_1");
+      expect(store.isRootWidget("child_1")).toBe(true);
+      expect(store.findWidget("test_tree")!.children).toHaveLength(0);
+    });
 
-    it('支持多个子组件', () => {
-      const tree = createWidget('tree-layout', 'test_tree')
-      const input = createWidget('input', 'child_1')
-      const btn = createWidget('button', 'child_2')
-      store.addWidget(tree!)
-      store.addWidget(input!)
-      store.addWidget(btn!)
-      store.addToContainer('child_1', 'test_tree')
-      store.addToContainer('child_2', 'test_tree')
-      expect(store.findWidget('test_tree')!.children).toHaveLength(2)
-    })
-  })
+    it("支持多个子组件", () => {
+      const tree = createWidget("tree-layout", "test_tree");
+      const input = createWidget("input", "child_1");
+      const btn = createWidget("button", "child_2");
+      store.addWidget(tree!);
+      store.addWidget(input!);
+      store.addWidget(btn!);
+      store.addToContainer("child_1", "test_tree");
+      store.addToContainer("child_2", "test_tree");
+      expect(store.findWidget("test_tree")!.children).toHaveLength(2);
+    });
+  });
 
   // Style
-  describe('样式', () => {
-    it('默认宽度 100%', () => {
-      const widget = createWidget('tree-layout', 'test_widget')!
-      store.addWidget(widget)
-      const w = store.findWidget('test_widget')!
-      expect(w.position.w).toBe(100)
-      expect(w.position.wUnit).toBe('%')
-    })
-  })
+  describe("样式", () => {
+    it("默认宽度 100%", () => {
+      const widget = createWidget("tree-layout", "test_widget")!;
+      store.addWidget(widget);
+      const w = store.findWidget("test_widget")!;
+      expect(w.position.w).toBe(100);
+      expect(w.position.wUnit).toBe("%");
+    });
+  });
 
   // Config panels
-  describe('配置面板声明', () => {
-    it('configPanels 包含 events', () => {
-      expect(treeLayoutConfig.configPanels).toContain('events')
-    })
-  })
+  describe("配置面板声明", () => {
+    it("configPanels 包含 events", () => {
+      expect(treeLayoutConfig.configPanels).toContain("events");
+    });
+  });
 
-  describe('布局分组', () => {
-    it('group 为 layout', () => {
-      const widget = createWidget('tree-layout', 'test_tree')
-      expect(widget).toBeDefined()
-      const registryItem = getWidget('tree-layout')
-      expect(registryItem?.group).toBe('layout')
-    })
-  })
-})
+  describe("布局分组", () => {
+    it("group 为 layout", () => {
+      const widget = createWidget("tree-layout", "test_tree");
+      expect(widget).toBeDefined();
+      const registryItem = getWidget("tree-layout");
+      expect(registryItem?.group).toBe("layout");
+    });
+  });
+});

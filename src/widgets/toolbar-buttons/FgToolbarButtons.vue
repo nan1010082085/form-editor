@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue'
-import { widgetDataKey, widgetStyleKey } from '../base/types'
-import styles from './FgToolbarButtons.module.scss'
-import { EVENT_CONTEXT_KEY } from '../../components/WidgetRenderer/types'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { triggerWidgetEvent } from '../../engine/eventEngine'
-import type { ToolbarButtonItem } from './config'
+import { inject, computed } from "vue";
+import { widgetDataKey, widgetStyleKey } from "../base/types";
+import styles from "./FgToolbarButtons.module.scss";
+import { EVENT_CONTEXT_KEY } from "../../components/WidgetRenderer/types";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { triggerWidgetEvent } from "../../engine/eventEngine";
+import type { ToolbarButtonItem } from "./config";
 
-const widgetData = inject(widgetDataKey)!
-const widgetStyle = inject(widgetStyleKey)!
-const { isDisabled } = useWidgetRenderState()
-const eventCtx = inject(EVENT_CONTEXT_KEY, null)
+const widgetData = inject(widgetDataKey)!;
+const widgetStyle = inject(widgetStyleKey)!;
+const { isDisabled } = useWidgetRenderState();
+const eventCtx = inject(EVENT_CONTEXT_KEY, null);
 
 const dynamicStyle = computed(() => ({
   fontSize: widgetStyle.value?.fontSize as string,
   color: widgetStyle.value?.color as string,
-}))
+}));
 
 const buttons = computed<ToolbarButtonItem[]>(() => {
-  return (widgetData.value.props?.buttons as ToolbarButtonItem[]) || []
-})
+  return (widgetData.value.props?.buttons as ToolbarButtonItem[]) || [];
+});
 
 async function handleClick(idx: number) {
   if (eventCtx) {
-    await triggerWidgetEvent(widgetData.value, 'click', eventCtx, `btn-${idx}`)
+    await triggerWidgetEvent(widgetData.value, "click", eventCtx, `btn-${idx}`);
   }
 }
 </script>
@@ -33,7 +33,15 @@ async function handleClick(idx: number) {
     <el-button
       v-for="(btn, idx) in buttons"
       :key="idx"
-      :type="(btn.type as 'primary' | 'success' | 'warning' | 'danger' | 'info' | '') || undefined"
+      :type="
+        (btn.type as
+          | 'primary'
+          | 'success'
+          | 'warning'
+          | 'danger'
+          | 'info'
+          | '') || undefined
+      "
       :disabled="isDisabled"
       @click="handleClick(idx)"
     >
@@ -41,4 +49,3 @@ async function handleClick(idx: number) {
     </el-button>
   </div>
 </template>
-

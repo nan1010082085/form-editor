@@ -12,18 +12,19 @@
  * - 分页状态与搜索词独立管理，互不干扰
  * - 与 apiClient 解耦：依赖 configureApiClient() 完成初始化
  */
-import { defineStore } from 'pinia'
-import { ref, reactive, computed } from 'vue'
+import { defineStore } from "pinia";
+import { ref, reactive, computed } from "vue";
 import type {
   SchemaListItem,
+  SchemaDetail,
   PaginatedResponse,
   PublishedSchemaItem,
   SchemaCreatePayload,
   SchemaUpdatePayload,
-} from '@/types/api'
-import type { PartialWidget } from '@/components/WidgetRenderer/types'
-import { ApiError } from '@/utils/apiClient'
-import { reportTelemetry } from '@/api/telemetryApi'
+} from "@/types/api";
+import type { PartialWidget } from "@/components/WidgetRenderer/types";
+import { ApiError } from "@/utils/apiClient";
+import { reportTelemetry } from "@/api/telemetryApi";
 import {
   fetchSchemas as apiFetchSchemas,
   fetchSchemaById as apiFetchSchemaById,
@@ -33,30 +34,30 @@ import {
   publishSchema as apiPublishSchema,
   fetchPublishedSchema as apiFetchPublishedSchema,
   fetchPublishedByPublishId as apiFetchPublishedByPublishId,
-} from '@/utils/apiClient'
+} from "@/utils/apiClient";
 
 /** 默认分页大小 */
-const DEFAULT_PAGE_SIZE = 20
+const DEFAULT_PAGE_SIZE = 20;
 
-export const useApiStore = defineStore('schema', () => {
+export const useApiStore = defineStore("schema", () => {
   // ================================================================
   // 状态
   // ================================================================
 
   /** Schema 清单（分页列表） */
-  const schemas = ref<SchemaListItem[]>([])
+  const schemas = ref<SchemaListItem[]>([]);
 
   /** 当前查看/编辑的单个 Schema 详情 */
-  const currentSchema = ref<SchemaListItem | null>(null)
+  const currentSchema = ref<SchemaListItem | null>(null);
 
   /** 加载中标志 */
-  const loading = ref(false)
+  const loading = ref(false);
 
   /** 最近一次错误信息 */
-  const error = ref('')
+  const error = ref("");
 
   /** 搜索关键词 */
-  const searchQuery = ref('')
+  const searchQuery = ref("");
 
   /** 分页状态 */
   const pagination = reactive({
@@ -64,20 +65,20 @@ export const useApiStore = defineStore('schema', () => {
     pageSize: DEFAULT_PAGE_SIZE,
     total: 0,
     totalPages: 0,
-  })
+  });
 
   // ================================================================
   // 计算属性
   // ================================================================
 
   /** 是否有已加载的清单 */
-  const hasSchemas = computed(() => schemas.value.length > 0)
+  const hasSchemas = computed(() => schemas.value.length > 0);
 
   /** 清单是否为空（加载完成且无数据） */
-  const isEmpty = computed(() => !loading.value && schemas.value.length === 0)
+  const isEmpty = computed(() => !loading.value && schemas.value.length === 0);
 
   /** 是否有错误 */
-  const hasError = computed(() => error.value !== '')
+  const hasError = computed(() => error.value !== "");
 
   // ================================================================
   // 内部工具
@@ -85,37 +86,45 @@ export const useApiStore = defineStore('schema', () => {
 
   /** 设置错误并重置 loading */
   function setError(message: string): void {
-    error.value = message
-    loading.value = false
+    error.value = message;
+    loading.value = false;
   }
 
   /** 清除错误 */
   function clearError(): void {
-    error.value = ''
+    error.value = "";
   }
 
   /** 将 ApiError 的 code / details 拼进可读文案 */
   function formatApiError(e: ApiError): string {
     const raw = e.details as
-      | { details?: Array<{ path?: string; message?: string }>; message?: string; code?: string }
+      | {
+          details?: Array<{ path?: string; message?: string }>;
+          message?: string;
+          code?: string;
+        }
       | Array<{ path?: string; message?: string }>
-      | undefined
-    const issues = Array.isArray(raw) ? raw : raw?.details
-    const code = !Array.isArray(raw) && raw?.code ? `[${raw.code}] ` : ''
+      | undefined;
+    const issues = Array.isArray(raw) ? raw : raw?.details;
+    const code = !Array.isArray(raw) && raw?.code ? `[${raw.code}] ` : "";
     if (Array.isArray(issues) && issues.length > 0) {
       const parts = issues
-        .map((item) => (item.path ? `${item.path}: ${item.message ?? ''}` : (item.message ?? '')))
+        .map((item) =>
+          item.path
+            ? `${item.path}: ${item.message ?? ""}`
+            : (item.message ?? ""),
+        )
         .filter(Boolean)
-        .join('; ')
-      return parts ? `${code}${e.message} (${parts})` : `${code}${e.message}`
+        .join("; ");
+      return parts ? `${code}${e.message} (${parts})` : `${code}${e.message}`;
     }
-    return `${code}${e.message}`
+    return `${code}${e.message}`;
   }
 
   function resolveErrorMessage(e: unknown): string {
-    if (e instanceof ApiError) return formatApiError(e)
-    if (e instanceof Error) return e.message
-    return 'An unexpected error occurred'
+    if (e instanceof ApiError) return formatApiError(e);
+    if (e instanceof Error) return e.message;
+    return "An unexpected error occurred";
   }
 
   /**
@@ -125,15 +134,15 @@ export const useApiStore = defineStore('schema', () => {
    * @returns 函数的返回值，失败时返回 null
    */
   async function withLoading<T>(fn: () => Promise<T>): Promise<T | null> {
-    loading.value = true
-    clearError()
+    loading.value = true;
+    clearError();
     try {
-      return await fn()
+      return await fn();
     } catch (e: unknown) {
-      setError(resolveErrorMessage(e))
-      return null
+      setError(resolveErrorMessage(e));
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
@@ -142,12 +151,12 @@ export const useApiStore = defineStore('schema', () => {
    * 用于静默操作（如后台刷新）。
    */
   async function withErrorHandling<T>(fn: () => Promise<T>): Promise<T | null> {
-    clearError()
+    clearError();
     try {
-      return await fn()
+      return await fn();
     } catch (e: unknown) {
-      setError(resolveErrorMessage(e))
-      return null
+      setError(resolveErrorMessage(e));
+      return null;
     }
   }
 
@@ -161,14 +170,14 @@ export const useApiStore = defineStore('schema', () => {
    * @param params - 可覆盖当前 pagination/searchQuery 状态
    */
   async function fetchSchemas(params?: {
-    page?: number
-    pageSize?: number
-    search?: string
-    type?: string
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    type?: string;
   }): Promise<PaginatedResponse<SchemaListItem> | null> {
-    const page = params?.page ?? pagination.page
-    const pageSize = params?.pageSize ?? pagination.pageSize
-    const search = params?.search ?? searchQuery.value
+    const page = params?.page ?? pagination.page;
+    const pageSize = params?.pageSize ?? pagination.pageSize;
+    const search = params?.search ?? searchQuery.value;
 
     const result = await withLoading(() =>
       apiFetchSchemas({
@@ -177,52 +186,52 @@ export const useApiStore = defineStore('schema', () => {
         pageSize,
         type: params?.type,
       }),
-    )
+    );
 
     if (result) {
-      schemas.value = result.items
-      pagination.total = result.total
-      pagination.page = result.page
-      pagination.pageSize = result.pageSize
-      pagination.totalPages = result.totalPages
+      schemas.value = result.items;
+      pagination.total = result.total;
+      pagination.page = result.page;
+      pagination.pageSize = result.pageSize;
+      pagination.totalPages = result.totalPages;
       // 同步搜索词回 store
       if (params?.search !== undefined) {
-        searchQuery.value = params.search
+        searchQuery.value = params.search;
       }
     }
 
-    return result
+    return result;
   }
 
   /**
    * 跳转到指定页。
    */
   async function goToPage(page: number): Promise<void> {
-    if (page < 1 || page > pagination.totalPages) return
-    await fetchSchemas({ page })
+    if (page < 1 || page > pagination.totalPages) return;
+    await fetchSchemas({ page });
   }
 
   /**
    * 修改每页条数并重新加载首页。
    */
   async function setPageSize(pageSize: number): Promise<void> {
-    await fetchSchemas({ page: 1, pageSize })
+    await fetchSchemas({ page: 1, pageSize });
   }
 
   /**
    * 按关键词搜索并重置到首页。
    */
   async function search(search: string): Promise<void> {
-    searchQuery.value = search
-    await fetchSchemas({ page: 1, search })
+    searchQuery.value = search;
+    await fetchSchemas({ page: 1, search });
   }
 
   /**
    * 清除搜索并重新加载。
    */
   async function clearSearch(): Promise<void> {
-    searchQuery.value = ''
-    await fetchSchemas({ page: 1, search: '' })
+    searchQuery.value = "";
+    await fetchSchemas({ page: 1, search: "" });
   }
 
   // ================================================================
@@ -232,12 +241,12 @@ export const useApiStore = defineStore('schema', () => {
   /**
    * 根据 ID 获取 Schema 详情（含完整 JSON）。
    */
-  async function fetchSchemaById(id: string): Promise<SchemaListItem | null> {
-    const result = await withLoading(() => apiFetchSchemaById(id))
+  async function fetchSchemaById(id: string): Promise<SchemaDetail | null> {
+    const result = await withLoading(() => apiFetchSchemaById(id));
     if (result) {
-      currentSchema.value = result
+      currentSchema.value = result;
     }
-    return result
+    return result;
   }
 
   /**
@@ -248,13 +257,16 @@ export const useApiStore = defineStore('schema', () => {
   async function createSchema(
     payload: SchemaCreatePayload,
   ): Promise<SchemaListItem | null> {
-    const result = await withLoading(() => apiCreateSchema(payload))
+    const result = await withLoading(() => apiCreateSchema(payload));
     if (result) {
-      await fetchSchemas()
-      currentSchema.value = result
-      void reportTelemetry('create', { schemaId: result.id, props: { type: payload.type } })
+      await fetchSchemas();
+      currentSchema.value = result;
+      void reportTelemetry("create", {
+        schemaId: result.id,
+        props: { type: payload.type },
+      });
     }
-    return result
+    return result;
   }
 
   /**
@@ -268,16 +280,16 @@ export const useApiStore = defineStore('schema', () => {
     id: string,
     payload: SchemaUpdatePayload,
   ): Promise<SchemaListItem | null> {
-    const result = await withLoading(() => apiUpdateSchema(id, payload))
+    const result = await withLoading(() => apiUpdateSchema(id, payload));
     if (result) {
-      currentSchema.value = result
+      currentSchema.value = result;
       // 同步更新清单中的同名项
-      const idx = schemas.value.findIndex((s) => s.id === id)
+      const idx = schemas.value.findIndex((s) => s.id === id);
       if (idx >= 0) {
-        schemas.value[idx] = result
+        schemas.value[idx] = result;
       }
     }
-    return result
+    return result;
   }
 
   /**
@@ -286,27 +298,27 @@ export const useApiStore = defineStore('schema', () => {
    * @returns 是否成功删除
    */
   async function deleteSchema(id: string): Promise<boolean> {
-    await withErrorHandling(() => apiDeleteSchema(id))
+    await withErrorHandling(() => apiDeleteSchema(id));
     if (!error.value) {
       // 从清单中移除
-      schemas.value = schemas.value.filter((s) => s.id !== id)
+      schemas.value = schemas.value.filter((s) => s.id !== id);
       if (currentSchema.value?.id === id) {
-        currentSchema.value = null
+        currentSchema.value = null;
       }
       // 更新分页计数
-      pagination.total = Math.max(0, pagination.total - 1)
+      pagination.total = Math.max(0, pagination.total - 1);
       pagination.totalPages = Math.max(
         1,
         Math.ceil(pagination.total / pagination.pageSize),
-      )
+      );
       // 若当前页无数据且非首页，回退一页
       if (schemas.value.length === 0 && pagination.page > 1) {
-        await goToPage(pagination.page - 1)
+        await goToPage(pagination.page - 1);
       }
-      void reportTelemetry('delete', { schemaId: id })
-      return true
+      void reportTelemetry("delete", { schemaId: id });
+      return true;
     }
-    return false
+    return false;
   }
 
   /**
@@ -324,24 +336,48 @@ export const useApiStore = defineStore('schema', () => {
     name: string,
     schemaId?: string,
     thumbnail?: string,
-    boardConfig?: { canvas?: Record<string, unknown>; variables?: unknown[]; events?: unknown[] },
+    boardConfig?: {
+      canvas?: Record<string, unknown>;
+      variables?: unknown[];
+      events?: unknown[];
+    },
   ): Promise<SchemaListItem | null> {
     // 将 board 配置嵌入到 json 字段中
     const jsonPayload = boardConfig
       ? { widgets: schema, board: boardConfig }
-      : schema
+      : schema;
 
     if (schemaId) {
-      const result = await updateSchema(schemaId, { name, json: jsonPayload, thumbnail })
-      if (result) void reportTelemetry('save', { schemaId, props: { widgetCount: schema.length } })
-      return result
+      const result = await updateSchema(schemaId, {
+        name,
+        json: jsonPayload,
+        thumbnail,
+      });
+      if (result)
+        void reportTelemetry("save", {
+          schemaId,
+          props: { widgetCount: schema.length },
+        });
+      return result;
     } else {
       // 新建时按画布配置推断类型：Flex 列表模板 -> search_list，其余 -> form
-      const flexTemplate = boardConfig?.canvas?.flexTemplate as string | undefined
-      const type: SchemaCreatePayload['type'] = flexTemplate === 'list' ? 'search-list' : 'form'
-      const result = await createSchema({ name, type, json: jsonPayload, thumbnail })
-      if (result) void reportTelemetry('save', { schemaId: result.id, props: { widgetCount: schema.length, isNew: true } })
-      return result
+      const flexTemplate = boardConfig?.canvas?.flexTemplate as
+        | string
+        | undefined;
+      const type: SchemaCreatePayload["type"] =
+        flexTemplate === "list" ? "search-list" : "form";
+      const result = await createSchema({
+        name,
+        type,
+        json: jsonPayload,
+        thumbnail,
+      });
+      if (result)
+        void reportTelemetry("save", {
+          schemaId: result.id,
+          props: { widgetCount: schema.length, isNew: true },
+        });
+      return result;
     }
   }
 
@@ -351,8 +387,8 @@ export const useApiStore = defineStore('schema', () => {
    * @param id - Schema ID
    * @returns Schema 详情，失败返回 null
    */
-  async function loadSchema(id: string): Promise<SchemaListItem | null> {
-    return fetchSchemaById(id)
+  async function loadSchema(id: string): Promise<SchemaDetail | null> {
+    return fetchSchemaById(id);
   }
 
   // ================================================================
@@ -365,10 +401,12 @@ export const useApiStore = defineStore('schema', () => {
    * @param id - FormSchema ID
    * @returns 发布后的 PublishedSchema，失败返回 null
    */
-  async function publishSchema(id: string): Promise<PublishedSchemaItem | null> {
-    const result = await withLoading(() => apiPublishSchema(id))
-    if (result) void reportTelemetry('publish', { schemaId: id })
-    return result
+  async function publishSchema(
+    id: string,
+  ): Promise<PublishedSchemaItem | null> {
+    const result = await withLoading(() => apiPublishSchema(id));
+    if (result) void reportTelemetry("publish", { schemaId: id });
+    return result;
   }
 
   /**
@@ -378,20 +416,24 @@ export const useApiStore = defineStore('schema', () => {
    * @param sourceId - FormSchema ID
    * @returns PublishedSchema，未发布返回 null
    */
-  async function fetchPublishedSchema(sourceId: string): Promise<PublishedSchemaItem | null> {
+  async function fetchPublishedSchema(
+    sourceId: string,
+  ): Promise<PublishedSchemaItem | null> {
     try {
-      return await apiFetchPublishedSchema(sourceId)
+      return await apiFetchPublishedSchema(sourceId);
     } catch {
       // Never pollute global error for "not published" queries
-      return null
+      return null;
     }
   }
 
-  async function fetchPublishedByPublishId(publishId: string): Promise<PublishedSchemaItem | null> {
+  async function fetchPublishedByPublishId(
+    publishId: string,
+  ): Promise<PublishedSchemaItem | null> {
     try {
-      return await apiFetchPublishedByPublishId(publishId)
+      return await apiFetchPublishedByPublishId(publishId);
     } catch {
-      return null
+      return null;
     }
   }
 
@@ -427,5 +469,5 @@ export const useApiStore = defineStore('schema', () => {
     fetchPublishedByPublishId,
     // 错误管理
     clearError,
-  }
-})
+  };
+});

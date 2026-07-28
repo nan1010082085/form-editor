@@ -1,48 +1,50 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey, widgetStyleKey } from '../base/types'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './style.module.scss'
+import { inject, computed, ref } from "vue";
+import { widgetDataKey, widgetStyleKey } from "../base/types";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./style.module.scss";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const widgetStyle = inject(widgetStyleKey)!
-const { isDisabled } = useWidgetRenderState()
+const widgetData = inject(widgetDataKey)!;
+const widgetStyle = inject(widgetStyleKey)!;
+const { isDisabled } = useWidgetRenderState();
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 
-const inputValue = ref('')
+const inputValue = ref("");
 
 const dynamicStyle = computed(() => ({
-  width: '100%',
+  width: "100%",
   fontSize: widgetStyle.value?.fontSize as string,
-}))
+}));
 
-const tags = computed(() => (widgetData.value.defaultValue as string[]) || [])
+const tags = computed(() => (widgetData.value.defaultValue as string[]) || []);
 
 function addTag() {
-  const val = inputValue.value.trim()
-  if (!val) return
-  const maxTags = (widgetData.value.props?.maxTags as number) || 10
-  if (tags.value.length >= maxTags) return
-  if (tags.value.includes(val)) return
-  widgetData.value.defaultValue = [...tags.value, val]
-  inputValue.value = ''
+  const val = inputValue.value.trim();
+  if (!val) return;
+  const maxTags = (widgetData.value.props?.maxTags as number) || 10;
+  if (tags.value.length >= maxTags) return;
+  if (tags.value.includes(val)) return;
+  widgetData.value.defaultValue = [...tags.value, val];
+  inputValue.value = "";
 }
 
 function removeTag(tag: string) {
-  widgetData.value.defaultValue = tags.value.filter(t => t !== tag)
+  widgetData.value.defaultValue = tags.value.filter((t) => t !== tag);
 }
 
 function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter') {
-    e.preventDefault()
-    addTag()
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addTag();
   }
 }
 </script>
@@ -63,7 +65,10 @@ function handleKeydown(e: KeyboardEvent) {
       v-if="tags.length < ((widgetData.props?.maxTags as number) || 10)"
       v-model="inputValue"
       size="small"
-      :placeholder="(widgetData.props?.placeholder as string) || t('editor.tagInput.placeholder')"
+      :placeholder="
+        (widgetData.props?.placeholder as string) ||
+        t('editor.tagInput.placeholder')
+      "
       :disabled="isDisabled"
       :maxlength="(widgetData.props?.maxlength as number) || undefined"
       @keydown="handleKeydown"

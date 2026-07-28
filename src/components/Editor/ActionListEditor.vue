@@ -7,174 +7,223 @@
  *
  * UI 别名：'visible' ↔ 'show', 'disabled' ↔ 'show' + '__disabled__', 'fetch-data' ↔ 'api'
  */
-import { ref, watch } from 'vue'
-import { useWidgetOptions } from '@/composables/useWidgetOptions'
-import type { SchemaEventAction, EventActionType, ReceivableEventConfig } from '../../widgets/base/types'
-import styles from './ActionListEditor.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
-import { useI18n } from '@schema-platform/platform-shared'
+import { ref, watch } from "vue";
+import { useWidgetOptions } from "@/composables/useWidgetOptions";
+import type {
+  SchemaEventAction,
+  EventActionType,
+  ReceivableEventConfig,
+} from "../../widgets/base/types";
+import styles from "./ActionListEditor.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 // ---- Types ----
 
-type UIActionType = EventActionType | 'visible' | 'disabled' | 'fetch-data'
+type UIActionType = EventActionType | "visible" | "disabled" | "fetch-data";
 
 interface UIAction {
-  type: UIActionType
-  target: string
-  value: string
-  variable: string
-  event: string
-  message: string
-  text: string
-  apiUrl: string
-  apiMethod: 'get' | 'post' | 'put' | 'delete'
-  navigatePath: string
-  eventTarget: string
-  eventName: string
+  type: UIActionType;
+  target: string;
+  value: string;
+  variable: string;
+  event: string;
+  message: string;
+  text: string;
+  apiUrl: string;
+  apiMethod: "get" | "post" | "put" | "delete";
+  navigatePath: string;
+  eventTarget: string;
+  eventName: string;
   // ---- startFlow ----
-  definitionId: string
-  flowVariables: string
+  definitionId: string;
+  flowVariables: string;
   // ---- submitSubmission ----
-  schemaId: string
+  schemaId: string;
   // ---- endFlow ----
-  instanceId: string
-  reason: string
+  instanceId: string;
+  reason: string;
 }
 
 export interface ActionTypeOption {
-  label: string
-  value: UIActionType
+  label: string;
+  value: UIActionType;
 }
 
 // ---- Props & Emits ----
 
-const props = withDefaults(defineProps<{
-  actions: SchemaEventAction[]
-  actionTypes: ActionTypeOption[]
-  getReceivableEvents?: (targetId: string) => ReceivableEventConfig[]
-}>(), {
-  getReceivableEvents: () => [],
-})
+const props = withDefaults(
+  defineProps<{
+    actions: SchemaEventAction[];
+    actionTypes: ActionTypeOption[];
+    getReceivableEvents?: (targetId: string) => ReceivableEventConfig[];
+  }>(),
+  {
+    getReceivableEvents: () => [],
+  },
+);
 
 const emit = defineEmits<{
-  'update:actions': [actions: SchemaEventAction[]]
-}>()
+  "update:actions": [actions: SchemaEventAction[]];
+}>();
 
 // ---- Widget options ----
 
-const { widgetOptions, allWidgetOptions, showHideOptions, dialogOptions, tabsOptions, setValueOptions, triggerEventOptions } = useWidgetOptions()
+const {
+  allWidgetOptions,
+  showHideOptions,
+  dialogOptions,
+  tabsOptions,
+  setValueOptions,
+  triggerEventOptions,
+} = useWidgetOptions();
 
 // ---- No-config types ----
 
-const NO_CONFIG_TYPES = new Set<UIActionType>(['submit', 'reset', 'close-dialog', 'close-tab', 'refresh'])
+const NO_CONFIG_TYPES = new Set<UIActionType>([
+  "submit",
+  "reset",
+  "close-dialog",
+  "close-tab",
+  "refresh",
+]);
 
 // ---- Local state ----
 
-const localActions = ref<UIAction[]>([])
+const localActions = ref<UIAction[]>([]);
 
 // ---- Conversion: SchemaEventAction → UI ----
 
 function convertSchemaToUi(action: SchemaEventAction): UIAction {
   // Map EventActionType → UI alias when the parent uses aliases
-  let uiType: UIActionType = action.type
-  if (action.type === 'show' && action.value === '__disabled__' && props.actionTypes.some(o => o.value === 'disabled')) {
-    uiType = 'disabled'
-  } else if (action.type === 'show' && props.actionTypes.some(o => o.value === 'visible')) {
-    uiType = 'visible'
-  } else if (action.type === 'api' && props.actionTypes.some(o => o.value === 'fetch-data')) {
-    uiType = 'fetch-data'
+  let uiType: UIActionType = action.type;
+  if (
+    action.type === "show" &&
+    action.value === "__disabled__" &&
+    props.actionTypes.some((o) => o.value === "disabled")
+  ) {
+    uiType = "disabled";
+  } else if (
+    action.type === "show" &&
+    props.actionTypes.some((o) => o.value === "visible")
+  ) {
+    uiType = "visible";
+  } else if (
+    action.type === "api" &&
+    props.actionTypes.some((o) => o.value === "fetch-data")
+  ) {
+    uiType = "fetch-data";
   }
 
   return {
     type: uiType,
-    target: action.target ?? '',
-    value: String(action.value ?? ''),
-    variable: action.variable ?? '',
-    event: action.event ?? '',
-    message: action.message ? JSON.stringify(action.message) : '',
-    text: action.text ?? '',
-    apiUrl: action.apiUrl ?? '',
-    apiMethod: action.apiMethod ?? 'get',
-    navigatePath: action.navigatePath ?? '',
-    eventTarget: action.target ?? '',
-    eventName: action.event ?? '',
-    definitionId: action.definitionId ?? '',
-    flowVariables: action.variables ? JSON.stringify(action.variables) : '',
-    schemaId: action.schemaId ?? '',
-    instanceId: action.instanceId ?? '',
-    reason: action.reason ?? '',
-  }
+    target: action.target ?? "",
+    value: String(action.value ?? ""),
+    variable: action.variable ?? "",
+    event: action.event ?? "",
+    message: action.message ? JSON.stringify(action.message) : "",
+    text: action.text ?? "",
+    apiUrl: action.apiUrl ?? "",
+    apiMethod: action.apiMethod ?? "get",
+    navigatePath: action.navigatePath ?? "",
+    eventTarget: action.target ?? "",
+    eventName: action.event ?? "",
+    definitionId: action.definitionId ?? "",
+    flowVariables: action.variables ? JSON.stringify(action.variables) : "",
+    schemaId: action.schemaId ?? "",
+    instanceId: action.instanceId ?? "",
+    reason: action.reason ?? "",
+  };
 }
 
 // ---- Conversion: UI → SchemaEventAction ----
 
 function convertUiToSchema(a: UIAction): SchemaEventAction | null {
   switch (a.type) {
-    case 'visible':
-      return { type: 'show', target: a.target || undefined }
-    case 'disabled':
-      return { type: 'show', target: a.target || undefined, value: '__disabled__' }
-    case 'fetch-data':
-      return { type: 'api', apiUrl: a.apiUrl, apiMethod: a.apiMethod }
-    case 'set-variable':
-      return { type: 'set-variable', variable: a.variable, value: a.value }
-    case 'trigger-event':
-      return { type: 'trigger-event', target: a.eventTarget, event: a.eventName }
-    case 'navigate':
-      return { type: 'navigate', navigatePath: a.value }
-    case 'emit':
-      return { type: 'emit', value: a.value }
-    case 'switch-tab':
-      return { type: 'switch-tab', target: a.target || undefined, value: a.value }
-    case 'set-value':
-      return { type: 'set-value', target: a.target || undefined, value: a.value }
-    case 'post-message':
-      return { type: 'post-message', message: a.message ? JSON.parse(a.message) : undefined }
-    case 'copy':
-      return { type: 'copy', text: a.text }
-    case 'open-dialog':
-      return { type: 'open-dialog', target: a.target || undefined }
-    case 'hide':
-      return { type: 'hide', target: a.target || undefined }
-    case 'close-dialog':
-      return { type: 'close-dialog' }
-    case 'submit':
-      return { type: 'submit' }
-    case 'reset':
-      return { type: 'reset' }
-    case 'close-tab':
-      return { type: 'close-tab' }
-    case 'refresh':
-      return { type: 'refresh', target: a.target || undefined }
-    // 'show' passthrough (when parent uses 'show' directly)
-    case 'show':
-      return { type: 'show', target: a.target || undefined }
-    // 'api' passthrough (when parent uses 'api' directly)
-    case 'api':
-      return { type: 'api', apiUrl: a.apiUrl, apiMethod: a.apiMethod }
-    case 'startFlow':
+    case "visible":
+      return { type: "show", target: a.target || undefined };
+    case "disabled":
       return {
-        type: 'startFlow',
+        type: "show",
+        target: a.target || undefined,
+        value: "__disabled__",
+      };
+    case "fetch-data":
+      return { type: "api", apiUrl: a.apiUrl, apiMethod: a.apiMethod };
+    case "set-variable":
+      return { type: "set-variable", variable: a.variable, value: a.value };
+    case "trigger-event":
+      return {
+        type: "trigger-event",
+        target: a.eventTarget,
+        event: a.eventName,
+      };
+    case "navigate":
+      return { type: "navigate", navigatePath: a.value };
+    case "emit":
+      return { type: "emit", value: a.value };
+    case "switch-tab":
+      return {
+        type: "switch-tab",
+        target: a.target || undefined,
+        value: a.value,
+      };
+    case "set-value":
+      return {
+        type: "set-value",
+        target: a.target || undefined,
+        value: a.value,
+      };
+    case "post-message":
+      return {
+        type: "post-message",
+        message: a.message ? JSON.parse(a.message) : undefined,
+      };
+    case "copy":
+      return { type: "copy", text: a.text };
+    case "open-dialog":
+      return { type: "open-dialog", target: a.target || undefined };
+    case "hide":
+      return { type: "hide", target: a.target || undefined };
+    case "close-dialog":
+      return { type: "close-dialog" };
+    case "submit":
+      return { type: "submit" };
+    case "reset":
+      return { type: "reset" };
+    case "close-tab":
+      return { type: "close-tab" };
+    case "refresh":
+      return { type: "refresh", target: a.target || undefined };
+    // 'show' passthrough (when parent uses 'show' directly)
+    case "show":
+      return { type: "show", target: a.target || undefined };
+    // 'api' passthrough (when parent uses 'api' directly)
+    case "api":
+      return { type: "api", apiUrl: a.apiUrl, apiMethod: a.apiMethod };
+    case "startFlow":
+      return {
+        type: "startFlow",
         definitionId: a.definitionId,
         variables: a.flowVariables ? JSON.parse(a.flowVariables) : undefined,
-      }
-    case 'submitSubmission':
+      };
+    case "submitSubmission":
       return {
-        type: 'submitSubmission',
+        type: "submitSubmission",
         schemaId: a.schemaId,
         definitionId: a.definitionId || undefined,
         variables: a.flowVariables ? JSON.parse(a.flowVariables) : undefined,
-      }
-    case 'endFlow':
+      };
+    case "endFlow":
       return {
-        type: 'endFlow',
+        type: "endFlow",
         instanceId: a.instanceId,
         reason: a.reason || undefined,
-      }
+      };
     default:
-      return null
+      return null;
   }
 }
 
@@ -183,91 +232,88 @@ function convertUiToSchema(a: UIAction): SchemaEventAction | null {
 watch(
   () => props.actions,
   (newActions) => {
-    localActions.value = (newActions ?? []).map(convertSchemaToUi)
+    localActions.value = (newActions ?? []).map(convertSchemaToUi);
   },
   { immediate: true, deep: true },
-)
+);
 
 // ---- Emit helper ----
 
 function emitChange() {
   const result = localActions.value
     .map(convertUiToSchema)
-    .filter((a): a is SchemaEventAction => a !== null)
-  emit('update:actions', result)
+    .filter((a): a is SchemaEventAction => a !== null);
+  emit("update:actions", result);
 }
 
 // ---- CRUD ----
 
 function addAction() {
   localActions.value.push({
-    type: props.actionTypes[0]?.value ?? 'show',
-    target: '',
-    value: '',
-    variable: '',
-    event: '',
-    message: '',
-    text: '',
-    apiUrl: '',
-    apiMethod: 'get',
-    navigatePath: '',
-    eventTarget: '',
-    eventName: '',
-    definitionId: '',
-    flowVariables: '',
-    schemaId: '',
-    instanceId: '',
-    reason: '',
-  })
-  emitChange()
+    type: props.actionTypes[0]?.value ?? "show",
+    target: "",
+    value: "",
+    variable: "",
+    event: "",
+    message: "",
+    text: "",
+    apiUrl: "",
+    apiMethod: "get",
+    navigatePath: "",
+    eventTarget: "",
+    eventName: "",
+    definitionId: "",
+    flowVariables: "",
+    schemaId: "",
+    instanceId: "",
+    reason: "",
+  });
+  emitChange();
 }
 
 function removeAction(index: number) {
-  localActions.value.splice(index, 1)
-  emitChange()
+  localActions.value.splice(index, 1);
+  emitChange();
 }
 
 function handleTypeChange(action: UIAction, newType: UIActionType) {
-  action.type = newType
-  action.target = ''
-  action.value = ''
-  action.apiUrl = ''
-  action.variable = ''
-  action.eventTarget = ''
-  action.eventName = ''
-  action.message = ''
-  action.text = ''
-  action.navigatePath = ''
-  action.definitionId = ''
-  action.flowVariables = ''
-  action.schemaId = ''
-  action.instanceId = ''
-  action.reason = ''
-  emitChange()
+  action.type = newType;
+  action.target = "";
+  action.value = "";
+  action.apiUrl = "";
+  action.variable = "";
+  action.eventTarget = "";
+  action.eventName = "";
+  action.message = "";
+  action.text = "";
+  action.navigatePath = "";
+  action.definitionId = "";
+  action.flowVariables = "";
+  action.schemaId = "";
+  action.instanceId = "";
+  action.reason = "";
+  emitChange();
 }
 
 function handleChange() {
-  emitChange()
+  emitChange();
 }
 </script>
 
 <template>
   <div :class="styles.section">
     <div :class="styles.sectionHeader">
-      <span :class="styles.sectionTitle">{{ t('editor.actionList.title') }}</span>
-      <el-button
-        type="primary"
-        size="small"
-        link
-        @click="addAction"
-      >
+      <span :class="styles.sectionTitle">{{
+        t("editor.actionList.title")
+      }}</span>
+      <el-button type="primary" size="small" link @click="addAction">
         <AppIcon name="plus" />
-        {{ t('editor.actionList.addAction') }}
+        {{ t("editor.actionList.addAction") }}
       </el-button>
     </div>
 
     <div v-if="localActions.length === 0" :class="styles.sectionEmpty">
-      {{ t('editor.actionList.noActions') }}
+      {{ t("editor.actionList.noActions") }}
     </div>
 
     <div
@@ -276,24 +322,23 @@ function handleChange() {
       :class="styles.actionCard"
     >
       <div :class="styles.actionHeader">
-        <span :class="styles.actionIndex">{{ t('editor.actionList.action') }} {{ ai + 1 }}</span>
-        <el-button
-          type="danger"
-          size="small"
-          link
-          @click="removeAction(ai)"
+        <span :class="styles.actionIndex"
+          >{{ t("editor.actionList.action") }} {{ ai + 1 }}</span
         >
+        <el-button type="danger" size="small" link @click="removeAction(ai)">
           <AppIcon name="delete" />
         </el-button>
       </div>
 
       <!-- action type -->
       <div :class="styles.row">
-        <label :class="styles.label">{{ t('editor.actionList.type') }}</label>
+        <label :class="styles.label">{{ t("editor.actionList.type") }}</label>
         <el-select
           :model-value="action.type"
           style="flex: 1"
-          @update:model-value="(val: UIActionType) => handleTypeChange(action, val)"
+          @update:model-value="
+            (val: UIActionType) => handleTypeChange(action, val)
+          "
         >
           <el-option
             v-for="opt in actionTypes"
@@ -305,13 +350,37 @@ function handleChange() {
       </div>
 
       <!-- target: open-dialog / hide / visible / disabled / switch-tab / refresh / show -->
-      <template v-if="['open-dialog', 'hide', 'visible', 'disabled', 'switch-tab', 'refresh', 'show'].includes(action.type)">
+      <template
+        v-if="
+          [
+            'open-dialog',
+            'hide',
+            'visible',
+            'disabled',
+            'switch-tab',
+            'refresh',
+            'show',
+          ].includes(action.type)
+        "
+      >
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.target') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.target")
+          }}</label>
           <el-select
             v-model="action.target"
             filterable
-            :placeholder="action.type === 'open-dialog' ? t('editor.actionList.targetPlaceholderDialog') : action.type === 'hide' ? t('editor.actionList.targetPlaceholderHide') : action.type === 'visible' ? t('editor.actionList.targetPlaceholderVisible') : action.type === 'disabled' ? t('editor.actionList.targetPlaceholderDisabled') : t('editor.actionList.targetPlaceholderDefault')"
+            :placeholder="
+              action.type === 'open-dialog'
+                ? t('editor.actionList.targetPlaceholderDialog')
+                : action.type === 'hide'
+                  ? t('editor.actionList.targetPlaceholderHide')
+                  : action.type === 'visible'
+                    ? t('editor.actionList.targetPlaceholderVisible')
+                    : action.type === 'disabled'
+                      ? t('editor.actionList.targetPlaceholderDisabled')
+                      : t('editor.actionList.targetPlaceholderDefault')
+            "
             style="flex: 1"
             @update:model-value="handleChange"
           >
@@ -323,7 +392,11 @@ function handleChange() {
                 :value="opt.value"
               />
             </template>
-            <template v-else-if="['hide', 'visible', 'disabled', 'show'].includes(action.type)">
+            <template
+              v-else-if="
+                ['hide', 'visible', 'disabled', 'show'].includes(action.type)
+              "
+            >
               <el-option
                 v-for="opt in showHideOptions"
                 :key="opt.value"
@@ -353,7 +426,7 @@ function handleChange() {
 
       <!-- switch-tab: value (tab key) -->
       <div v-if="action.type === 'switch-tab'" :class="styles.row">
-        <label :class="styles.label">{{ t('editor.actionList.tab') }}</label>
+        <label :class="styles.label">{{ t("editor.actionList.tab") }}</label>
         <el-input
           v-model="action.value"
           :placeholder="t('editor.actionList.tabPlaceholder')"
@@ -365,7 +438,9 @@ function handleChange() {
       <!-- set-value: target (field) + value -->
       <template v-if="action.type === 'set-value'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.target') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.target")
+          }}</label>
           <el-select
             v-model="action.target"
             filterable
@@ -382,7 +457,7 @@ function handleChange() {
           </el-select>
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.api.value') }}</label>
+          <label :class="styles.label">{{ t("editor.api.value") }}</label>
           <el-input
             v-model="action.value"
             :placeholder="t('editor.actionList.valuePlaceholderSetValue')"
@@ -404,7 +479,7 @@ function handleChange() {
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.api.method') }}</label>
+          <label :class="styles.label">{{ t("editor.api.method") }}</label>
           <el-select
             v-model="action.apiMethod"
             style="width: 120px"
@@ -421,7 +496,9 @@ function handleChange() {
       <!-- set-variable: variable + value -->
       <template v-if="action.type === 'set-variable'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.config.variables') }}</label>
+          <label :class="styles.label">{{
+            t("editor.config.variables")
+          }}</label>
           <el-input
             v-model="action.variable"
             :placeholder="t('editor.actionList.variableName')"
@@ -430,7 +507,7 @@ function handleChange() {
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.api.value') }}</label>
+          <label :class="styles.label">{{ t("editor.api.value") }}</label>
           <el-input
             v-model="action.value"
             :placeholder="t('editor.actionList.valuePlaceholderSetValue')"
@@ -443,7 +520,9 @@ function handleChange() {
       <!-- trigger-event: target (component) + event (from receivableEvents or free input) -->
       <template v-if="action.type === 'trigger-event'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.target') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.target")
+          }}</label>
           <el-select
             v-model="action.eventTarget"
             filterable
@@ -460,9 +539,14 @@ function handleChange() {
           </el-select>
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.event') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.event")
+          }}</label>
           <el-select
-            v-if="action.eventTarget && getReceivableEvents(action.eventTarget).length > 0"
+            v-if="
+              action.eventTarget &&
+              getReceivableEvents(action.eventTarget).length > 0
+            "
             v-model="action.eventName"
             filterable
             :placeholder="t('editor.actionList.selectEvent')"
@@ -489,7 +573,7 @@ function handleChange() {
       <!-- navigate: path -->
       <template v-if="action.type === 'navigate'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.path') }}</label>
+          <label :class="styles.label">{{ t("editor.actionList.path") }}</label>
           <el-input
             v-model="action.value"
             placeholder="/path"
@@ -502,7 +586,7 @@ function handleChange() {
       <!-- emit: value -->
       <template v-if="action.type === 'emit'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.api.value') }}</label>
+          <label :class="styles.label">{{ t("editor.api.value") }}</label>
           <el-input
             v-model="action.value"
             :placeholder="t('editor.actionList.eventPayload')"
@@ -515,7 +599,9 @@ function handleChange() {
       <!-- post-message: message (JSON) -->
       <template v-if="action.type === 'post-message'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.message') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.message")
+          }}</label>
           <el-input
             v-model="action.message"
             placeholder='{"type":"save"}'
@@ -528,7 +614,9 @@ function handleChange() {
       <!-- copy: text -->
       <template v-if="action.type === 'copy'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.content') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.content")
+          }}</label>
           <el-input
             v-model="action.text"
             :placeholder="t('editor.actionList.copyPlaceholder')"
@@ -550,7 +638,9 @@ function handleChange() {
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.flowDefinition') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.flowDefinition")
+          }}</label>
           <el-input
             v-model="action.definitionId"
             :placeholder="t('editor.actionList.flowDefinitionPlaceholder')"
@@ -559,7 +649,9 @@ function handleChange() {
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.flowVariables') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.flowVariables")
+          }}</label>
           <el-input
             v-model="action.flowVariables"
             :placeholder="t('editor.actionList.flowVarsPlaceholder')"
@@ -572,7 +664,9 @@ function handleChange() {
       <!-- startFlow: definitionId + variables -->
       <template v-if="action.type === 'startFlow'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.flowDefinition') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.flowDefinition")
+          }}</label>
           <el-input
             v-model="action.definitionId"
             :placeholder="t('editor.actionList.flowDefIdPlaceholder')"
@@ -581,7 +675,9 @@ function handleChange() {
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.config.variables') }}</label>
+          <label :class="styles.label">{{
+            t("editor.config.variables")
+          }}</label>
           <el-input
             v-model="action.flowVariables"
             :placeholder="t('editor.actionList.flowVarsPlaceholder')"
@@ -594,7 +690,9 @@ function handleChange() {
       <!-- endFlow: instanceId + reason -->
       <template v-if="action.type === 'endFlow'">
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.instanceId') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.instanceId")
+          }}</label>
           <el-input
             v-model="action.instanceId"
             :placeholder="t('editor.actionList.instanceIdPlaceholder')"
@@ -603,7 +701,9 @@ function handleChange() {
           />
         </div>
         <div :class="styles.row">
-          <label :class="styles.label">{{ t('editor.actionList.reason') }}</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.reason")
+          }}</label>
           <el-input
             v-model="action.reason"
             :placeholder="t('editor.actionList.reasonPlaceholder')"
@@ -615,7 +715,7 @@ function handleChange() {
 
       <!-- 无需配置的类型 -->
       <div v-if="NO_CONFIG_TYPES.has(action.type)" :class="styles.noConfigHint">
-        {{ t('editor.actionList.noConfigHint') }}
+        {{ t("editor.actionList.noConfigHint") }}
       </div>
     </div>
   </div>

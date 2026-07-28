@@ -4,55 +4,66 @@
  *
  * 内置步骤条 + 上一步/下一步按钮，每步可包含独立的 widget 集合。
  */
-import { inject, ref, computed } from 'vue'
-import { widgetDataKey, widgetStyleKey, type Widget } from '../base/types'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useI18n } from '@schema-platform/platform-shared'
-import SchemaRender from '../../components/WidgetRenderer/SchemaRender.vue'
-import styles from './style.module.scss'
+import { inject, ref, computed } from "vue";
+import { widgetDataKey, widgetStyleKey, type Widget } from "../base/types";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useI18n } from "@schema-platform/platform-shared";
+import SchemaRender from "../../components/WidgetRenderer/SchemaRender.vue";
+import styles from "./style.module.scss";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const widgetStyle = inject(widgetStyleKey, ref({}))
+const widgetData = inject(widgetDataKey)!;
+const widgetStyle = inject(widgetStyleKey, ref({}));
 
 const steps = computed(() => {
-  const raw = widgetData.value.props?.steps as Array<{ title: string; description?: string; children?: Widget[] }> ?? []
+  const raw =
+    (widgetData.value.props?.steps as Array<{
+      title: string;
+      description?: string;
+      children?: Widget[];
+    }>) ?? [];
   return raw.map((s, i) => ({
     index: i,
     title: s.title,
-    description: s.description ?? '',
+    description: s.description ?? "",
     children: (s.children ?? []) as Widget[],
-  }))
-})
+  }));
+});
 
-const currentStep = ref(0)
-const canPrev = computed(() => currentStep.value > 0)
-const canNext = computed(() => currentStep.value < steps.value.length - 1)
+const currentStep = ref(0);
+const canPrev = computed(() => currentStep.value > 0);
+const canNext = computed(() => currentStep.value < steps.value.length - 1);
 
 function handlePrev() {
-  if (canPrev.value) currentStep.value--
+  if (canPrev.value) currentStep.value--;
 }
 
 function handleNext() {
-  if (canNext.value) currentStep.value++
+  if (canNext.value) currentStep.value++;
 }
 
 function handleStepClick(index: number) {
-  currentStep.value = index
+  currentStep.value = index;
 }
 
-const currentChildren = computed(() => steps.value[currentStep.value]?.children ?? [])
+const currentChildren = computed(
+  () => steps.value[currentStep.value]?.children ?? [],
+);
 
 useExposeWidget(() => ({
-  get currentStep() { return currentStep.value },
-  get totalSteps() { return steps.value.length },
+  get currentStep() {
+    return currentStep.value;
+  },
+  get totalSteps() {
+    return steps.value.length;
+  },
   next: handleNext,
   prev: handlePrev,
   goToStep(step: number) {
-    if (step >= 0 && step < steps.value.length) currentStep.value = step
+    if (step >= 0 && step < steps.value.length) currentStep.value = step;
   },
-}))
+}));
 </script>
 
 <template>
@@ -61,7 +72,13 @@ useExposeWidget(() => ({
       <div
         v-for="step in steps"
         :key="step.index"
-        :class="[styles.stepItem, { [styles.stepActive]: step.index === currentStep, [styles.stepDone]: step.index < currentStep }]"
+        :class="[
+          styles.stepItem,
+          {
+            [styles.stepActive]: step.index === currentStep,
+            [styles.stepDone]: step.index < currentStep,
+          },
+        ]"
         @click="handleStepClick(step.index)"
       >
         <div :class="styles.stepNumber">
@@ -70,19 +87,37 @@ useExposeWidget(() => ({
         </div>
         <div :class="styles.stepContent">
           <div :class="styles.stepTitle">{{ step.title }}</div>
-          <div v-if="step.description" :class="styles.stepDesc">{{ step.description }}</div>
+          <div v-if="step.description" :class="styles.stepDesc">
+            {{ step.description }}
+          </div>
         </div>
         <div v-if="step.index < steps.length - 1" :class="styles.stepLine" />
       </div>
     </div>
     <div :class="styles.stepBody">
-      <SchemaRender v-if="currentChildren.length > 0" :widgets="currentChildren" mode="edit" />
-      <div v-else :class="styles.empty">{{ t('editor.formSteps.emptyHint') }}</div>
+      <SchemaRender
+        v-if="currentChildren.length > 0"
+        :widgets="currentChildren"
+        mode="edit"
+      />
+      <div v-else :class="styles.empty">
+        {{ t("editor.formSteps.emptyHint") }}
+      </div>
     </div>
     <div :class="styles.stepFooter">
-      <button :class="styles.stepBtn" :disabled="!canPrev" @click="handlePrev">{{ t('editor.formSteps.prev') }}</button>
-      <button v-if="canNext" :class="[styles.stepBtn, styles.stepBtnPrimary]" @click="handleNext">{{ t('editor.formSteps.next') }}</button>
-      <button v-else :class="[styles.stepBtn, styles.stepBtnSuccess]">{{ t('editor.formSteps.finish') }}</button>
+      <button :class="styles.stepBtn" :disabled="!canPrev" @click="handlePrev">
+        {{ t("editor.formSteps.prev") }}
+      </button>
+      <button
+        v-if="canNext"
+        :class="[styles.stepBtn, styles.stepBtnPrimary]"
+        @click="handleNext"
+      >
+        {{ t("editor.formSteps.next") }}
+      </button>
+      <button v-else :class="[styles.stepBtn, styles.stepBtnSuccess]">
+        {{ t("editor.formSteps.finish") }}
+      </button>
     </div>
   </div>
 </template>

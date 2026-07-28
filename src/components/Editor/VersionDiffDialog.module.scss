@@ -24,7 +24,7 @@
 
   &__arrow {
     font-size: 16px;
-    color: var(--text-color-placeholder, #969FA8);
+    color: var(--text-color-placeholder, #969fa8);
     flex-shrink: 0;
   }
 }
@@ -110,7 +110,7 @@
     padding: 24px 0;
     text-align: center;
     font-size: 13px;
-    color: var(--text-color-placeholder, #969FA8);
+    color: var(--text-color-placeholder, #969fa8);
   }
 }
 
@@ -180,7 +180,7 @@
 
   &__path {
     font-size: 11px;
-    color: var(--text-color-placeholder, #969FA8);
+    color: var(--text-color-placeholder, #969fa8);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -202,12 +202,12 @@
 
     &-field {
       font-weight: 500;
-      color: var(--text-color-placeholder, #969FA8);
+      color: var(--text-color-placeholder, #969fa8);
       flex-shrink: 0;
     }
 
     &-arrow {
-      color: var(--text-color-placeholder, #969FA8);
+      color: var(--text-color-placeholder, #969fa8);
       flex-shrink: 0;
     }
 

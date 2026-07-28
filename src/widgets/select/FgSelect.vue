@@ -1,37 +1,41 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey } from '../base/types'
-import './FgSelect.module.scss'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useDynamicOptions } from '../../composables/useDynamicOptions'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
-import { useI18n } from '@schema-platform/platform-shared'
+import { inject, computed, ref } from "vue";
+import { widgetDataKey } from "../base/types";
+import "./FgSelect.module.scss";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useDynamicOptions } from "../../composables/useDynamicOptions";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const { isDisabled } = useWidgetRenderState()
-const { controlStyle: dynamicStyle } = useWidgetControlSize(32)
+const widgetData = inject(widgetDataKey)!;
+const { isDisabled } = useWidgetRenderState();
+const { controlStyle: dynamicStyle } = useWidgetControlSize(32);
 
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 
 // 动态选项加载（api 配置存在时生效）
 const { options: dynamicOptions, loading } = useDynamicOptions(
   computed(() => widgetData.value.api),
-)
+);
 
 // 合并：动态选项优先，降级到静态 options
 const resolvedOptions = computed(() =>
-  dynamicOptions.value.length ? dynamicOptions.value : (widgetData.value.options ?? []),
-)
+  dynamicOptions.value.length
+    ? dynamicOptions.value
+    : (widgetData.value.options ?? []),
+);
 
-const selectRef = ref<{ $el?: HTMLElement }>()
+const selectRef = ref<{ $el?: HTMLElement }>();
 
 function forwardNativeChange() {
-  selectRef.value?.$el?.dispatchEvent(new Event('change', { bubbles: true }))
+  selectRef.value?.$el?.dispatchEvent(new Event("change", { bubbles: true }));
 }
 </script>
 
@@ -40,7 +44,10 @@ function forwardNativeChange() {
     ref="selectRef"
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || t('editor.select.placeholder')"
+    :placeholder="
+      (widgetData.props?.placeholder as string) ||
+      t('editor.select.placeholder')
+    "
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :multiple="(widgetData.props?.multiple as boolean) || false"
@@ -56,4 +63,3 @@ function forwardNativeChange() {
     />
   </el-select>
 </template>
-

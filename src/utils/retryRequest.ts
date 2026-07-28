@@ -5,14 +5,14 @@
  * 默认重试 3 次，最高 5 次
  */
 
-const DEFAULT_RETRY_COUNT = 3
-const MAX_RETRY_COUNT = 5
-const RETRY_DELAY_MS = 1000
+const DEFAULT_RETRY_COUNT = 3;
+const MAX_RETRY_COUNT = 5;
+const RETRY_DELAY_MS = 1000;
 
 export interface RetryOptions {
-  enableRetry?: boolean
-  maxRetries?: number
-  delayMs?: number
+  enableRetry?: boolean;
+  maxRetries?: number;
+  delayMs?: number;
 }
 
 /**
@@ -25,27 +25,27 @@ export async function executeWithRetry<T>(
   options: RetryOptions = {},
 ): Promise<T> {
   if (!options.enableRetry) {
-    return fn()
+    return fn();
   }
 
   const maxRetries = Math.min(
     options.maxRetries ?? DEFAULT_RETRY_COUNT,
     MAX_RETRY_COUNT,
-  )
-  const delayMs = options.delayMs ?? RETRY_DELAY_MS
+  );
+  const delayMs = options.delayMs ?? RETRY_DELAY_MS;
 
-  let lastError: unknown
+  let lastError: unknown;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      return await fn()
+      return await fn();
     } catch (err) {
-      lastError = err
+      lastError = err;
       if (attempt < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs))
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
   }
 
-  throw lastError
+  throw lastError;
 }

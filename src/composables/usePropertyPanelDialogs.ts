@@ -6,12 +6,18 @@
  * - 监听 editorStore.configDialogTrigger（右键菜单触发弹框）
  * - 各弹框保存时写入 widgetStore / boardStore
  */
-import { ref, watch, type ComputedRef } from 'vue'
-import type { Widget, WidgetEvent, SchemaApiConfig, WidgetVariable, ChartLinkageRule } from '@/widgets/base/types'
-import type { SchemaLinkage } from '@/components/WidgetRenderer/types'
-import type { useWidgetStore } from '@/stores/widget'
-import type { useEditorStore } from '@/stores/editor'
-import type { useBoardStore } from '@/stores/board'
+import { ref, watch, type ComputedRef } from "vue";
+import type {
+  Widget,
+  WidgetEvent,
+  SchemaApiConfig,
+  WidgetVariable,
+  ChartLinkageRule,
+} from "@/widgets/base/types";
+import type { SchemaLinkage } from "@/components/WidgetRenderer/types";
+import type { useWidgetStore } from "@/stores/widget";
+import type { useEditorStore } from "@/stores/editor";
+import type { useBoardStore } from "@/stores/board";
 
 export function usePropertyPanelDialogs(
   selectedWidget: ComputedRef<Widget | null>,
@@ -19,67 +25,71 @@ export function usePropertyPanelDialogs(
   editorStore: ReturnType<typeof useEditorStore>,
   boardStore: ReturnType<typeof useBoardStore>,
 ) {
-  const eventDialogVisible = ref(false)
-  const linkageDialogVisible = ref(false)
-  const apiDialogVisible = ref(false)
-  const variableDialogVisible = ref(false)
-  const boardVariableDialogVisible = ref(false)
-  const chartLinkageDialogVisible = ref(false)
+  const eventDialogVisible = ref(false);
+  const linkageDialogVisible = ref(false);
+  const apiDialogVisible = ref(false);
+  const variableDialogVisible = ref(false);
+  const boardVariableDialogVisible = ref(false);
+  const chartLinkageDialogVisible = ref(false);
 
   function openEventDialog() {
-    eventDialogVisible.value = true
+    eventDialogVisible.value = true;
   }
 
   function openLinkageDialog() {
-    linkageDialogVisible.value = true
+    linkageDialogVisible.value = true;
   }
 
   function openApiDialog() {
-    apiDialogVisible.value = true
+    apiDialogVisible.value = true;
   }
 
   function openChartLinkageDialog() {
-    chartLinkageDialogVisible.value = true
+    chartLinkageDialogVisible.value = true;
   }
 
   // ---- 监听右键菜单触发的弹框打开 ----
-  watch(() => editorStore.configDialogTrigger, (trigger) => {
-    if (!trigger) return
-    if (trigger.type === 'events') eventDialogVisible.value = true
-    else if (trigger.type === 'linkages') linkageDialogVisible.value = true
-    else if (trigger.type === 'api') apiDialogVisible.value = true
-    else if (trigger.type === 'variables') variableDialogVisible.value = true
-    else if (trigger.type === 'chart-linkages') chartLinkageDialogVisible.value = true
-    editorStore.clearConfigDialogTrigger()
-  })
+  watch(
+    () => editorStore.configDialogTrigger,
+    (trigger) => {
+      if (!trigger) return;
+      if (trigger.type === "events") eventDialogVisible.value = true;
+      else if (trigger.type === "linkages") linkageDialogVisible.value = true;
+      else if (trigger.type === "api") apiDialogVisible.value = true;
+      else if (trigger.type === "variables") variableDialogVisible.value = true;
+      else if (trigger.type === "chart-linkages")
+        chartLinkageDialogVisible.value = true;
+      editorStore.clearConfigDialogTrigger();
+    },
+  );
 
   function handleEventSave(events: WidgetEvent[]) {
-    if (!selectedWidget.value) return
-    widgetStore.updateWidget(selectedWidget.value.id, { events })
+    if (!selectedWidget.value) return;
+    widgetStore.updateWidget(selectedWidget.value.id, { events });
   }
 
   function handleLinkageSave(linkages: SchemaLinkage[]) {
-    if (!selectedWidget.value) return
-    widgetStore.updateWidget(selectedWidget.value.id, { linkages })
+    if (!selectedWidget.value) return;
+    widgetStore.updateWidget(selectedWidget.value.id, { linkages });
   }
 
   function handleApiSave(api: SchemaApiConfig | undefined) {
-    if (!selectedWidget.value) return
-    widgetStore.updateWidget(selectedWidget.value.id, { api })
+    if (!selectedWidget.value) return;
+    widgetStore.updateWidget(selectedWidget.value.id, { api });
   }
 
   function handleVariableSave(variables: WidgetVariable[]) {
-    if (!selectedWidget.value) return
-    widgetStore.updateWidget(selectedWidget.value.id, { variables })
+    if (!selectedWidget.value) return;
+    widgetStore.updateWidget(selectedWidget.value.id, { variables });
   }
 
   function handleBoardVariableSave(variables: WidgetVariable[]) {
-    boardStore.variables = variables as typeof boardStore.variables
+    boardStore.variables = variables as typeof boardStore.variables;
   }
 
   function handleChartLinkageSave(rules: ChartLinkageRule[]) {
-    if (!selectedWidget.value) return
-    widgetStore.updateWidget(selectedWidget.value.id, { chartLinkages: rules })
+    if (!selectedWidget.value) return;
+    widgetStore.updateWidget(selectedWidget.value.id, { chartLinkages: rules });
   }
 
   return {
@@ -99,5 +109,5 @@ export function usePropertyPanelDialogs(
     handleVariableSave,
     handleBoardVariableSave,
     handleChartLinkageSave,
-  }
+  };
 }

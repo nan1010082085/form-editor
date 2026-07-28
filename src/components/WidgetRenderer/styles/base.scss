@@ -2,8 +2,8 @@
 // FormGrid 栅格仿表格布局
 // 排版基础已在 reset.scss 的 .fg 中定义
 // ============================================================
-@use './variables' as *;
-@use './theme';
+@use "./variables" as *;
+@use "./theme";
 
 // ---- 行容器 ----
 .fg-grid-row {
@@ -18,11 +18,13 @@
   border: 1px solid var(--color-primary-lighter);
   box-sizing: border-box;
   display: flex;
-  align-items: center;  // 内容垂直居中
+  align-items: center; // 内容垂直居中
   background: var(--bg-color-white);
   min-width: 0;
   overflow: visible;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &:hover {
     border-color: var(--color-primary-lighter);
@@ -161,7 +163,7 @@
 }
 
 .flex-insert-before::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: 0;
@@ -179,7 +181,7 @@
 }
 
 .flex-insert-after::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;

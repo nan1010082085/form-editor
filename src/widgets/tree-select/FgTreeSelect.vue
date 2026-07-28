@@ -1,45 +1,51 @@
 <script setup lang="ts">
-import { inject, computed, ref } from 'vue'
-import { widgetDataKey } from '../base/types'
-import './style.module.scss'
-import { useWidgetRenderState } from '../../composables/useWidgetRenderState'
-import { useDynamicOptions } from '../../composables/useDynamicOptions'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useWidgetControlSize } from '../../composables/useWidgetControlSize'
-import { useI18n } from '@schema-platform/platform-shared'
+import { inject, computed, ref } from "vue";
+import { widgetDataKey } from "../base/types";
+import "./style.module.scss";
+import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
+import { useDynamicOptions } from "../../composables/useDynamicOptions";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
+import { useI18n } from "@schema-platform/platform-shared";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const { isDisabled } = useWidgetRenderState()
-const { controlStyle: dynamicStyle } = useWidgetControlSize(32)
+const widgetData = inject(widgetDataKey)!;
+const { isDisabled } = useWidgetRenderState();
+const { controlStyle: dynamicStyle } = useWidgetControlSize(32);
 
 // 暴露 value 给联动系统
 useExposeWidget((wd) => ({
-  get value() { return wd.value.defaultValue },
-}))
+  get value() {
+    return wd.value.defaultValue;
+  },
+}));
 
 // 动态选项加载（api 配置存在时生效，支持 childrenKey 树形结构）
 const { options: dynamicOptions, loading } = useDynamicOptions(
   computed(() => widgetData.value.api),
-)
+);
 
 // 合并：动态选项优先，降级到静态 options
 const resolvedData = computed(() =>
-  dynamicOptions.value.length ? dynamicOptions.value : (widgetData.value.options ?? []),
-)
+  dynamicOptions.value.length
+    ? dynamicOptions.value
+    : (widgetData.value.options ?? []),
+);
 
 // el-tree-select 的 props 映射（DictItem 结构天然匹配）
 const treeProps = computed(() => ({
-  label: 'label',
-  value: 'value',
-  children: 'children',
-}))
+  label: "label",
+  value: "value",
+  children: "children",
+}));
 
-const treeSelectRef = ref<{ $el?: HTMLElement }>()
+const treeSelectRef = ref<{ $el?: HTMLElement }>();
 
 function forwardNativeChange() {
-  treeSelectRef.value?.$el?.dispatchEvent(new Event('change', { bubbles: true }))
+  treeSelectRef.value?.$el?.dispatchEvent(
+    new Event("change", { bubbles: true }),
+  );
 }
 </script>
 
@@ -51,7 +57,10 @@ function forwardNativeChange() {
     :style="dynamicStyle"
     :data="resolvedData"
     :props="treeProps"
-    :placeholder="(widgetData.props?.placeholder as string) || t('editor.common.selectPlaceholder')"
+    :placeholder="
+      (widgetData.props?.placeholder as string) ||
+      t('editor.common.selectPlaceholder')
+    "
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :multiple="(widgetData.props?.multiple as boolean) || false"

@@ -1,28 +1,28 @@
-import type { WidgetConfig } from '../base/types'
+import type { WidgetConfig } from "../base/types";
 
 export const singleColConfig: WidgetConfig = {
-  name: 'FgSingleCol',
-  displayName: '单列容器',
-  description: '单列布局容器，内部可放置 1 个组件',
-  author: 'yangdongnan',
-  defaultPosition: { w: 100, wUnit: '%', h: 200 },
+  name: "FgSingleCol",
+  displayName: "单列容器",
+  description: "单列布局容器，内部可放置 1 个组件",
+  author: "yangdongnan",
+  defaultPosition: { w: 100, wUnit: "%", h: 200 },
   defaultStyle: {},
-  configPanels: ['events', 'variables'],
+  configPanels: ["events", "variables"],
   defaultProps: {
     gutter: 16,
     colWidths: [100],
   },
   propertyPanel: {
     basic: [
-      { key: 'gutter', label: '列间距', type: 'number', default: 16 },
+      { key: "gutter", label: "列间距", type: "number", default: 16 },
       {
-        key: 'colWidths',
-        label: '列宽(%)',
-        type: 'number-array',
+        key: "colWidths",
+        label: "列宽(%)",
+        type: "number-array",
       },
     ],
-    style: ['margin', 'padding'],
+    style: ["margin", "padding"],
     props: [],
   },
-  contexts: ['free'],
-}
+  contexts: ["free"],
+};

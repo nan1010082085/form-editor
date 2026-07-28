@@ -8,7 +8,7 @@
 }
 
 .varName {
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-color-title);
@@ -19,7 +19,7 @@
 }
 
 .varValue {
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   font-size: 12px;
   color: var(--text-color-regular);
   max-width: 300px;
@@ -48,7 +48,7 @@
   border: 1px solid var(--bg-color-gray-darker);
   border-radius: 6px;
   font-size: 12px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   color: var(--text-color-regular);
   max-height: 200px;
   overflow-y: auto;

@@ -1,133 +1,148 @@
 <script setup lang="ts">
-import { inject, computed, ref, watch, type CSSProperties } from 'vue'
-import { widgetDataKey } from '../base/types'
-import { useApiRequest } from '../../composables/useApiRequest'
-import { useExposeWidget } from '../../composables/useExposeWidget'
-import { useWidgetAutoRefresh } from '../../composables/useWidgetAutoRefresh'
-import { useI18n } from '@schema-platform/platform-shared'
-import styles from './style.module.scss'
-import AppIcon from '@schema-platform/platform-shared/components/common/AppIcon.vue'
+import { inject, computed, ref, watch, type CSSProperties } from "vue";
+import { widgetDataKey } from "../base/types";
+import { useApiRequest } from "../../composables/useApiRequest";
+import { useExposeWidget } from "../../composables/useExposeWidget";
+import { useWidgetAutoRefresh } from "../../composables/useWidgetAutoRefresh";
+import { useI18n } from "@schema-platform/platform-shared";
+import styles from "./style.module.scss";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const widgetData = inject(widgetDataKey)!
-const { fetchApi } = useApiRequest()
+const widgetData = inject(widgetDataKey)!;
+const { fetchApi } = useApiRequest();
 
-const loading = ref(false)
-const apiValue = ref<number | null>(null)
+const loading = ref(false);
+const apiValue = ref<number | null>(null);
 
-const props = computed(() => widgetData.value.props ?? {})
+const props = computed(() => widgetData.value.props ?? {});
 
 // API data loading
-const apiUrl = computed(() => props.value.apiUrl as string)
-const apiMethod = computed(() => (props.value.apiMethod as string) ?? 'get')
-const apiHeaders = computed(() => (props.value.apiHeaders as Record<string, string>) ?? {})
-const responseDataPath = computed(() => props.value.responseDataPath as string)
+const apiUrl = computed(() => props.value.apiUrl as string);
+const apiMethod = computed(() => (props.value.apiMethod as string) ?? "get");
+const apiHeaders = computed(
+  () => (props.value.apiHeaders as Record<string, string>) ?? {},
+);
+const responseDataPath = computed(() => props.value.responseDataPath as string);
 const refreshInterval = computed(() => {
-  const n = Number(props.value.refreshInterval)
-  return Number.isFinite(n) && n > 0 ? n : 0
-})
+  const n = Number(props.value.refreshInterval);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+});
 
 function resolveDataPath(data: unknown, path: string): unknown {
-  if (!path) return data
-  return path.split('.').reduce<unknown>((obj, key) => {
-    if (obj && typeof obj === 'object' && key in (obj as Record<string, unknown>)) {
-      return (obj as Record<string, unknown>)[key]
+  if (!path) return data;
+  return path.split(".").reduce<unknown>((obj, key) => {
+    if (
+      obj &&
+      typeof obj === "object" &&
+      key in (obj as Record<string, unknown>)
+    ) {
+      return (obj as Record<string, unknown>)[key];
     }
-    return undefined
-  }, data)
+    return undefined;
+  }, data);
 }
 
 async function loadData() {
-  if (!apiUrl.value) return
-  loading.value = true
+  if (!apiUrl.value) return;
+  loading.value = true;
   try {
-    const result = await fetchApi(apiUrl.value, apiMethod.value, apiHeaders.value)
-    const extracted = resolveDataPath(result, responseDataPath.value)
-    apiValue.value = typeof extracted === 'number' ? extracted : Number(extracted) || 0
+    const result = await fetchApi(
+      apiUrl.value,
+      apiMethod.value,
+      apiHeaders.value,
+    );
+    const extracted = resolveDataPath(result, responseDataPath.value);
+    apiValue.value =
+      typeof extracted === "number" ? extracted : Number(extracted) || 0;
   } catch {
-    apiValue.value = null
+    apiValue.value = null;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 if (apiUrl.value) {
-  loadData()
+  loadData();
 }
 watch(apiUrl, (url) => {
-  if (url) loadData()
-  else apiValue.value = null
-})
+  if (url) loadData();
+  else apiValue.value = null;
+});
 
-useWidgetAutoRefresh(loadData, refreshInterval)
+useWidgetAutoRefresh(loadData, refreshInterval);
 
 // Current display value: API data takes priority when apiUrl is set
 const currentValue = computed(() => {
-  if (apiUrl.value && apiValue.value !== null) return apiValue.value
-  return (props.value.value as number) ?? 0
-})
+  if (apiUrl.value && apiValue.value !== null) return apiValue.value;
+  return (props.value.value as number) ?? 0;
+});
 
 // Number formatting with thousand separators
 const formattedValue = computed(() => {
-  const num = currentValue.value
-  const precision = (props.value.precision as number) ?? 0
-  return num.toLocaleString('zh-CN', {
+  const num = currentValue.value;
+  const precision = (props.value.precision as number) ?? 0;
+  return num.toLocaleString("zh-CN", {
     minimumFractionDigits: precision,
     maximumFractionDigits: precision,
-  })
-})
+  });
+});
 
 // Trend config
-const trend = computed(() => (props.value.trend as string) ?? 'flat')
-const trendValue = computed(() => props.value.trendValue as string)
+const trend = computed(() => (props.value.trend as string) ?? "flat");
+const trendValue = computed(() => props.value.trendValue as string);
 
 const trendClass = computed(() => {
-  if (trend.value === 'up') return styles.trendUp
-  if (trend.value === 'down') return styles.trendDown
-  return styles.trendFlat
-})
+  if (trend.value === "up") return styles.trendUp;
+  if (trend.value === "down") return styles.trendDown;
+  return styles.trendFlat;
+});
 
 // Icon resolution
-const iconName = computed(() => props.value.icon as string)
+const iconName = computed(() => props.value.icon as string);
 
 // Dynamic styles
 const valueStyle = computed<CSSProperties>(() => {
-  const s: CSSProperties = {}
-  if (props.value.color) s.color = props.value.color as string
-  if (props.value.valueFontSize) s.fontSize = props.value.valueFontSize as string
-  return s
-})
+  const s: CSSProperties = {};
+  if (props.value.color) s.color = props.value.color as string;
+  if (props.value.valueFontSize)
+    s.fontSize = props.value.valueFontSize as string;
+  return s;
+});
 
 const titleStyle = computed<CSSProperties>(() => {
-  const s: CSSProperties = {}
-  if (props.value.titleFontSize) s.fontSize = props.value.titleFontSize as string
-  return s
-})
+  const s: CSSProperties = {};
+  if (props.value.titleFontSize)
+    s.fontSize = props.value.titleFontSize as string;
+  return s;
+});
 
 // Expose runtime state
 useExposeWidget(() => ({
-  get loading() { return loading.value },
-  get currentValue() { return currentValue.value },
+  get loading() {
+    return loading.value;
+  },
+  get currentValue() {
+    return currentValue.value;
+  },
   refresh: loadData,
-}))
+}));
 </script>
 
 <template>
   <div :class="[styles.container, { [styles.loading]: loading }]">
     <div :class="styles.header">
-      <AppIcon
-        v-if="iconName"
-        :name="iconName"
-        :class="styles.icon"
-      />
+      <AppIcon v-if="iconName" :name="iconName" :class="styles.icon" />
       <span :class="styles.title" :style="titleStyle">
-        {{ (props.title as string) || t('editor.statistic.defaultTitle') }}
+        {{ (props.title as string) || t("editor.statistic.defaultTitle") }}
       </span>
     </div>
     <div :class="styles.body">
       <span v-if="props.prefix" :class="styles.prefix">{{ props.prefix }}</span>
-      <span :class="styles.value" :style="valueStyle">{{ formattedValue }}</span>
+      <span :class="styles.value" :style="valueStyle">{{
+        formattedValue
+      }}</span>
       <span v-if="props.suffix" :class="styles.suffix">{{ props.suffix }}</span>
     </div>
     <div v-if="trendValue" :class="styles.footer">

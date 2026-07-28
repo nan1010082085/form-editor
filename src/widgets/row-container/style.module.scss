@@ -37,7 +37,9 @@
   min-height: 48px;
   pointer-events: auto;
   border-radius: 4px;
-  transition: background-color 0.15s ease, outline-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    outline-color 0.15s ease;
 }
 
 .dropZoneActive {

@@ -11,81 +11,95 @@
  * - "Delete" calls removeTemplate after confirmation
  * - Empty/loading/error states render correctly
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
-import { nextTick } from 'vue'
-import ElementPlus from 'element-plus'
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { mount, flushPromises } from "@vue/test-utils";
+import { createPinia, setActivePinia } from "pinia";
+import { nextTick } from "vue";
+import ElementPlus from "element-plus";
 
 // Mock useI18n
-vi.mock('@schema-platform/platform-shared', () => ({
+vi.mock("@schema-platform/platform-shared", () => ({
   useI18n: () => ({ t: (key: string) => key }),
-}))
+}));
 
 // Mock vue-router
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ path: '/templates' }),
+vi.mock("vue-router", () => ({
+  useRoute: () => ({ path: "/templates" }),
   useRouter: () => ({ push: vi.fn() }),
-}))
+}));
 
 // Mock stores
-vi.mock('@/stores/template', () => ({
+vi.mock("@/stores/template", () => ({
   useTemplateStore: vi.fn(),
-}))
+}));
 
-vi.mock('@/stores/widget', () => ({
+vi.mock("@/stores/widget", () => ({
   useWidgetStore: vi.fn(),
-}))
+}));
 
 // Mock ElementPlus message/dialog
-vi.mock('element-plus', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('element-plus')>()
+vi.mock("element-plus", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("element-plus")>();
   return {
     ...actual,
-    ElMessage: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn(), loading: vi.fn(), closeAll: vi.fn() },
-    ElMessageBox: {
-      confirm: vi.fn().mockResolvedValue('confirm'),
-      alert: vi.fn().mockResolvedValue('confirm'),
-      prompt: vi.fn().mockResolvedValue({ value: '', action: 'confirm' }),
+    ElMessage: {
+      success: vi.fn(),
+      error: vi.fn(),
+      warning: vi.fn(),
+      info: vi.fn(),
+      loading: vi.fn(),
+      closeAll: vi.fn(),
     },
-  }
-})
+    ElMessageBox: {
+      confirm: vi.fn().mockResolvedValue("confirm"),
+      alert: vi.fn().mockResolvedValue("confirm"),
+      prompt: vi.fn().mockResolvedValue({ value: "", action: "confirm" }),
+    },
+  };
+});
 
-import { useTemplateStore } from '@/stores/template'
-import { useWidgetStore } from '@/stores/widget'
-import { ElMessage } from 'element-plus'
-import WidgetTemplateView from '../views/WidgetTemplateView.vue'
+import { useTemplateStore } from "@/stores/template";
+import { useWidgetStore } from "@/stores/widget";
+import WidgetTemplateView from "../views/WidgetTemplateView.vue";
 
 function makeTemplate(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'tpl-001',
-    name: 'Login Form',
-    description: 'A login form template',
-    category: 'form',
-    widgetType: 'input',
-    thumbnail: '',
+    id: "tpl-001",
+    name: "Login Form",
+    description: "A login form template",
+    category: "form",
+    widgetType: "input",
+    thumbnail: "",
     widgets: [
-      { type: 'input', field: 'username', label: 'Username', props: {} },
-      { type: 'input', field: 'password', label: 'Password', props: {} },
+      { type: "input", field: "username", label: "Username", props: {} },
+      { type: "input", field: "password", label: "Password", props: {} },
     ],
-    tags: ['auth', 'login'],
+    tags: ["auth", "login"],
     isBuiltin: false,
-    createdBy: 'user1',
+    createdBy: "user1",
     usageCount: 10,
-    createdAt: '2026-01-01T00:00:00Z',
-    updatedAt: '2026-01-01T00:00:00Z',
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
     ...overrides,
-  }
+  };
 }
 
 function createMockTemplateStore(overrides: Record<string, unknown> = {}) {
   return {
-    templates: [makeTemplate(), makeTemplate({ id: 'tpl-002', name: 'Search Bar', category: 'search', tags: [] })],
+    templates: [
+      makeTemplate(),
+      makeTemplate({
+        id: "tpl-002",
+        name: "Search Bar",
+        category: "search",
+        tags: [],
+      }),
+    ],
     total: 2,
     loading: false,
     error: null as string | null,
-    searchKeyword: '',
-    selectedCategory: '',
+    searchKeyword: "",
+    selectedCategory: "",
     page: 1,
     pageSize: 20,
     totalPages: 1,
@@ -95,119 +109,125 @@ function createMockTemplateStore(overrides: Record<string, unknown> = {}) {
     setCategory: vi.fn(),
     setPage: vi.fn(),
     resetFilters: vi.fn(),
-    applyTemplateById: vi.fn().mockResolvedValue([
-      { type: 'input', field: 'username', label: 'Username', props: {} },
-    ]),
+    applyTemplateById: vi
+      .fn()
+      .mockResolvedValue([
+        { type: "input", field: "username", label: "Username", props: {} },
+      ]),
     saveTemplate: vi.fn(),
     removeTemplate: vi.fn().mockResolvedValue(undefined),
     ...overrides,
-  }
+  };
 }
 
 function createMockWidgetStore() {
   return {
     addWidget: vi.fn(),
-  }
+  };
 }
 
 function mountView(templateStoreOverrides: Record<string, unknown> = {}) {
-  const templateStore = createMockTemplateStore(templateStoreOverrides)
-  const widgetStore = createMockWidgetStore()
+  const templateStore = createMockTemplateStore(templateStoreOverrides);
+  const widgetStore = createMockWidgetStore();
 
-  vi.mocked(useTemplateStore).mockReturnValue(templateStore as any)
-  vi.mocked(useWidgetStore).mockReturnValue(widgetStore as any)
+  vi.mocked(useTemplateStore).mockReturnValue(templateStore as any);
+  vi.mocked(useWidgetStore).mockReturnValue(widgetStore as any);
 
   const wrapper = mount(WidgetTemplateView, {
     global: {
       plugins: [createPinia(), ElementPlus],
     },
-  })
+  });
 
-  return { wrapper, templateStore, widgetStore }
+  return { wrapper, templateStore, widgetStore };
 }
 
-describe('WidgetTemplateView', () => {
+describe("WidgetTemplateView", () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-    vi.clearAllMocks()
-  })
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
 
   // ------------------------------------------------------------------
   // Initial render
   // ------------------------------------------------------------------
 
-  it('loads templates on mount', () => {
-    const { templateStore } = mountView()
-    expect(templateStore.loadTemplates).toHaveBeenCalled()
-  })
+  it("loads templates on mount", () => {
+    const { templateStore } = mountView();
+    expect(templateStore.loadTemplates).toHaveBeenCalled();
+  });
 
-  it('renders template cards', () => {
-    const { wrapper } = mountView()
-    expect(wrapper.text()).toContain('Login Form')
-    expect(wrapper.text()).toContain('Search Bar')
-  })
+  it("renders template cards", () => {
+    const { wrapper } = mountView();
+    expect(wrapper.text()).toContain("Login Form");
+    expect(wrapper.text()).toContain("Search Bar");
+  });
 
-  it('renders template description', () => {
-    const { wrapper } = mountView()
-    expect(wrapper.text()).toContain('A login form template')
-  })
+  it("renders template description", () => {
+    const { wrapper } = mountView();
+    expect(wrapper.text()).toContain("A login form template");
+  });
 
-  it('renders usage count', () => {
-    const { wrapper } = mountView()
-    expect(wrapper.text()).toContain('editor.templateView.usageCount')
-  })
+  it("renders usage count", () => {
+    const { wrapper } = mountView();
+    expect(wrapper.text()).toContain("editor.templateView.usageCount");
+  });
 
-  it('renders template tags', () => {
-    const { wrapper } = mountView()
-    expect(wrapper.text()).toContain('auth')
-    expect(wrapper.text()).toContain('login')
-  })
+  it("renders template tags", () => {
+    const { wrapper } = mountView();
+    expect(wrapper.text()).toContain("auth");
+    expect(wrapper.text()).toContain("login");
+  });
 
-  it('shows builtin badge for builtin templates', () => {
+  it("shows builtin badge for builtin templates", () => {
     const { wrapper } = mountView({
       templates: [makeTemplate({ isBuiltin: true, tags: [] })],
-    })
-    expect(wrapper.text()).toContain('editor.templateView.builtin')
-  })
+    });
+    expect(wrapper.text()).toContain("editor.templateView.builtin");
+  });
 
   // ------------------------------------------------------------------
   // Search
   // ------------------------------------------------------------------
 
-  it('triggers search on input', async () => {
-    const { wrapper, templateStore } = mountView()
-    const input = wrapper.findComponent({ name: 'ElInput' })
+  it("triggers search on input", async () => {
+    const { wrapper, templateStore } = mountView();
+    const input = wrapper.findComponent({ name: "ElInput" });
     // Element Plus el-input @input 事件直接传值
-    await input.find('input').setValue('login')
-    await input.find('input').trigger('input')
+    await input.find("input").setValue("login");
+    await input.find("input").trigger("input");
     // Debounce: wait
-    await new Promise(r => setTimeout(r, 350))
-    expect(templateStore.setSearch).toHaveBeenCalledWith('login')
-    expect(templateStore.loadTemplates).toHaveBeenCalled()
-  })
+    await new Promise((r) => setTimeout(r, 350));
+    expect(templateStore.setSearch).toHaveBeenCalledWith("login");
+    expect(templateStore.loadTemplates).toHaveBeenCalled();
+  });
 
   // ------------------------------------------------------------------
   // Category filter
   // ------------------------------------------------------------------
 
-  it('triggers category filter on tag click', async () => {
-    const { wrapper, templateStore } = mountView()
+  it("triggers category filter on tag click", async () => {
+    const { wrapper, templateStore } = mountView();
     // FilterTabs 渲染原生 button，找到"表单"分类并点击
-    const buttons = wrapper.findAll('button')
-    const formBtn = buttons.find(b => b.text().includes('editor.templateView.categoryForm'))
-    expect(formBtn).toBeTruthy()
-    await formBtn!.trigger('click')
-    expect(templateStore.setCategory).toHaveBeenCalledWith('form')
-    expect(templateStore.loadTemplates).toHaveBeenCalled()
-  })
+    const buttons = wrapper.findAll("button");
+    const formBtn = buttons.find((b) =>
+      b.text().includes("editor.templateView.categoryForm"),
+    );
+    expect(formBtn).toBeTruthy();
+    await formBtn!.trigger("click");
+    expect(templateStore.setCategory).toHaveBeenCalledWith("form");
+    expect(templateStore.loadTemplates).toHaveBeenCalled();
+  });
 
   it('resets category on "全部" click', async () => {
-    const { wrapper, templateStore } = mountView()
-    const buttons = wrapper.findAll('button')
-    const allBtn = buttons.find(b => b.text().includes('editor.templateView.categoryAll'))
-    await allBtn!.trigger('click')
-    expect(templateStore.setCategory).toHaveBeenCalledWith('')
-  })
+    const { wrapper, templateStore } = mountView();
+    const buttons = wrapper.findAll("button");
+    const allBtn = buttons.find((b) =>
+      b.text().includes("editor.templateView.categoryAll"),
+    );
+    await allBtn!.trigger("click");
+    expect(templateStore.setCategory).toHaveBeenCalledWith("");
+  });
 
   // ------------------------------------------------------------------
   // Apply to canvas
@@ -217,72 +237,79 @@ describe('WidgetTemplateView', () => {
   // Preview
   // ------------------------------------------------------------------
 
-  it('opens preview drawer on preview button click', async () => {
-    const { wrapper } = mountView()
+  it("opens preview drawer on preview button click", async () => {
+    const { wrapper } = mountView();
     // 预览按钮是 cardActions 里带有 view 图标的 text 按钮
-    const actionButtons = wrapper.findAll('.el-button.is-text')
-    expect(actionButtons.length).toBeGreaterThan(0)
-    await actionButtons[0].trigger('click')
-    await nextTick()
-    await nextTick()
+    const actionButtons = wrapper.findAll(".el-button.is-text");
+    expect(actionButtons.length).toBeGreaterThan(0);
+    await actionButtons[0].trigger("click");
+    await nextTick();
+    await nextTick();
 
     // Drawer 内容包含模板名和模式切换
-    expect(wrapper.text()).toContain('Login Form')
-  })
+    expect(wrapper.text()).toContain("Login Form");
+  });
 
   // ------------------------------------------------------------------
   // Delete
   // ------------------------------------------------------------------
 
-  it('deletes template after confirmation', async () => {
-    const { wrapper, templateStore } = mountView()
+  it("deletes template after confirmation", async () => {
+    const { wrapper, templateStore } = mountView();
     // 删除按钮是 el-button[type="danger"][text] — Element Plus 渲染为 is-link 类
-    const dangerButtons = wrapper.findAll('.el-button--danger')
-    expect(dangerButtons.length).toBeGreaterThan(0)
-    await dangerButtons[0].trigger('click')
-    await flushPromises()
-    expect(templateStore.removeTemplate).toHaveBeenCalledWith('tpl-001')
-  })
+    const dangerButtons = wrapper.findAll(".el-button--danger");
+    expect(dangerButtons.length).toBeGreaterThan(0);
+    await dangerButtons[0].trigger("click");
+    await flushPromises();
+    expect(templateStore.removeTemplate).toHaveBeenCalledWith("tpl-001");
+  });
 
   // ------------------------------------------------------------------
   // Empty state
   // ------------------------------------------------------------------
 
-  it('shows empty state when no templates', () => {
-    const { wrapper } = mountView({ templates: [], total: 0 })
-    expect(wrapper.text()).toContain('editor.templateView.emptyTitle')
-  })
+  it("shows empty state when no templates", () => {
+    const { wrapper } = mountView({ templates: [], total: 0 });
+    expect(wrapper.text()).toContain("editor.templateView.emptyTitle");
+  });
 
   // ------------------------------------------------------------------
   // Loading state
   // ------------------------------------------------------------------
 
-  it('shows loading state', () => {
-    const { wrapper } = mountView({ loading: true, templates: [] })
+  it("shows loading state", () => {
+    const { wrapper } = mountView({ loading: true, templates: [] });
     // 加载态渲染骨架屏卡片，不含"暂无模板"
-    expect(wrapper.text()).not.toContain('editor.templateView.emptyTitle')
-  })
+    expect(wrapper.text()).not.toContain("editor.templateView.emptyTitle");
+  });
 
   // ------------------------------------------------------------------
   // Error state
   // ------------------------------------------------------------------
 
-  it('shows error state', async () => {
-    const { wrapper, templateStore } = mountView({ error: '加载失败', templates: [] })
-    expect(wrapper.text()).toContain('加载失败')
+  it("shows error state", async () => {
+    const { wrapper, templateStore } = mountView({
+      error: "加载失败",
+      templates: [],
+    });
+    expect(wrapper.text()).toContain("加载失败");
     // 点击重试按钮
-    const retryBtn = wrapper.find('.el-alert .el-button')
-    await retryBtn.trigger('click')
-    expect(templateStore.loadTemplates).toHaveBeenCalled()
-  })
+    const retryBtn = wrapper.find(".el-alert .el-button");
+    await retryBtn.trigger("click");
+    expect(templateStore.loadTemplates).toHaveBeenCalled();
+  });
 
   // ------------------------------------------------------------------
   // Pagination
   // ------------------------------------------------------------------
 
-  it('triggers page change on pagination click', async () => {
-    const { templateStore } = mountView({ totalPages: 3, total: 60, hasMore: true })
+  it("triggers page change on pagination click", async () => {
+    const { templateStore } = mountView({
+      totalPages: 3,
+      total: 60,
+      hasMore: true,
+    });
     // el-pagination is rendered; verify store interaction
-    expect(templateStore.setPage).not.toHaveBeenCalled()
-  })
-})
+    expect(templateStore.setPage).not.toHaveBeenCalled();
+  });
+});
