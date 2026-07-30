@@ -10,15 +10,15 @@ const activeGroup = ref<string>("all");
 const allWidgets = computed<WidgetRegistryItem[]>(() => getAllWidgets());
 
 const GROUP_LABELS: Record<string, string> = {
-  all: "全部",
-  form: "表单",
-  chart: "图表",
-  business: "业务",
-  layout: "布局",
-  container: "容器",
-  table: "表格",
-  action: "动作",
-  static: "静态",
+  all: "All",
+  form: "Form",
+  chart: "Chart",
+  business: "Business",
+  layout: "Layout",
+  container: "Container",
+  table: "Table",
+  action: "Action",
+  static: "Static",
 };
 
 const groups = computed(() => {
@@ -55,9 +55,9 @@ const filteredWidgets = computed(() => {
 <template>
   <div :class="$style.page">
     <header :class="$style.header">
-      <h1 :class="$style.title">组件市场</h1>
+      <h1 :class="$style.title">Widget Market</h1>
       <p :class="$style.subtitle">
-        浏览所有已注册 Widget，共 {{ allWidgets.length }} 个组件
+        Browse all registered widgets, {{ allWidgets.length }} total
       </p>
     </header>
 
@@ -65,7 +65,7 @@ const filteredWidgets = computed(() => {
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="搜索组件名 / 类型 / 描述..."
+        placeholder="Search by name / type / description..."
         :class="$style.search"
       />
       <div :class="$style.groupTabs">
@@ -97,7 +97,7 @@ const filteredWidgets = computed(() => {
     </div>
 
     <div v-if="!filteredWidgets.length" :class="$style.empty">
-      未找到匹配的组件
+      No matching widgets found
     </div>
   </div>
 </template>

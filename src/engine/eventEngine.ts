@@ -268,7 +268,7 @@ export async function executeEventAction(
     }
     case "close-dialog": {
       ctx.closeDialog();
-      logger.event("关闭弹窗");
+      logger.event("Close dialog");
       break;
     }
     case "switch-tab": {
@@ -300,12 +300,12 @@ export async function executeEventAction(
     }
     case "submit": {
       ctx.submitForm();
-      logger.event("提交表单");
+      logger.event("Submit form");
       break;
     }
     case "reset": {
       ctx.resetForm();
-      logger.event("重置表单");
+      logger.event("Reset form");
       break;
     }
     case "emit": {
