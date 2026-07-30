@@ -246,6 +246,11 @@ import {
   ganttChartConfig,
 } from "./gantt-chart";
 import {
+  FgFlexZone,
+  createFlexZoneWidget,
+  flexZoneConfig,
+} from "./flex-zone";
+import {
   FgIconPicker,
   createIconPickerWidget,
   iconPickerConfig,
@@ -907,6 +912,15 @@ export function registerAllWidgets() {
     component: FgGanttChart,
     create: createGanttChartWidget,
     config: ganttChartConfig,
+  });
+  registerWidget({
+    name: flexZoneConfig.name,
+    displayName: flexZoneConfig.displayName,
+    type: "flex-zone",
+    group: "container",
+    component: FgFlexZone,
+    create: createFlexZoneWidget,
+    config: flexZoneConfig,
   });
 
   // Table widgets (表格)

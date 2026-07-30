@@ -587,12 +587,20 @@ const wrapperStyle = computed(() => {
               :canvas-offset-y="(canvasOffsetY ?? 0) + resolvedPosition.y"
             />
           </div>
+          <!-- flex-zone: Flex 流式渲染 children（Free canvas 内的 Flex 子区域） -->
+          <template v-if="widget.type === 'flex-zone' && filteredChildren.length">
+            <SchemaRender
+              v-for="(child, ci) in filteredChildren"
+              :key="ci"
+              :schema="child"
+            />
+          </template>
         </component>
       </WidgetErrorBoundary>
-      <!-- 非 form 容器：子部件层绝对定位 -->
+      <!-- 非 form 容器：子部件层绝对定位（排除 flex-zone，已在上方 Flex 渲染） -->
       <div
         v-if="
-          filteredChildren.length && !isSelfRendering && widget.type !== 'form'
+          filteredChildren.length && !isSelfRendering && widget.type !== 'form' && widget.type !== 'flex-zone'
         "
         :class="styles.childrenLayer"
       >
