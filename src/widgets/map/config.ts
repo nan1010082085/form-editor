@@ -3,7 +3,7 @@ import { mapChartMock } from "./mock";
 
 export const mapConfig: WidgetConfig = {
   name: "FgMap",
-  displayName: "地图",
+  displayName: "Map Chart",
   description: "地图组件，支持中国/世界地图，区域着色与散点标注，点击下钻",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "500px" },
@@ -30,19 +30,19 @@ export const mapConfig: WidgetConfig = {
     rawOption: null as Record<string, unknown> | null,
   },
   exposedValues: [
-    { key: "loading", type: "boolean", description: "加载状态" },
-    { key: "chartData", type: "array", description: "图表数据" },
+    { key: "loading", type: "boolean", description: "Loading state" },
+    { key: "chartData", type: "array", description: "Chart data" },
   ],
   configPanels: ["api", "variables", "events", "chart-linkages"],
   eventTargets: [
     { id: "chart-click", label: "地图点击", description: "点击地图区域时触发" },
   ],
   receivableEvents: [
-    { name: "refresh", description: "重新加载数据" },
+    { name: "refresh", description: "Reload data" },
     {
       name: "set-data",
       description: "设置地图数据",
-      params: { data: "数据数组" },
+      params: { data: "Data array" },
     },
   ],
   propertyPanel: {
@@ -51,16 +51,16 @@ export const mapConfig: WidgetConfig = {
     props: [
       {
         key: "staticData",
-        label: "静态数据",
+        label: "Static Data",
         type: "array-editor",
         fields: [
           { key: "name", label: "区域名称", type: "text" },
-          { key: "value", label: "值", type: "number" },
+          { key: "value", label: "Value", type: "number" },
         ],
       },
       {
         key: "mapType",
-        label: "地图类型",
+        label: "Map Type",
         type: "select",
         default: "china",
         options: [
@@ -70,35 +70,35 @@ export const mapConfig: WidgetConfig = {
       },
       {
         key: "nameField",
-        label: "名称字段",
+        label: "Name Field",
         type: "text",
         placeholder: "如: name",
       },
       {
         key: "valueField",
-        label: "值字段",
+        label: "Value Field",
         type: "text",
         placeholder: "如: value",
       },
-      { key: "title", label: "图表标题", type: "text" },
-      { key: "showLabel", label: "显示标签", type: "switch", default: true },
-      { key: "showScatter", label: "显示散点", type: "switch", default: false },
-      { key: "roam", label: "允许缩放拖拽", type: "switch", default: true },
+      { key: "title", label: "Chart Title", type: "text" },
+      { key: "showLabel", label: "Show Label", type: "switch", default: true },
+      { key: "showScatter", label: "Show Scatter", type: "switch", default: false },
+      { key: "roam", label: "Enable Roam", type: "switch", default: true },
       {
         key: "visualMapMin",
-        label: "视觉映射最小值",
+        label: "Visual Map Min",
         type: "number",
         default: 0,
       },
       {
         key: "visualMapMax",
-        label: "视觉映射最大值",
+        label: "Visual Map Max",
         type: "number",
         default: 1000,
       },
       {
         key: "colorScheme",
-        label: "颜色主题",
+        label: "Color Scheme",
         type: "select",
         options: [
           { label: "默认", value: "default" },
@@ -106,12 +106,12 @@ export const mapConfig: WidgetConfig = {
           { label: "浅色", value: "light" },
         ],
       },
-      { key: "customColors", label: "自定义颜色", type: "color-array" },
-      { key: "animation", label: "动画", type: "switch", default: true },
-      { key: "rawOption", label: "高级配置 (JSON)", type: "json" },
+      { key: "customColors", label: "Custom Colors", type: "color-array" },
+      { key: "animation", label: "Animation", type: "switch", default: true },
+      { key: "rawOption", label: "Advanced Option (JSON)", type: "json" },
       {
         key: "refreshInterval",
-        label: "自动刷新(秒)",
+        label: "Auto Refresh (s)",
         type: "number",
         default: 0,
         placeholder: "0=关闭",

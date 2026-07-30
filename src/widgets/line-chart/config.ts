@@ -3,7 +3,7 @@ import { lineChartMock } from "./mock";
 
 export const lineChartConfig: WidgetConfig = {
   name: "FgLineChart",
-  displayName: "折线图",
+  displayName: "Line Chart",
   description: "折线图组件，支持平滑曲线、面积填充",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
@@ -32,23 +32,23 @@ export const lineChartConfig: WidgetConfig = {
     rawOption: null as Record<string, unknown> | null,
   },
   exposedValues: [
-    { key: "loading", type: "boolean", description: "加载状态" },
-    { key: "chartData", type: "array", description: "图表数据" },
+    { key: "loading", type: "boolean", description: "Loading state" },
+    { key: "chartData", type: "array", description: "Chart data" },
   ],
   configPanels: ["api", "variables", "events", "chart-linkages"],
   eventTargets: [
     {
       id: "chart-click",
-      label: "图表点击",
-      description: "点击图表数据项时触发",
+      label: "Chart Click",
+      description: "Triggered on chart data item click",
     },
   ],
   receivableEvents: [
-    { name: "refresh", description: "重新加载数据" },
+    { name: "refresh", description: "Reload data" },
     {
       name: "set-data",
-      description: "设置图表数据",
-      params: { data: "数据数组" },
+      description: "Set chart data",
+      params: { data: "Data array" },
     },
   ],
   propertyPanel: {
@@ -57,42 +57,42 @@ export const lineChartConfig: WidgetConfig = {
     props: [
       {
         key: "staticData",
-        label: "静态数据",
+        label: "Static Data",
         type: "array-editor",
         fields: [
-          { key: "category", label: "分类", type: "text" },
-          { key: "value", label: "值", type: "number" },
+          { key: "category", label: "Category", type: "text" },
+          { key: "value", label: "Value", type: "number" },
         ],
       },
       {
         key: "xField",
-        label: "X 轴字段",
+        label: "X Axis Field",
         type: "text",
         placeholder: "如: category",
       },
       {
         key: "yField",
-        label: "Y 轴字段",
+        label: "Y Axis Field",
         type: "text",
         placeholder: "如: value",
       },
       {
         key: "xAxisName",
-        label: "X 轴名称",
+        label: "X Axis Name",
         type: "text",
         placeholder: "可选",
       },
       {
         key: "yAxisName",
-        label: "Y 轴名称",
+        label: "Y Axis Name",
         type: "text",
         placeholder: "可选",
       },
-      { key: "title", label: "图表标题", type: "text" },
-      { key: "showLegend", label: "显示图例", type: "switch", default: true },
+      { key: "title", label: "Chart Title", type: "text" },
+      { key: "showLegend", label: "Show Legend", type: "switch", default: true },
       {
         key: "legendPosition",
-        label: "图例位置",
+        label: "Legend Position",
         type: "select",
         default: "bottom",
         options: [
@@ -102,14 +102,14 @@ export const lineChartConfig: WidgetConfig = {
           { label: "右侧", value: "right" },
         ],
       },
-      { key: "showTooltip", label: "显示提示", type: "switch", default: true },
-      { key: "showLabel", label: "显示标签", type: "switch", default: false },
-      { key: "smooth", label: "平滑曲线", type: "switch", default: false },
-      { key: "area", label: "面积填充", type: "switch", default: false },
-      { key: "animation", label: "动画", type: "switch", default: true },
+      { key: "showTooltip", label: "Show Tooltip", type: "switch", default: true },
+      { key: "showLabel", label: "Show Label", type: "switch", default: false },
+      { key: "smooth", label: "Smooth", type: "switch", default: false },
+      { key: "area", label: "Area Fill", type: "switch", default: false },
+      { key: "animation", label: "Animation", type: "switch", default: true },
       {
         key: "colorScheme",
-        label: "颜色主题",
+        label: "Color Scheme",
         type: "select",
         options: [
           { label: "默认", value: "default" },
@@ -117,8 +117,8 @@ export const lineChartConfig: WidgetConfig = {
           { label: "浅色", value: "light" },
         ],
       },
-      { key: "customColors", label: "自定义颜色", type: "color-array" },
-      { key: "rawOption", label: "高级配置 (JSON)", type: "json" },
+      { key: "customColors", label: "Custom Colors", type: "color-array" },
+      { key: "rawOption", label: "Advanced Option (JSON)", type: "json" },
     ],
   },
 };

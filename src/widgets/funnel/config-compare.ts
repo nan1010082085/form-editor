@@ -32,16 +32,16 @@ export const compareFunnelConfig: WidgetConfig = {
     rawOption: null as Record<string, unknown> | null,
   },
   exposedValues: [
-    { key: "loading", type: "boolean", description: "加载状态" },
-    { key: "chartData", type: "array", description: "图表数据" },
+    { key: "loading", type: "boolean", description: "Loading state" },
+    { key: "chartData", type: "array", description: "Chart data" },
   ],
   configPanels: ["api", "variables", "events", "chart-linkages"],
   receivableEvents: [
-    { name: "refresh", description: "重新加载数据" },
+    { name: "refresh", description: "Reload data" },
     {
       name: "set-data",
-      description: "设置图表数据",
-      params: { data: "数据数组" },
+      description: "Set chart data",
+      params: { data: "Data array" },
     },
   ],
   propertyPanel: {
@@ -50,17 +50,17 @@ export const compareFunnelConfig: WidgetConfig = {
     props: [
       {
         key: "staticData",
-        label: "静态数据",
+        label: "Static Data",
         type: "array-editor",
         fields: [
-          { key: "name", label: "名称", type: "text" },
+          { key: "name", label: "Name", type: "text" },
           { key: "value1", label: "流程A", type: "number" },
           { key: "value2", label: "流程B", type: "number" },
         ],
       },
       {
         key: "nameField",
-        label: "名称字段",
+        label: "Name Field",
         type: "text",
         placeholder: "如: name",
       },
@@ -76,12 +76,12 @@ export const compareFunnelConfig: WidgetConfig = {
         type: "json",
         placeholder: '["流程A", "流程B"]',
       },
-      { key: "title", label: "图表标题", type: "text" },
-      { key: "showLegend", label: "显示图例", type: "switch", default: true },
-      { key: "showLabel", label: "显示标签", type: "switch", default: true },
+      { key: "title", label: "Chart Title", type: "text" },
+      { key: "showLegend", label: "Show Legend", type: "switch", default: true },
+      { key: "showLabel", label: "Show Label", type: "switch", default: true },
       {
         key: "colorScheme",
-        label: "颜色主题",
+        label: "Color Scheme",
         type: "select",
         options: [
           { label: "默认", value: "default" },
@@ -89,8 +89,8 @@ export const compareFunnelConfig: WidgetConfig = {
           { label: "浅色", value: "light" },
         ],
       },
-      { key: "customColors", label: "自定义颜色", type: "color-array" },
-      { key: "rawOption", label: "高级配置 (JSON)", type: "json" },
+      { key: "customColors", label: "Custom Colors", type: "color-array" },
+      { key: "rawOption", label: "Advanced Option (JSON)", type: "json" },
     ],
   },
 };

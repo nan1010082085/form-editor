@@ -2,7 +2,7 @@ import type { WidgetConfig } from "../base/types";
 
 export const scatterChartConfig: WidgetConfig = {
   name: "FgScatterChart",
-  displayName: "散点图",
+  displayName: "Scatter Chart",
   description: "散点图组件，用于展示两个变量之间的关系",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
@@ -41,23 +41,23 @@ export const scatterChartConfig: WidgetConfig = {
     rawOption: null as Record<string, unknown> | null,
   },
   exposedValues: [
-    { key: "loading", type: "boolean", description: "加载状态" },
-    { key: "chartData", type: "array", description: "图表数据" },
+    { key: "loading", type: "boolean", description: "Loading state" },
+    { key: "chartData", type: "array", description: "Chart data" },
   ],
   configPanels: ["api", "variables", "events", "chart-linkages"],
   eventTargets: [
     {
       id: "chart-click",
-      label: "图表点击",
-      description: "点击图表数据项时触发",
+      label: "Chart Click",
+      description: "Triggered on chart data item click",
     },
   ],
   receivableEvents: [
-    { name: "refresh", description: "重新加载数据" },
+    { name: "refresh", description: "Reload data" },
     {
       name: "set-data",
-      description: "设置图表数据",
-      params: { data: "数据数组" },
+      description: "Set chart data",
+      params: { data: "Data array" },
     },
   ],
   propertyPanel: {
@@ -66,32 +66,32 @@ export const scatterChartConfig: WidgetConfig = {
     props: [
       {
         key: "staticData",
-        label: "静态数据",
+        label: "Static Data",
         type: "array-editor",
         fields: [
-          { key: "x", label: "X 值", type: "number" },
-          { key: "y", label: "Y 值", type: "number" },
+          { key: "x", label: "X Value", type: "number" },
+          { key: "y", label: "Y Value", type: "number" },
         ],
       },
-      { key: "xField", label: "X 轴字段", type: "text", placeholder: "如: x" },
-      { key: "yField", label: "Y 轴字段", type: "text", placeholder: "如: y" },
+      { key: "xField", label: "X Axis Field", type: "text", placeholder: "如: x" },
+      { key: "yField", label: "Y Axis Field", type: "text", placeholder: "如: y" },
       {
         key: "xAxisName",
-        label: "X 轴名称",
+        label: "X Axis Name",
         type: "text",
         placeholder: "可选",
       },
       {
         key: "yAxisName",
-        label: "Y 轴名称",
+        label: "Y Axis Name",
         type: "text",
         placeholder: "可选",
       },
-      { key: "title", label: "图表标题", type: "text" },
-      { key: "showLegend", label: "显示图例", type: "switch", default: true },
+      { key: "title", label: "Chart Title", type: "text" },
+      { key: "showLegend", label: "Show Legend", type: "switch", default: true },
       {
         key: "legendPosition",
-        label: "图例位置",
+        label: "Legend Position",
         type: "select",
         default: "bottom",
         options: [
@@ -101,12 +101,12 @@ export const scatterChartConfig: WidgetConfig = {
           { label: "右侧", value: "right" },
         ],
       },
-      { key: "showTooltip", label: "显示提示", type: "switch", default: true },
-      { key: "showLabel", label: "显示标签", type: "switch", default: false },
-      { key: "animation", label: "动画", type: "switch", default: true },
+      { key: "showTooltip", label: "Show Tooltip", type: "switch", default: true },
+      { key: "showLabel", label: "Show Label", type: "switch", default: false },
+      { key: "animation", label: "Animation", type: "switch", default: true },
       {
         key: "colorScheme",
-        label: "颜色主题",
+        label: "Color Scheme",
         type: "select",
         options: [
           { label: "默认", value: "default" },
@@ -114,8 +114,8 @@ export const scatterChartConfig: WidgetConfig = {
           { label: "浅色", value: "light" },
         ],
       },
-      { key: "customColors", label: "自定义颜色", type: "color-array" },
-      { key: "rawOption", label: "高级配置 (JSON)", type: "json" },
+      { key: "customColors", label: "Custom Colors", type: "color-array" },
+      { key: "rawOption", label: "Advanced Option (JSON)", type: "json" },
     ],
   },
 };

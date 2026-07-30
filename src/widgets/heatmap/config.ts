@@ -2,7 +2,7 @@ import type { WidgetConfig } from "../base/types";
 
 export const heatmapConfig: WidgetConfig = {
   name: "FgHeatmap",
-  displayName: "热力图",
+  displayName: "Heatmap Chart",
   description: "热力图组件，用于展示二维数据密度",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
@@ -27,23 +27,23 @@ export const heatmapConfig: WidgetConfig = {
     rawOption: null as Record<string, unknown> | null,
   },
   exposedValues: [
-    { key: "loading", type: "boolean", description: "加载状态" },
-    { key: "chartData", type: "array", description: "图表数据" },
+    { key: "loading", type: "boolean", description: "Loading state" },
+    { key: "chartData", type: "array", description: "Chart data" },
   ],
   configPanels: ["api", "variables", "events", "chart-linkages"],
   eventTargets: [
     {
       id: "chart-click",
-      label: "图表点击",
-      description: "点击图表数据项时触发",
+      label: "Chart Click",
+      description: "Triggered on chart data item click",
     },
   ],
   receivableEvents: [
-    { name: "refresh", description: "重新加载数据" },
+    { name: "refresh", description: "Reload data" },
     {
       name: "set-data",
-      description: "设置图表数据",
-      params: { data: "数据数组" },
+      description: "Set chart data",
+      params: { data: "Data array" },
     },
   ],
   propertyPanel: {
@@ -52,27 +52,27 @@ export const heatmapConfig: WidgetConfig = {
     props: [
       {
         key: "staticData",
-        label: "静态数据",
+        label: "Static Data",
         type: "array-editor",
         fields: [
           { key: "x", label: "X", type: "number" },
           { key: "y", label: "Y", type: "number" },
-          { key: "value", label: "值", type: "number" },
+          { key: "value", label: "Value", type: "number" },
         ],
       },
-      { key: "xField", label: "X 轴字段", type: "text", placeholder: "如: x" },
-      { key: "yField", label: "Y 轴字段", type: "text", placeholder: "如: y" },
+      { key: "xField", label: "X Axis Field", type: "text", placeholder: "如: x" },
+      { key: "yField", label: "Y Axis Field", type: "text", placeholder: "如: y" },
       {
         key: "valueField",
-        label: "值字段",
+        label: "Value Field",
         type: "text",
         placeholder: "如: value",
       },
-      { key: "title", label: "图表标题", type: "text" },
-      { key: "showLabel", label: "显示标签", type: "switch", default: false },
+      { key: "title", label: "Chart Title", type: "text" },
+      { key: "showLabel", label: "Show Label", type: "switch", default: false },
       {
         key: "colorScheme",
-        label: "颜色主题",
+        label: "Color Scheme",
         type: "select",
         options: [
           { label: "默认", value: "default" },
@@ -80,7 +80,7 @@ export const heatmapConfig: WidgetConfig = {
           { label: "浅色", value: "light" },
         ],
       },
-      { key: "rawOption", label: "高级配置 (JSON)", type: "json" },
+      { key: "rawOption", label: "Advanced Option (JSON)", type: "json" },
     ],
   },
 };
