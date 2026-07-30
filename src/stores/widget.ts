@@ -29,7 +29,7 @@ function getContainerTypes(): Set<string> {
   return useAllContainerTypes() as Set<string>;
 }
 
-/** 容器嵌套深度上限：根级容器 -> 一级子容器，不允许多于 2 层（见 docs/container-nesting-decision.md） */
+/** 容器嵌套深度上限：根级容器 -> 一级子容器，不允许多于 2 层（见 ../docs/editor/container-nesting-decision.md） */
 const MAX_CONTAINER_DEPTH = 1;
 
 /** 默认 position */
@@ -181,7 +181,7 @@ function getColContainerColumns(type: string): number {
 
 /**
  * 容器嵌套治理：容器之间允许互相嵌套（dialog 装表单、card 装 tabs、tabs 嵌套 tabs 等），
- * 但限制最多 2 层（根级容器 -> 一级子容器，见 docs/container-nesting-decision.md）。
+ * 但限制最多 2 层（根级容器 -> 一级子容器，见 ../docs/editor/container-nesting-decision.md）。
  *
  * 加载时：
  * 1. 递归去重 id（防御性）
@@ -386,7 +386,7 @@ export const useWidgetStore = defineStore("widget", () => {
 
   /**
    * 计算容器在树中的嵌套深度（根级=0，根级容器的子容器=1，依此类推）。
-   * 用于实施「最多 2 层容器嵌套」决策（见 docs/container-nesting-decision.md）。
+   * 用于实施「最多 2 层容器嵌套」决策（见 ../docs/editor/container-nesting-decision.md）。
    */
   function getContainerDepth(widgetId: string): number {
     let depth = 0;

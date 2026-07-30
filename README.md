@@ -122,7 +122,7 @@ bash deploy/deploy.sh --target editor
 
 新增 Widget：**只需** `registerWidget` / `createWidgetPlugin`，无需改 `SchemaType` 联合类型（已为 `string`）。
 
-详见 [第三方 Widget 指南](./docs/third-party-widget-guide.md)、[Widget 开发](./docs/widget-development.md)。
+详见 [第三方 Widget 指南](../docs/editor/third-party-widget-guide.md)、[Widget 开发](../docs/editor/widget-development.md)。
 
 ---
 
@@ -189,7 +189,6 @@ editor/
 │   ├── views/               # 页面
 │   ├── widgets/             # 87 目录 + registry（createWidgetPlugin）
 │   └── workers/             # IndexedDB / cache Worker
-├── docs/                    # 产品 / 架构 / 设计文档
 ├── CONTRIBUTING.md          # 改代码必改文档
 └── package.json
 ```
@@ -198,14 +197,14 @@ editor/
 
 ## 文档
 
-完整索引见 **[docs/README.md](./docs/README.md)**。
+完整索引见 **[docs/README.md](../docs/editor/README.md)**。
 
 | 文档 | 内容 |
 |------|------|
-| [产品能力总览](./docs/capabilities.md) | 功能矩阵、验收路径、残留缺口 |
-| [产品迭代（已收口）](./docs/iteration-evolution.md) | E1–E3 结论与 Backlog |
-| [架构](./docs/architecture.md) | 分层、Store、渲染路径 |
-| [第三方 Widget](./docs/third-party-widget-guide.md) | Plugin API |
+| [产品能力总览](../docs/editor/capabilities.md) | 功能矩阵、验收路径、残留缺口 |
+| [产品迭代（已收口）](../docs/editor/iteration-evolution.md) | E1–E3 结论与 Backlog |
+| [架构](../docs/editor/architecture.md) | 分层、Store、渲染路径 |
+| [第三方 Widget](../docs/editor/third-party-widget-guide.md) | Plugin API |
 | [贡献指南](./CONTRIBUTING.md) | 文档同步约束 |
 
 ---

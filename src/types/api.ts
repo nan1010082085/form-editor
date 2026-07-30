@@ -2,7 +2,7 @@
  * 后端 API 类型定义
  *
  * 与 packages/server 的 REST API 契约对齐
- * 参考：packages/server/docs/api.md
+ * 参考：../docs/server/api.md
  */
 
 import type { PartialWidget } from "@/widgets/base/types";

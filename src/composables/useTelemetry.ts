@@ -2,7 +2,7 @@
  * useTelemetry - 编辑器关键行为埋点 composable
  *
  * 在 save/publish/delete/undo/redo/create/copy/import/export 等关键路径调用，
- * 上报到 server `/telemetry`（见 docs/iteration-evolution.md E-07）。
+ * 上报到 server `/telemetry`（见 ../docs/editor/iteration-evolution.md E-07）。
  *
  * 设计：
  * - 非阻塞：reportTelemetry 内部已降级，调用方无需 await / try-catch

@@ -36,7 +36,7 @@ src/
 └── workers/             # Web Worker（cacheWorker/indexedDb）
 ```
 
-文档入口：`README.md` · `docs/README.md` · `docs/capabilities.md` · `docs/architecture.md`
+文档入口：`README.md` · `../docs/editor/README.md` · `../docs/editor/capabilities.md` · `../docs/editor/architecture.md`（文档已独立至 `../docs/` 项目）
 ## 核心架构规则
 
 ### 组件嵌套规则

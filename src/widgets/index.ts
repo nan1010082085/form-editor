@@ -221,6 +221,16 @@ import {
   approvalCommentConfig,
 } from "./approval-comment";
 import {
+  FgScoreCard,
+  createScoreCardWidget,
+  scoreCardConfig,
+} from "./score-card";
+import {
+  FgRiskBadge,
+  createRiskBadgeWidget,
+  riskBadgeConfig,
+} from "./risk-badge";
+import {
   FgIconPicker,
   createIconPickerWidget,
   iconPickerConfig,
@@ -837,6 +847,24 @@ export function registerAllWidgets() {
     component: FgApprovalComment,
     create: createApprovalCommentWidget,
     config: approvalCommentConfig,
+  });
+  registerWidget({
+    name: scoreCardConfig.name,
+    displayName: scoreCardConfig.displayName,
+    type: "score-card",
+    group: "business",
+    component: FgScoreCard,
+    create: createScoreCardWidget,
+    config: scoreCardConfig,
+  });
+  registerWidget({
+    name: riskBadgeConfig.name,
+    displayName: riskBadgeConfig.displayName,
+    type: "risk-badge",
+    group: "business",
+    component: FgRiskBadge,
+    create: createRiskBadgeWidget,
+    config: riskBadgeConfig,
   });
 
   // Table widgets (表格)

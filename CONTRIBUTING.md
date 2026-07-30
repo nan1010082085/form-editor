@@ -2,15 +2,17 @@
 
 ## 文档与代码同步
 
+> 文档已于 2026-07 独立至 sibling [`../docs/`](../docs/) 项目（VitePress 站点），editor 仓库内不再持有 `docs/` 目录。以下文档路径均指 `../docs/editor/`。
+
 修改以下内容时，**必须同步更新**文档中的统计数字与描述：
 
 | 变更类型 | 需更新的文档 |
 |----------|-------------|
-| 新增/删除 Pinia Store | `README.md`、`CLAUDE.md`、`docs/architecture.md`、`docs/README.md`、本文 |
+| 新增/删除 Pinia Store | `README.md`、`CLAUDE.md`、`../docs/editor/architecture.md`、`../docs/editor/README.md`、本文 |
 | 新增/删除 composable | 同上 |
-| 新增/删除 Widget / registerWidget | 同上 + `docs/capabilities.md` 分组表（若有） |
+| 新增/删除 Widget / registerWidget | 同上 + `../docs/editor/capabilities.md` 分组表（若有） |
 | 新增/删除测试文件 | 同上测试数量 |
-| 产品能力变更 | `docs/capabilities.md`、必要时 `docs/iteration-evolution.md` Backlog |
+| 产品能力变更 | `../docs/editor/capabilities.md`、必要时 `../docs/editor/iteration-evolution.md` Backlog |
 
 ### 当前基准（2026-07-20）
 
@@ -43,4 +45,4 @@ cd editor && pnpm test
 3. **无需**修改 `SchemaType` 联合字面量（已为 `string`）
 4. 更新文档统计数字
 
-详见 [docs/widget-development.md](./docs/widget-development.md)、[docs/third-party-widget-guide.md](./docs/third-party-widget-guide.md)。
+详见 [widget-development.md](../docs/editor/widget-development.md)、[third-party-widget-guide.md](../docs/editor/third-party-widget-guide.md)。
