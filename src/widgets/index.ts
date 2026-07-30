@@ -251,6 +251,21 @@ import {
   flexZoneConfig,
 } from "./flex-zone";
 import {
+  FgPivotTable,
+  createPivotTableWidget,
+  pivotTableConfig,
+} from "./pivot-table";
+import {
+  FgMindMap,
+  createMindMapWidget,
+  mindMapConfig,
+} from "./mind-map";
+import {
+  FgFileViewer,
+  createFileViewerWidget,
+  fileViewerConfig,
+} from "./file-viewer";
+import {
   FgIconPicker,
   createIconPickerWidget,
   iconPickerConfig,
@@ -921,6 +936,33 @@ export function registerAllWidgets() {
     component: FgFlexZone,
     create: createFlexZoneWidget,
     config: flexZoneConfig,
+  });
+  registerWidget({
+    name: pivotTableConfig.name,
+    displayName: pivotTableConfig.displayName,
+    type: "pivot-table",
+    group: "table",
+    component: FgPivotTable,
+    create: createPivotTableWidget,
+    config: pivotTableConfig,
+  });
+  registerWidget({
+    name: mindMapConfig.name,
+    displayName: mindMapConfig.displayName,
+    type: "mind-map",
+    group: "business",
+    component: FgMindMap,
+    create: createMindMapWidget,
+    config: mindMapConfig,
+  });
+  registerWidget({
+    name: fileViewerConfig.name,
+    displayName: fileViewerConfig.displayName,
+    type: "file-viewer",
+    group: "business",
+    component: FgFileViewer,
+    create: createFileViewerWidget,
+    config: fileViewerConfig,
   });
 
   // Table widgets (表格)
