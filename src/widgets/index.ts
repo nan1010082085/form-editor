@@ -266,6 +266,21 @@ import {
   fileViewerConfig,
 } from "./file-viewer";
 import {
+  FgRiskMatrix,
+  createRiskMatrixWidget,
+  riskMatrixConfig,
+} from "./risk-matrix";
+import {
+  FgMedicalRecord,
+  createMedicalRecordWidget,
+  medicalRecordConfig,
+} from "./medical-record";
+import {
+  FgEnergyDashboard,
+  createEnergyDashboardWidget,
+  energyDashboardConfig,
+} from "./energy-dashboard";
+import {
   FgIconPicker,
   createIconPickerWidget,
   iconPickerConfig,
@@ -963,6 +978,33 @@ export function registerAllWidgets() {
     component: FgFileViewer,
     create: createFileViewerWidget,
     config: fileViewerConfig,
+  });
+  registerWidget({
+    name: riskMatrixConfig.name,
+    displayName: riskMatrixConfig.displayName,
+    type: "risk-matrix",
+    group: "business",
+    component: FgRiskMatrix,
+    create: createRiskMatrixWidget,
+    config: riskMatrixConfig,
+  });
+  registerWidget({
+    name: medicalRecordConfig.name,
+    displayName: medicalRecordConfig.displayName,
+    type: "medical-record",
+    group: "business",
+    component: FgMedicalRecord,
+    create: createMedicalRecordWidget,
+    config: medicalRecordConfig,
+  });
+  registerWidget({
+    name: energyDashboardConfig.name,
+    displayName: energyDashboardConfig.displayName,
+    type: "energy-dashboard",
+    group: "business",
+    component: FgEnergyDashboard,
+    create: createEnergyDashboardWidget,
+    config: energyDashboardConfig,
   });
 
   // Table widgets (表格)
