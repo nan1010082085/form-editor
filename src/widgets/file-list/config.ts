@@ -2,12 +2,12 @@ import type { WidgetConfig } from "../base/types";
 
 export const fileListConfig: WidgetConfig = {
   name: "FgFileList",
-  displayName: "附件面板",
+  displayName: "Attachment Panel",
   description:
-    "附件列表面板，展示已选文件并支持本地选择与删除（复杂上传场景请用「文件上传」字段）",
+    "Attachment list panel",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "200px" },
-  exposedValues: [{ key: "value", type: "array", description: "文件列表数据" }],
+  exposedValues: [{ key: "value", type: "array", description: "File List Data" }],
   configPanels: ["events", "api", "variables"],
   defaultProps: {
     title: "附件",
@@ -19,27 +19,27 @@ export const fileListConfig: WidgetConfig = {
     basic: ["label"],
     style: [],
     props: [
-      { key: "title", label: "标题", type: "input", default: "附件" },
+      { key: "title", label: "Title", type: "input", default: "附件" },
       {
         key: "buttonText",
-        label: "按钮文字",
+        label: "Button Text",
         type: "input",
         default: "选择文件",
       },
-      { key: "allowDelete", label: "允许删除", type: "switch", default: true },
+      { key: "allowDelete", label: "Allow Delete", type: "switch", default: true },
       {
         key: "allowPreview",
-        label: "允许预览",
+        label: "Allow Preview",
         type: "switch",
         default: false,
       },
       {
         key: "accept",
-        label: "文件类型",
+        label: "File Type",
         type: "input",
         placeholder: ".jpg,.png,.pdf",
       },
-      { key: "multiple", label: "多选", type: "switch", default: true },
+      { key: "multiple", label: "Checkbox", type: "switch", default: true },
     ],
   },
 };

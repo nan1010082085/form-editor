@@ -2,12 +2,12 @@ import type { WidgetConfig } from "../base/types";
 
 export const flowTaskActionsConfig: WidgetConfig = {
   name: "FgFlowTaskActions",
-  displayName: "流程任务操作",
-  description: "审批通过/驳回/委派操作区（E-02）",
+  displayName: "Flow Task Actions",
+  description: "Approval actions area",
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
   exposedValues: [
-    { key: "taskId", type: "string", description: "当前任务 ID" },
+    { key: "taskId", type: "string", description: "Current Task ID" },
     { key: "loading", type: "boolean", description: "操作进行中" },
   ],
   configPanels: ["events", "variables"],
@@ -22,28 +22,28 @@ export const flowTaskActionsConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "标题", type: "input", default: "审批操作" },
+      { key: "title", label: "Title", type: "input", default: "审批操作" },
       {
         key: "taskIdVariable",
-        label: "任务 ID 变量",
+        label: "Task ID Var",
         type: "input",
         default: "taskId",
       },
       {
         key: "instanceIdVariable",
-        label: "实例 ID 变量",
+        label: "Instance ID Var",
         type: "input",
         default: "flowInstanceId",
       },
       {
         key: "commentWidgetId",
-        label: "意见 Widget ID",
+        label: "Comment Widget ID",
         type: "input",
         default: "detail-comment",
       },
       {
         key: "showAiSuggestion",
-        label: "显示 AI 建议",
+        label: "Show AI Suggestions",
         type: "switch",
         default: true,
       },

@@ -1,8 +1,8 @@
 import type { WidgetConfig } from "../base/types";
 export const checkboxConfig: WidgetConfig = {
   name: "FgCheckbox",
-  displayName: "多选",
-  description: "多选框组，支持静态选项和动态数据源",
+  displayName: "Checkbox",
+  description: "Checkbox group with static/dynamic options",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -19,6 +19,6 @@ export const checkboxConfig: WidgetConfig = {
   propertyPanel: {
     basic: ["field", "label", "defaultValue", "options"],
     style: ["fontSize", "color", "backgroundColor"],
-    props: [{ key: "disabled", label: "禁用", type: "switch", default: false }],
+    props: [{ key: "disabled", label: "Disabled", type: "switch", default: false }],
   },
 };

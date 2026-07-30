@@ -25,7 +25,7 @@ export interface SelectionConfig {
 export const tableConfig: WidgetConfig = {
   name: "FgTable",
   displayName: "表格",
-  description: "数据表格组件，支持列配置、分页、排序、筛选、行选择",
+  description: "Data table with columns/pagination/sort/filter/selection",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -33,8 +33,8 @@ export const tableConfig: WidgetConfig = {
   },
   defaultProps: {
     columns: [
-      { prop: "name", label: "姓名", width: 120 },
-      { prop: "age", label: "年龄", width: 80 },
+      { prop: "name", label: "Name", width: 120 },
+      { prop: "age", label: "Age", width: 80 },
     ] as TableColumn[],
     stripe: true,
     border: true,
@@ -51,21 +51,21 @@ export const tableConfig: WidgetConfig = {
     } as SelectionConfig,
   },
   exposedValues: [
-    { key: "loading", type: "boolean", description: "加载状态" },
-    { key: "tableData", type: "array", description: "表格数据" },
-    { key: "selectedRows", type: "array", description: "当前选中的行数据" },
+    { key: "loading", type: "boolean", description: "Loading State" },
+    { key: "tableData", type: "array", description: "Table Data" },
+    { key: "selectedRows", type: "array", description: "Selected Row Data" },
   ],
   configPanels: ["api", "variables"],
   receivableEvents: [
-    { name: "refresh", description: "重新加载表格数据" },
+    { name: "refresh", description: "Reload Table" },
     {
       name: "set-data",
-      description: "设置表格数据",
+      description: "Set Table Data",
       params: { data: "数据数组" },
     },
     {
       name: "set-search-params",
-      description: "设置搜索参数",
+      description: "Set Search Params",
       params: { params: "参数对象" },
     },
   ],
@@ -73,15 +73,15 @@ export const tableConfig: WidgetConfig = {
     basic: ["label"],
     style: [],
     props: [
-      { key: "columns", label: "列配置", type: "columns" },
-      { key: "stripe", label: "斑马纹", type: "switch" },
-      { key: "border", label: "边框", type: "switch" },
+      { key: "columns", label: "Column Config", type: "columns" },
+      { key: "stripe", label: "Stripe", type: "switch" },
+      { key: "border", label: "Border", type: "switch" },
       { key: "height", label: "表格高度", type: "number" },
-      { key: "sortable", label: "全局排序", type: "switch" },
-      { key: "filterable", label: "全局筛选", type: "switch" },
-      { key: "selection.enabled", label: "行选择", type: "switch" },
-      { key: "pagination.enabled", label: "分页", type: "switch" },
-      { key: "pagination.pageSize", label: "每页条数", type: "number" },
+      { key: "sortable", label: "Global Sort", type: "switch" },
+      { key: "filterable", label: "Global Filter", type: "switch" },
+      { key: "selection.enabled", label: "Row Select", type: "switch" },
+      { key: "pagination.enabled", label: "Pagination", type: "switch" },
+      { key: "pagination.pageSize", label: "Page Size", type: "number" },
     ],
   },
 };

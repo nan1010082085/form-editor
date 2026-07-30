@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const iconPickerConfig: WidgetConfig = {
   name: "FgIconPicker",
-  displayName: "图标选择",
-  description: "图标选择器，从 Element Plus Icons 中选择图标",
+  displayName: "Icon Picker",
+  description: "Icon picker from EP Icons",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -16,7 +16,7 @@ export const iconPickerConfig: WidgetConfig = {
     disabled: false,
   },
   exposedValues: [
-    { key: "value", type: "string", description: "图标名称", example: "Edit" },
+    { key: "value", type: "string", description: "Icon Name", example: "Edit" },
   ],
   configPanels: ["events", "linkages", "variables"],
   propertyPanel: {
@@ -25,12 +25,12 @@ export const iconPickerConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请选择图标",
       },
-      { key: "clearable", label: "可清空", type: "switch", default: true },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
+      { key: "clearable", label: "Clearable", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
     ],
   },
 };

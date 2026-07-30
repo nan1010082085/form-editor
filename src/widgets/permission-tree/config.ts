@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const permissionTreeConfig: WidgetConfig = {
   name: "FgPermissionTree",
-  displayName: "权限树",
-  description: "权限树选择器，展示菜单和按钮权限，支持勾选",
+  displayName: "Permission Tree",
+  description: "Permission tree selector",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -21,7 +21,7 @@ export const permissionTreeConfig: WidgetConfig = {
     {
       key: "checkedKeys",
       type: "array",
-      description: "勾选的节点key",
+      description: "Checked Node Keys",
       example: [],
     },
   ],
@@ -32,19 +32,19 @@ export const permissionTreeConfig: WidgetConfig = {
     props: [
       {
         key: "showCheckbox",
-        label: "显示复选框",
+        label: "Show Checkbox",
         type: "switch",
         default: true,
       },
       {
         key: "checkStrictly",
-        label: "父子不关联",
+        label: "Check Independently",
         type: "switch",
         default: false,
       },
       {
         key: "defaultExpandAll",
-        label: "默认展开全部",
+        label: "Expand All",
         type: "switch",
         default: true,
       },

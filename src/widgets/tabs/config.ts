@@ -1,19 +1,19 @@
 import type { WidgetConfig } from "../base/types";
 export const tabsConfig: WidgetConfig = {
   name: "FgTabs",
-  displayName: "页签容器",
-  description: "页签容器，支持动态增删标签页，组件绑定到指定标签",
+  displayName: "Tabs Container",
+  description: "Tabs with dynamic add/remove, bind to specified tab",
   author: "yangdongnan",
   defaultPosition: { w: 100, wUnit: "%", h: 200 },
   defaultStyle: {},
   exposedValues: [
-    { key: "activeKey", type: "string", description: "当前激活标签" },
+    { key: "activeKey", type: "string", description: "Active Tab" },
   ],
   configPanels: ["events", "variables"],
   defaultProps: {
     tabs: [
-      { key: "tab1", label: "标签一" },
-      { key: "tab2", label: "标签二" },
+      { key: "tab1", label: "Tab 1" },
+      { key: "tab2", label: "Tab 2" },
     ],
     activeKey: "tab1",
     type: "border-card" as const,
@@ -23,42 +23,42 @@ export const tabsConfig: WidgetConfig = {
     basic: [
       {
         key: "type",
-        label: "风格类型",
+        label: "Style Type",
         type: "select",
         options: [
-          { label: "默认", value: "" },
-          { label: "卡片", value: "card" },
-          { label: "边框卡片", value: "border-card" },
+          { label: "Default", value: "" },
+          { label: "Card", value: "card" },
+          { label: "Border Card", value: "border-card" },
         ],
         default: "border-card",
       },
       {
         key: "tabPosition",
-        label: "标签位置",
+        label: "Label Position",
         type: "select",
         options: [
-          { label: "顶部", value: "top" },
-          { label: "右侧", value: "right" },
-          { label: "底部", value: "bottom" },
-          { label: "左侧", value: "left" },
+          { label: "Top", value: "top" },
+          { label: "Right", value: "right" },
+          { label: "Bottom", value: "bottom" },
+          { label: "Left", value: "left" },
         ],
         default: "top",
       },
       {
         key: "closable",
-        label: "可关闭",
+        label: "Closable",
         type: "switch",
         default: false,
       },
       {
         key: "addable",
-        label: "可新增",
+        label: "Addable",
         type: "switch",
         default: false,
       },
       {
         key: "stretch",
-        label: "自适应宽度",
+        label: "Auto Width",
         type: "switch",
         default: false,
       },
@@ -67,16 +67,16 @@ export const tabsConfig: WidgetConfig = {
     props: [
       {
         key: "tabs",
-        label: "页签",
+        label: "Tab",
         type: "array-editor",
         fields: [
           { key: "key", label: "标识", type: "text", placeholder: "tab1" },
-          { key: "label", label: "标签", type: "text", placeholder: "标签名" },
+          { key: "label", label: "Label", type: "text", placeholder: "标签名" },
         ],
       },
       {
         key: "activeKey",
-        label: "默认激活",
+        label: "Default Active",
         type: "text",
         default: "",
         placeholder: "tab1",

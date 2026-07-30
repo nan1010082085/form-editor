@@ -2,12 +2,12 @@ import type { WidgetConfig } from "../base/types";
 
 export const rankListConfig: WidgetConfig = {
   name: "FgRankList",
-  displayName: "排行榜",
-  description: "数据源驱动的排名列表，支持动态排名、趋势箭头、Top N 高亮",
+  displayName: "Ranking",
+  description: "Ranking list with trend and Top N",
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
   defaultProps: {
-    title: "排行榜",
+    title: "Ranking",
     items: [
       { name: "张三", value: 9800, trend: 2 },
       { name: "李四", value: 8500, trend: -1 },
@@ -24,29 +24,29 @@ export const rankListConfig: WidgetConfig = {
     highlightTop: 3,
   },
   exposedValues: [
-    { key: "sortedItems", type: "array", description: "排序后的列表数据" },
+    { key: "sortedItems", type: "array", description: "Sorted List" },
   ],
   configPanels: ["api", "variables"],
   propertyPanel: {
     basic: ["label"],
     style: ["margin", "padding", "backgroundColor"],
     props: [
-      { key: "title", label: "标题", type: "text" },
-      { key: "nameKey", label: "名称字段", type: "text", default: "name" },
-      { key: "valueKey", label: "数值字段", type: "text", default: "value" },
-      { key: "trendKey", label: "趋势字段", type: "text", default: "trend" },
-      { key: "maxItems", label: "最大条数", type: "number", default: 10 },
-      { key: "showRank", label: "显示排名", type: "switch", default: true },
-      { key: "showTrend", label: "显示趋势", type: "switch", default: true },
-      { key: "highlightTop", label: "高亮前 N 名", type: "number", default: 3 },
+      { key: "title", label: "Title", type: "text" },
+      { key: "nameKey", label: "Name Field", type: "text", default: "name" },
+      { key: "valueKey", label: "Value Field", type: "text", default: "value" },
+      { key: "trendKey", label: "Trend Field", type: "text", default: "trend" },
+      { key: "maxItems", label: "Max Items", type: "number", default: 10 },
+      { key: "showRank", label: "Show Ranking", type: "switch", default: true },
+      { key: "showTrend", label: "Show Trend", type: "switch", default: true },
+      { key: "highlightTop", label: "Highlight Top N", type: "number", default: 3 },
       {
         key: "items",
-        label: "静态数据",
+        label: "Static Data",
         type: "array-editor",
         fields: [
-          { key: "name", label: "名称", type: "text" },
-          { key: "value", label: "数值", type: "number" },
-          { key: "trend", label: "趋势", type: "number" },
+          { key: "name", label: "Name", type: "text" },
+          { key: "value", label: "Value", type: "number" },
+          { key: "trend", label: "Trend", type: "number" },
         ],
       },
     ],
@@ -58,7 +58,7 @@ export function createRankListWidget(id: string) {
     id,
     name: rankListConfig.name,
     type: "rank-list" as const,
-    label: "排行榜",
+    label: "Ranking",
     props: { ...rankListConfig.defaultProps },
     style: { ...rankListConfig.defaultStyle },
     position: {

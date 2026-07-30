@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const tripleColConfig: WidgetConfig = {
   name: "FgTripleCol",
-  displayName: "三列容器",
-  description: "三列布局容器，每列可放置 1 个组件",
+  displayName: "Triple Column",
+  description: "Triple column layout, 1 component per column",
   author: "yangdongnan",
   defaultPosition: { w: 100, wUnit: "%", h: 200 },
   defaultStyle: {},
@@ -15,10 +15,10 @@ export const tripleColConfig: WidgetConfig = {
   },
   propertyPanel: {
     basic: [
-      { key: "gutter", label: "列间距", type: "number", default: 16 },
+      { key: "gutter", label: "Col Gap", type: "number", default: 16 },
       {
         key: "colWidths",
-        label: "列宽(px，0=自适应)",
+        label: "Col Width (px, 0=auto)",
         type: "number-array",
       },
     ],

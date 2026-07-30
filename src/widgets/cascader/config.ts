@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const cascaderConfig: WidgetConfig = {
   name: "FgCascader",
-  displayName: "级联选择",
-  description: "级联选择器，适用于省市区、多级分类等场景",
+  displayName: "Cascader",
+  description: "Cascader for province/city/multi-level categories",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -22,7 +22,7 @@ export const cascaderConfig: WidgetConfig = {
     {
       key: "value",
       type: "array",
-      description: "当前选中值（数组）",
+      description: "Selected (Array)",
       example: [],
     },
   ],
@@ -33,15 +33,15 @@ export const cascaderConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请选择",
       },
-      { key: "clearable", label: "可清空", type: "switch", default: true },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
+      { key: "clearable", label: "Clearable", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
       {
         key: "showAllLevels",
-        label: "显示完整路径",
+        label: "Show Full Path",
         type: "switch",
         default: true,
       },
@@ -51,14 +51,14 @@ export const cascaderConfig: WidgetConfig = {
         type: "switch",
         default: false,
       },
-      { key: "multiple", label: "多选", type: "switch", default: false },
+      { key: "multiple", label: "Checkbox", type: "switch", default: false },
       {
         key: "checkStrictly",
-        label: "任意级别可选",
+        label: "Any Level",
         type: "switch",
         default: false,
       },
-      { key: "options", label: "选项数据", type: "options", default: [] },
+      { key: "options", label: "Options Data", type: "options", default: [] },
     ],
   },
 };

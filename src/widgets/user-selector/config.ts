@@ -14,8 +14,8 @@ export const userSelectorConfig: WidgetConfig = {
     filterable: true,
   },
   exposedValues: [
-    { key: "value", type: "string", description: "选中用户ID", example: "" },
-    { key: "label", type: "string", description: "选中用户名", example: "" },
+    { key: "value", type: "string", description: "Selected User ID", example: "" },
+    { key: "label", type: "string", description: "Selected User Name", example: "" },
   ],
   configPanels: ["events", "linkages", "variables"],
   propertyPanel: {
@@ -24,13 +24,13 @@ export const userSelectorConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请选择用户",
       },
-      { key: "clearable", label: "可清空", type: "switch", default: true },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "multiple", label: "多选", type: "switch", default: false },
+      { key: "clearable", label: "Clearable", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "multiple", label: "Checkbox", type: "switch", default: false },
     ],
   },
 };

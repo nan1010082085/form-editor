@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const approvalCommentConfig: WidgetConfig = {
   name: "FgApprovalComment",
-  displayName: "审批意见",
-  description: "审批意见输入框",
+  displayName: "Approval Comment",
+  description: "Approval comment input",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "120px", fontSize: "14px" },
   defaultProps: {
@@ -29,19 +29,19 @@ export const approvalCommentConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请输入审批意见",
       },
-      { key: "rows", label: "行数", type: "number", default: 4 },
-      { key: "maxlength", label: "最大字数", type: "number", default: 1000 },
+      { key: "rows", label: "Rows", type: "number", default: 4 },
+      { key: "maxlength", label: "Max Chars", type: "number", default: 1000 },
       {
         key: "showWordLimit",
-        label: "显示字数",
+        label: "Show Count",
         type: "switch",
         default: true,
       },
-      { key: "required", label: "必填", type: "switch", default: false },
+      { key: "required", label: "Required", type: "switch", default: false },
     ],
   },
 };

@@ -3,8 +3,8 @@ import { treemapMock } from "./mock";
 
 export const treemapConfig: WidgetConfig = {
   name: "FgTreemap",
-  displayName: "矩形树图",
-  description: "矩形树图，适合层级占比展示",
+  displayName: "Treemap",
+  description: "Treemap for hierarchy proportion",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
   defaultProps: {
@@ -15,35 +15,35 @@ export const treemapConfig: WidgetConfig = {
     rawOption: null as Record<string, unknown> | null,
   },
   exposedValues: [
-    { key: "loading", type: "boolean", description: "加载状态" },
-    { key: "chartData", type: "array", description: "图表数据" },
+    { key: "loading", type: "boolean", description: "Loading State" },
+    { key: "chartData", type: "array", description: "Chart Data" },
   ],
   configPanels: ["api", "variables", "events", "chart-linkages"],
   eventTargets: [
     {
       id: "chart-click",
-      label: "图表点击",
-      description: "点击图表数据项时触发",
+      label: "Chart Click",
+      description: "On Chart Item Click",
     },
   ],
   receivableEvents: [
-    { name: "refresh", description: "重新加载数据" },
-    { name: "set-data", description: "设置图表数据" },
+    { name: "refresh", description: "Reload Data" },
+    { name: "set-data", description: "Set Chart Data" },
   ],
   propertyPanel: {
     basic: ["label"],
     style: ["margin", "padding", "backgroundColor", "borderRadius"],
     props: [
-      { key: "title", label: "图表标题", type: "text" },
-      { key: "showLabel", label: "显示标签", type: "switch", default: true },
+      { key: "title", label: "Chart Title", type: "text" },
+      { key: "showLabel", label: "Show Label", type: "switch", default: true },
       {
         key: "colorScheme",
-        label: "颜色主题",
+        label: "Color Scheme",
         type: "select",
         options: [
-          { label: "默认", value: "default" },
-          { label: "暖色", value: "warm" },
-          { label: "冷色", value: "cool" },
+          { label: "Default", value: "default" },
+          { label: "Warm", value: "warm" },
+          { label: "Cool", value: "cool" },
         ],
       },
       { key: "rawOption", label: "高级配置 (JSON)", type: "json" },
@@ -56,7 +56,7 @@ export function createTreemapWidget(id: string) {
     id,
     name: treemapConfig.name,
     type: "treemap" as const,
-    label: "矩形树图",
+    label: "Treemap",
     props: { ...treemapConfig.defaultProps },
     style: { ...treemapConfig.defaultStyle },
     position: {

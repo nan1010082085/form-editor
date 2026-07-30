@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const singleColConfig: WidgetConfig = {
   name: "FgSingleCol",
-  displayName: "单列容器",
-  description: "单列布局容器，内部可放置 1 个组件",
+  displayName: "Single Column",
+  description: "Single column layout, holds 1 component",
   author: "yangdongnan",
   defaultPosition: { w: 100, wUnit: "%", h: 200 },
   defaultStyle: {},
@@ -14,10 +14,10 @@ export const singleColConfig: WidgetConfig = {
   },
   propertyPanel: {
     basic: [
-      { key: "gutter", label: "列间距", type: "number", default: 16 },
+      { key: "gutter", label: "Col Gap", type: "number", default: 16 },
       {
         key: "colWidths",
-        label: "列宽(%)",
+        label: "Col Width (%)",
         type: "number-array",
       },
     ],

@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const dateTimeSlotConfig: WidgetConfig = {
   name: "FgDateTimeSlot",
-  displayName: "日期时间区间",
-  description: "日期时间区间选择器，支持开始/结束时间配置",
+  displayName: "Date Range",
+  description: "Date-time range picker",
   author: "yangdongnan",
   defaultStyle: { width: "400px", height: "40px" },
   defaultProps: {
@@ -34,11 +34,11 @@ export const dateTimeSlotConfig: WidgetConfig = {
       },
       {
         key: "format",
-        label: "格式",
+        label: "Format",
         type: "input",
         default: "YYYY-MM-DD HH:mm:ss",
       },
-      { key: "rangeSeparator", label: "分隔符", type: "input", default: "至" },
+      { key: "rangeSeparator", label: "Separator", type: "input", default: "至" },
     ],
   },
 };

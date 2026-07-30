@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const uploadConfig: WidgetConfig = {
   name: "FgUpload",
-  displayName: "文件上传",
-  description: "表单文件上传字段，支持文件列表展示、数量与大小限制",
+  displayName: "File Upload",
+  description: "File upload with list/count/size limits",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -18,26 +18,26 @@ export const uploadConfig: WidgetConfig = {
     listType: "text",
   },
   exposedValues: [
-    { key: "value", type: "array", description: "已选文件列表", example: [] },
+    { key: "value", type: "array", description: "Selected Files", example: [] },
   ],
   configPanels: ["events", "linkages", "variables"] as const,
   propertyPanel: {
     basic: ["field", "label"],
     style: [],
     props: [
-      { key: "placeholder", label: "占位说明", type: "input", default: "" },
+      { key: "placeholder", label: "Placeholder Text", type: "input", default: "" },
       {
         key: "accept",
-        label: "文件类型",
+        label: "File Type",
         type: "input",
         placeholder: ".jpg,.png,.pdf",
       },
-      { key: "multiple", label: "多选", type: "switch", default: false },
-      { key: "limit", label: "最大数量", type: "number", default: 5 },
-      { key: "maxSize", label: "单文件上限(MB)", type: "number", default: 10 },
+      { key: "multiple", label: "Checkbox", type: "switch", default: false },
+      { key: "limit", label: "Max Count", type: "number", default: 5 },
+      { key: "maxSize", label: "Max File Size (MB)", type: "number", default: 10 },
       {
         key: "buttonText",
-        label: "按钮文字",
+        label: "Button Text",
         type: "input",
         default: "点击上传",
       },
@@ -47,9 +47,9 @@ export const uploadConfig: WidgetConfig = {
         type: "select",
         default: "text",
         options: [
-          { label: "文字列表", value: "text" },
-          { label: "图片缩略图", value: "picture" },
-          { label: "卡片缩略图", value: "picture-card" },
+          { label: "Text List", value: "text" },
+          { label: "Image Thumbnail", value: "picture" },
+          { label: "Card Thumbnail", value: "picture-card" },
         ],
       },
     ],

@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const complianceChecklistConfig: WidgetConfig = {
   name: "FgComplianceChecklist",
-  displayName: "合规检查表",
-  description: "整改合规检查清单（E-17）",
+  displayName: "Compliance Checklist",
+  description: "Compliance checklist",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -12,21 +12,21 @@ export const complianceChecklistConfig: WidgetConfig = {
     padding: "16px",
   },
   exposedValues: [
-    { key: "checkedItems", type: "object", description: "已勾选项" },
-    { key: "remark", type: "string", description: "备注" },
+    { key: "checkedItems", type: "object", description: "Checked Items" },
+    { key: "remark", type: "string", description: "Remark" },
   ],
   configPanels: ["events"],
   defaultProps: {
     title: "合规检查",
     items: [
-      { key: "item1", label: "检查项 1" },
-      { key: "item2", label: "检查项 2" },
+      { key: "item1", label: "Check Item 1" },
+      { key: "item2", label: "Check Item 2" },
     ],
   },
   propertyPanel: {
     basic: ["label"],
     props: [
-      { key: "title", label: "标题", type: "input", default: "合规检查" },
+      { key: "title", label: "Title", type: "input", default: "合规检查" },
     ],
   },
 };

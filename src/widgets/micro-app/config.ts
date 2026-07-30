@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const microAppConfig: WidgetConfig = {
   name: "FgMicroApp",
-  displayName: "微应用",
-  description: "嵌入微前端应用（京东 micro-app 方案）",
+  displayName: "Micro App",
+  description: "Embed micro-frontend app",
   author: "system",
   defaultStyle: {},
   defaultProps: {
@@ -17,7 +17,7 @@ export const microAppConfig: WidgetConfig = {
     basic: [
       {
         key: "name",
-        label: "微应用名称",
+        label: "Micro App Name",
         type: "input",
         default: "",
         placeholder: "例：my-sub-app",
@@ -25,7 +25,7 @@ export const microAppConfig: WidgetConfig = {
       },
       {
         key: "url",
-        label: "微应用 URL",
+        label: "Micro App URL",
         type: "input",
         default: "",
         placeholder: "例：http://localhost:8080",
@@ -33,21 +33,21 @@ export const microAppConfig: WidgetConfig = {
       },
       {
         key: "width",
-        label: "宽度",
+        label: "Width",
         type: "input",
         default: "100%",
         placeholder: "例：100% 或 800px",
       },
       {
         key: "height",
-        label: "高度",
+        label: "Height",
         type: "input",
         default: "400px",
         placeholder: "例：400px 或 100%",
       },
       {
         key: "iframe",
-        label: "iframe 模式",
+        label: "iframe Mode",
         type: "switch",
         default: false,
         desc: "是否使用 iframe 模式加载微应用",
@@ -61,13 +61,13 @@ export const microAppConfig: WidgetConfig = {
     {
       key: "name",
       type: "string",
-      description: "微应用名称",
+      description: "Micro App Name",
       example: "my-sub-app",
     },
     {
       key: "url",
       type: "string",
-      description: "微应用 URL",
+      description: "Micro App URL",
       example: "http://localhost:8080",
     },
   ],

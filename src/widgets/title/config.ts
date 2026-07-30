@@ -1,8 +1,8 @@
 import type { WidgetConfig } from "../base/types";
 export const titleConfig: WidgetConfig = {
   name: "FgTitle",
-  displayName: "标题",
-  description: "标题组件，用于页面或区块标题展示",
+  displayName: "Title",
+  description: "Title for page/section heading",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -19,7 +19,7 @@ export const titleConfig: WidgetConfig = {
     basic: ["field", "label"],
     style: ["fontSize", "fontWeight", "color", "backgroundColor"],
     props: [
-      { key: "content", label: "标题内容", type: "input", default: "标题文字" },
+      { key: "content", label: "Title Content", type: "input", default: "标题文字" },
       {
         key: "level",
         label: "级别",
@@ -34,12 +34,12 @@ export const titleConfig: WidgetConfig = {
       },
       {
         key: "align",
-        label: "对齐",
+        label: "Align",
         type: "select",
         options: [
-          { label: "左对齐", value: "left" },
-          { label: "居中", value: "center" },
-          { label: "右对齐", value: "right" },
+          { label: "Left", value: "left" },
+          { label: "Center", value: "center" },
+          { label: "Right", value: "right" },
         ],
         default: "left",
       },

@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const switchConfig: WidgetConfig = {
   name: "FgSwitch",
-  displayName: "开关",
-  description: "开关控件，用于布尔值切换",
+  displayName: "Switch",
+  description: "Toggle switch for boolean",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -22,7 +22,7 @@ export const switchConfig: WidgetConfig = {
     {
       key: "value",
       type: "boolean",
-      description: "当前开关状态",
+      description: "Current Switch State",
       example: false,
     },
   ],
@@ -31,11 +31,11 @@ export const switchConfig: WidgetConfig = {
     basic: ["field", "label", "defaultValue"],
     style: ["fontSize", "color", "backgroundColor"],
     props: [
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "activeText", label: "开启文字", type: "input", default: "" },
-      { key: "inactiveText", label: "关闭文字", type: "input", default: "" },
-      { key: "activeColor", label: "开启颜色", type: "color", default: "" },
-      { key: "inactiveColor", label: "关闭颜色", type: "color", default: "" },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "activeText", label: "On Text", type: "input", default: "" },
+      { key: "inactiveText", label: "Off Text", type: "input", default: "" },
+      { key: "activeColor", label: "On Color", type: "color", default: "" },
+      { key: "inactiveColor", label: "Off Color", type: "color", default: "" },
     ],
   },
 };

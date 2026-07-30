@@ -1,8 +1,8 @@
 import type { WidgetConfig } from "../base/types";
 export const selectConfig: WidgetConfig = {
   name: "FgSelect",
-  displayName: "下拉选择",
-  description: "下拉选择器，支持静态选项和动态数据源加载",
+  displayName: "Select",
+  description: "Select with static/dynamic options",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -26,14 +26,14 @@ export const selectConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请选择",
       },
-      { key: "clearable", label: "可清空", type: "switch", default: true },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "multiple", label: "多选", type: "switch", default: false },
-      { key: "filterable", label: "可搜索", type: "switch", default: false },
+      { key: "clearable", label: "Clearable", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "multiple", label: "Checkbox", type: "switch", default: false },
+      { key: "filterable", label: "Searchable", type: "switch", default: false },
     ],
   },
 };

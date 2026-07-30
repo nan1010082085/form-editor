@@ -15,37 +15,37 @@ export interface AdhocCondition {
 
 export const adhocQueryConfig: WidgetConfig = {
   name: "FgAdhocQuery",
-  displayName: "Adhoc 查询",
-  description: "E-20 可视化筛选条件构建器，联动高级表格 set-search-params",
+  displayName: "Adhoc Query",
+  description: "Visual filter builder for advanced table",
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
   defaultProps: {
     targetTableId: "",
     fields: [
-      { field: "keyword", label: "关键词", type: "input" },
+      { field: "keyword", label: "Keyword", type: "input" },
       {
         field: "status",
-        label: "状态",
+        label: "Status",
         type: "select",
         options: [
-          { label: "审批中", value: "submitted" },
-          { label: "已通过", value: "approved" },
-          { label: "已驳回", value: "rejected" },
+          { label: "Pending", value: "submitted" },
+          { label: "Approved", value: "approved" },
+          { label: "Rejected", value: "rejected" },
         ],
       },
     ] as AdhocQueryField[],
   },
   exposedValues: [
-    { key: "lastParams", type: "object", description: "最近一次查询参数" },
+    { key: "lastParams", type: "object", description: "Last Query Params" },
   ],
   configPanels: ["variables"],
-  receivableEvents: [{ name: "reset", description: "清空条件并重置表格" }],
+  receivableEvents: [{ name: "reset", description: "Clear Conditions and Reset Table" }],
   propertyPanel: {
     basic: ["label"],
     style: ["width"],
     props: [
-      { key: "targetTableId", label: "目标表格 ID", type: "input" },
-      { key: "fields", label: "可选字段", type: "adhoc-fields" },
+      { key: "targetTableId", label: "Target Table ID", type: "input" },
+      { key: "fields", label: "Optional Fields", type: "adhoc-fields" },
     ],
   },
 };

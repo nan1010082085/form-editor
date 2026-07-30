@@ -2,17 +2,17 @@ import type { WidgetConfig } from "../base/types";
 
 export const qrScannerConfig: WidgetConfig = {
   name: "FgQrScanner",
-  displayName: "扫码录入",
-  description: "条码/二维码扫描绑定字段（E-19）",
+  displayName: "Scan Input",
+  description: "Barcode/QR scan field",
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
-  exposedValues: [{ key: "value", type: "string", description: "扫码结果" }],
+  exposedValues: [{ key: "value", type: "string", description: "Scan Result" }],
   configPanels: ["events"],
-  defaultProps: { label: "扫码录入" },
+  defaultProps: { label: "Scan Input" },
   propertyPanel: {
     basic: ["label", "field"],
     props: [
-      { key: "label", label: "标签", type: "input", default: "扫码录入" },
+      { key: "label", label: "Label", type: "input", default: "Scan Input" },
     ],
   },
 };

@@ -2,39 +2,39 @@ import type { WidgetConfig } from "../base/types";
 
 export const filterBarConfig: WidgetConfig = {
   name: "FgFilterBar",
-  displayName: "筛选栏",
-  description: "全局筛选栏，水平排列筛选控件，输出筛选参数供图表/表格消费",
+  displayName: "Filter Bar",
+  description: "Global filter bar for charts/tables",
   author: "yangdongnan",
   defaultStyle: { width: "100%", marginBottom: "16px" },
   defaultProps: {
     filters: [
       {
         key: "status",
-        label: "状态",
+        label: "Status",
         type: "select",
         options: [
-          { label: "全部", value: "" },
-          { label: "启用", value: "active" },
-          { label: "禁用", value: "inactive" },
+          { label: "All", value: "" },
+          { label: "Enabled", value: "active" },
+          { label: "Disabled", value: "inactive" },
         ],
       },
-      { key: "dateRange", label: "日期", type: "date-range" },
+      { key: "dateRange", label: "Date", type: "date-range" },
     ] as Array<Record<string, unknown>>,
     showSearch: true,
     searchPlaceholder: "请输入关键词",
   },
   exposedValues: [
-    { key: "filterData", type: "object", description: "当前筛选数据" },
+    { key: "filterData", type: "object", description: "Current Filter" },
   ],
   eventTargets: [
     {
       id: "filter-change",
-      label: "筛选变化",
-      description: "筛选条件变化时触发",
+      label: "Filter Change",
+      description: "On Filter Change",
     },
   ],
   receivableEvents: [
-    { name: "reset-filters", description: "重置所有筛选条件" },
+    { name: "reset-filters", description: "Reset All Filters" },
   ],
   configPanels: ["events", "variables"],
   propertyPanel: {
@@ -43,26 +43,26 @@ export const filterBarConfig: WidgetConfig = {
     props: [
       {
         key: "filters",
-        label: "筛选项",
+        label: "Filter Items",
         type: "array-editor",
         fields: [
-          { key: "key", label: "字段名", type: "text" },
-          { key: "label", label: "标签", type: "text" },
+          { key: "key", label: "Field Name", type: "text" },
+          { key: "label", label: "Label", type: "text" },
           {
             key: "type",
-            label: "类型",
+            label: "Type",
             type: "select",
             options: [
-              { label: "文本", value: "text" },
-              { label: "下拉选择", value: "select" },
-              { label: "日期", value: "date" },
+              { label: "Text", value: "text" },
+              { label: "Select", value: "select" },
+              { label: "Date", value: "date" },
               { label: "日期范围", value: "date-range" },
             ],
           },
         ],
       },
-      { key: "showSearch", label: "显示搜索", type: "switch", default: true },
-      { key: "searchPlaceholder", label: "搜索占位符", type: "text" },
+      { key: "showSearch", label: "Show Search", type: "switch", default: true },
+      { key: "searchPlaceholder", label: "Search Placeholder", type: "text" },
     ],
   },
 };
@@ -72,7 +72,7 @@ export function createFilterBarWidget(id: string) {
     id,
     name: filterBarConfig.name,
     type: "filter-bar" as const,
-    label: "筛选栏",
+    label: "Filter Bar",
     props: { ...filterBarConfig.defaultProps },
     style: { ...filterBarConfig.defaultStyle },
     position: {

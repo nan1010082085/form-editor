@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const colorPickerConfig: WidgetConfig = {
   name: "FgColorPicker",
-  displayName: "颜色选择",
-  description: "颜色选择器，用于主题配置、可视化编辑等场景",
+  displayName: "Color Picker",
+  description: "Color picker for theme/visual config",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -19,7 +19,7 @@ export const colorPickerConfig: WidgetConfig = {
     {
       key: "value",
       type: "string",
-      description: "当前颜色值",
+      description: "Current Color",
       example: "#409eff",
     },
   ],
@@ -28,15 +28,15 @@ export const colorPickerConfig: WidgetConfig = {
     basic: ["field", "label", "defaultValue"],
     style: ["fontSize", "color", "backgroundColor"],
     props: [
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "showAlpha", label: "透明度", type: "switch", default: false },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "showAlpha", label: "Opacity", type: "switch", default: false },
       {
         key: "colorFormat",
-        label: "颜色格式",
+        label: "Color Format",
         type: "select",
         default: "",
         options: [
-          { label: "默认", value: "" },
+          { label: "Default", value: "" },
           { label: "hex", value: "hex" },
           { label: "rgb", value: "rgb" },
           { label: "hsl", value: "hsl" },

@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const bannerConfig: WidgetConfig = {
   name: "FgBanner",
-  displayName: "横幅",
-  description: "横幅提示组件，支持 info/success/warning/error 类型",
+  displayName: "Banner",
+  description: "Banner with info/success/warning/error types",
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
   configPanels: ["events"],
@@ -16,20 +16,20 @@ export const bannerConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "text", label: "提示文字", type: "input", default: "提示信息" },
+      { key: "text", label: "Hint", type: "input", default: "提示信息" },
       {
         key: "type",
-        label: "类型",
+        label: "Type",
         type: "select",
         options: [
-          { label: "信息", value: "info" },
-          { label: "成功", value: "success" },
-          { label: "警告", value: "warning" },
-          { label: "错误", value: "error" },
+          { label: "Info", value: "info" },
+          { label: "Success", value: "success" },
+          { label: "Warning", value: "warning" },
+          { label: "Error", value: "error" },
         ],
         default: "info",
       },
-      { key: "closable", label: "可关闭", type: "switch", default: true },
+      { key: "closable", label: "Closable", type: "switch", default: true },
     ],
   },
 };

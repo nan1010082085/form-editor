@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const realtimeClockConfig: WidgetConfig = {
   name: "FgRealtimeClock",
-  displayName: "实时时钟",
-  description: "大屏实时时钟，显示当前日期和时间，支持 12/24 小时制",
+  displayName: "Real-time Clock",
+  description: "Real-time clock with 12/24h",
   author: "yangdongnan",
   defaultStyle: { width: "auto" },
   defaultProps: {
@@ -13,28 +13,28 @@ export const realtimeClockConfig: WidgetConfig = {
     format: "24h",
     dateFormat: "YYYY-MM-DD",
   },
-  exposedValues: [{ key: "now", type: "string", description: "当前时间" }],
+  exposedValues: [{ key: "now", type: "string", description: "Current Time" }],
   configPanels: ["variables"],
   propertyPanel: {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "showDate", label: "显示日期", type: "switch", default: true },
-      { key: "showTime", label: "显示时间", type: "switch", default: true },
-      { key: "showWeekday", label: "显示星期", type: "switch", default: false },
+      { key: "showDate", label: "Show Date", type: "switch", default: true },
+      { key: "showTime", label: "Show Time", type: "switch", default: true },
+      { key: "showWeekday", label: "Show Weekday", type: "switch", default: false },
       {
         key: "format",
-        label: "时间格式",
+        label: "Time Format",
         type: "select",
         default: "24h",
         options: [
-          { label: "24 小时制", value: "24h" },
-          { label: "12 小时制", value: "12h" },
+          { label: "24 Hour", value: "24h" },
+          { label: "12 Hour", value: "12h" },
         ],
       },
       {
         key: "dateFormat",
-        label: "日期格式",
+        label: "Date Format",
         type: "select",
         default: "YYYY-MM-DD",
         options: [
@@ -51,7 +51,7 @@ export function createRealtimeClockWidget(id: string) {
     id,
     name: realtimeClockConfig.name,
     type: "realtime-clock" as const,
-    label: "实时时钟",
+    label: "Real-time Clock",
     props: { ...realtimeClockConfig.defaultProps },
     style: { ...realtimeClockConfig.defaultStyle },
     position: {

@@ -3,7 +3,7 @@ import type { WidgetConfig } from "../base/types";
 export const iframeConfig: WidgetConfig = {
   name: "FgIframe",
   displayName: "iframe",
-  description: "嵌入外部网页",
+  description: "Embed External Page",
   author: "system",
   defaultStyle: {},
   defaultProps: {
@@ -26,27 +26,27 @@ export const iframeConfig: WidgetConfig = {
       },
       {
         key: "width",
-        label: "宽度",
+        label: "Width",
         type: "input",
         default: "100%",
         placeholder: "例：100% 或 800px",
       },
       {
         key: "height",
-        label: "高度",
+        label: "Height",
         type: "input",
         default: "400px",
         placeholder: "例：400px 或 100%",
       },
       {
         key: "border",
-        label: "显示边框",
+        label: "Show Border",
         type: "switch",
         default: false,
       },
       {
         key: "fullscreen",
-        label: "全屏模式",
+        label: "Fullscreen Mode",
         type: "switch",
         default: false,
         desc: "iframe 固定铺满整个视口",
@@ -67,7 +67,7 @@ export const iframeConfig: WidgetConfig = {
     {
       key: "src",
       type: "string",
-      description: "当前 iframe 地址",
+      description: "Current iframe URL",
       example: "https://example.com",
     },
   ],

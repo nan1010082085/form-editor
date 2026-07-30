@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const progressBarConfig: WidgetConfig = {
   name: "FgProgressBar",
-  displayName: "进度条",
-  description: "进度条/环形进度，支持阈值颜色和百分比/数值显示",
+  displayName: "Progress",
+  description: "Progress/ring with threshold colors",
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
   defaultProps: {
@@ -22,54 +22,54 @@ export const progressBarConfig: WidgetConfig = {
     size: 120,
   },
   exposedValues: [
-    { key: "percent", type: "number", description: "百分比 (0-100)" },
-    { key: "value", type: "number", description: "当前值" },
+    { key: "percent", type: "number", description: "Percentage (0-100)" },
+    { key: "value", type: "number", description: "Current Value" },
   ],
   configPanels: ["api", "variables"],
   receivableEvents: [
-    { name: "set-value", description: "设置进度值", params: { value: "数值" } },
+    { name: "set-value", description: "Set Progress", params: { value: "Value" } },
   ],
   propertyPanel: {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "value", label: "当前值", type: "number", default: 0 },
-      { key: "max", label: "最大值", type: "number", default: 100 },
+      { key: "value", label: "Current Value", type: "number", default: 0 },
+      { key: "max", label: "Max", type: "number", default: 100 },
       {
         key: "variant",
-        label: "形态",
+        label: "Shape",
         type: "select",
         default: "line",
         options: [
-          { label: "线性", value: "line" },
-          { label: "环形", value: "circle" },
+          { label: "Linear", value: "line" },
+          { label: "Ring", value: "circle" },
         ],
       },
-      { key: "strokeWidth", label: "线条宽度", type: "number", default: 6 },
+      { key: "strokeWidth", label: "Line Width", type: "number", default: 6 },
       { key: "showText", label: "显示文字", type: "switch", default: true },
       {
         key: "format",
-        label: "显示格式",
+        label: "Display Format",
         type: "select",
         default: "percent",
         options: [
-          { label: "百分比", value: "percent" },
+          { label: "Percentage", value: "percent" },
           { label: "数值/最大值", value: "value" },
         ],
       },
-      { key: "color", label: "自定义颜色", type: "color" },
+      { key: "color", label: "Custom Colors", type: "color" },
       {
         key: "thresholds",
-        label: "阈值颜色",
+        label: "Threshold Color",
         type: "array-editor",
         fields: [
-          { key: "value", label: "阈值", type: "number" },
-          { key: "color", label: "颜色", type: "color" },
+          { key: "value", label: "Threshold", type: "number" },
+          { key: "color", label: "Color", type: "color" },
         ],
       },
       {
         key: "size",
-        label: "环形尺寸",
+        label: "Ring Size",
         type: "number",
         default: 120,
         visibleOn: "props.variant === 'circle'",
@@ -83,7 +83,7 @@ export function createProgressBarWidget(id: string) {
     id,
     name: progressBarConfig.name,
     type: "progress-bar" as const,
-    label: "进度条",
+    label: "Progress",
     props: { ...progressBarConfig.defaultProps },
     style: { ...progressBarConfig.defaultStyle },
     position: {

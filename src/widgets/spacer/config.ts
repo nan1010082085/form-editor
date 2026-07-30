@@ -2,7 +2,7 @@ import type { WidgetConfig } from "../base/types";
 export const spacerConfig: WidgetConfig = {
   name: "FgSpacer",
   displayName: "间距",
-  description: "间隔组件，用于控制元素间距",
+  description: "Spacer for controlling element gap",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -15,7 +15,7 @@ export const spacerConfig: WidgetConfig = {
   propertyPanel: {
     basic: ["field", "label"],
     style: ["margin", "padding", "backgroundColor"],
-    props: [{ key: "height", label: "高度", type: "number", default: 20 }],
+    props: [{ key: "height", label: "Height", type: "number", default: 20 }],
   },
   contexts: ["free"],
 };

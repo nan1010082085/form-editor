@@ -3,8 +3,8 @@ import { flowTimelineMock } from "./mock";
 
 export const flowTimelineConfig: WidgetConfig = {
   name: "FgFlowTimeline",
-  displayName: "流程轨迹",
-  description: "展示流程实例审批时间线（E-01）",
+  displayName: "Flow Timeline",
+  description: "Approval timeline display",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -14,7 +14,7 @@ export const flowTimelineConfig: WidgetConfig = {
   },
   exposedValues: [
     { key: "logs", type: "array", description: "审批日志列表" },
-    { key: "loading", type: "boolean", description: "加载状态" },
+    { key: "loading", type: "boolean", description: "Loading State" },
   ],
   configPanels: ["events", "variables"],
   defaultProps: {
@@ -26,16 +26,16 @@ export const flowTimelineConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "标题", type: "input", default: "审批记录" },
+      { key: "title", label: "Title", type: "input", default: "审批记录" },
       {
         key: "instanceIdVariable",
-        label: "实例 ID 变量名",
+        label: "Instance ID Var Name",
         type: "input",
         default: "flowInstanceId",
       },
       {
         key: "instanceId",
-        label: "固定实例 ID",
+        label: "Fixed Instance ID",
         type: "input",
         desc: "留空则从 board 变量读取",
       },

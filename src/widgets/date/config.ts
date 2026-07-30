@@ -1,8 +1,8 @@
 import type { WidgetConfig } from "../base/types";
 export const dateConfig: WidgetConfig = {
   name: "FgDate",
-  displayName: "日期选择",
-  description: "日期选择器，支持日期格式配置",
+  displayName: "Date Picker",
+  description: "Date picker with format config",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -26,24 +26,24 @@ export const dateConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请选择日期",
       },
-      { key: "clearable", label: "可清空", type: "switch", default: true },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
+      { key: "clearable", label: "Clearable", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
       {
         key: "type",
-        label: "类型",
+        label: "Type",
         type: "select",
         options: [
-          { label: "日期", value: "date" },
-          { label: "日期时间", value: "datetime" },
+          { label: "Date", value: "date" },
+          { label: "DateTime", value: "datetime" },
           { label: "日期范围", value: "daterange" },
         ],
         default: "date",
       },
-      { key: "format", label: "格式", type: "input", default: "YYYY-MM-DD" },
+      { key: "format", label: "Format", type: "input", default: "YYYY-MM-DD" },
     ],
   },
 };

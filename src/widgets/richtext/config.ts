@@ -2,9 +2,9 @@ import type { WidgetConfig } from "../base/types";
 
 export const richtextConfig: WidgetConfig = {
   name: "FgRichtext",
-  displayName: "富文本",
+  displayName: "Rich Text",
   description:
-    "多行富文本字段（纯文本模式，支持占位与双向绑定；后续可接入完整编辑器）",
+    "Multi-line rich text (plain mode)",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -24,14 +24,14 @@ export const richtextConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请输入内容",
       },
-      { key: "readonly", label: "只读", type: "switch", default: false },
+      { key: "readonly", label: "Read Only", type: "switch", default: false },
       {
         key: "showToolbar",
-        label: "显示工具栏",
+        label: "Show Toolbar",
         type: "switch",
         default: true,
       },

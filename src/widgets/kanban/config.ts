@@ -8,8 +8,8 @@ export interface KanbanColumn {
 
 export const kanbanConfig: WidgetConfig = {
   name: "FgKanban",
-  displayName: "看板",
-  description: "Kanban 看板（E-06），按状态分列展示卡片，支持拖拽变更状态",
+  displayName: "Kanban",
+  description: "Kanban board with drag-to-change-status",
   author: "yangdongnan",
   defaultStyle: { width: "100%", minHeight: "420px" },
   defaultProps: {
@@ -24,19 +24,19 @@ export const kanbanConfig: WidgetConfig = {
     updateMethod: "put",
   },
   exposedValues: [
-    { key: "cards", type: "array", description: "卡片数据" },
-    { key: "loading", type: "boolean", description: "加载状态" },
+    { key: "cards", type: "array", description: "Card Data" },
+    { key: "loading", type: "boolean", description: "Loading State" },
   ],
   configPanels: ["api", "variables"],
-  receivableEvents: [{ name: "refresh", description: "重新加载看板数据" }],
+  receivableEvents: [{ name: "refresh", description: "Reload Kanban" }],
   propertyPanel: {
     basic: ["label"],
     style: ["width", "height"],
     props: [
-      { key: "columns", label: "列配置", type: "kanban-columns" },
-      { key: "cardTitleField", label: "标题字段", type: "input" },
+      { key: "columns", label: "Column Config", type: "kanban-columns" },
+      { key: "cardTitleField", label: "Title Field", type: "input" },
       { key: "cardSubtitleField", label: "副标题字段", type: "input" },
-      { key: "statusField", label: "状态字段", type: "input" },
+      { key: "statusField", label: "Status Field", type: "input" },
     ],
   },
 };

@@ -1,8 +1,8 @@
 import type { WidgetConfig } from "../base/types";
 export const formConfig: WidgetConfig = {
   name: "FgForm",
-  displayName: "表单容器",
-  description: "表单容器，包裹 el-form，支持表单提交、校验和数据收集",
+  displayName: "Form Container",
+  description: "Form wrapper with submit, validation, data collection",
   author: "yangdongnan",
   defaultPosition: { w: 100, wUnit: "%", h: 200 },
   defaultStyle: {
@@ -16,19 +16,19 @@ export const formConfig: WidgetConfig = {
     basic: [
       {
         key: "labelWidth",
-        label: "标签宽度",
+        label: "Label Width",
         type: "input",
         default: "100px",
         desc: "表单标签的宽度",
       },
       {
         key: "labelPosition",
-        label: "标签位置",
+        label: "Label Position",
         type: "select",
         options: [
-          { label: "左对齐", value: "left" },
-          { label: "右对齐", value: "right" },
-          { label: "顶部", value: "top" },
+          { label: "Left", value: "left" },
+          { label: "Right", value: "right" },
+          { label: "Top", value: "top" },
         ],
         default: "right",
         desc: "表单标签的对齐位置",
@@ -38,7 +38,7 @@ export const formConfig: WidgetConfig = {
     props: [],
   },
   exposedValues: [
-    { key: "formData", type: "object", description: "表单数据模型" },
+    { key: "formData", type: "object", description: "Form Data Model" },
   ],
   configPanels: ["events", "api", "variables"],
   contexts: ["free"],

@@ -9,8 +9,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const aiSuggestionPanelConfig: WidgetConfig = {
   name: "FgAiSuggestionPanel",
-  displayName: "AI建议面板",
-  description: "展示 AI 生成的建议列表，适用于审批建议/风险提示/智能推荐",
+  displayName: "AI Suggestion Panel",
+  description: "AI suggestion list panel",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "auto", fontSize: "14px" },
   defaultProps: {
@@ -21,23 +21,23 @@ export const aiSuggestionPanelConfig: WidgetConfig = {
     defaultExpanded: true,
   },
   exposedValues: [
-    { key: "suggestions", type: "array", description: "建议列表", example: [] },
+    { key: "suggestions", type: "array", description: "Suggestion List", example: [] },
   ],
   configPanels: ["events", "linkages", "api", "variables"],
   propertyPanel: {
     basic: ["field", "label", "defaultValue"],
     style: ["fontSize", "color", "backgroundColor"],
     props: [
-      { key: "title", label: "标题", type: "input", default: "AI 建议" },
+      { key: "title", label: "Title", type: "input", default: "AI 建议" },
       {
         key: "suggestions",
-        label: "建议列表",
+        label: "Suggestion List",
         type: "json",
         default: [],
       },
-      { key: "showIcon", label: "显示图标", type: "switch", default: true },
-      { key: "collapsible", label: "可折叠", type: "switch", default: true },
-      { key: "defaultExpanded", label: "默认展开", type: "switch", default: true },
+      { key: "showIcon", label: "Show Icon", type: "switch", default: true },
+      { key: "collapsible", label: "Collapsible", type: "switch", default: true },
+      { key: "defaultExpanded", label: "Default Expanded", type: "switch", default: true },
     ],
   },
 };

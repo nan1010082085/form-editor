@@ -10,8 +10,8 @@ export interface DetailColumn {
 
 export const dynamicDetailTableConfig: WidgetConfig = {
   name: "FgDynamicDetailTable",
-  displayName: "动态明细表",
-  description: "可增删行的费用/采购明细（E-15）",
+  displayName: "Dynamic Detail Table",
+  description: "Editable expense/purchase detail",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -19,7 +19,7 @@ export const dynamicDetailTableConfig: WidgetConfig = {
     borderRadius: "8px",
     padding: "12px",
   },
-  exposedValues: [{ key: "rows", type: "array", description: "明细行数据" }],
+  exposedValues: [{ key: "rows", type: "array", description: "Detail Row Data" }],
   configPanels: ["events", "variables"],
   defaultProps: {
     title: "费用明细",
@@ -31,8 +31,8 @@ export const dynamicDetailTableConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "标题", type: "input", default: "费用明细" },
-      { key: "field", label: "绑定字段", type: "input", default: "items" },
+      { key: "title", label: "Title", type: "input", default: "费用明细" },
+      { key: "field", label: "Bound Field", type: "input", default: "items" },
     ],
   },
 };

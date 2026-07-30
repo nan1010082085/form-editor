@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const marqueeTextConfig: WidgetConfig = {
   name: "FgMarqueeText",
-  displayName: "跑马灯",
-  description: "水平滚动文本公告，支持数据源驱动和自定义速度",
+  displayName: "Marquee",
+  description: "Horizontal scrolling text with data source",
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
   defaultProps: {
@@ -13,41 +13,41 @@ export const marqueeTextConfig: WidgetConfig = {
     pauseOnHover: true,
     loop: true,
   },
-  exposedValues: [{ key: "text", type: "string", description: "当前文本" }],
+  exposedValues: [{ key: "text", type: "string", description: "Current Text" }],
   configPanels: ["api", "variables"],
   receivableEvents: [
     {
       name: "set-text",
-      description: "设置滚动文本",
+      description: "Set Scroll Text",
       params: { text: "文本内容" },
     },
-    { name: "pause", description: "暂停滚动" },
-    { name: "resume", description: "恢复滚动" },
+    { name: "pause", description: "Pause Scroll" },
+    { name: "resume", description: "Resume Scroll" },
   ],
   propertyPanel: {
     basic: ["label"],
     style: ["margin", "padding", "backgroundColor"],
     props: [
-      { key: "text", label: "滚动文本", type: "text" },
+      { key: "text", label: "Scroll Text", type: "text" },
       {
         key: "speed",
-        label: "滚动速度",
+        label: "Scroll Speed",
         type: "number",
         default: 50,
         desc: "越大越快",
       },
       {
         key: "direction",
-        label: "滚动方向",
+        label: "Scroll Direction",
         type: "select",
         default: "left",
         options: [
-          { label: "向左", value: "left" },
-          { label: "向右", value: "right" },
+          { label: "Left", value: "left" },
+          { label: "Right", value: "right" },
         ],
       },
-      { key: "pauseOnHover", label: "悬停暂停", type: "switch", default: true },
-      { key: "loop", label: "循环播放", type: "switch", default: true },
+      { key: "pauseOnHover", label: "Hover Pause", type: "switch", default: true },
+      { key: "loop", label: "Loop", type: "switch", default: true },
     ],
   },
 };
@@ -57,7 +57,7 @@ export function createMarqueeTextWidget(id: string) {
     id,
     name: marqueeTextConfig.name,
     type: "marquee-text" as const,
-    label: "跑马灯",
+    label: "Marquee",
     props: { ...marqueeTextConfig.defaultProps },
     style: { ...marqueeTextConfig.defaultStyle },
     position: {

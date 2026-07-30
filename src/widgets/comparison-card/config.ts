@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const comparisonCardConfig: WidgetConfig = {
   name: "FgComparisonCard",
-  displayName: "对比卡片",
-  description: "展示两个指标对比（同比/环比），带趋势箭头和百分比",
+  displayName: "Comparison Card",
+  description: "Comparison card with trend arrow and percentage",
   author: "yangdongnan",
   defaultStyle: { width: "240px" },
   defaultProps: {
@@ -16,26 +16,26 @@ export const comparisonCardConfig: WidgetConfig = {
     precision: 1,
   },
   exposedValues: [
-    { key: "currentValue", type: "number", description: "当前值" },
-    { key: "changePercent", type: "number", description: "变化百分比" },
+    { key: "currentValue", type: "number", description: "Current Value" },
+    { key: "changePercent", type: "number", description: "Change Percent" },
   ],
   configPanels: ["api", "variables"],
   propertyPanel: {
     basic: ["label"],
     style: ["margin", "padding", "backgroundColor", "borderRadius"],
     props: [
-      { key: "title", label: "标题", type: "text" },
-      { key: "currentValue", label: "当前值", type: "number" },
-      { key: "previousValue", label: "对比值", type: "number" },
-      { key: "prefix", label: "前缀", type: "text", placeholder: "如 ¥" },
-      { key: "unit", label: "单位", type: "text", placeholder: "如 人" },
+      { key: "title", label: "Title", type: "text" },
+      { key: "currentValue", label: "Current Value", type: "number" },
+      { key: "previousValue", label: "Compare Value", type: "number" },
+      { key: "prefix", label: "Prefix", type: "text", placeholder: "如 ¥" },
+      { key: "unit", label: "Unit", type: "text", placeholder: "如 人" },
       {
         key: "comparisonLabel",
-        label: "对比标签",
+        label: "Compare Label",
         type: "text",
         default: "同比",
       },
-      { key: "precision", label: "小数精度", type: "number", default: 1 },
+      { key: "precision", label: "Decimal Precision", type: "number", default: 1 },
     ],
   },
 };
@@ -45,7 +45,7 @@ export function createComparisonCardWidget(id: string) {
     id,
     name: comparisonCardConfig.name,
     type: "comparison-card" as const,
-    label: "对比卡片",
+    label: "Comparison Card",
     props: { ...comparisonCardConfig.defaultProps },
     style: { ...comparisonCardConfig.defaultStyle },
     position: {

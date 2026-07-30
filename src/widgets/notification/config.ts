@@ -3,8 +3,8 @@ import { notificationMock } from "./mock";
 
 export const notificationConfig: WidgetConfig = {
   name: "FgNotification",
-  displayName: "通知公告",
-  description: "展示已发布公告列表（E-08）",
+  displayName: "Notice",
+  description: "Published notice list",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -12,7 +12,7 @@ export const notificationConfig: WidgetConfig = {
     borderRadius: "8px",
     padding: "12px",
   },
-  exposedValues: [{ key: "items", type: "array", description: "公告列表" }],
+  exposedValues: [{ key: "items", type: "array", description: "Notice List" }],
   configPanels: ["events", "variables"],
   defaultProps: {
     title: "最新公告",
@@ -24,18 +24,18 @@ export const notificationConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "标题", type: "input", default: "最新公告" },
+      { key: "title", label: "Title", type: "input", default: "最新公告" },
       {
         key: "source",
-        label: "数据源",
+        label: "Data Source",
         type: "select",
         default: "notices",
         options: [
-          { label: "公告", value: "notices" },
-          { label: "流程消息", value: "flow" },
+          { label: "Notice", value: "notices" },
+          { label: "Flow Message", value: "flow" },
         ],
       },
-      { key: "pageSize", label: "条数", type: "number", default: 5 },
+      { key: "pageSize", label: "Count", type: "number", default: 5 },
     ],
   },
 };

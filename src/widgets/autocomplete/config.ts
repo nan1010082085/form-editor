@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const autocompleteConfig: WidgetConfig = {
   name: "FgAutocomplete",
-  displayName: "自动补全",
-  description: "自动补全输入框，支持远程搜索和静态建议列表",
+  displayName: "Autocomplete",
+  description: "Autocomplete with remote search",
   author: "yangdongnan",
   defaultStyle: { width: "240px", height: "40px" },
   defaultProps: {
@@ -14,7 +14,7 @@ export const autocompleteConfig: WidgetConfig = {
     suggestions: [],
   },
   exposedValues: [
-    { key: "value", type: "string", description: "当前输入值", example: "" },
+    { key: "value", type: "string", description: "Current Input", example: "" },
   ],
   configPanels: ["events", "linkages", "variables"] as const,
   propertyPanel: {
@@ -23,16 +23,16 @@ export const autocompleteConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请输入",
       },
-      { key: "clearable", label: "可清空", type: "switch", default: true },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "debounce", label: "防抖延迟(ms)", type: "number", default: 300 },
+      { key: "clearable", label: "Clearable", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "debounce", label: "Debounce (ms)", type: "number", default: 300 },
       {
         key: "suggestions",
-        label: "建议列表",
+        label: "Suggestion List",
         type: "options",
         default: [],
         fields: [{ key: "value", label: "值", type: "text" }],

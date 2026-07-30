@@ -7,8 +7,8 @@ export interface ToolbarButtonItem {
 
 export const toolbarButtonsConfig: WidgetConfig = {
   name: "FgToolbarButtons",
-  displayName: "工具栏按钮",
-  description: "工具栏按钮组，用于操作栏按钮排列",
+  displayName: "Toolbar Buttons",
+  description: "Toolbar button group for action bar",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -35,28 +35,28 @@ export const toolbarButtonsConfig: WidgetConfig = {
     props: [
       {
         key: "buttons",
-        label: "按钮列表",
+        label: "Button List",
         type: "array-editor",
         default: [],
         fields: [
-          { key: "text", label: "文本", type: "text", placeholder: "按钮文字" },
+          { key: "text", label: "Text", type: "text", placeholder: "Button Text" },
           {
             key: "type",
-            label: "类型",
+            label: "Type",
             type: "select",
             options: [
-              { label: "默认", value: "" },
-              { label: "主要", value: "primary" },
-              { label: "成功", value: "success" },
-              { label: "警告", value: "warning" },
-              { label: "危险", value: "danger" },
-              { label: "信息", value: "info" },
+              { label: "Default", value: "" },
+              { label: "Primary", value: "primary" },
+              { label: "Success", value: "success" },
+              { label: "Warning", value: "warning" },
+              { label: "Danger", value: "danger" },
+              { label: "Info", value: "info" },
             ],
             default: "",
           },
         ],
       },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
     ],
   },
 };

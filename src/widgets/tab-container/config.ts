@@ -2,9 +2,9 @@ import type { WidgetConfig } from "../base/types";
 
 export const tabContainerConfig: WidgetConfig = {
   name: "FgTabContainer",
-  displayName: "Tab 容器",
+  displayName: "Tab Container",
   description:
-    "Tab 容器，内部切换多个子画布，每个 Tab 页可包含独立的 widget 集合",
+    "Tab container with multiple sub-canvases",
   author: "yangdongnan",
   defaultStyle: { width: "100%", minHeight: "200px" },
   defaultProps: {
@@ -14,15 +14,15 @@ export const tabContainerConfig: WidgetConfig = {
     ] as Array<{ key: string; label: string; children: unknown[] }>,
   },
   exposedValues: [
-    { key: "activeTab", type: "string", description: "当前活跃 Tab 的 key" },
+    { key: "activeTab", type: "string", description: "Active Tab Key" },
   ],
   eventTargets: [
-    { id: "tab-change", label: "Tab 切换", description: "切换 Tab 页时触发" },
+    { id: "tab-change", label: "Tab Switch", description: "On Tab Switch" },
   ],
   receivableEvents: [
     {
       name: "set-active-tab",
-      description: "设置活跃 Tab",
+      description: "Set Active Tab",
       params: { key: "Tab key" },
     },
   ],
@@ -33,11 +33,11 @@ export const tabContainerConfig: WidgetConfig = {
     props: [
       {
         key: "tabs",
-        label: "Tab 页配置",
+        label: "Tab Config",
         type: "array-editor",
         fields: [
           { key: "key", label: "Key", type: "text" },
-          { key: "label", label: "标签", type: "text" },
+          { key: "label", label: "Label", type: "text" },
         ],
       },
     ],
@@ -50,7 +50,7 @@ export function createTabContainerWidget(id: string) {
     id,
     name: tabContainerConfig.name,
     type: "tab-container" as const,
-    label: "Tab 容器",
+    label: "Tab Container",
     props: { ...tabContainerConfig.defaultProps },
     style: { ...tabContainerConfig.defaultStyle },
     position: {

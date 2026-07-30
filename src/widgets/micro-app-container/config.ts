@@ -6,9 +6,9 @@ import {
 
 export const microAppContainerConfig: WidgetConfig = {
   name: "FgMicroAppContainer",
-  displayName: "微应用容器",
+  displayName: "Micro App Container",
   description:
-    "通过 qiankun loadMicroApp 动态加载子应用，支持沙箱隔离、参数传递、超时兜底",
+    "Dynamic sub-app loading via qiankun",
   author: "system",
   defaultStyle: {},
   defaultProps: {
@@ -21,7 +21,7 @@ export const microAppContainerConfig: WidgetConfig = {
       ...createMicroappPropertyItems("true"),
       {
         key: "height",
-        label: "容器高度",
+        label: "Container Height",
         type: "input",
         default: "100%",
         placeholder: "例：400px 或 100%",
@@ -35,13 +35,13 @@ export const microAppContainerConfig: WidgetConfig = {
     {
       key: "containerRef",
       type: "object",
-      description: "容器引用，可用于 postMessage",
+      description: "Container ref for postMessage",
     },
   ],
   eventTargets: [],
   receivableEvents: [
-    { name: "message", description: "接收微应用消息" },
-    { name: "ready", description: "微应用加载完成" },
-    { name: "error", description: "微应用加载失败" },
+    { name: "message", description: "Receive Micro App Message" },
+    { name: "ready", description: "Micro App Loaded" },
+    { name: "error", description: "Micro App Load Failed" },
   ],
 };

@@ -2,36 +2,36 @@ import type { WidgetConfig } from "../base/types";
 
 export const conditionBuilderConfig: WidgetConfig = {
   name: "FgConditionBuilder",
-  displayName: "条件构建器",
+  displayName: "Condition Builder",
   description:
-    "可视化条件表达式编辑器，支持多条件组合（AND/OR），替代手动写表达式",
+    "Visual condition builder with AND/OR",
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
   defaultProps: {
     fields: [
-      { key: "name", label: "名称" },
-      { key: "age", label: "年龄" },
-      { key: "status", label: "状态" },
-      { key: "createdAt", label: "创建时间" },
+      { key: "name", label: "Name" },
+      { key: "age", label: "Age" },
+      { key: "status", label: "Status" },
+      { key: "createdAt", label: "Created At" },
     ] as Array<{ key: string; label: string }>,
   },
   exposedValues: [
-    { key: "conditions", type: "array", description: "条件数组" },
-    { key: "logic", type: "string", description: "逻辑关系 (and/or)" },
+    { key: "conditions", type: "array", description: "Condition Array" },
+    { key: "logic", type: "string", description: "Logic (and/or)" },
   ],
   configPanels: ["variables"],
-  receivableEvents: [{ name: "reset-conditions", description: "重置所有条件" }],
+  receivableEvents: [{ name: "reset-conditions", description: "Reset All Conditions" }],
   propertyPanel: {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
       {
         key: "fields",
-        label: "可选字段",
+        label: "Optional Fields",
         type: "array-editor",
         fields: [
-          { key: "key", label: "字段名", type: "text" },
-          { key: "label", label: "标签", type: "text" },
+          { key: "key", label: "Field Name", type: "text" },
+          { key: "label", label: "Label", type: "text" },
         ],
       },
     ],
@@ -43,7 +43,7 @@ export function createConditionBuilderWidget(id: string) {
     id,
     name: conditionBuilderConfig.name,
     type: "condition-builder" as const,
-    label: "条件构建器",
+    label: "Condition Builder",
     props: { ...conditionBuilderConfig.defaultProps },
     style: { ...conditionBuilderConfig.defaultStyle },
     position: {

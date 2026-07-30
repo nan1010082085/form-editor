@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const approvalUserPickerConfig: WidgetConfig = {
   name: "FgApprovalUserPicker",
-  displayName: "审批用户",
-  description: "审批用户选择器，从 Flow API 获取用户列表",
+  displayName: "Approval User",
+  description: "Approval user selector from Flow API",
   author: "yangdongnan",
   defaultStyle: { width: "240px", height: "40px", fontSize: "14px" },
   defaultProps: {
@@ -14,8 +14,8 @@ export const approvalUserPickerConfig: WidgetConfig = {
     apiBaseUrl: "",
   },
   exposedValues: [
-    { key: "value", type: "string", description: "选中用户ID", example: "" },
-    { key: "label", type: "string", description: "选中用户名", example: "" },
+    { key: "value", type: "string", description: "Selected User ID", example: "" },
+    { key: "label", type: "string", description: "Selected User Name", example: "" },
   ],
   configPanels: ["events", "linkages", "variables"],
   propertyPanel: {
@@ -24,14 +24,14 @@ export const approvalUserPickerConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请选择审批人",
       },
-      { key: "clearable", label: "可清空", type: "switch", default: true },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "multiple", label: "多选", type: "switch", default: false },
-      { key: "apiBaseUrl", label: "Flow API 地址", type: "input", default: "" },
+      { key: "clearable", label: "Clearable", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "multiple", label: "Checkbox", type: "switch", default: false },
+      { key: "apiBaseUrl", label: "Flow API URL", type: "input", default: "" },
     ],
   },
 };

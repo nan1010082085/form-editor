@@ -3,8 +3,8 @@ import { createMicroappPropertyItems } from "../base/microappConfig";
 
 export const dialogConfig: WidgetConfig = {
   name: "FgDialog",
-  displayName: "弹窗容器",
-  description: "弹窗容器，支持编辑模式和微应用模式，可配置标题、宽度、按钮",
+  displayName: "Dialog Container",
+  description: "Dialog with edit/micro-app mode, configurable title/width/buttons",
   author: "yangdongnan",
   defaultStyle: {},
   defaultProps: {
@@ -21,17 +21,17 @@ export const dialogConfig: WidgetConfig = {
   },
   propertyPanel: {
     basic: [
-      { key: "title", label: "标题", type: "input", default: "弹窗标题" },
-      { key: "width", label: "宽度", type: "input", default: "600px" },
+      { key: "title", label: "Title", type: "input", default: "弹窗标题" },
+      { key: "width", label: "Width", type: "input", default: "600px" },
       {
         key: "confirmText",
-        label: "确认按钮文字",
+        label: "Confirm Text",
         type: "input",
         default: "确定",
       },
       {
         key: "cancelText",
-        label: "取消按钮文字",
+        label: "Cancel Text",
         type: "input",
         default: "取消",
       },
@@ -43,7 +43,7 @@ export const dialogConfig: WidgetConfig = {
       },
       {
         key: "showFooter",
-        label: "显示底部按钮",
+        label: "Show Footer",
         type: "switch",
         default: true,
       },
@@ -55,11 +55,11 @@ export const dialogConfig: WidgetConfig = {
       },
       {
         key: "contentMode",
-        label: "内容模式",
+        label: "Content Mode",
         type: "select",
         options: [
-          { label: "编辑模式", value: "edit" },
-          { label: "微应用模式", value: "microapp" },
+          { label: "Edit Mode", value: "edit" },
+          { label: "Micro App Mode", value: "microapp" },
         ],
         default: "edit",
       },
@@ -68,26 +68,26 @@ export const dialogConfig: WidgetConfig = {
     ],
     style: [],
     props: [
-      { key: "draggable", label: "可拖拽", type: "switch", default: true },
+      { key: "draggable", label: "Draggable", type: "switch", default: true },
       {
         key: "showFullscreenBtn",
-        label: "显示全屏按钮",
+        label: "Show Fullscreen",
         type: "switch",
         default: true,
       },
     ],
   },
   exposedValues: [
-    { key: "visible", type: "boolean", description: "弹窗是否可见" },
-    { key: "dialogData", type: "object", description: "弹窗表单数据" },
+    { key: "visible", type: "boolean", description: "Dialog Visible" },
+    { key: "dialogData", type: "object", description: "Dialog Form Data" },
   ],
   eventTargets: [
-    { id: "confirm", label: "确认按钮", description: "点击确认时触发" },
-    { id: "cancel", label: "取消按钮", description: "点击取消时触发" },
+    { id: "confirm", label: "Confirm Button", description: "On Confirm" },
+    { id: "cancel", label: "Cancel Button", description: "On Cancel" },
   ],
   configPanels: ["events", "variables"],
   receivableEvents: [
-    { name: "open", description: "打开弹窗" },
-    { name: "close", description: "关闭弹窗" },
+    { name: "open", description: "Open Dialog" },
+    { name: "close", description: "Close Dialog" },
   ],
 };

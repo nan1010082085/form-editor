@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const tagInputConfig: WidgetConfig = {
   name: "FgTagInput",
-  displayName: "标签输入",
-  description: "标签输入框，支持动态添加和删除标签",
+  displayName: "Tag Input",
+  description: "Tag input with dynamic add/remove",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -17,7 +17,7 @@ export const tagInputConfig: WidgetConfig = {
     closable: true,
   },
   exposedValues: [
-    { key: "value", type: "array", description: "当前标签数组", example: [] },
+    { key: "value", type: "array", description: "Current Tags", example: [] },
   ],
   configPanels: ["events", "linkages", "variables"] as const,
   propertyPanel: {
@@ -26,14 +26,14 @@ export const tagInputConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请输入标签",
       },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "maxlength", label: "标签最大长度", type: "number", default: 20 },
-      { key: "maxTags", label: "最大标签数", type: "number", default: 10 },
-      { key: "closable", label: "可关闭", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "maxlength", label: "Max Label Length", type: "number", default: 20 },
+      { key: "maxTags", label: "Max Tags", type: "number", default: 10 },
+      { key: "closable", label: "Closable", type: "switch", default: true },
     ],
   },
 };

@@ -1,8 +1,8 @@
 import type { WidgetConfig } from "../base/types";
 export const numberConfig: WidgetConfig = {
   name: "FgNumber",
-  displayName: "数字输入",
-  description: "数字输入框，支持步进、最小最大值限制",
+  displayName: "Number",
+  description: "Number input with step/min/max",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -27,15 +27,15 @@ export const numberConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请输入数字",
       },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "min", label: "最小值", type: "number", default: undefined },
-      { key: "max", label: "最大值", type: "number", default: undefined },
-      { key: "step", label: "步长", type: "number", default: 1 },
-      { key: "precision", label: "精度", type: "number", default: undefined },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "min", label: "Min", type: "number", default: undefined },
+      { key: "max", label: "Max", type: "number", default: undefined },
+      { key: "step", label: "Step", type: "number", default: 1 },
+      { key: "precision", label: "Precision", type: "number", default: undefined },
     ],
   },
 };

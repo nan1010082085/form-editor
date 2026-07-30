@@ -2,8 +2,8 @@ import type { WidgetConfig } from "../base/types";
 
 export const treeSelectConfig: WidgetConfig = {
   name: "FgTreeSelect",
-  displayName: "树形选择",
-  description: "树形选择器，支持层级数据选择（如菜单、部门）",
+  displayName: "Tree Select",
+  description: "Tree select for hierarchical data",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -19,8 +19,8 @@ export const treeSelectConfig: WidgetConfig = {
     showCheckbox: false,
   },
   exposedValues: [
-    { key: "value", type: "string", description: "选中值", example: "" },
-    { key: "label", type: "string", description: "选中标签", example: "" },
+    { key: "value", type: "string", description: "Selected Value", example: "" },
+    { key: "label", type: "string", description: "Selected Tags", example: "" },
   ],
   configPanels: ["events", "linkages", "api", "variables"],
   propertyPanel: {
@@ -29,22 +29,22 @@ export const treeSelectConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请选择",
       },
-      { key: "clearable", label: "可清空", type: "switch", default: true },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "multiple", label: "多选", type: "switch", default: false },
+      { key: "clearable", label: "Clearable", type: "switch", default: true },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "multiple", label: "Checkbox", type: "switch", default: false },
       {
         key: "checkStrictly",
-        label: "父子不关联",
+        label: "Check Independently",
         type: "switch",
         default: true,
       },
       {
         key: "showCheckbox",
-        label: "显示复选框",
+        label: "Show Checkbox",
         type: "switch",
         default: false,
       },

@@ -3,8 +3,8 @@ import { calendarMock } from "./mock";
 
 export const calendarConfig: WidgetConfig = {
   name: "FgCalendar",
-  displayName: "日历",
-  description: "日程/会议日历展示（E-05）",
+  displayName: "Calendar",
+  description: "Calendar for schedule/meeting display",
   author: "yangdongnan",
   defaultStyle: {
     width: "100%",
@@ -13,7 +13,7 @@ export const calendarConfig: WidgetConfig = {
     padding: "12px",
   },
   exposedValues: [
-    { key: "events", type: "array", description: "日程事件列表" },
+    { key: "events", type: "array", description: "Schedule Events" },
   ],
   configPanels: ["events", "variables"],
   defaultProps: {
@@ -24,7 +24,7 @@ export const calendarConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "标题", type: "input", default: "日程日历" },
+      { key: "title", label: "Title", type: "input", default: "日程日历" },
     ],
   },
 };

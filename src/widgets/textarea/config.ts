@@ -1,8 +1,8 @@
 import type { WidgetConfig } from "../base/types";
 export const textareaConfig: WidgetConfig = {
   name: "FgTextarea",
-  displayName: "文本域",
-  description: "多行文本输入框，支持行数配置",
+  displayName: "Textarea",
+  description: "Multi-line text input with rows config",
   author: "yangdongnan",
   defaultStyle: {
     width: "240px",
@@ -27,22 +27,22 @@ export const textareaConfig: WidgetConfig = {
     props: [
       {
         key: "placeholder",
-        label: "占位文字",
+        label: "Placeholder",
         type: "input",
         default: "请输入",
       },
-      { key: "disabled", label: "禁用", type: "switch", default: false },
-      { key: "readonly", label: "只读", type: "switch", default: false },
-      { key: "rows", label: "行数", type: "number", default: 3 },
+      { key: "disabled", label: "Disabled", type: "switch", default: false },
+      { key: "readonly", label: "Read Only", type: "switch", default: false },
+      { key: "rows", label: "Rows", type: "number", default: 3 },
       {
         key: "maxlength",
-        label: "最大长度",
+        label: "Max Length",
         type: "number",
         default: undefined,
       },
       {
         key: "showWordLimit",
-        label: "字数统计",
+        label: "Char Count",
         type: "switch",
         default: false,
       },
