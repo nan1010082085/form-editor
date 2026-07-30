@@ -236,6 +236,16 @@ import {
   aiSuggestionPanelConfig,
 } from "./ai-suggestion-panel";
 import {
+  FgSignature,
+  createSignatureWidget,
+  signatureConfig,
+} from "./signature";
+import {
+  FgGanttChart,
+  createGanttChartWidget,
+  ganttChartConfig,
+} from "./gantt-chart";
+import {
   FgIconPicker,
   createIconPickerWidget,
   iconPickerConfig,
@@ -879,6 +889,24 @@ export function registerAllWidgets() {
     component: FgAiSuggestionPanel,
     create: createAiSuggestionPanelWidget,
     config: aiSuggestionPanelConfig,
+  });
+  registerWidget({
+    name: signatureConfig.name,
+    displayName: signatureConfig.displayName,
+    type: "signature",
+    group: "business",
+    component: FgSignature,
+    create: createSignatureWidget,
+    config: signatureConfig,
+  });
+  registerWidget({
+    name: ganttChartConfig.name,
+    displayName: ganttChartConfig.displayName,
+    type: "gantt-chart",
+    group: "chart",
+    component: FgGanttChart,
+    create: createGanttChartWidget,
+    config: ganttChartConfig,
   });
 
   // Table widgets (表格)
