@@ -4,10 +4,10 @@ import type { ChartWidgetMock } from "../base/widgetMock";
 export const barChartMock: ChartWidgetMock = {
   kind: "chart",
   staticData: [
-    { category: "1月", value: 42 },
-    { category: "2月", value: 38 },
-    { category: "3月", value: 55 },
-    { category: "4月", value: 48 },
-    { category: "5月", value: 62 },
+    { category: "Jan", value: 42 },
+    { category: "Feb", value: 38 },
+    { category: "Mar", value: 55 },
+    { category: "Apr", value: 48 },
+    { category: "May", value: 62 },
   ],
 };

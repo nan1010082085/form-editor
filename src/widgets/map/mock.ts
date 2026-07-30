@@ -4,8 +4,8 @@ import type { ChartWidgetMock } from "../base/widgetMock";
 export const mapChartMock: ChartWidgetMock = {
   kind: "chart",
   staticData: [
-    { name: "北京", value: 580 },
-    { name: "上海", value: 720 },
+    { name: "Beijing", value: 580 },
+    { name: "Shanghai", value: 720 },
     { name: "广东", value: 950 },
     { name: "浙江", value: 680 },
     { name: "江苏", value: 620 },
