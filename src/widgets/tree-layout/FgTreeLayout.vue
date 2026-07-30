@@ -29,7 +29,7 @@ const filteredChildren = computed(() => {
 <template>
   <div :class="styles.container">
     <div v-if="showHeader" :class="styles.header">
-      {{ (widgetData.props?.title as string) || "侧栏面板" }}
+      {{ (widgetData.props?.title as string) || "Sidebar Panel" }}
     </div>
     <div v-if="showSearch" :class="styles.search">
       <el-input

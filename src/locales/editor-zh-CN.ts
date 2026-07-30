@@ -3401,6 +3401,7 @@ export default {
       empty: "暂无模板",
       useTemplate: "使用模板",
       save: "保存",
+    },
     widgetProps: {
       animation: "动画",
       area: "面积填充",

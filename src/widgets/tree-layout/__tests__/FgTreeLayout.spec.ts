@@ -67,7 +67,7 @@ describe("FgTreeLayout", () => {
   describe("title 属性", () => {
     it("默认显示侧栏面板", () => {
       const wrapper = mountWidget();
-      expect(wrapper.text()).toContain("侧栏面板");
+      expect(wrapper.text()).toContain("Sidebar Panel");
     });
 
     it("自定义标题", () => {
