@@ -39,26 +39,26 @@ const EXECUTION_TIMEOUT_MS = 100;
 /** Security blocklist — patterns that must not appear in compiled expressions */
 const BLOCKED_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
   // Global objects
-  { pattern: /\bwindow\b/, message: "禁止访问全局对象: window" },
-  { pattern: /\bdocument\b/, message: "禁止访问全局对象: document" },
-  { pattern: /\bglobalThis\b/, message: "禁止访问全局对象: globalThis" },
-  { pattern: /\bself\s*[.[]/, message: "禁止访问全局对象: self" },
-  { pattern: /\btop\s*[.[]/, message: "禁止访问全局对象: top" },
-  { pattern: /\bparent\s*[.[]/, message: "禁止访问全局对象: parent" },
-  { pattern: /\bframes\b/, message: "禁止访问全局对象: frames" },
+  { pattern: /\bwindow\b/, message: "Blocked global access: window" },
+  { pattern: /\bdocument\b/, message: "Blocked global access: document" },
+  { pattern: /\bglobalThis\b/, message: "Blocked global access: globalThis" },
+  { pattern: /\bself\s*[.[]/, message: "Blocked global access: self" },
+  { pattern: /\btop\s*[.[]/, message: "Blocked global access: top" },
+  { pattern: /\bparent\s*[.[]/, message: "Blocked global access: parent" },
+  { pattern: /\bframes\b/, message: "Blocked global access: frames" },
   // Module imports
-  { pattern: /\bimport\s*\(/, message: "禁止模块导入: import()" },
-  { pattern: /\brequire\s*\(/, message: "禁止模块导入: require()" },
+  { pattern: /\bimport\s*\(/, message: "Blocked module import: import()" },
+  { pattern: /\brequire\s*\(/, message: "Blocked module import: require()" },
   // Code injection
-  { pattern: /\beval\s*\(/, message: "禁止代码注入: eval()" },
-  { pattern: /\bFunction\s*\(/, message: "禁止代码注入: Function()" },
-  { pattern: /\bsetTimeout\s*\(/, message: "禁止代码注入: setTimeout()" },
-  { pattern: /\bsetInterval\s*\(/, message: "禁止代码注入: setInterval()" },
-  { pattern: /\bnew\s+/, message: "禁止使用 new 关键字" },
+  { pattern: /\beval\s*\(/, message: "Blocked code injection: eval()" },
+  { pattern: /\bFunction\s*\(/, message: "Blocked code injection: Function()" },
+  { pattern: /\bsetTimeout\s*\(/, message: "Blocked code injection: setTimeout()" },
+  { pattern: /\bsetInterval\s*\(/, message: "Blocked code injection: setInterval()" },
+  { pattern: /\bnew\s+/, message: "Blocked new keyword" },
   // Loop constructs (prevent infinite loops)
-  { pattern: /\bwhile\s*\(/, message: "禁止循环语句: while" },
-  { pattern: /\bfor\s*\(/, message: "禁止循环语句: for" },
-  { pattern: /\bdo\s*\{/, message: "禁止循环语句: do" },
+  { pattern: /\bwhile\s*\(/, message: "Blocked loop: while" },
+  { pattern: /\bfor\s*\(/, message: "Blocked loop: for" },
+  { pattern: /\bdo\s*\{/, message: "Blocked loop: do" },
   // Prototype chain escape (prevent sandbox bypass)
   { pattern: /\bconstructor\b/, message: "禁止访问原型链: constructor" },
   { pattern: /\b__proto__\b/, message: "禁止访问原型链: __proto__" },

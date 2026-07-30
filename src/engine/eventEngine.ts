@@ -249,20 +249,20 @@ export async function executeEventAction(
       if (!action.target) break;
       const target = ctx.findWidget(action.target);
       if (target) ctx.updateWidget(action.target, { hidden: false });
-      logger.event(`显示: ${formatTarget(action.target, ctx)}`);
+      logger.event(`Show: ${formatTarget(action.target, ctx)}`);
       break;
     }
     case "hide": {
       if (!action.target) break;
       const target = ctx.findWidget(action.target);
       if (target) ctx.updateWidget(action.target, { hidden: true });
-      logger.event(`隐藏: ${formatTarget(action.target, ctx)}`);
+      logger.event(`Hide: ${formatTarget(action.target, ctx)}`);
       break;
     }
     case "open-dialog": {
       if (action.target) {
         ctx.openDialog(action.target);
-        logger.event(`打开弹窗: ${formatTarget(action.target, ctx)}`);
+        logger.event(`Open dialog: ${formatTarget(action.target, ctx)}`);
       }
       break;
     }
@@ -280,7 +280,7 @@ export async function executeEventAction(
         });
       }
       logger.event(
-        `切换页签: ${formatTarget(action.target, ctx)} → ${action.value}`,
+        `Switch tab: ${formatTarget(action.target, ctx)} → ${action.value}`,
       );
       break;
     }
@@ -293,7 +293,7 @@ export async function executeEventAction(
           });
         }
         logger.event(
-          `赋值: ${formatTarget(action.target, ctx)} = ${action.value}`,
+          `Assign: ${formatTarget(action.target, ctx)} = ${action.value}`,
         );
       }
       break;
@@ -310,7 +310,7 @@ export async function executeEventAction(
     }
     case "emit": {
       ctx.emit("custom", action.value);
-      logger.event(`触发自定义事件: ${action.value}`);
+      logger.event(`Emit event: ${action.value}`);
       break;
     }
     case "set-variable": {
@@ -320,7 +320,7 @@ export async function executeEventAction(
             ? resolveContextString(action.value, ctx)
             : action.value;
         ctx.setVariable(action.variable, resolved);
-        logger.event(`设置变量: ${action.variable} = ${resolved}`);
+        logger.event(`Set variable: ${action.variable} = ${resolved}`);
       }
       break;
     }
@@ -328,7 +328,7 @@ export async function executeEventAction(
       if (action.target && action.event && ctx.triggerEvent) {
         ctx.triggerEvent(action.target, action.event);
         logger.event(
-          `触发组件事件: ${formatTarget(action.target, ctx)}.${action.event}`,
+          `Trigger event: ${formatTarget(action.target, ctx)}.${action.event}`,
         );
       }
       break;
@@ -339,27 +339,27 @@ export async function executeEventAction(
         // 安全考虑：使用当前页面的 origin 而非 '*'
         // 如果需要跨域通信，应配置具体的 targetOrigin
         window.parent.postMessage(data, window.location.origin);
-        logger.event("发送消息:", data);
+        logger.event("Send message:", data);
       }
       break;
     }
     case "close-tab": {
       window.close();
-      logger.event("关闭标签页");
+      logger.event("Close tab");
       break;
     }
     case "copy": {
       if (action.text) {
         const text = resolveTextValue(action.text, ctx);
         await navigator.clipboard.writeText(text);
-        logger.event(`复制到剪贴板: ${text}`);
+        logger.event(`Copy to clipboard: ${text}`);
       }
       break;
     }
     case "refresh": {
       if (action.target && ctx.triggerEvent) {
         ctx.triggerEvent(action.target, "refresh");
-        logger.event(`刷新: ${formatTarget(action.target, ctx)}`);
+        logger.event(`Refresh: ${formatTarget(action.target, ctx)}`);
       }
       break;
     }
@@ -373,17 +373,17 @@ export async function executeEventAction(
           action.apiParams === "formData"
             ? ctx.getFormData()
             : action.apiParams;
-        logger.api(`请求: ${method} ${action.apiUrl}`);
+        logger.api(`Request: ${method} ${action.apiUrl}`);
         try {
           const response = await apiClient.requestUrl<unknown>(
             method,
             action.apiUrl,
             params,
           );
-          logger.api(`响应成功: ${action.apiUrl}`, response);
+          logger.api(`Response success: ${action.apiUrl}`, response);
           ctx.emit("api-success", { url: action.apiUrl, response });
         } catch (err) {
-          logger.warn(`响应失败: ${action.apiUrl}`, err);
+          logger.warn(`Response failed: ${action.apiUrl}`, err);
           ctx.emit("api-error", { url: action.apiUrl, error: String(err) });
         }
       }
@@ -391,21 +391,21 @@ export async function executeEventAction(
     }
     case "submitSubmission": {
       if (!action.schemaId) {
-        logger.warn("submitSubmission: 缺少 schemaId");
+        logger.warn("submitSubmission: missing schemaId");
         break;
       }
       if (ctx.validateForm) {
         const valid = await ctx.validateForm();
         if (!valid) {
-          logger.warn("submitSubmission: 表单校验未通过");
+          logger.warn("submitSubmission: form validation failed");
           break;
         }
       }
       const data = ctx.getFormData();
-      logger.api(`提交表单: schemaId=${action.schemaId}`);
+      logger.api(`Submit form: schemaId=${action.schemaId}`);
       try {
         const response = await createSubmission(action.schemaId, data);
-        logger.api("提交成功", response);
+        logger.api("Submit success", response);
         ctx.emit("submission-created", { schemaId: action.schemaId, response });
         if (action.definitionId) {
           const flowResponse = await startFlow(action.definitionId, {
@@ -418,7 +418,7 @@ export async function executeEventAction(
           });
         }
       } catch (err) {
-        logger.warn("submitSubmission 失败", err);
+        logger.warn("submitSubmission failed", err);
         ctx.emit("api-error", {
           action: "submitSubmission",
           schemaId: action.schemaId,

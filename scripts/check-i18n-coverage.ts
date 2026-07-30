@@ -13,7 +13,7 @@ const ZH_LOCALE = join(SRC_DIR, 'locales', 'editor-zh-CN.ts')
 // 排除的目录
 const EXCLUDE_DIRS = ['node_modules', 'dist', '__tests__', 'workers']
 // 排除的文件模式
-const EXCLUDE_FILES = ['.test.ts', '.spec.ts', 'editor-zh-CN.ts', 'editor-en-US.ts', 'zh-CN.ts', 'en-US.ts', 'mock.ts', 'config-stacked', 'config-horizontal', 'config-area', 'config-donut', 'config-filled', 'config-compare', 'config-bubble', 'config-multi']
+const EXCLUDE_FILES = ['.test.ts', '.spec.ts', 'editor-zh-CN.ts', 'editor-en-US.ts', 'zh-CN.ts', 'en-US.ts', 'mock.ts', 'boardTemplates.ts', 'dashboardDemo.ts', 'config-stacked', 'config-horizontal', 'config-area', 'config-donut', 'config-filled', 'config-compare', 'config-bubble', 'config-multi']
 
 // 匹配中文字符的正则（排除注释和 import 语句）
 const CHINESE_REGEX = /[\u4e00-\u9fff]/
@@ -63,7 +63,7 @@ function analyzeFile(filePath: string): FileInfo {
 
     // 跳过注释行
     const trimmed = line.trim()
-    if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
+    if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*') || trimmed.startsWith('<!--')) {
       continue
     }
 
