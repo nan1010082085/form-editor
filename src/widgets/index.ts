@@ -276,6 +276,11 @@ import {
   medicalRecordConfig,
 } from "./medical-record";
 import {
+  FgProductCard,
+  createProductCardWidget,
+  productCardConfig,
+} from "./product-card";
+import {
   FgEnergyDashboard,
   createEnergyDashboardWidget,
   energyDashboardConfig,
@@ -996,6 +1001,15 @@ export function registerAllWidgets() {
     component: FgMedicalRecord,
     create: createMedicalRecordWidget,
     config: medicalRecordConfig,
+  });
+  registerWidget({
+    name: productCardConfig.name,
+    displayName: productCardConfig.displayName,
+    type: "product-card",
+    group: "business",
+    component: FgProductCard,
+    create: createProductCardWidget,
+    config: productCardConfig,
   });
   registerWidget({
     name: energyDashboardConfig.name,
