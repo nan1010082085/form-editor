@@ -18,6 +18,7 @@ const { isQiankunSubApp, shouldHideSubAppMenu, goToShellHome } =
 const navItems = [
   { path: "/instances", label: "实例管理", icon: "odometer" },
   { path: "/templates", label: "模板库", icon: "grid" },
+  { path: "/widget-market", label: "组件市场", icon: "goods" },
 ];
 
 const activeNav = computed(() => {

@@ -331,6 +331,26 @@ function handleClearCanvas() {
           </button>
         </el-tooltip>
       </div>
+      <div style="display: flex; gap: 2px; margin: 0 4px;">
+        <el-tooltip content="自由布局（绝对定位，大屏/仪表盘）" placement="bottom">
+          <button
+            :class="[styles.iconBtn, { [styles.iconBtnActive]: boardStore.layoutMode === 'free' }]"
+            style="font-size: 12px; padding: 0 8px;"
+            @click="boardStore.updateCanvas({ layoutMode: 'free' })"
+          >
+            自由
+          </button>
+        </el-tooltip>
+        <el-tooltip content="弹性布局（流式排列，表单/列表）" placement="bottom">
+          <button
+            :class="[styles.iconBtn, { [styles.iconBtnActive]: boardStore.layoutMode === 'flex' }]"
+            style="font-size: 12px; padding: 0 8px;"
+            @click="boardStore.updateCanvas({ layoutMode: 'flex' })"
+          >
+            弹性
+          </button>
+        </el-tooltip>
+      </div>
       <el-tooltip
         :content="
           rightPanelVisible

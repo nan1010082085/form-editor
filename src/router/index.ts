@@ -78,6 +78,11 @@ const routes = [
         name: "widget-docs",
         component: () => import("@/views/WidgetDocsView.vue"),
       },
+      {
+        path: "widget-market",
+        name: "widget-market",
+        component: () => import("@/views/WidgetMarketView.vue"),
+      },
     ],
   },
 
