@@ -52,6 +52,18 @@ const enUS: Record<string, string> = {
   "versionCompare.newWidget": "New widget",
   "versionCompare.deleted": "Deleted",
   "versionCompare.positionChanged": "Position changed",
+
+  // ---- Score Card FgScoreCard ----
+  "scoreCard.displayName": "Score Card",
+  "scoreCard.description": "Display score (value + level + description)",
+
+  // ---- Risk Badge FgRiskBadge ----
+  "riskBadge.displayName": "Risk Badge",
+  "riskBadge.description": "Display risk level badge",
+
+  // ---- AI Suggestion Panel FgAiSuggestionPanel ----
+  "aiSuggestion.title": "AI Suggestions",
+  "aiSuggestion.empty": "No AI suggestions",
 };
 
 export default enUS;

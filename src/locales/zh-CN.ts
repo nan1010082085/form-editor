@@ -51,6 +51,18 @@ const zhCN: Record<string, string> = {
   "versionCompare.newWidget": "新增部件",
   "versionCompare.deleted": "已删除",
   "versionCompare.positionChanged": "位置变更",
+
+  // ---- 评分卡 FgScoreCard ----
+  "scoreCard.displayName": "评分卡",
+  "scoreCard.description": "展示评分（分数 + 等级 + 说明）",
+
+  // ---- 风险标签 FgRiskBadge ----
+  "riskBadge.displayName": "风险标签",
+  "riskBadge.description": "展示风险等级标签",
+
+  // ---- AI建议面板 FgAiSuggestionPanel ----
+  "aiSuggestion.title": "AI 建议",
+  "aiSuggestion.empty": "暂无 AI 建议",
 };
 
 export default zhCN;

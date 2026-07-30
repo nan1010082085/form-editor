@@ -231,6 +231,11 @@ import {
   riskBadgeConfig,
 } from "./risk-badge";
 import {
+  FgAiSuggestionPanel,
+  createAiSuggestionPanelWidget,
+  aiSuggestionPanelConfig,
+} from "./ai-suggestion-panel";
+import {
   FgIconPicker,
   createIconPickerWidget,
   iconPickerConfig,
@@ -865,6 +870,15 @@ export function registerAllWidgets() {
     component: FgRiskBadge,
     create: createRiskBadgeWidget,
     config: riskBadgeConfig,
+  });
+  registerWidget({
+    name: aiSuggestionPanelConfig.name,
+    displayName: aiSuggestionPanelConfig.displayName,
+    type: "ai-suggestion-panel",
+    group: "business",
+    component: FgAiSuggestionPanel,
+    create: createAiSuggestionPanelWidget,
+    config: aiSuggestionPanelConfig,
   });
 
   // Table widgets (表格)
