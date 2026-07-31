@@ -3521,6 +3521,7 @@ export default {
       empty: "No templates",
       useTemplate: "Use Template",
       save: "Save",
+    },
     widgetProps: {
       animation: "Animation",
       area: "Area Fill",
