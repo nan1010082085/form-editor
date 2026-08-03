@@ -31,5 +31,4 @@ export const cardConfig: WidgetConfig = {
     style: ["margin", "padding", "backgroundColor", "borderRadius"],
     props: [],
   },
-  contexts: ["free"],
 };

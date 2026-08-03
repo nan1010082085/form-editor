@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   parseSchemaDragData,
-  resolveFlexInsertIndex,
+  resolveGridInsertIndex,
   mapFilteredIndexToFull,
-} from "@/utils/flexCanvasDrop";
+} from "@/utils/gridCanvasDrop";
 import type { Widget } from "@/widgets/base/types";
 
 describe("flexCanvasDrop", () => {
@@ -20,7 +20,7 @@ describe("flexCanvasDrop", () => {
     });
   });
 
-  it("resolveFlexInsertIndex picks index from clientY", () => {
+  it("resolveGridInsertIndex picks index from clientY", () => {
     const container = document.createElement("div");
     const a = document.createElement("div");
     a.setAttribute("data-widget-id", "w1");
@@ -32,9 +32,9 @@ describe("flexCanvasDrop", () => {
 
     const widgets = [{ id: "w1" }, { id: "w2" }] as Widget[];
 
-    expect(resolveFlexInsertIndex(container, 110, widgets)).toBe(0);
-    expect(resolveFlexInsertIndex(container, 170, widgets)).toBe(1);
-    expect(resolveFlexInsertIndex(container, 220, widgets)).toBe(2);
+    expect(resolveGridInsertIndex(container, 110, widgets)).toBe(0);
+    expect(resolveGridInsertIndex(container, 170, widgets)).toBe(1);
+    expect(resolveGridInsertIndex(container, 220, widgets)).toBe(2);
   });
 
   it("mapFilteredIndexToFull maps tabs/col filtered index back to full array", () => {
@@ -56,17 +56,17 @@ describe("flexCanvasDrop", () => {
   });
 });
 
-describe("useFlexCanvasDropEnabled handler 暴露（回归：EditorCanvas 解构名匹配）", () => {
+describe("useGridCanvasDropEnabled handler 暴露（回归：EditorCanvas 解构名匹配）", () => {
   it("返回 handleDragOver/handleDragLeave/handleDrop（EditorCanvas 用别名解构）", async () => {
     const { setActivePinia, createPinia } = await import("pinia");
     const { ref } = await import("vue");
     setActivePinia(createPinia());
-    const { useFlexCanvasDropEnabled } =
-      await import("@/composables/useFlexCanvasDrop");
+    const { useGridCanvasDropEnabled } =
+      await import("@/composables/useGridCanvasDrop");
     const containerRef = ref<HTMLElement | null>(null);
     const enabled = ref(true);
-    const zone = useFlexCanvasDropEnabled(containerRef, enabled);
-    // EditorCanvas 用 handleDragOver: handleFlexDragOver 别名解构，故源必须暴露 handleDragOver 等
+    const zone = useGridCanvasDropEnabled(containerRef, enabled);
+    // EditorCanvas 用 handleDragOver: handleGridDragOver 别名解构，故源必须暴露 handleDragOver 等
     expect(typeof zone.handleDragOver).toBe("function");
     expect(typeof zone.handleDragLeave).toBe("function");
     expect(typeof zone.handleDrop).toBe("function");

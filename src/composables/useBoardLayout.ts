@@ -14,7 +14,7 @@ export function useBoardLayout(
   const canvasRef = typeof canvas === "function" ? computed(canvas) : canvas;
 
   const layoutMode = computed(() => canvasRef.value.layoutMode ?? "free");
-  const isFlexLayout = computed(() => layoutMode.value === "flex");
+  const isGridLayout = computed(() => layoutMode.value === "grid");
   const isFreeLayout = computed(() => layoutMode.value === "free");
   const rendererLayout = computed(() => resolveRendererLayout(canvasRef.value));
   const contentFrameStyle = computed(() =>
@@ -23,7 +23,7 @@ export function useBoardLayout(
 
   return {
     layoutMode,
-    isFlexLayout,
+    isGridLayout,
     isFreeLayout,
     rendererLayout,
     contentFrameStyle,

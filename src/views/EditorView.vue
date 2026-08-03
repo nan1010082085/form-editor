@@ -361,7 +361,7 @@ function handleKeyDown(e: KeyboardEvent) {
     }
   }
 
-  // 对齐/分布依赖绝对坐标，仅在自由布局下生效；Flex 流式布局无意义且会污染 position 数据
+  // 对齐/分布依赖绝对坐标，仅在自由布局下生效；Grid 流式布局无意义且会污染 position 数据
   if (e.altKey && e.shiftKey && boardStore.layoutMode === "free") {
     const key = e.key.toLowerCase();
     if (key === "l") {
@@ -420,7 +420,7 @@ function handleKeyDown(e: KeyboardEvent) {
       e.preventDefault();
       handleSave();
     }
-    // Ctrl+Up/Down: 同级内前移/后移（flex 流式重排为主，free 也可用）
+    // Ctrl+Up/Down: 同级内前移/后移（grid 流式重排为主，free 也可用）
     if (e.key === "ArrowUp") {
       e.preventDefault();
       editorStore.performMoveSelected("up");
@@ -652,7 +652,7 @@ function handleVersionLoadedFromToolbar(version: string) {
         v-if="mode === 'edit'"
         :visible="leftPanelVisible"
         :schema-status="boardStore.status"
-        :schema-type="boardStore.layoutMode === 'flex' ? 'page' : 'form'"
+        :schema-type="boardStore.layoutMode === 'grid' ? 'page' : 'form'"
         :schema-id="boardStore.id || null"
       />
 

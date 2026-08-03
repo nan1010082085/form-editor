@@ -360,12 +360,12 @@ export const useApiStore = defineStore("schema", () => {
         });
       return result;
     } else {
-      // 新建时按画布配置推断类型：Flex 列表模板 -> search_list，其余 -> form
-      const flexTemplate = boardConfig?.canvas?.flexTemplate as
-        | string
-        | undefined;
+      // 新建时按画布配置推断类型：Grid 列表模板 -> search_list，其余 -> form
+      const gridTemplate = (boardConfig?.canvas?.gridTemplate ??
+        (boardConfig?.canvas as { flexTemplate?: string } | undefined)
+          ?.flexTemplate) as string | undefined;
       const type: SchemaCreatePayload["type"] =
-        flexTemplate === "list" ? "search-list" : "form";
+        gridTemplate === "list" ? "search-list" : "form";
       const result = await createSchema({
         name,
         type,

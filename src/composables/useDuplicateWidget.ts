@@ -9,8 +9,8 @@ export function useDuplicateWidget() {
   const widgetStore = useWidgetStore();
   const editorStore = useEditorStore();
 
-  function isFlexLayout(): boolean {
-    return (boardStore.canvas.layoutMode ?? "free") === "flex";
+  function isGridLayout(): boolean {
+    return (boardStore.canvas.layoutMode ?? "free") === "grid";
   }
 
   function cloneWidget(source: Widget): Widget {
@@ -44,7 +44,7 @@ export function useDuplicateWidget() {
   }
 
   function insertDuplicate(duplicated: Widget, anchorId?: string | null) {
-    if (isFlexLayout()) {
+    if (isGridLayout()) {
       const { parentId, index } = resolveInsertAnchor(anchorId);
       widgetStore.insertWidgetAt(parentId, duplicated, index);
     } else {

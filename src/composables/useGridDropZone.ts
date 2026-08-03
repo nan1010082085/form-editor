@@ -6,13 +6,13 @@ import { useWidgetStore } from "@/stores/widget";
 import { useEditorStore } from "@/stores/editor";
 import {
   parseSchemaDragData,
-  resolveFlexInsertIndex,
+  resolveGridInsertIndex,
   mapFilteredIndexToFull,
-  renderFlexInsertIndicator,
-  clearFlexInsertIndicator,
-} from "@/utils/flexCanvasDrop";
+  renderGridInsertIndicator,
+  clearGridInsertIndicator,
+} from "@/utils/gridCanvasDrop";
 
-export function useFlexDropZone(
+export function useGridDropZone(
   containerRef: Ref<HTMLElement | null>,
   parentId: () => string | null,
   siblings: () => Widget[],
@@ -51,9 +51,9 @@ export function useFlexDropZone(
     // 实时计算插入索引，并渲染指示线
     const container = containerRef.value;
     if (container) {
-      const idx = resolveFlexInsertIndex(container, event.clientY, siblings());
+      const idx = resolveGridInsertIndex(container, event.clientY, siblings());
       insertIndex.value = idx;
-      renderFlexInsertIndicator(container, siblings(), idx);
+      renderGridInsertIndicator(container, siblings(), idx);
     }
   }
 
@@ -64,7 +64,7 @@ export function useFlexDropZone(
     if (related && container?.contains(related)) return;
     isDragOver.value = false;
     insertIndex.value = -1;
-    if (container) clearFlexInsertIndicator(container);
+    if (container) clearGridInsertIndicator(container);
   }
 
   function handleDrop(event: DragEvent) {
@@ -76,12 +76,12 @@ export function useFlexDropZone(
 
     const container = containerRef.value;
     if (!container) return;
-    clearFlexInsertIndicator(container);
+    clearGridInsertIndicator(container);
 
     const payload = parseSchemaDragData(event);
     if (!payload) return;
 
-    const filteredIdx = resolveFlexInsertIndex(
+    const filteredIdx = resolveGridInsertIndex(
       container,
       event.clientY,
       siblings(),

@@ -60,6 +60,9 @@
   }
 
   &__status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 11px;
     padding: 2px 8px;
     border-radius: 3px;
@@ -74,6 +77,10 @@
       color: #00e676;
     }
     &--form {
+      background: var(--color-primary-bg-light);
+      color: var(--color-primary);
+    }
+    &--page {
       background: var(--color-primary-bg-light);
       color: var(--color-primary);
     }

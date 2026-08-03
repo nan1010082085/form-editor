@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   adaptWidgetsToBoardLayout,
-  flexRootWidgetDefaults,
+  gridRootWidgetDefaults,
 } from "@/utils/widgetLayoutAdapter";
 import type { Widget } from "@/widgets/base/types";
 
@@ -19,11 +19,18 @@ function mockWidget(type: string, partial: Partial<Widget> = {}): Widget {
 }
 
 describe("widgetLayoutAdapter", () => {
-  it("flex mode sets full width on crud-list-page", () => {
+  it("grid mode sets gridSpan=-1 for full-width types", () => {
     const widgets = [mockWidget("crud-list-page")];
-    adaptWidgetsToBoardLayout(widgets, "flex");
+    adaptWidgetsToBoardLayout(widgets, "grid");
     expect(widgets[0].style?.width).toBe("100%");
     expect(widgets[0].style?.height).toBe("auto");
+    expect(widgets[0].gridSpan).toBe(-1);
+  });
+
+  it("grid mode does not set gridSpan for non-full-width types", () => {
+    const widgets = [mockWidget("input")];
+    adaptWidgetsToBoardLayout(widgets, "grid");
+    expect(widgets[0].gridSpan).toBeUndefined();
   });
 
   it("free mode syncs style from position", () => {
@@ -37,7 +44,9 @@ describe("widgetLayoutAdapter", () => {
     expect(widgets[0].style?.height).toBe("40px");
   });
 
-  it("flexRootWidgetDefaults returns width 100% for table types", () => {
-    expect(flexRootWidgetDefaults("advanced-table")!.width).toBe("100%");
+  it("gridRootWidgetDefaults returns width 100% and gridSpan=-1 for table types", () => {
+    const result = gridRootWidgetDefaults("advanced-table");
+    expect(result.style.width).toBe("100%");
+    expect(result.gridSpan).toBe(-1);
   });
 });

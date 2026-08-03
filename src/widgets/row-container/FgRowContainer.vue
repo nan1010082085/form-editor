@@ -14,7 +14,7 @@ import { inject, computed, ref } from "vue";
 import { widgetDataKey } from "../base/types";
 import type { Widget } from "../base/types";
 import SchemaRender from "../../components/WidgetRenderer/SchemaRender.vue";
-import { useFlexDropZone } from "../../composables/useFlexDropZone";
+import { useGridDropZone } from "../../composables/useGridDropZone";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 import styles from "./style.module.scss";
 
@@ -55,7 +55,7 @@ const dropEnabled = computed(() =>
 );
 
 const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
-  useFlexDropZone(
+  useGridDropZone(
     dropRef,
     () => widgetData.value.id ?? null,
     () => children.value,

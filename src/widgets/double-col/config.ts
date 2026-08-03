@@ -25,5 +25,4 @@ export const doubleColConfig: WidgetConfig = {
     style: ["margin", "padding"],
     props: [],
   },
-  contexts: ["free"],
 };

@@ -299,21 +299,23 @@ describe("Widget Registry & Loading", () => {
   // --- contexts（可用画布模式）声明式过滤 ---
 
   it("config.contexts 透传到 registry availableIn", () => {
-    // card 声明 contexts: ['free'] -> availableIn 应为 ['free']
-    const card = getWidget("card")!;
-    expect(card.availableIn).toEqual(["free"]);
-    // row-container 声明 contexts: ['flex']
+    // row-container 声明 contexts: ['grid']
     const row = getWidget("row-container")!;
-    expect(row.availableIn).toEqual(["flex"]);
+    expect(row.availableIn).toEqual(["grid"]);
   });
 
   it("未声明 contexts 的 widget availableIn 为 undefined（双模式可用）", () => {
     const input = getWidget("input")!;
     expect(input.availableIn).toBeUndefined();
+    // 容器类 widget 移除 contexts 后也应双模式可用
+    const card = getWidget("card")!;
+    expect(card.availableIn).toBeUndefined();
+    const form = getWidget("form")!;
+    expect(form.availableIn).toBeUndefined();
   });
 
-  it("flex 模式布局类 widget 应被隐藏（availableIn 不含 flex）", () => {
-    const flexHidden = [
+  it("容器类 widget 双模式可用（availableIn 为 undefined）", () => {
+    const dualMode = [
       "card",
       "form",
       "tabs",
@@ -326,17 +328,15 @@ describe("Widget Registry & Loading", () => {
       "tab-container",
       "tree-layout",
     ];
-    for (const type of flexHidden) {
+    for (const type of dualMode) {
       const entry = getWidget(type)!;
-      expect(entry.availableIn, `${type} 应声明 contexts 且不含 flex`).toEqual([
-        "free",
-      ]);
+      expect(entry.availableIn, `${type} 应未声明 contexts（双模式可用）`).toBeUndefined();
     }
   });
 
-  it("row-container 仅 flex 可用，free 模式应被隐藏", () => {
+  it("row-container 仅 grid 可用，free 模式应被隐藏", () => {
     const entry = getWidget("row-container")!;
-    expect(entry.availableIn).toEqual(["flex"]);
+    expect(entry.availableIn).toEqual(["grid"]);
   });
 
   it("createWidget row-container 生成带 span 默认结构的 Widget", () => {

@@ -30,5 +30,4 @@ export const treeLayoutConfig: WidgetConfig = {
       },
     ],
   },
-  contexts: ["free"],
 };

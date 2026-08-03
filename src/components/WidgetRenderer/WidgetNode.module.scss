@@ -39,7 +39,7 @@
   display: contents;
 }
 
-.flexDropZone {
+.gridDropZone {
   min-height: 48px;
   pointer-events: auto;
   border-radius: 4px;
@@ -48,13 +48,13 @@
     outline-color 0.15s ease;
 }
 
-.flexDropZoneActive {
+.gridDropZoneActive {
   background-color: rgb(64 158 255 / 8%);
   outline: 1px dashed rgb(64 158 255 / 55%);
   outline-offset: -1px;
 }
 
-.flexDropEmpty {
+.gridDropEmpty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,7 +93,7 @@
 }
 
 /* ---- Flex 模式右边缘宽度 resize handle ---- */
-.flexResizeHandle {
+.gridResizeHandle {
   position: absolute;
   top: 0;
   right: -3px;

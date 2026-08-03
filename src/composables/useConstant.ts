@@ -74,7 +74,7 @@ export const INTERACTION_MODES = [
 export type InteractionMode = (typeof INTERACTION_MODES)[number];
 
 /** 布局编辑模式 — 控制画布渲染和 widget 面板行为 */
-export const LAYOUT_EDIT_MODES = ["free", "flex"] as const;
+export const LAYOUT_EDIT_MODES = ["free", "grid"] as const;
 export type LayoutEditMode = (typeof LAYOUT_EDIT_MODES)[number];
 
 /**

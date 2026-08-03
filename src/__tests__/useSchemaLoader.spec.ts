@@ -70,10 +70,11 @@ describe("useSchemaLoader", () => {
 
     expect(boardStore.id).toBe("schema-001");
     expect(boardStore.name).toBe("Test Schema");
-    expect(boardStore.layoutMode).toBe("flex");
+    // 旧数据 "flex" 自动映射为 "grid"
+    expect(boardStore.layoutMode).toBe("grid");
     expect(boardStore.variables).toHaveLength(1);
-    // layoutMode 必须显式透传给 loadWidgets
-    expect(widgetLoadSpy).toHaveBeenCalledWith(expect.any(Array), "flex");
+    // layoutMode 映射后透传给 loadWidgets
+    expect(widgetLoadSpy).toHaveBeenCalledWith(expect.any(Array), "grid");
     // 撤销基线必须以新 widgets 重置（非 markClean）
     expect(resetHistorySpy).toHaveBeenCalledTimes(1);
     expect(resetHistorySpy).toHaveBeenCalledWith(expect.any(Array));

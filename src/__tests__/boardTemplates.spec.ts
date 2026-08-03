@@ -9,23 +9,23 @@ import {
 registerAllWidgets();
 
 describe("boardTemplates", () => {
-  it("creates flex form template with seeded widgets", () => {
+  it("creates grid form template with seeded widgets", () => {
     const { widgets, canvas } = createBoardFromTemplate({
-      layoutMode: "flex",
-      flexTemplate: "form",
+      layoutMode: "grid",
+      gridTemplate: "form",
     });
-    expect(canvas.layoutMode).toBe("flex");
-    expect(canvas.flexTemplate).toBe("form");
+    expect(canvas.layoutMode).toBe("grid");
+    expect(canvas.gridTemplate).toBe("form");
     expect(widgets.length).toBeGreaterThan(0);
     expect(widgets.some((w) => w.type === "form")).toBe(true);
   });
 
-  it("creates flex list template with crud-list-page and search fields", () => {
+  it("creates grid list template with crud-list-page and search fields", () => {
     const { widgets, canvas } = createBoardFromTemplate({
-      layoutMode: "flex",
-      flexTemplate: "list",
+      layoutMode: "grid",
+      gridTemplate: "list",
     });
-    expect(canvas.layoutMode).toBe("flex");
+    expect(canvas.layoutMode).toBe("grid");
     const crud = widgets.find((w) => w.type === "crud-list-page");
     expect(crud).toBeTruthy();
     const searchBar = crud?.props?.searchBar as {
@@ -45,8 +45,8 @@ describe("boardTemplates", () => {
     expect(canvas.freeLayout?.contentAlign).toBe("center");
   });
 
-  it("resolveRendererLayout maps flex to flow", () => {
-    expect(resolveRendererLayout({ layoutMode: "flex" })).toBe("flow");
+  it("resolveRendererLayout maps grid to flow", () => {
+    expect(resolveRendererLayout({ layoutMode: "grid" })).toBe("flow");
     expect(resolveRendererLayout({ layoutMode: "free" })).toBe("absolute");
     expect(resolveRendererLayout(undefined)).toBe("absolute");
   });

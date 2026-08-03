@@ -22,6 +22,7 @@ const TOP_LEVEL_KEYS = new Set([
   "options",
   "validationRules",
   "span",
+  "gridSpan",
 ]);
 
 /** visibleOn 编译缓存（模块级，跨组件实例共享） */

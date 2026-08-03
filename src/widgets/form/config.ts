@@ -41,5 +41,4 @@ export const formConfig: WidgetConfig = {
     { key: "formData", type: "object", description: "Form Data Model" },
   ],
   configPanels: ["events", "api", "variables"],
-  contexts: ["free"],
 };

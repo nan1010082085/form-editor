@@ -49,6 +49,18 @@ export function useBoardPropertyUpdater(
       return;
     }
 
+    if (key.startsWith("gridLayout.")) {
+      const subKey = key.slice("gridLayout.".length) as keyof NonNullable<
+        typeof boardStore.canvas.gridLayout
+      >;
+      const gl = {
+        ...(boardStore.canvas.gridLayout ?? {}),
+        [subKey]: value === "" ? undefined : value,
+      };
+      boardStore.updateCanvas({ gridLayout: gl });
+      return;
+    }
+
     // 切换单位时自动转换数值
     if (key === "widthUnit") {
       const newUnit = value as CanvasUnit;

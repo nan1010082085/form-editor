@@ -2,11 +2,11 @@
  * usePropertySections - 构建属性面板分区列表
  *
  * 从 PropertyPanel 抽出的核心逻辑：根据 widget 配置声明 + 布局模式，
- * 组装 basic / position / flex-layout / style / props 五个分区。
+ * 组装 basic / position / grid-layout / style / props 五个分区。
  *
  * 设计：
  * - 纯函数式组装，依赖通过参数注入（selectedWidget/panelDeclaration/t/stores）
- * - layoutMode 决定 position(free) vs flex-layout(flex) 分支
+ * - layoutMode 决定 position(free) vs grid-layout(grid) 分支
  * - row-container 子节点额外暴露 span 字段
  */
 import { computed, type ComputedRef } from "vue";
@@ -224,8 +224,8 @@ export function usePropertySections(
       });
     }
 
-    // 2. 位置属性（Flex 流式布局无绝对坐标）
-    if (boardStore.layoutMode !== "flex") {
+    // 2. 位置属性（Grid 流式布局无绝对坐标）
+    if (boardStore.layoutMode !== "grid") {
       sections.push({
         key: "position",
         label: t("editor.property.position"),
@@ -277,24 +277,24 @@ export function usePropertySections(
       });
     }
 
-    // 2b. Flex 布局属性（仅流式模式）
-    // Flex 模式为纵向流式堆叠，部件宽度通过 style.width 控制（如 100%/50%/240px）。
+    // 2b. Grid 布局属性（仅Grid 模式）
+    // Grid 模式为纵向流式堆叠，部件宽度通过 style.width 控制（如 100%/50%/240px）。
     // row-container 子节点额外暴露 span（1-24 栅格），由父容器决定单元格宽度。
-    if (boardStore.layoutMode === "flex") {
+    if (boardStore.layoutMode === "grid") {
       const items: PropertyItem[] = [
         {
           key: "style.width",
           label: t("editor.property.width"),
           type: "text",
           value: widget.style?.width,
-          desc: t("editor.property.flexWidthDesc"),
+          desc: t("editor.property.gridWidthDesc"),
         },
         {
           key: "style.height",
           label: t("editor.property.height"),
           type: "text",
           value: widget.style?.height,
-          desc: t("editor.property.flexHeightDesc"),
+          desc: t("editor.property.gridHeightDesc"),
         },
         {
           key: "style.marginTop",
@@ -322,10 +322,19 @@ export function usePropertySections(
           value: currentSpan,
           desc: t("editor.property.spanDesc"),
         });
+      } else if (!parent) {
+        // 根级 widget：暴露 gridSpan（跨列数），-1 = 撑满剩余列
+        items.push({
+          key: "gridSpan",
+          label: t("editor.property.gridSpan"),
+          type: "number",
+          value: widget.gridSpan ?? -1,
+          desc: t("editor.property.gridSpanDesc"),
+        });
       }
       sections.push({
-        key: "flex-layout",
-        label: t("editor.property.flexLayout"),
+        key: "grid-layout",
+        label: t("editor.property.gridLayout"),
         items,
       });
     }

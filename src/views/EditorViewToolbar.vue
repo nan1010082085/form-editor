@@ -5,7 +5,7 @@
  * 从 EditorView.vue 拆分而来，负责渲染整个工具栏区域。
  * 直接访问全局 Store 读取状态，通过 emits 向父组件触发操作。
  */
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -119,6 +119,12 @@ function handleScaleModeChange(mode: ScaleMode) {
 // ================================================================
 // Layout mode：创建时由模板固定，工具栏仅展示当前模式，不可切换
 // ================================================================
+
+const layoutModeLabel = computed(() =>
+  boardStore.layoutMode === "grid"
+    ? t("editor.toolbar.layoutGrid")
+    : t("editor.toolbar.layoutFree"),
+);
 
 // ================================================================
 // Version management (toolbar-local state)
@@ -331,26 +337,6 @@ function handleClearCanvas() {
           </button>
         </el-tooltip>
       </div>
-      <div style="display: flex; gap: 2px; margin: 0 4px;">
-        <el-tooltip content="Free layout (absolute positioning, dashboard)" placement="bottom">
-          <button
-            :class="[styles.iconBtn, { [styles.iconBtnActive]: boardStore.layoutMode === 'free' }]"
-            style="font-size: 12px; padding: 0 8px;"
-            @click="boardStore.updateCanvas({ layoutMode: 'free' })"
-          >
-            自由
-          </button>
-        </el-tooltip>
-        <el-tooltip content="Flex layout (flow, form/list)" placement="bottom">
-          <button
-            :class="[styles.iconBtn, { [styles.iconBtnActive]: boardStore.layoutMode === 'flex' }]"
-            style="font-size: 12px; padding: 0 8px;"
-            @click="boardStore.updateCanvas({ layoutMode: 'flex' })"
-          >
-            弹性
-          </button>
-        </el-tooltip>
-      </div>
       <el-tooltip
         :content="
           rightPanelVisible
@@ -412,19 +398,23 @@ function handleClearCanvas() {
       <div :class="styles.divider" />
       <div
         :class="styles.modeBadge"
+        role="status"
+        :aria-label="
+          t('editor.toolbar.layoutModeTooltip', {
+            mode: layoutModeLabel,
+          })
+        "
         :title="
           t('editor.toolbar.layoutModeTooltip', {
-            mode:
-              boardStore.layoutMode === 'flex'
-                ? t('editor.toolbar.layoutFlex')
-                : t('editor.toolbar.layoutFree'),
+            mode: layoutModeLabel,
           })
         "
       >
-        <AppIcon name="switch" :size="14" />
-        <span :class="styles.modeLabel">{{
-          boardStore.layoutMode === "flex" ? "Flex" : "Free"
-        }}</span>
+        <AppIcon
+          :name="boardStore.layoutMode === 'grid' ? 'grid' : 'aim'"
+          :size="14"
+        />
+        <span :class="styles.modeLabel">{{ layoutModeLabel }}</span>
       </div>
       <div :class="styles.divider" />
       <el-tooltip

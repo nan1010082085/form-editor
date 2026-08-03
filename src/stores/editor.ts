@@ -334,7 +334,7 @@ export const useEditorStore = defineStore("editor", () => {
   }
 
   /**
-   * 键盘上下移：在同级 siblings 内前移/后移选中部件（flex 流式重排，free 也可用）。
+   * 键盘上下移：在同级 siblings 内前移/后移选中部件（grid 流式重排，free 也可用）。
    * 仅对单选生效；多选时不操作（避免乱序）。
    *
    * moveWidgetToIndex 的 toIndex 语义为「原数组目标位置」，同父后移时内部会 -1 补偿提取位移，

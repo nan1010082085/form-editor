@@ -642,8 +642,10 @@ export interface Widget {
   locked?: boolean;
 
   // === 布局属性（流式渲染器使用） ===
-  /** 栅格列宽（1-24） */
+  /** 栅格列宽（1-24），row-container 子节点用 */
   span?: number | Record<string, number>;
+  /** Grid 画布子节点跨列数（0 或未设 = 1 列，-1 = 撑满剩余列） */
+  gridSpan?: number;
   /** 表格列合并 */
   colspan?: number;
   /** 表格行合并 */
@@ -769,8 +771,8 @@ export function isFullWidthType(type: SchemaType): boolean {
 
 export type CanvasUnit = "px" | "%";
 
-/** 画布布局模式：free=绝对定位自由画布，flex=流式页面布局 */
-export type BoardLayoutMode = "free" | "flex";
+/** 画布布局模式：free=绝对定位自由画布，grid=CSS Grid 网格页面布局 */
+export type BoardLayoutMode = "free" | "grid";
 
 /** 响应式断点（编辑器预览/发布模式） */
 export type PreviewBreakpoint = "desktop" | "tablet" | "mobile";
@@ -803,8 +805,8 @@ export type FreeLayoutPreset =
   | "list-wide"
   | "dashboard-demo";
 
-/** Flex 页面模板 */
-export type FlexPageTemplate = "form" | "list" | "detail" | "page" | "blank";
+/** Grid 页面模板 */
+export type GridPageTemplate = "form" | "list" | "detail" | "page" | "blank";
 
 /** 自由布局内容区留白 */
 export interface FreeLayoutOptions {
@@ -820,6 +822,28 @@ export interface FreeLayoutOptions {
   gridColumns?: number;
   /** 网格行高（px），默认 8 */
   gridRowHeight?: number;
+}
+
+/** Grid 布局选项（layoutMode=grid 时生效），参考 formily Grid */
+export interface GridLayoutOptions {
+  /** 行间距（px），默认 12 */
+  rowGap?: number;
+  /** 列间距（px），默认 8 */
+  columnGap?: number;
+  /** 最大列数，默认无穷 */
+  maxColumns?: number;
+  /** 最小列数，默认 1 */
+  minColumns?: number;
+  /** 每列最大宽度（px），默认无穷（均分） */
+  maxWidth?: number;
+  /** 每列最小宽度（px），默认 100 */
+  minWidth?: number;
+  /** 子节点是否自动换行，默认 true */
+  colWrap?: boolean;
+  /** 内容区最大宽度（px），超出则居中留白 */
+  maxContentWidth?: number;
+  /** 水平对齐 */
+  contentAlign?: "left" | "center";
 }
 
 /** 发布视图自适应模式 */
@@ -838,8 +862,10 @@ export interface CanvasConfig {
   layoutMode?: BoardLayoutMode;
   /** 自由布局留白（layoutMode=free 时生效） */
   freeLayout?: FreeLayoutOptions;
-  /** Flex 页面模板标识（layoutMode=flex 时记录创建模板） */
-  flexTemplate?: FlexPageTemplate;
+  /** Grid 布局选项（layoutMode=grid 时生效） */
+  gridLayout?: GridLayoutOptions;
+  /** Grid 页面模板标识（layoutMode=grid 时记录创建模板） */
+  gridTemplate?: GridPageTemplate;
   /** 大屏主题预设 ID（boardThemes.ts） */
   themePreset?: string;
   /** 发布视图自适应模式（仅 publish/preview 生效） */

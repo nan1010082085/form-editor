@@ -24,5 +24,5 @@ export const rowContainerConfig: WidgetConfig = {
     props: [],
   },
   configPanels: ["events", "variables"],
-  contexts: ["flex"],
+  contexts: ["grid"],
 };

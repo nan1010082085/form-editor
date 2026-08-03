@@ -4,7 +4,7 @@
   overflow: auto;
 }
 
-.canvasFlex {
+.canvasGridMode {
   margin: 0;
   overflow: auto;
 }
@@ -19,7 +19,7 @@
   background: rgb(64 158 255 / 4%);
 }
 
-.flexEmpty {
+.gridEmpty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,7 +34,7 @@
   pointer-events: none;
 }
 
-.flexEmptyTitle {
+.gridEmptyTitle {
   font-size: 14px;
   font-weight: 500;
   color: var(--el-text-color-regular);

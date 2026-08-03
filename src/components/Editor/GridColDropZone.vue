@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import type { Widget } from "@/widgets/base/types";
-import { useFlexDropZone } from "@/composables/useFlexDropZone";
+import { useGridDropZone } from "@/composables/useGridDropZone";
 import SchemaRender from "../WidgetRenderer/SchemaRender.vue";
 import styles from "../WidgetRenderer/WidgetNode.module.scss";
 
@@ -18,7 +18,7 @@ const siblings = computed(() =>
 
 const dropRef = ref<HTMLElement | null>(null);
 const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
-  useFlexDropZone(
+  useGridDropZone(
     dropRef,
     () => props.parentId,
     () => siblings.value,
@@ -32,7 +32,7 @@ const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
 <template>
   <div
     ref="dropRef"
-    :class="[styles.flexDropZone, isDragOver ? styles.flexDropZoneActive : '']"
+    :class="[styles.gridDropZone, isDragOver ? styles.gridDropZoneActive : '']"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
     @drop="handleDrop"
@@ -43,6 +43,6 @@ const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
       :schema="child"
       :editor-selectable="editorSelectable"
     />
-    <div v-if="!siblings.length" :class="styles.flexDropEmpty">拖入部件</div>
+    <div v-if="!siblings.length" :class="styles.gridDropEmpty">拖入部件</div>
   </div>
 </template>

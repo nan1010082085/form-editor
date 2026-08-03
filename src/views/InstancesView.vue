@@ -14,7 +14,7 @@ import { importSchema, updateSchema } from "@/api/schemaApi";
 import type { SchemaTypeValue } from "@/types/api";
 import type {
   BoardLayoutMode,
-  FlexPageTemplate,
+  GridPageTemplate,
   FreeLayoutPreset,
 } from "@/widgets/base/types";
 import { createBoardFromTemplate } from "@/utils/boardTemplates";
@@ -89,17 +89,17 @@ const schemaTypeOptions = computed<{ label: string; value: SchemaTypeValue }[]>(
 const createDialogVisible = ref(false);
 const createName = ref("");
 const createType = ref<SchemaTypeValue>("form");
-const createLayoutMode = ref<BoardLayoutMode>("flex");
-const createFlexTemplate = ref<FlexPageTemplate>("form");
+const createLayoutMode = ref<BoardLayoutMode>("grid");
+const createGridTemplate = ref<GridPageTemplate>("form");
 const createFreePreset = ref<FreeLayoutPreset>("list-standard");
 
 const layoutModeOptions = computed<
   { label: string; value: BoardLayoutMode; desc: string }[]
 >(() => [
   {
-    label: t("editor.instances.layoutFlex"),
-    value: "flex",
-    desc: t("editor.instances.layoutFlexDesc"),
+    label: t("editor.instances.layoutGrid"),
+    value: "grid",
+    desc: t("editor.instances.layoutGridDesc"),
   },
   {
     label: t("editor.instances.layoutFree"),
@@ -108,8 +108,8 @@ const layoutModeOptions = computed<
   },
 ]);
 
-const flexTemplateOptions = computed<
-  { label: string; value: FlexPageTemplate }[]
+const gridTemplateOptions = computed<
+  { label: string; value: GridPageTemplate }[]
 >(() => [
   { label: t("editor.instances.tplForm"), value: "form" },
   { label: t("editor.instances.tplList"), value: "list" },
@@ -136,25 +136,25 @@ const selectedLayoutDesc = computed(
 function openCreateDialog() {
   createName.value = "";
   createType.value = "form";
-  createLayoutMode.value = "flex";
-  createFlexTemplate.value = "form";
+  createLayoutMode.value = "grid";
+  createGridTemplate.value = "form";
   createFreePreset.value = "list-standard";
   createDialogVisible.value = true;
 }
 
 function onLayoutModeChange(mode: BoardLayoutMode) {
   createLayoutMode.value = mode;
-  if (mode === "flex") {
-    if (createFlexTemplate.value === "form") createType.value = "form";
-    else if (createFlexTemplate.value === "list")
+  if (mode === "grid") {
+    if (createGridTemplate.value === "form") createType.value = "form";
+    else if (createGridTemplate.value === "list")
       createType.value = "search-list";
-    else if (createFlexTemplate.value === "detail")
+    else if (createGridTemplate.value === "detail")
       createType.value = "business";
   }
 }
 
-function onFlexTemplateChange(template: FlexPageTemplate) {
-  createFlexTemplate.value = template;
+function onGridTemplateChange(template: GridPageTemplate) {
+  createGridTemplate.value = template;
   if (template === "form") createType.value = "form";
   else if (template === "list") createType.value = "search-list";
   else if (template === "detail") createType.value = "business";
@@ -168,7 +168,7 @@ async function confirmCreate() {
   }
   const seed = createBoardFromTemplate({
     layoutMode: createLayoutMode.value,
-    flexTemplate: createFlexTemplate.value,
+    gridTemplate: createGridTemplate.value,
     freePreset: createFreePreset.value,
   });
   const result = await store.createSchema({
@@ -894,16 +894,16 @@ function handleVersionPublished() {
           </div>
         </el-form-item>
         <el-form-item
-          v-if="createLayoutMode === 'flex'"
+          v-if="createLayoutMode === 'grid'"
           :label="t('editor.instances.createFormPageTemplate')"
         >
           <el-select
-            v-model="createFlexTemplate"
+            v-model="createGridTemplate"
             style="width: 100%"
-            @change="onFlexTemplateChange"
+            @change="onGridTemplateChange"
           >
             <el-option
-              v-for="opt in flexTemplateOptions"
+              v-for="opt in gridTemplateOptions"
               :key="opt.value"
               :label="opt.label"
               :value="opt.value"

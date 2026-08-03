@@ -25,5 +25,4 @@ export const tripleColConfig: WidgetConfig = {
     style: ["margin", "padding"],
     props: [],
   },
-  contexts: ["free"],
 };

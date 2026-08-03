@@ -17,7 +17,7 @@ import { useWidgetStore } from "@/stores/widget";
 import { useEditorStore } from "@/stores/editor";
 import { parseSchemaJson } from "@/utils/parseSchemaJson";
 import type { SchemaDetail } from "@/types/api";
-import type { BoardVariable, BoardEvent } from "@/widgets/base/types";
+import type { BoardVariable, BoardEvent, BoardLayoutMode } from "@/widgets/base/types";
 
 export function useSchemaLoader() {
   const boardStore = useBoardStore();
@@ -31,18 +31,24 @@ export function useSchemaLoader() {
   function loadSchemaDetail(detail: SchemaDetail): void {
     const { widgets, boardConfig } = parseSchemaJson(detail.json);
 
+    // 兼容旧数据：layoutMode "flex" -> "grid"
+    const rawCanvas = boardConfig.canvas as { layoutMode?: string } & typeof boardConfig.canvas;
+    const rawMode = rawCanvas?.layoutMode;
+    const layoutMode: BoardLayoutMode =
+      rawMode === "flex" ? "grid" : (rawMode as BoardLayoutMode) ?? "free";
+    const canvas = rawCanvas
+      ? { ...rawCanvas, layoutMode }
+      : boardConfig.canvas;
+
     boardStore.loadBoard({
       id: detail.id,
       name: detail.name,
       status: (detail.status as "draft" | "published") || "draft",
-      canvas: boardConfig.canvas,
+      canvas,
       variables: boardConfig.variables as BoardVariable[] | undefined,
       events: boardConfig.events as BoardEvent[] | undefined,
     });
 
-    const layoutMode =
-      (boardConfig.canvas as { layoutMode?: "free" | "flex" } | undefined)
-        ?.layoutMode ?? "free";
     widgetStore.loadWidgets(widgets, layoutMode);
     editorStore.resetHistory(widgets);
   }

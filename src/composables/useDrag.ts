@@ -369,7 +369,7 @@ export function useDrag() {
     }
 
     // 碰撞检测：free 模式下大容器不参与碰撞检测，避免拖拽时被误吸入其他容器。
-    // 容器嵌套本身已放开（store 层允许），flex 模式走 useFlexDropZone 不受此限制。
+    // 容器嵌套本身已放开（store 层允许），grid 模式走 useGridDropZone 不受此限制。
     // 使用递归收集所有容器（含嵌套），支持深层嵌套拖拽
     const draggedType =
       dragStore.dragWidgetType ||

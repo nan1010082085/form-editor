@@ -40,7 +40,7 @@ export function useWidgetControlSize(defaultHeight = 32, defaultWidth = 240) {
     const color = widgetStyle.value?.color as string | undefined;
     if (fontSize) style.fontSize = fontSize;
     if (color) style.color = color;
-    // Flex 模式（SchemaNode 未注入 bounds）：用 widgetStyle.width/height 控制控件尺寸，
+    // Grid 模式（SchemaNode 未注入 bounds）：用 widgetStyle.width/height 控制控件尺寸，
     // 让 PropertyPanel 的 style.width（如 50% / 240px）对表单控件生效。
     // Free 模式有 bounds，控件 100% 撑满 wrapper（wrapper 由 position.w/h 定宽）。
     if (!bounds) {
@@ -75,7 +75,7 @@ export function useWidgetLayoutStyle(defaultHeight = 32, defaultWidth = 240) {
     if (controlStyle.value.fontSize)
       base.fontSize = controlStyle.value.fontSize;
     if (controlStyle.value.color) base.color = controlStyle.value.color;
-    // Flex 模式：controlStyle 已用 widgetStyle.width/height 覆盖，这里同步
+    // Grid 模式：controlStyle 已用 widgetStyle.width/height 覆盖，这里同步
     if (controlStyle.value.width !== "100%")
       base.width = controlStyle.value.width;
     if (controlStyle.value.height !== "100%")

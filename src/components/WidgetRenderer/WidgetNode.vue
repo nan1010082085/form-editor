@@ -39,7 +39,7 @@ import { useEditorStore } from "../../stores/editor";
 import { useWidgetStore } from "../../stores/widget";
 import { useBoardStore } from "../../stores/board";
 import { EDITOR_CONTEXTMENU_KEY } from "../Editor/editorContextKeys";
-import { useFlexDropZone } from "../../composables/useFlexDropZone";
+import { useGridDropZone } from "../../composables/useGridDropZone";
 import { useWidgetAnimation } from "../../composables/useWidgetAnimation";
 import SchemaRender from "./SchemaRender.vue";
 import WidgetErrorBoundary from "./WidgetErrorBoundary.vue";
@@ -51,7 +51,7 @@ const props = defineProps<{
   widget: PartialWidget;
   formData?: FormData;
   readonly?: boolean;
-  /** Flex 编辑模式：点击选中部件，禁用内部交互 */
+  /** Grid 编辑模式：点击选中部件，禁用内部交互 */
   editorSelectable?: boolean;
 }>();
 
@@ -126,14 +126,14 @@ const isSelected = computed(
     editorStore.selectedIds.includes(props.widget.id),
 );
 
-// ---- Flex 模式宽度 resize handle（右边缘拖拽改 style.width） ----
+// ---- Grid 模式宽度 resize handle（右边缘拖拽改 style.width） ----
 const shellEl = ref<HTMLElement | null>(null);
-const isFlexResizeEnabled = computed(() =>
+const isGridResizeEnabled = computed(() =>
   Boolean(
     props.editorSelectable &&
     props.widget.id &&
     !props.widget.locked &&
-    boardStore.layoutMode === "flex",
+    boardStore.layoutMode === "grid",
   ),
 );
 
@@ -144,8 +144,8 @@ function parseWidthPx(): number {
   return shellEl.value?.getBoundingClientRect().width ?? 0;
 }
 
-function handleFlexResizeStart(event: MouseEvent) {
-  if (!isFlexResizeEnabled.value || !props.widget.id) return;
+function handleGridResizeStart(event: MouseEvent) {
+  if (!isGridResizeEnabled.value || !props.widget.id) return;
   event.preventDefault();
   event.stopPropagation();
   const startX = event.clientX;
@@ -337,7 +337,7 @@ const tabsActiveKey = computed(() => {
   );
 });
 
-const flexContainerChildren = computed(() => {
+const gridContainerChildren = computed(() => {
   const children = (props.widget.children ?? []) as Widget[];
   // tabs 容器：编辑态与预览态都按当前 activeKey 过滤，只渲染当前页签子节点
   if (props.widget.type === "tabs" && tabsActiveKey.value) {
@@ -358,18 +358,18 @@ const {
   handleDragOver: handleContainerDragOver,
   handleDragLeave: handleContainerDragLeave,
   handleDrop: handleContainerDrop,
-} = useFlexDropZone(
+} = useGridDropZone(
   containerDropRef,
   () => props.widget.id ?? null,
-  () => flexContainerChildren.value,
+  () => gridContainerChildren.value,
   () => containerDropEnabled.value,
   undefined,
   isTabsContainer.value ? () => allContainerChildren.value : undefined,
 );
 
 const containerDropClass = computed(() => [
-  styles.flexDropZone,
-  isContainerDragOver.value ? styles.flexDropZoneActive : "",
+  styles.gridDropZone,
+  isContainerDragOver.value ? styles.gridDropZoneActive : "",
 ]);
 </script>
 
@@ -395,13 +395,13 @@ const containerDropClass = computed(() => [
     "
   >
     <div
-      v-if="isFlexResizeEnabled"
-      :class="styles.flexResizeHandle"
-      @mousedown="handleFlexResizeStart"
+      v-if="isGridResizeEnabled"
+      :class="styles.gridResizeHandle"
+      @mousedown="handleGridResizeStart"
     />
     <div :class="innerClass">
       <template v-if="widget.type === 'dialog'">
-        <!-- Flex 编辑模式：可见容器 shell，可选中/拖入子节点。
+        <!-- Grid 编辑模式：可见容器 shell，可选中/拖入子节点。
              AppDialog 默认 v-model=false 不可见，无法承载编辑交互，故编辑态用静态 shell 替代。 -->
         <div v-if="editorSelectable" :class="styles.dialogEditShell">
           <div :class="styles.dialogEditHeader">
@@ -418,7 +418,7 @@ const containerDropClass = computed(() => [
             @drop="handleContainerDrop"
           >
             <SchemaRender
-              v-for="(child, ci) in flexContainerChildren"
+              v-for="(child, ci) in gridContainerChildren"
               :key="ci"
               :schema="child"
               :form-data="formData"
@@ -426,8 +426,8 @@ const containerDropClass = computed(() => [
               :editor-selectable="editorSelectable"
             />
             <div
-              v-if="!flexContainerChildren.length"
-              :class="styles.flexDropEmpty"
+              v-if="!gridContainerChildren.length"
+              :class="styles.gridDropEmpty"
             >
               拖入部件到弹窗
             </div>
@@ -491,7 +491,7 @@ const containerDropClass = computed(() => [
             @drop="handleContainerDrop"
           >
             <SchemaRender
-              v-for="(child, ci) in flexContainerChildren"
+              v-for="(child, ci) in gridContainerChildren"
               :key="ci"
               :schema="child"
               :form-data="formData"
@@ -499,8 +499,8 @@ const containerDropClass = computed(() => [
               :editor-selectable="editorSelectable"
             />
             <div
-              v-if="!flexContainerChildren.length"
-              :class="styles.flexDropEmpty"
+              v-if="!gridContainerChildren.length"
+              :class="styles.gridDropEmpty"
             >
               {{ widget.type === "tabs" ? "拖入部件到当前页签" : "拖入部件" }}
             </div>
@@ -508,11 +508,11 @@ const containerDropClass = computed(() => [
           <!-- 自渲染容器（col / row-container）：子节点由组件自身渲染，不向 slot 填充避免重复创建 -->
           <template
             v-else-if="
-              !isSelfRenderingContainer && flexContainerChildren.length
+              !isSelfRenderingContainer && gridContainerChildren.length
             "
           >
             <SchemaRender
-              v-for="(child, ci) in flexContainerChildren"
+              v-for="(child, ci) in gridContainerChildren"
               :key="ci"
               :schema="child"
               :form-data="formData"

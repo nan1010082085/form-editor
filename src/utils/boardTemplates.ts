@@ -1,13 +1,13 @@
 /**
  * boardTemplates — 新建实例时的画布 + Widget 种子
  *
- * layoutMode 决定编辑器/运行时渲染路径；flexTemplate / freePreset 决定初始结构。
+ * layoutMode 决定编辑器/运行时渲染路径；gridTemplate / freePreset 决定初始结构。
  */
 import type {
   CanvasConfig,
   Widget,
   BoardLayoutMode,
-  FlexPageTemplate,
+  GridPageTemplate,
   FreeLayoutPreset,
   FreeLayoutOptions,
 } from "@/widgets/base/types";
@@ -17,7 +17,7 @@ import { seedDashboardDemo } from "@/utils/dashboardDemo";
 
 export interface CreateBoardOptions {
   layoutMode: BoardLayoutMode;
-  flexTemplate?: FlexPageTemplate;
+  gridTemplate?: GridPageTemplate;
   freePreset?: FreeLayoutPreset;
 }
 
@@ -64,16 +64,28 @@ function baseCanvas(
   layoutMode: BoardLayoutMode,
   patch: Partial<CanvasConfig> = {},
 ): CanvasConfig {
-  const isFlex = layoutMode === "flex";
+  const isGrid = layoutMode === "grid";
   return {
-    width: isFlex ? 100 : 1440,
-    height: isFlex ? 100 : 900,
-    widthUnit: isFlex ? "%" : "px",
-    heightUnit: isFlex ? "%" : "px",
+    width: isGrid ? 100 : 1440,
+    height: isGrid ? 100 : 900,
+    widthUnit: isGrid ? "%" : "px",
+    heightUnit: isGrid ? "%" : "px",
     backgroundColor: "var(--bg-color-page)",
-    padding: isFlex ? "20px" : "16px",
+    padding: isGrid ? "20px" : "16px",
     zoom: 100,
     layoutMode,
+    ...(isGrid
+      ? {
+          gridLayout: {
+            rowGap: 12,
+            columnGap: 8,
+            minColumns: 1,
+            maxColumns: 3,
+            minWidth: 200,
+            colWrap: true,
+          },
+        }
+      : {}),
     ...patch,
   };
 }
@@ -93,7 +105,7 @@ function withFlowStyle(widget: Widget, fullWidth = true): Widget {
   };
 }
 
-function seedFormFlex(): Widget[] {
+function seedFormGrid(): Widget[] {
   const title = mustCreate("title");
   title.props = { ...title.props, text: "表单标题", level: 2 };
   title.style = { width: "100%", marginBottom: "16px" };
@@ -130,7 +142,7 @@ function seedFormFlex(): Widget[] {
   return [title, form, submitBtn].map((w) => withFlowStyle(w));
 }
 
-function seedListFlex(): Widget[] {
+function seedListGrid(): Widget[] {
   const crud = mustCreate("crud-list-page");
   crud.style = { width: "100%", height: "auto", minHeight: "600px" };
   crud.props = {
@@ -168,7 +180,7 @@ function seedListFlex(): Widget[] {
   return [withFlowStyle(crud)];
 }
 
-function seedDetailFlex(): Widget[] {
+function seedDetailGrid(): Widget[] {
   const title = mustCreate("title");
   title.props = { ...title.props, text: "详情页", level: 2 };
   title.style = { width: "100%", marginBottom: "12px" };
@@ -192,7 +204,7 @@ function seedDetailFlex(): Widget[] {
   return [title, desc, timeline].map((w) => withFlowStyle(w));
 }
 
-function seedPageFlex(): Widget[] {
+function seedPageGrid(): Widget[] {
   const title = mustCreate("title");
   title.props = { ...title.props, text: "数据看板", level: 1 };
   title.style = { width: "100%", marginBottom: "16px" };
@@ -206,20 +218,20 @@ function seedPageFlex(): Widget[] {
   return [title, statRow, chartCard].map((w) => withFlowStyle(w));
 }
 
-function seedFlexTemplate(template: FlexPageTemplate): BoardSeedResult {
+function seedGridTemplate(template: GridPageTemplate): BoardSeedResult {
   let widgets: Widget[] = [];
   switch (template) {
     case "form":
-      widgets = seedFormFlex();
+      widgets = seedFormGrid();
       break;
     case "list":
-      widgets = seedListFlex();
+      widgets = seedListGrid();
       break;
     case "detail":
-      widgets = seedDetailFlex();
+      widgets = seedDetailGrid();
       break;
     case "page":
-      widgets = seedPageFlex();
+      widgets = seedPageGrid();
       break;
     case "blank":
     default:
@@ -229,7 +241,7 @@ function seedFlexTemplate(template: FlexPageTemplate): BoardSeedResult {
 
   return {
     widgets,
-    canvas: baseCanvas("flex", { flexTemplate: template }),
+    canvas: baseCanvas("grid", { gridTemplate: template }),
   };
 }
 
@@ -255,10 +267,10 @@ function seedFreeTemplate(preset: FreeLayoutPreset): BoardSeedResult {
 export function createBoardFromTemplate(
   options: CreateBoardOptions,
 ): BoardSeedResult {
-  const { layoutMode, flexTemplate = "blank", freePreset = "full" } = options;
+  const { layoutMode, gridTemplate = "blank", freePreset = "full" } = options;
   const result =
-    layoutMode === "flex"
-      ? seedFlexTemplate(flexTemplate)
+    layoutMode === "grid"
+      ? seedGridTemplate(gridTemplate)
       : seedFreeTemplate(freePreset);
   adaptWidgetsToBoardLayout(result.widgets, layoutMode);
   return result;
@@ -268,15 +280,32 @@ export function createBoardFromTemplate(
 export function resolveRendererLayout(
   canvas?: Partial<CanvasConfig>,
 ): "flow" | "absolute" {
-  return canvas?.layoutMode === "flex" ? "flow" : "absolute";
+  return canvas?.layoutMode === "grid" ? "flow" : "absolute";
 }
 
 /** 计算内容区留白样式（EditorCanvas / PublishView 共用） */
 export function buildContentFrameStyle(
   canvas?: Partial<CanvasConfig>,
 ): Record<string, string> {
-  if (!canvas || canvas.layoutMode === "flex") {
+  if (!canvas) {
     return { width: "100%", height: "100%", boxSizing: "border-box" };
+  }
+  if (canvas.layoutMode === "grid") {
+    const gl = canvas.gridLayout;
+    if (!gl?.maxContentWidth) {
+      return { width: "100%", height: "100%", boxSizing: "border-box" };
+    }
+    const style: Record<string, string> = {
+      width: "100%",
+      height: "100%",
+      boxSizing: "border-box",
+      maxWidth: `${gl.maxContentWidth}px`,
+    };
+    if (gl.contentAlign === "center") {
+      style.marginLeft = "auto";
+      style.marginRight = "auto";
+    }
+    return style;
   }
   const fl = canvas.freeLayout;
   if (!fl?.maxContentWidth && !fl?.marginX) {

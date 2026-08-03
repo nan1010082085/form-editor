@@ -249,10 +249,12 @@ function handleDragStart(
 // 虚拟滚动相关逻辑
 // ============================================================
 
-/** 每项高度（px）- 固定高度模式 */
-const ITEM_HEIGHT = 36;
-/** 每行列数（2列网格） */
-const COLUMNS_PER_ROW = 2;
+/** 部件行高度（含 padding；与 .item min-height 对齐） */
+const ITEM_ROW_HEIGHT = 42;
+/** 分组标题行高度 */
+const HEADER_ROW_HEIGHT = 36;
+/** 与 .virtualContent gap 一致 */
+const ROW_GAP = 6;
 /** 缓冲区行数 */
 const BUFFER_ROWS = 3;
 
@@ -260,7 +262,6 @@ const scrollContainerRef = ref<HTMLElement | null>(null);
 const containerHeight = ref(0);
 const scrollTop = ref(0);
 
-// ResizeObserver 监听容器高度
 let resizeObserver: ResizeObserver | null = null;
 
 onMounted(() => {
@@ -278,7 +279,6 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-// 计算所有展开分组的扁平化列表
 interface FlatItem {
   type: "header" | "item";
   groupKey: string;
@@ -309,85 +309,91 @@ const flatList = computed<FlatItem[]>(() => {
   return result;
 });
 
-// 计算每项的累计高度
-// 2列网格：连续 item 共享同一行，每行高度 ITEM_HEIGHT
-const itemAccumulatedHeights = computed(() => {
-  const heights: number[] = [];
-  let accumulated = 0;
-  let itemIndexInRow = 0;
-  for (const item of flatList.value) {
-    if (item.type === "header") {
-      // 遇到 header 时，上一行的 item 如果是奇数个也要占一整行
-      itemIndexInRow = 0;
-      accumulated += 32;
-    } else {
-      if (itemIndexInRow === 0) {
-        // 新行的第一个 item，整行计入高度
-        accumulated += ITEM_HEIGHT;
-      }
-      itemIndexInRow = (itemIndexInRow + 1) % COLUMNS_PER_ROW;
+/**
+ * 将扁平列表折叠为网格行（header 独占一行；item 两列一行），
+ * 高度含 row gap，避免总高度偏小导致滚不到底部。
+ */
+interface LayoutRow {
+  startIndex: number;
+  endIndex: number;
+  height: number;
+  top: number;
+}
+
+const layoutRows = computed<LayoutRow[]>(() => {
+  const rows: LayoutRow[] = [];
+  const list = flatList.value;
+  let i = 0;
+  let top = 0;
+  while (i < list.length) {
+    if (list[i].type === "header") {
+      rows.push({
+        startIndex: i,
+        endIndex: i,
+        height: HEADER_ROW_HEIGHT,
+        top,
+      });
+      top += HEADER_ROW_HEIGHT + ROW_GAP;
+      i += 1;
+      continue;
     }
-    heights.push(accumulated);
+    const startIndex = i;
+    i += 1;
+    if (i < list.length && list[i].type === "item") {
+      i += 1;
+    }
+    rows.push({
+      startIndex,
+      endIndex: i - 1,
+      height: ITEM_ROW_HEIGHT,
+      top,
+    });
+    top += ITEM_ROW_HEIGHT + ROW_GAP;
   }
-  return heights;
+  return rows;
 });
 
-// 计算总高度 — 包含最后一行的完整高度
 const totalHeight = computed(() => {
-  if (itemAccumulatedHeights.value.length === 0) return 0;
-  const lastHeight =
-    itemAccumulatedHeights.value[itemAccumulatedHeights.value.length - 1];
-  // 检查最后一行是否完整
-  let itemIndexInRow = 0;
-  for (const item of flatList.value) {
-    if (item.type === "header") {
-      itemIndexInRow = 0;
-    } else {
-      itemIndexInRow = (itemIndexInRow + 1) % COLUMNS_PER_ROW;
-    }
-  }
-  // 如果最后一行不完整，加上 ITEM_HEIGHT 以确保完整显示
-  return itemIndexInRow === 0 ? lastHeight : lastHeight + ITEM_HEIGHT;
+  const rows = layoutRows.value;
+  if (rows.length === 0) return 0;
+  const last = rows[rows.length - 1];
+  // 最后一行不加尾部 gap
+  return last.top + last.height;
 });
 
-// 计算可见区域的起始索引
-const startIndex = computed(() => {
-  const index = itemAccumulatedHeights.value.findIndex(
-    (h) => h > scrollTop.value,
-  );
-  return Math.max(0, index - BUFFER_ROWS);
+const startRowIndex = computed(() => {
+  const rows = layoutRows.value;
+  if (rows.length === 0) return 0;
+  const idx = rows.findIndex((row) => row.top + row.height > scrollTop.value);
+  return Math.max(0, (idx === -1 ? 0 : idx) - BUFFER_ROWS);
 });
 
-// 计算可见区域的结束索引
-const endIndex = computed(() => {
-  const targetHeight = scrollTop.value + containerHeight.value;
-  const index = itemAccumulatedHeights.value.findIndex(
-    (h) => h >= targetHeight,
-  );
-  return Math.min(
-    flatList.value.length - 1,
-    (index === -1 ? flatList.value.length - 1 : index) + BUFFER_ROWS,
-  );
+const endRowIndex = computed(() => {
+  const rows = layoutRows.value;
+  if (rows.length === 0) return 0;
+  const target = scrollTop.value + containerHeight.value;
+  let idx = rows.findIndex((row) => row.top >= target);
+  if (idx === -1) idx = rows.length - 1;
+  return Math.min(rows.length - 1, idx + BUFFER_ROWS);
 });
 
-// 可见区域的数据切片
 const visibleItems = computed(() => {
-  return flatList.value.slice(startIndex.value, endIndex.value + 1);
+  const rows = layoutRows.value;
+  if (rows.length === 0) return [];
+  const start = rows[startRowIndex.value]?.startIndex ?? 0;
+  const end = rows[endRowIndex.value]?.endIndex ?? 0;
+  return flatList.value.slice(start, end + 1);
 });
 
-// 偏移量 — 用于 transform translateY
 const offsetY = computed(() => {
-  if (startIndex.value === 0) return 0;
-  return itemAccumulatedHeights.value[startIndex.value - 1] || 0;
+  return layoutRows.value[startRowIndex.value]?.top ?? 0;
 });
 
-// 滚动事件处理
 function handleScroll(e: Event) {
   const target = e.target as HTMLElement;
   scrollTop.value = target.scrollTop;
 }
 
-// 判断分组是否展开
 function isGroupExpanded(groupKey: string): boolean {
   return expandedGroups.value.has(groupKey);
 }
@@ -414,7 +420,14 @@ function isGroupExpanded(groupKey: string): boolean {
           :class="styles.virtualContent"
           :style="{ transform: `translateY(${offsetY}px)` }"
         >
-          <template v-for="(flatItem, idx) in visibleItems" :key="idx">
+          <template
+            v-for="flatItem in visibleItems"
+            :key="
+              flatItem.type === 'header'
+                ? `h-${flatItem.groupKey}`
+                : `i-${flatItem.item?.type}-${flatItem.item?.name}`
+            "
+          >
             <!-- 分组标题 -->
             <div
               v-if="flatItem.type === 'header'"

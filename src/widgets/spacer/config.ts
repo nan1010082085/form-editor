@@ -17,5 +17,4 @@ export const spacerConfig: WidgetConfig = {
     style: ["margin", "padding", "backgroundColor"],
     props: [{ key: "height", label: "Height", type: "number", default: 20 }],
   },
-  contexts: ["free"],
 };

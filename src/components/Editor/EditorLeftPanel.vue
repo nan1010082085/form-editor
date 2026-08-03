@@ -103,6 +103,10 @@ async function handleApplyTemplate(template: TemplateItem) {
           styles[`left-panel__status-tag--${schemaStatus}`],
         ]"
       >
+        <AppIcon
+          :name="schemaStatus === 'published' ? 'circle-check' : 'edit-pen'"
+          :size="12"
+        />
         {{
           schemaStatus === "published"
             ? t("editor.leftPanel.statusPublished")
@@ -112,10 +116,15 @@ async function handleApplyTemplate(template: TemplateItem) {
       <span
         :class="[
           styles['left-panel__status-tag'],
-          styles['left-panel__status-tag--form'],
+          styles[`left-panel__status-tag--${schemaType}`],
         ]"
       >
-        {{ t("editor.leftPanel.statusForm") }}
+        <AppIcon :name="schemaType === 'page' ? 'grid' : 'document'" :size="12" />
+        {{
+          schemaType === "page"
+            ? t("editor.leftPanel.statusPage")
+            : t("editor.leftPanel.statusForm")
+        }}
       </span>
     </div>
   </aside>

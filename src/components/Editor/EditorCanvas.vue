@@ -41,7 +41,7 @@ import WidgetContextMenu from "./WidgetContextMenu.vue";
 import { useClipboard } from "../../composables/useClipboard";
 import { useSnapshot } from "../../composables/useSnapshot";
 import { EDITOR_CONTEXTMENU_KEY } from "./editorContextKeys";
-import { useFlexCanvasDropEnabled } from "../../composables/useFlexCanvasDrop";
+import { useGridCanvasDropEnabled } from "../../composables/useGridCanvasDrop";
 import { useDuplicateWidget } from "../../composables/useDuplicateWidget";
 import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./EditorCanvas.module.scss";
@@ -70,22 +70,22 @@ const editorStore = useEditorStore();
 const widgetStore = useWidgetStore();
 const appStore = useAppStore();
 
-const { isFlexLayout, rendererLayout, contentFrameStyle } = useBoardLayout(
+const { isGridLayout, rendererLayout, contentFrameStyle } = useBoardLayout(
   () => boardStore.canvas,
 );
 const isPreview = computed(() => editorStore.mode !== "edit");
 const isReadonly = computed(() => editorStore.mode === "publish-readonly");
 
-const flexDropEnabled = computed(() => isFlexLayout.value && !isPreview.value);
-const showFlexEmpty = computed(
-  () => flexDropEnabled.value && widgetStore.widgets.length === 0,
+const gridDropEnabled = computed(() => isGridLayout.value && !isPreview.value);
+const showGridEmpty = computed(
+  () => gridDropEnabled.value && widgetStore.widgets.length === 0,
 );
 const {
-  isDragOver: isFlexDragOver,
-  handleDragOver: handleFlexDragOver,
-  handleDragLeave: handleFlexDragLeave,
-  handleDrop: handleFlexDrop,
-} = useFlexCanvasDropEnabled(contentFrameRef, flexDropEnabled);
+  isDragOver: isGridDragOver,
+  handleDragOver: handleGridDragOver,
+  handleDragLeave: handleGridDragLeave,
+  handleDrop: handleGridDrop,
+} = useGridCanvasDropEnabled(contentFrameRef, gridDropEnabled);
 const { duplicateFromWidget } = useDuplicateWidget();
 
 // ---- 百分比模式：监听父容器尺寸 ----
@@ -116,7 +116,7 @@ onUnmounted(() => {
 const canvasStyle = computed(() => {
   const c = boardStore.canvas;
 
-  if (isFlexLayout.value) {
+  if (isGridLayout.value) {
     const zoom = c.zoom ?? 100;
     return {
       width: "100%",
@@ -303,10 +303,10 @@ const previewBreakpointRef = computed<PreviewBreakpoint>(
 provide(PREVIEW_BREAKPOINT_KEY, previewBreakpointRef);
 
 const isPercentWidth = computed(
-  () => !isFlexLayout.value && (boardStore.canvas.widthUnit ?? "px") === "%",
+  () => !isGridLayout.value && (boardStore.canvas.widthUnit ?? "px") === "%",
 );
 const isPercentHeight = computed(
-  () => !isFlexLayout.value && (boardStore.canvas.heightUnit ?? "px") === "%",
+  () => !isGridLayout.value && (boardStore.canvas.heightUnit ?? "px") === "%",
 );
 
 const formGridContext = computed(() => appStore.formGridContext);
@@ -380,7 +380,7 @@ async function handleSavePreview(widget: Widget) {
 }
 
 function handleCanvasClick() {
-  if (isFlexLayout.value && !isPreview.value) {
+  if (isGridLayout.value && !isPreview.value) {
     editorStore.clearSelection();
     contextMenu.value.visible = false;
   }
@@ -394,9 +394,9 @@ function handleCanvasClick() {
       styles.canvas,
       rendererStyles.fg,
       {
-        [styles.canvasGrid]: !isPreview && !isFlexLayout,
-        [styles.canvasEdit]: !isPreview && !isFlexLayout,
-        [styles.canvasFlex]: isFlexLayout,
+        [styles.canvasGrid]: !isPreview && !isGridLayout,
+        [styles.canvasEdit]: !isPreview && !isGridLayout,
+        [styles.canvasGridMode]: isGridLayout,
         [styles.canvasPercentWidth]: !isPreview && isPercentWidth,
         [styles.canvasPercentHeight]: !isPreview && isPercentHeight,
       },
@@ -407,23 +407,23 @@ function handleCanvasClick() {
       ref="contentFrameRef"
       :class="[
         styles.contentFrame,
-        { [styles.contentFrameDrop]: flexDropEnabled && isFlexDragOver },
+        { [styles.contentFrameGridDrop]: gridDropEnabled && isGridDragOver },
       ]"
       :style="contentFrameStyle"
       @click="handleCanvasClick"
-      @dragover="flexDropEnabled ? handleFlexDragOver($event) : undefined"
-      @dragleave="flexDropEnabled ? handleFlexDragLeave($event) : undefined"
-      @drop="flexDropEnabled ? handleFlexDrop($event) : undefined"
+      @dragover="gridDropEnabled ? handleGridDragOver($event) : undefined"
+      @dragleave="gridDropEnabled ? handleGridDragLeave($event) : undefined"
+      @drop="gridDropEnabled ? handleGridDrop($event) : undefined"
     >
-      <!-- Flex 布局：流式渲染，编辑/预览共用 -->
-      <div v-if="showFlexEmpty" :class="styles.flexEmpty">
-        <span :class="styles.flexEmptyTitle">{{
-          t("editor.canvas.emptyFlex")
+      <!-- Grid 布局：网格渲染，编辑/预览共用 -->
+      <div v-if="showGridEmpty" :class="styles.gridEmpty">
+        <span :class="styles.gridEmptyTitle">{{
+          t("editor.canvas.emptyGrid")
         }}</span>
-        <span>{{ t("editor.canvas.emptyFlexHint") }}</span>
+        <span>{{ t("editor.canvas.emptyGridHint") }}</span>
       </div>
       <WidgetRenderer
-        v-if="isFlexLayout"
+        v-if="isGridLayout"
         :schema="widgetStore.widgets"
         :layout="rendererLayout"
         :canvas-config="boardStore.canvas"
@@ -448,7 +448,7 @@ function handleCanvasClick() {
     </div>
 
     <WidgetContextMenu
-      v-if="isFlexLayout && !isPreview"
+      v-if="isGridLayout && !isPreview"
       :visible="contextMenu.visible"
       :x="contextMenu.x"
       :y="contextMenu.y"

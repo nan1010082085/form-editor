@@ -488,8 +488,8 @@ export const useWidgetStore = defineStore("widget", () => {
       };
     }
     // 先按 position 同步 style.width/height（free 模式默认值），
-    // 再用 Board 布局模式适配覆盖：flex 下 width 改为 100%/auto。
-    // 顺序不能反，否则 syncStyleDimensions 会把 flex 的 100% 覆盖回固定 px。
+    // 再用 Board 布局模式适配覆盖：grid 下 width 改为 100%/auto。
+    // 顺序不能反，否则 syncStyleDimensions 会把 grid 的 100% 覆盖回固定 px。
     syncStyleDimensions(widget);
     const layoutMode = getBoardLayoutMode();
     adaptWidgetToBoardLayout(widget, layoutMode);

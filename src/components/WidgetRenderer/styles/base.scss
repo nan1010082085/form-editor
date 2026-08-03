@@ -158,11 +158,11 @@
 // useFlexDropZone 在 dragover 时给目标 widget 元素挂标记 class，
 // 用 ::before / ::after 画一条蓝色横线指示插入位置。
 // ============================================================
-.flex-insert-before {
+.grid-insert-before {
   position: relative;
 }
 
-.flex-insert-before::before {
+.grid-insert-before::before {
   content: "";
   position: absolute;
   top: -2px;
@@ -176,11 +176,11 @@
   pointer-events: none;
 }
 
-.flex-insert-after {
+.grid-insert-after {
   position: relative;
 }
 
-.flex-insert-after::after {
+.grid-insert-after::after {
   content: "";
   position: absolute;
   bottom: -2px;

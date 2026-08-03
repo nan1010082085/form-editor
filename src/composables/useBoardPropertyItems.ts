@@ -4,7 +4,7 @@
  * 从 PropertyPanel 抽出：根据 boardStore.canvas + 布局模式，
  * 组装画布配置面板的属性列表（布局模式/主题/尺寸/背景/缩放/网格）。
  *
- * Free 模式暴露画布尺寸 + 网格配置；Flex 模式隐藏尺寸（恒 100%×100%）+ 暴露 zoom。
+ * Free 模式暴露画布尺寸 + 网格配置；Grid 模式隐藏尺寸（恒 100%×100%）+ 暴露 zoom。
  */
 import { computed } from "vue";
 import type { TranslateFn } from "@/components/WidgetRenderer/types";
@@ -38,7 +38,7 @@ export function useBoardPropertyItems(t: TranslateFn) {
         type: "text",
         value: isFree
           ? t("editor.property.layoutModeFree")
-          : t("editor.property.layoutModeFlex"),
+          : t("editor.property.layoutModeGrid"),
         desc: t("editor.property.layoutModeDesc"),
       },
       {
@@ -106,7 +106,7 @@ export function useBoardPropertyItems(t: TranslateFn) {
         },
       );
     }
-    // 画布尺寸字段仅 free 模式有意义（flex 画布恒 100%×100%，由容器决定）
+    // 画布尺寸字段仅 free 模式有意义（grid 画布恒 100%×100%，由容器决定）
     if (isFree) {
       items.push(
         {
@@ -138,6 +138,77 @@ export function useBoardPropertyItems(t: TranslateFn) {
           value: c.heightUnit ?? "px",
           desc: t("editor.property.heightUnit"),
           options: unitOptions.value,
+        },
+      );
+    }
+    if (!isFree) {
+      const gl = c.gridLayout ?? {};
+      items.push(
+        {
+          key: "gridLayout.minColumns",
+          label: t("editor.property.gridMinColumns"),
+          type: "number",
+          value: gl.minColumns ?? 1,
+          desc: t("editor.property.gridMinColumnsDesc"),
+        },
+        {
+          key: "gridLayout.maxColumns",
+          label: t("editor.property.gridMaxColumns"),
+          type: "number",
+          value: gl.maxColumns ?? "",
+          desc: t("editor.property.gridMaxColumnsDesc"),
+        },
+        {
+          key: "gridLayout.minWidth",
+          label: t("editor.property.gridMinWidth"),
+          type: "number",
+          value: gl.minWidth ?? 100,
+          desc: t("editor.property.gridMinWidthDesc"),
+        },
+        {
+          key: "gridLayout.maxWidth",
+          label: t("editor.property.gridMaxWidth"),
+          type: "number",
+          value: gl.maxWidth ?? "",
+          desc: t("editor.property.gridMaxWidthDesc"),
+        },
+        {
+          key: "gridLayout.columnGap",
+          label: t("editor.property.gridColumnGap"),
+          type: "number",
+          value: gl.columnGap ?? 8,
+          desc: t("editor.property.gridColumnGapDesc"),
+        },
+        {
+          key: "gridLayout.rowGap",
+          label: t("editor.property.gridRowGap"),
+          type: "number",
+          value: gl.rowGap ?? 12,
+          desc: t("editor.property.gridRowGapDesc"),
+        },
+        {
+          key: "gridLayout.colWrap",
+          label: t("editor.property.gridColWrap"),
+          type: "switch",
+          value: gl.colWrap ?? true,
+          desc: t("editor.property.gridColWrapDesc"),
+        },
+        {
+          key: "gridLayout.maxContentWidth",
+          label: t("editor.property.maxContentWidth"),
+          type: "number",
+          value: gl.maxContentWidth ?? "",
+          desc: t("editor.property.maxContentWidthDesc"),
+        },
+        {
+          key: "gridLayout.contentAlign",
+          label: t("editor.property.contentAlign"),
+          type: "select",
+          value: gl.contentAlign ?? "left",
+          options: [
+            { label: t("editor.property.alignLeft"), value: "left" },
+            { label: t("editor.property.alignCenter"), value: "center" },
+          ],
         },
       );
     }

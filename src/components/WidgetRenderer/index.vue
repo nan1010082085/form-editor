@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, provide, onMounted, watch } from "vue";
+import { ref, computed, provide, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance } from "element-plus";
 import zhCn from "element-plus/es/locale/lang/zh-cn";
@@ -39,6 +39,7 @@ import { useFormData } from "@/composables/useFormData";
 import { useLifecycle } from "@/composables/useLifecycle";
 import { useLocale } from "@/composables/useLocale";
 import { useLogger } from "@/composables/useLogger";
+import { useGridEngine } from "@/composables/useGridEngine";
 import { WIDGET_SURFACE_KEY } from "@/widgets/base/widgetMock";
 import { fetchRuntimeUrl } from "@/api/runtimeApi";
 import { triggerWidgetEvent } from "@/engine/eventEngine";
@@ -69,16 +70,30 @@ const props = defineProps<
     readonlyFields?: string[];
     /** partial 模式下可编辑的字段列表（与 readonlyFields 二选一） */
     editableFields?: string[];
-    /** Flex 编辑模式：点击选中部件 */
+    /** Grid 编辑模式：点击选中部件 */
     editorSelectable?: boolean;
   }
 >();
 
 const isAbsoluteLayout = computed(() => props.layout === "absolute");
 
+const {
+  templateColumns: gridTemplateColumns,
+  gap: gridGap,
+  getChildGridColumn,
+  connect: connectGrid,
+  disconnect: disconnectGrid,
+} = useGridEngine(
+  () => props.canvasConfig?.gridLayout,
+  () => (props.schema ?? []) as Widget[],
+);
+
 const flowContainerStyle = computed(() => ({
   width: "100%",
   minHeight: "100%",
+  display: "grid",
+  gridTemplateColumns: gridTemplateColumns.value || "1fr",
+  gap: gridGap.value,
   boxSizing: "border-box" as const,
 }));
 
@@ -623,6 +638,17 @@ onMounted(async () => {
   if (props.loadApi) {
     await loadApiData(props.loadApi);
   }
+
+  // 3. Grid 引擎连接容器（获取宽度计算列数）
+  if (!isAbsoluteLayout.value) {
+    await nextTick();
+    const formEl = formRef.value?.$el as HTMLElement | undefined;
+    connectGrid(formEl ?? null);
+  }
+});
+
+onUnmounted(() => {
+  disconnectGrid();
 });
 
 watch(
@@ -778,26 +804,28 @@ defineExpose({
         <SchemaRender :widgets="schema as Widget[]" mode="preview" />
       </template>
 
-      <!-- 流式布局模式（默认）：WidgetNode 流式渲染 -->
-      <el-form v-else ref="formRef" :model="formData">
+      <!-- Grid 布局模式：CSS Grid + span 系统 -->
+      <el-form v-else ref="formRef" :model="formData" :style="flowContainerStyle" :class="styles.fgGrid">
         <template v-for="(item, idx) in schema" :key="idx">
-          <ErrorBoundary
-            v-if="!item.hidden"
-            :node-type="item.type"
-            :node-field="item.field"
-            :node-path="String(idx)"
-          >
-            <SchemaRender
-              :schema="item"
-              :form-data="formData"
-              :editable="editable"
-              :is-dragging="isDragging"
-              :readonly="readonly"
-              :editor-selectable="editorSelectable"
-              :path="[idx]"
-              @container-drop="emit('container-drop', $event)"
-            />
-          </ErrorBoundary>
+          <div :style="{ gridColumn: getChildGridColumn(idx) }">
+            <ErrorBoundary
+              v-if="!item.hidden"
+              :node-type="item.type"
+              :node-field="item.field"
+              :node-path="String(idx)"
+            >
+              <SchemaRender
+                :schema="item"
+                :form-data="formData"
+                :editable="editable"
+                :is-dragging="isDragging"
+                :readonly="readonly"
+                :editor-selectable="editorSelectable"
+                :path="[idx]"
+                @container-drop="emit('container-drop', $event)"
+              />
+            </ErrorBoundary>
+          </div>
         </template>
       </el-form>
 

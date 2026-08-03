@@ -26,7 +26,7 @@ export interface WidgetRegistryItem {
   /** 组件配置 */
   config: WidgetConfig;
   /** 可用布局模式 — undefined 表示两种模式都可用 */
-  availableIn?: ("free" | "flex")[];
+  availableIn?: ("free" | "grid")[];
 }
 
 /** Widget 注册表 */
@@ -107,6 +107,30 @@ export function getRegisteredTypes(): SchemaType[] {
   return Array.from(registry.keys());
 }
 
+/** SchemaType(kebab) → i18n key 兼容 camelCase 历史键 */
+function widgetI18nTypeKey(type: string): string {
+  return type.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+}
+
+/**
+ * 解析 Widget 文案：先试 kebab type，再试 camelCase（兼容旧 locale 键）
+ */
+function resolveWidgetI18n(
+  type: SchemaType,
+  field: "displayName" | "description",
+  t: (key: string) => string,
+): string | null {
+  const keys = [
+    `editor.widgets.${type}.${field}`,
+    `editor.widgets.${widgetI18nTypeKey(type)}.${field}`,
+  ];
+  for (const key of keys) {
+    const translated = t(key);
+    if (translated !== key) return translated;
+  }
+  return null;
+}
+
 /**
  * 获取 Widget 翻译后的显示名称
  * 优先使用 i18n 翻译，回退到 config.displayName
@@ -118,9 +142,8 @@ export function getWidgetDisplayName(
   const item = registry.get(type);
   if (!item) return type;
   if (t) {
-    const key = `editor.widgets.${type}.displayName`;
-    const translated = t(key);
-    if (translated !== key) return translated;
+    const translated = resolveWidgetI18n(type, "displayName", t);
+    if (translated) return translated;
   }
   return item.displayName;
 }
@@ -136,9 +159,8 @@ export function getWidgetDescription(
   const item = registry.get(type);
   if (!item) return "";
   if (t) {
-    const key = `editor.widgets.${type}.description`;
-    const translated = t(key);
-    if (translated !== key) return translated;
+    const translated = resolveWidgetI18n(type, "description", t);
+    if (translated) return translated;
   }
   return item.config.description ?? "";
 }

@@ -24,5 +24,4 @@ export const singleColConfig: WidgetConfig = {
     style: ["margin", "padding"],
     props: [],
   },
-  contexts: ["free"],
 };

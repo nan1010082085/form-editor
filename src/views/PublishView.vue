@@ -101,7 +101,7 @@ const rendererLayout = computed(() =>
 const contentFrameStyle = computed(() =>
   buildContentFrameStyle(canvasConfig.value),
 );
-const isFlexLayout = computed(() => canvasConfig.value.layoutMode === "flex");
+const isGridLayout = computed(() => canvasConfig.value.layoutMode === "grid");
 
 // ---- 多分辨率自适应 ----
 const scaleContainerRef = ref<HTMLElement | null>(null);
@@ -384,7 +384,7 @@ onUnmounted(() => window.removeEventListener("message", handleMessage));
       :class="[
         styles['fg-renderer'],
         showAiSidebar && styles['fg-renderer--with-sidebar'],
-        isFlexLayout && styles['fg-renderer--flex'],
+        isGridLayout && styles['fg-renderer--grid'],
       ]"
     >
       <div
@@ -421,7 +421,7 @@ onUnmounted(() => window.removeEventListener("message", handleMessage));
         </el-button>
       </div>
       <div
-        v-if="!isFlexLayout"
+        v-if="!isGridLayout"
         :class="styles['fg-renderer__content']"
         :style="{ ...contentFrameStyle, ...adaptiveCanvasStyle }"
       >

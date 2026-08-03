@@ -6,7 +6,7 @@ import { inject, computed } from "vue";
 import { widgetDataKey } from "../base/types";
 import type { Widget } from "../base/types";
 import SchemaRender from "../../components/WidgetRenderer/SchemaRender.vue";
-import FlexColDropZone from "../../components/Editor/FlexColDropZone.vue";
+import GridColDropZone from "../../components/Editor/GridColDropZone.vue";
 import styles from "./style.module.scss";
 
 defineProps<{ editable?: boolean; editorSelectable?: boolean }>();
@@ -48,7 +48,7 @@ function colStyle(idx: number): Record<string, string> {
       :style="colStyle(col - 1)"
     >
       <div :class="styles.colContent">
-        <FlexColDropZone
+        <GridColDropZone
           v-if="editorSelectable && parentId"
           :parent-id="parentId"
           :col-index="col - 1"
