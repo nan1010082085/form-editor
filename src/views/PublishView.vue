@@ -133,7 +133,7 @@ const aiSidebarUrl = computed(() => {
     (route.query.context as string) ||
     (boardVariables.value.aiContext as string) ||
     "business";
-  return `/schema-platform/ai/sidebar?context=${encodeURIComponent(ctx)}`;
+  return `/schema-platform/ai/index-sidebar.html?context=${encodeURIComponent(ctx)}`;
 });
 
 /** 将 URL query 映射到画布变量（E-23） */
