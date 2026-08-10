@@ -31,7 +31,7 @@ export const rateConfig: WidgetConfig = {
       { key: "max", label: "Max Score", type: "number", default: 5 },
       { key: "disabled", label: "Disabled", type: "switch", default: false },
       { key: "allowHalf", label: "Allow Half", type: "switch", default: false },
-      { key: "showText", label: "显示文字", type: "switch", default: false },
+      { key: "showText", label: "Show Text", type: "switch", default: false },
       { key: "showScore", label: "Show Score", type: "switch", default: false },
     ],
   },

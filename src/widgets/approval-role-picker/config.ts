@@ -7,7 +7,7 @@ export const approvalRolePickerConfig: WidgetConfig = {
   author: "yangdongnan",
   defaultStyle: { width: "240px", height: "40px", fontSize: "14px" },
   defaultProps: {
-    placeholder: "请选择审批角色",
+    placeholder: "Please selectApproval Role",
     clearable: true,
     disabled: false,
     multiple: false,
@@ -26,7 +26,7 @@ export const approvalRolePickerConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择审批角色",
+        default: "Please selectApproval Role",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },

@@ -2,7 +2,7 @@
 /**
  * FgTreemap — 矩形树图
  *
- * 适合层级占比展示，ECharts 内置图表类型。
+ * 适合层级Proportion展示, ECharts 内置Chart type。
  */
 import { inject, ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";

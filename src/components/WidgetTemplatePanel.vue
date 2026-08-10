@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
- * WidgetTemplatePanel — 组件模板库面板
+ * WidgetTemplatePanel — ComponentTemplate Library面板
  *
  * 功能：
- * - 模板列表展示（卡片布局）
- * - 模板搜索和筛选（分类、关键词）
- * - 模板应用（点击应用到画布）
- * - 模板保存（从画布保存为模板）
+ * - TemplateColumn表展示（卡片Layout）
+ * - TemplateSearch和Filter（Min类、关键词）
+ * - Template应用（点击应用到画布）
+ * - TemplateSave（从画布Save为Template）
  *
- * 状态由 useTemplateStore 管理，本组件只做渲染和交互。
+ * Status由 useTemplateStore 管理, 本Component只做渲染和交互。
  */
 import { ref, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";

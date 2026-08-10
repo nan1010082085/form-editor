@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
- * ExecutionTimeline — 垂直节点执行时间轴
+ * ExecutionTimeline — 垂直节点执RowHrs间轴
  *
- * 展示工作流各节点的执行状态、耗时、错误信息。
- * 点击节点可展开查看输入/输出数据。
+ * 展示工作流各节点的执RowStatus、耗Hrs、ErrorInfo。
+ * 点击节点可ExpandViewInput/OutputData。
  */
 import { ref } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./ExecutionTimeline.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
@@ -27,6 +28,8 @@ export interface NodeLog {
 const props = defineProps<{
   nodeLogs: NodeLog[];
 }>();
+
+const { t } = useI18n();
 
 // ── Emits ──
 const emit = defineEmits<{
@@ -59,10 +62,10 @@ function nodeIconColor(status: string): string {
 
 function statusLabel(s: string): string {
   const map: Record<string, string> = {
-    running: "运行中",
-    completed: "已完成",
-    failed: "失败",
-    skipped: "已跳过",
+    running: t("editor.executionTimeline.statusRunning"),
+    completed: t("editor.executionTimeline.statusCompleted"),
+    failed: t("editor.executionTimeline.statusFailed"),
+    skipped: t("editor.executionTimeline.statusSkipped"),
   };
   return map[s] ?? s;
 }
@@ -90,7 +93,7 @@ function formatTime(d: string | null): string {
 
 function formatJson(obj: unknown): string {
   if (!obj || (typeof obj === "object" && Object.keys(obj).length === 0))
-    return "(空)";
+    return t("editor.executionTimeline.emptyJson");
   return JSON.stringify(obj, null, 2);
 }
 
@@ -148,7 +151,7 @@ function handleNodeClick(node: NodeLog) {
 
         <div :class="styles.meta">
           <span v-if="node.duration" :class="styles.metaItem">
-            耗时: {{ formatDuration(node.duration) }}
+            {{ t('editor.executionTimeline.duration') }}: {{ formatDuration(node.duration) }}
           </span>
           <span :class="styles.metaItem">
             {{ formatTime(node.startedAt) }}
@@ -165,7 +168,8 @@ function handleNodeClick(node: NodeLog) {
         <template v-if="hasIO(node)">
           <div :class="styles.ioToggle">
             <el-link type="primary" :underline="false">
-              {{ expandedNodes.has(node.id) ? "收起" : "查看" }} 输入/输出
+              {{ expandedNodes.has(node.id) ? t('editor.common.collapse') : t('editor.executionTimeline.viewIO') }}
+              {{ t('editor.executionTimeline.ioLabel') }}
             </el-link>
           </div>
 
@@ -184,5 +188,5 @@ function handleNodeClick(node: NodeLog) {
     </div>
   </div>
 
-  <div v-else :class="styles.empty">暂无节点执行记录</div>
+  <div v-else :class="styles.empty">{{ t('editor.executionTimeline.empty') }}</div>
 </template>

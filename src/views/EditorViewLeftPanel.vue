@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * EditorViewLeftPanel — 左侧面板子组件
+ * EditorViewLeftPanel — 左侧面板子Component
  *
- * 从 EditorView.vue 拆分而来，负责渲染左侧面板（组件树/大纲）。
+ * 从 EditorView.vue 拆Min而来, 负责渲染左侧面板（Component树/大纲）。
  * 包含可见性切换的动画逻辑。
  */
 import EditorLeftPanel from "@/components/Editor/EditorLeftPanel.vue";

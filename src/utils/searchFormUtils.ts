@@ -7,7 +7,7 @@ function isEmptyValue(value: FormFieldValue): boolean {
   return false;
 }
 
-/** 从字段 schema 初始化搜索表单值 */
+/** 从Field schema 初始化SearchFormValue */
 export function initSearchFormValues(
   fields: SearchFieldSchema[],
 ): Record<string, FormFieldValue> {
@@ -28,7 +28,7 @@ export function initSearchFormValues(
   return values;
 }
 
-/** 将搜索表单值转为 API 查询参数 */
+/** 将SearchFormValue转为 API QueryParams */
 export function buildSearchParams(
   fields: SearchFieldSchema[],
   form: Record<string, FormFieldValue>,

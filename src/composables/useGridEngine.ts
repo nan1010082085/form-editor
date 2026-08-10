@@ -1,7 +1,7 @@
 /**
  * useGridEngine - Vue composable 封装 gridEngine
  *
- * 用 ResizeObserver 跟踪容器宽度，用 Vue computed 响应式计算
+ * 用 ResizeObserver 跟踪ContainerWidth, 用 Vue computed 响应式计算
  * templateColumns / gap / 每个子节点的 gridColumn。
  *
  * 用法：
@@ -10,16 +10,14 @@
  *   () => boardStore.canvas.gridLayout,
  *   () => widgetStore.widgets,
  * );
- * // 容器: <div ref="containerRef" :style="{ gridTemplateColumns, gap }">
+ * // Container: <div ref="containerRef" :style="{ gridTemplateColumns, gap }">
  * // 子节点: :style="getChildStyle(widget)"
  * ```
  */
-import { ref, computed, watch, type Ref } from "vue";
+import { ref, computed, type Ref } from "vue";
 import {
   computeGridLayout,
-  resolveGridOptions,
   type GridChild,
-  type GridOptions,
 } from "@/utils/gridEngine";
 import type { Widget, GridLayoutOptions } from "@/widgets/base/types";
 
@@ -54,7 +52,8 @@ export function useGridEngine(
 
   const children: Ref<GridChild[]> = computed(() =>
     widgets().map((w) => ({
-      originSpan: w.gridSpan ?? 1,
+      // -1 = 撑满剩余Column（与Property面板 / adaptWidgetToGrid 默认一致）
+      originSpan: w.gridSpan ?? -1,
       visible: !w.hidden,
     })),
   );
@@ -67,13 +66,13 @@ export function useGridEngine(
   const gap = computed(() => layout.value.gap);
   const columns = computed(() => layout.value.columns);
 
-  /** 获取子节点的 grid-column 样式 */
+  /** 获取子节点的 grid-column Style */
   function getChildGridColumn(index: number): string {
     return layout.value.children[index]?.gridColumn ?? "span 1 / auto";
   }
 
-  /** 获取子节点的 grid-column 样式（按 widget 引用查找） */
-  function getChildStyle(widget: Widget, index: number): Record<string, string> {
+  /** 获取子节点的 grid-column Style（按 widget 引用查找） */
+  function getChildStyle(_widget: Widget, index: number): Record<string, string> {
     const gridColumn = getChildGridColumn(index);
     return gridColumn ? { gridColumn } : {};
   }
@@ -85,6 +84,7 @@ export function useGridEngine(
     templateColumns,
     gap,
     columns,
+    containerWidth,
     getChildGridColumn,
     getChildStyle,
   };

@@ -7,6 +7,8 @@ import { RadarChart } from "echarts/charts";
 import { GaugeChart } from "echarts/charts";
 import { HeatmapChart } from "echarts/charts";
 import { FunnelChart } from "echarts/charts";
+import { SankeyChart } from "echarts/charts";
+import { ParallelChart } from "echarts/charts";
 import { CandlestickChart } from "echarts/charts";
 import { MapChart } from "echarts/charts";
 import {
@@ -31,6 +33,8 @@ echarts.use([
   GaugeChart,
   HeatmapChart,
   FunnelChart,
+  SankeyChart,
+  ParallelChart,
   CandlestickChart,
   MapChart,
   GridComponent,

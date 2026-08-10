@@ -8,8 +8,8 @@ export function useSnapshot() {
    * 将 DOM 元素截取为 PNG base64 data URL。
    *
    * @param el         - 目标 DOM 元素
-   * @param pixelRatio - 分辨率倍率，默认 0.2（低分辨率）
-   * @returns data:image/png;base64,... 截图失败返回空字符串
+   * @param pixelRatio - Min辨率倍率, 默认 0.2（低Min辨率）
+   * @returns data:image/png;base64,... 截图Failed返回空字符串
    */
   async function captureElement(
     el: HTMLElement,

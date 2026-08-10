@@ -1,19 +1,19 @@
 /**
- * 租户相关类型定义
+ * 租户相关Type定义
  *
  * 与 packages/server 的 Tenant REST API 契约对齐
  */
 
-/** 租户状态 */
+/** 租户Status */
 export type TenantStatus = "active" | "inactive" | "suspended";
 
-/** 租户配置 */
+/** 租户Config */
 export interface TenantConfig {
   maxUsers: number;
   features: string[];
 }
 
-/** 租户列表项 */
+/** 租户Column表项 */
 export interface TenantItem {
   id: string;
   name: string;
@@ -35,7 +35,7 @@ export interface TenantCreatePayload {
   };
 }
 
-/** 租户更新请求体 */
+/** 租户Update请求体 */
 export interface TenantUpdatePayload {
   name?: string;
   code?: string;

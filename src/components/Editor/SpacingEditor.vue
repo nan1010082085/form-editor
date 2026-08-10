@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * SpacingEditor -- 外边距/内边距可视化编辑器
+ * SpacingEditor -- Margin/Padding可视化Edit器
  *
  * 设计：
- * - 链接模式（默认）：单个输入，四边同步
- * - 解除链接：4 个独立输入（上右下左），可分别设置不同值
- * - 中央矩形实时预览各边数值
+ * - 链接模式（默认）：单个Input, 四边Sync
+ * - 解除链接：4 个独立Input（上右下左）, 可Min别Settings不同Value
+ * - 中央矩形实Hrs预览各边数Value
  */
 import { ref, computed } from "vue";
 import styles from "./SpacingEditor.module.scss";
@@ -37,7 +37,7 @@ const SIDE_PROP_MAP: Record<Side, Record<string, string>> = {
   left: { margin: "marginLeft", padding: "paddingLeft" },
 };
 
-// ---- 解析值 ----
+// ---- ParseValue ----
 
 function parsePx(val?: string): number {
   if (!val) return 0;
@@ -48,7 +48,7 @@ function parsePx(val?: string): number {
 function getSideVal(side: Side): number {
   const v = props.value ?? {};
   const prefix = props.mode;
-  // 优先读取单边属性，fallback 到简写
+  // 优先读取单边Property, fallback 到简写
   return parsePx(v[SIDE_PROP_MAP[side][prefix]]) || parsePx(v[prefix]);
 }
 
@@ -62,7 +62,7 @@ const rightVal = computed(() => getSideVal("right"));
 const bottomVal = computed(() => getSideVal("bottom"));
 const leftVal = computed(() => getSideVal("left"));
 
-// ---- 操作 ----
+// ---- Action ----
 
 function applyLinked(val: number | undefined) {
   const v = `${val ?? 0}px`;
@@ -87,7 +87,7 @@ function applySide(side: Side, val: number | undefined) {
 function toggleLinked() {
   linked.value = !linked.value;
   if (linked.value) {
-    // 切回链接模式：用当前 top 值统一四边
+    // 切回链接模式：用当前 top Value统一四边
     applyLinked(topVal.value);
   }
 }
@@ -95,7 +95,7 @@ function toggleLinked() {
 
 <template>
   <div :class="styles.editor">
-    <!-- 视觉预览区域 -->
+    <!-- 视觉预览Region -->
     <div :class="styles.preview">
       <div :class="styles.box">
         <!-- Top -->
@@ -145,7 +145,7 @@ function toggleLinked() {
       </el-tooltip>
     </div>
 
-    <!-- 链接模式：单个输入 -->
+    <!-- 链接模式：单个Input -->
     <div v-if="linked" :class="styles.controls">
       <div :class="styles.controlRow">
         <label :class="styles.controlLabel">{{
@@ -163,7 +163,7 @@ function toggleLinked() {
       </div>
     </div>
 
-    <!-- 解除链接：4 个独立输入 -->
+    <!-- 解除链接：4 个独立Input -->
     <div v-else :class="styles.controlsGrid">
       <div :class="styles.gridCell">
         <label :class="styles.gridLabel">{{

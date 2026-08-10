@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * EditorRightPanel — 编辑器右侧属性面板
+ * EditorRightPanel — Edit器右侧Property面板
  *
- * 包含面板头部 + PropertyPanel + 全局配置提示
+ * 包含面板头部 + PropertyPanel + 全局Config提示
  */
 import PropertyPanel from "./PropertyPanel.vue";
 import type { PartialWidget } from "@/components/WidgetRenderer/types";

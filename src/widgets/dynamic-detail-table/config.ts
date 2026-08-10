@@ -22,7 +22,7 @@ export const dynamicDetailTableConfig: WidgetConfig = {
   exposedValues: [{ key: "rows", type: "array", description: "Detail Row Data" }],
   configPanels: ["events", "variables"],
   defaultProps: {
-    title: "费用明细",
+    title: "Expense Details",
     field: "items",
     columns: dynamicDetailTableMock.defaultProps.columns,
     staticData: dynamicDetailTableMock.staticData.rows,
@@ -31,7 +31,7 @@ export const dynamicDetailTableConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "Title", type: "input", default: "费用明细" },
+      { key: "title", label: "Title", type: "input", default: "Expense Details" },
       { key: "field", label: "Bound Field", type: "input", default: "items" },
     ],
   },

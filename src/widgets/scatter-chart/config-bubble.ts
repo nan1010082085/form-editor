@@ -4,7 +4,7 @@ export const bubbleChartConfig: WidgetConfig = {
   name: "FgBubbleChart",
   displayName: "气泡图",
   type: "bubble-chart",
-  description: "气泡图，用于展示三个变量之间的关系",
+  description: "气泡图, 用于展示三个变量之间的关系",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
   defaultProps: {
@@ -72,7 +72,7 @@ export const bubbleChartConfig: WidgetConfig = {
       { key: "yField", label: "Y Axis Field", type: "text", placeholder: "如: y" },
       {
         key: "sizeField",
-        label: "大小字段",
+        label: "大小Field",
         type: "text",
         placeholder: "如: size",
       },
@@ -85,9 +85,9 @@ export const bubbleChartConfig: WidgetConfig = {
         label: "Color Scheme",
         type: "select",
         options: [
-          { label: "默认", value: "default" },
-          { label: "暗色", value: "dark" },
-          { label: "浅色", value: "light" },
+          { label: "Default", value: "default" },
+          { label: "Dark", value: "dark" },
+          { label: "Light", value: "light" },
         ],
       },
       { key: "customColors", label: "Custom Colors", type: "color-array" },

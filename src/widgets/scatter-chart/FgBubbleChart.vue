@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, ref, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 import { useChartOption } from "../base/useChartOption";
@@ -7,6 +8,7 @@ import { useChartLazyInit } from "../base/useChartLazyInit";
 import { echarts, type EChartsType } from "../base/echarts";
 import styles from "./style.module.scss";
 
+const { t } = useI18n();
 const widgetData = inject(widgetDataKey)!;
 
 function buildOption(
@@ -77,7 +79,7 @@ function buildOption(
       ? {
           trigger: "item",
           formatter: (params: any) =>
-            `X: ${params.value[0]}<br/>Y: ${params.value[1]}<br/>大小: ${params.value[2]}`,
+            `X: ${params.value[0]}<br/>Y: ${params.value[1]}<br/>${t("editor.bubbleChart.sizeLabel")}: ${params.value[2]}`,
         }
       : undefined,
     grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },

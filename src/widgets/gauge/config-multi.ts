@@ -2,9 +2,9 @@ import type { WidgetConfig } from "../base/types";
 
 export const multiGaugeConfig: WidgetConfig = {
   name: "FgMultiGauge",
-  displayName: "多指针仪表盘",
+  displayName: "多指针Dashboard",
   type: "multi-gauge",
-  description: "多指针仪表盘，用于展示多个指标的完成度",
+  description: "多指针Dashboard, 用于展示多个Metric的完成度",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
   defaultProps: {
@@ -82,9 +82,9 @@ export const multiGaugeConfig: WidgetConfig = {
         label: "Color Scheme",
         type: "select",
         options: [
-          { label: "默认", value: "default" },
-          { label: "暗色", value: "dark" },
-          { label: "浅色", value: "light" },
+          { label: "Default", value: "default" },
+          { label: "Dark", value: "dark" },
+          { label: "Light", value: "light" },
         ],
       },
       { key: "customColors", label: "Custom Colors", type: "color-array" },

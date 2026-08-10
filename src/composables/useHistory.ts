@@ -24,8 +24,8 @@ export interface UseHistoryReturn {
 }
 
 /**
- * 深拷贝 — 使用 JSON 序列化。
- * structuredClone 无法处理 Vue reactive proxy 对象，因此统一使用 JSON 方式。
+ * 深拷贝 — 使用 JSON 序Column化。
+ * structuredClone 无法处理 Vue reactive proxy 对象, 因此统一使用 JSON 方式。
  */
 function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));

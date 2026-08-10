@@ -12,44 +12,44 @@ const { isDisabled } = useWidgetRenderState();
 
 const treeRef = ref();
 
-// 暴露 checkedKeys 给联动系统
+// Expose checkedKeys to linkage system
 useExposeWidget(() => ({
   get checkedKeys() {
     return treeRef.value?.getCheckedKeys() ?? [];
   },
 }));
 
-// 节点数据
+// Node data
 const treeData = computed(() => {
   const data = widgetData.value.props?.data;
   if (Array.isArray(data) && data.length > 0) return data;
-  // 编辑器模式：展示示例数据
+  // Editor mode: show example data
   return [
     {
       id: "system",
-      label: "系统管理",
+      label: "System",
       type: "menu",
       children: [
-        { id: "user", label: "用户管理", type: "menu" },
-        { id: "role", label: "角色管理", type: "menu" },
-        { id: "menu", label: "菜单管理", type: "menu" },
+        { id: "user", label: "User management", type: "menu" },
+        { id: "role", label: "Role management", type: "menu" },
+        { id: "menu", label: "Menu management", type: "menu" },
       ],
     },
     {
       id: "form",
-      label: "表单管理",
+      label: "Form management",
       type: "menu",
       children: [
-        { id: "form_list", label: "表单列表", type: "menu" },
-        { id: "form_create", label: "新建表单", type: "button" },
-        { id: "form_edit", label: "编辑表单", type: "button" },
-        { id: "form_delete", label: "删除表单", type: "button" },
+        { id: "form_list", label: "Form list", type: "menu" },
+        { id: "form_create", label: "Create form", type: "button" },
+        { id: "form_edit", label: "EditForm", type: "button" },
+        { id: "form_delete", label: "DeleteForm", type: "button" },
       ],
     },
   ];
 });
 
-// 树配置
+// 树Config
 const treeProps = computed(() => {
   const props =
     (widgetData.value.props?.props as Record<string, unknown> | undefined) ??
@@ -73,7 +73,7 @@ const defaultExpandAll = computed(() =>
   Boolean(widgetData.value.props?.defaultExpandAll ?? true),
 );
 
-// 动态样式
+// 动态Style
 const dynamicStyle = computed(() => {
   const s: Record<string, string> = {};
   if (widgetStyle.value?.fontSize)

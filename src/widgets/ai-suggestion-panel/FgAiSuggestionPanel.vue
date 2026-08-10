@@ -1,16 +1,24 @@
 <script setup lang="ts">
+/**
+ * FgAiSuggestionPanel — AI Suggestions面板
+ */
 import { computed, ref, inject } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
+const { t } = useI18n();
+
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 
 const collapsed = ref(false);
 
-const title = computed(() => (widgetData.value.props?.title as string) ?? "AI 建议");
+const title = computed(
+  () =>
+    (widgetData.value.props?.title as string) ??
+    t("editor.aiSuggestion.defaultTitle"),
+);
 const showIcon = computed(() => (widgetData.value.props?.showIcon as boolean) ?? true);
 const collapsible = computed(() => (widgetData.value.props?.collapsible as boolean) ?? true);
 const defaultExpanded = computed(
@@ -55,7 +63,7 @@ useExposeWidget((wd) => ({
 </script>
 
 <template>
-  <div :class="$style.panel" :style="{ fontSize: widgetData.style?.fontSize || '14px' }">
+  <div :class="$style.panel" :style="{ fontSize: String(widgetData.style?.fontSize || '14px') }">
     <div :class="$style.header" @click="toggle">
       <div :class="$style.titleWrap">
         <AppIcon v-if="showIcon" name="magic-stick" :size="16" :class="$style.titleIcon" />
@@ -71,7 +79,9 @@ useExposeWidget((wd) => ({
     </div>
     <transition name="collapse">
       <div v-show="isExpanded" :class="$style.list">
-        <div v-if="!suggestions.length" :class="$style.empty">暂无 AI 建议</div>
+        <div v-if="!suggestions.length" :class="$style.empty">
+          {{ t("editor.aiSuggestion.empty") }}
+        </div>
         <div
           v-for="(item, idx) in suggestions"
           :key="idx"

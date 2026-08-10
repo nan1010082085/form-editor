@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** E-09 — 大屏自动刷新：定时调用目标组件 exposed.refresh 或 triggerEvent('refresh') */
+/** E-09 — DashboardAuto Refresh：定Hrs调用目标Component exposed.refresh 或 triggerEvent('refresh') */
 import { inject, computed, ref, onMounted, onUnmounted, type Ref } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";

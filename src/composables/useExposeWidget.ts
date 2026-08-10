@@ -1,17 +1,17 @@
 /**
- * useExposeWidget — 将组件运行时状态注册到 exposed 系统
+ * useExposeWidget — 将Component运RowHrsStatus注册到 exposed 系统
  *
- * 任何组件调用此 composable 后，其状态可通过条件表达式中的
+ * 任何Component调用此 composable 后, 其Status可passedCondition表达式中的
  * `exposed.widgetId.key` 访问。
  *
- * 用法（表单组件）：
+ * 用法（FormComponent）：
  * ```ts
  * useExposeWidget((wd) => ({
  *   get value() { return wd.value.defaultValue }
  * }))
  * ```
  *
- * 用法（非表单组件，getter 模式保持响应式）：
+ * 用法（非FormComponent, getter 模式保持响应式）：
  * ```ts
  * useExposeWidget(() => ({
  *   get loading() { return loading.value },

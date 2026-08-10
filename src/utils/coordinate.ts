@@ -1,6 +1,6 @@
 /**
  * 坐标系工具
- * viewport -> canvas 内容坐标 -> 容器本地坐标
+ * viewport -> canvas 内容坐标 -> Container本地坐标
  */
 
 /** viewport 坐标转 canvas 内容坐标 */
@@ -18,7 +18,7 @@ export function viewportToCanvas(
   };
 }
 
-/** canvas 坐标转容器本地坐标 */
+/** canvas 坐标转Container本地坐标 */
 export function canvasToLocal(
   canvasX: number,
   canvasY: number,
@@ -31,7 +31,7 @@ export function canvasToLocal(
   };
 }
 
-/** 容器本地坐标转 canvas 坐标 */
+/** Container本地坐标转 canvas 坐标 */
 export function localToCanvas(
   localX: number,
   localY: number,
@@ -44,7 +44,7 @@ export function localToCanvas(
   };
 }
 
-/** 根级组件边界约束 */
+/** 根级Component边界约束 */
 export function constrainToCanvasBounds(
   x: number,
   y: number,

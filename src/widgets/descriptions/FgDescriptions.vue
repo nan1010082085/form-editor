@@ -33,7 +33,7 @@ const apiUrl = computed(() =>
     : "",
 );
 
-// ---- useWidgetData（重试/SWR） ----
+// ---- useWidgetData（Retry/SWR） ----
 const {
   data: apiData,
   loading,
@@ -48,7 +48,7 @@ const {
   autoLoad: false,
 });
 
-// 主数据源：API 或静态数据
+// 主Data源：API 或静态Data
 const data = computed(() => {
   if (apiData.value) return apiData.value;
   const staticData = widgetData.value.props?.staticData as
@@ -57,7 +57,7 @@ const data = computed(() => {
   return staticData && typeof staticData === "object" ? staticData : {};
 });
 
-// 从 API 返回值中同步 board 变量（flowInstanceId / taskId）
+// 从 API 返回Value中Sync board 变量（flowInstanceId / taskId）
 watch(apiData, (val) => {
   if (!val) return;
   if (val.flowInstanceId)
@@ -82,22 +82,22 @@ const items = computed<DescriptionItemConfig[]>(() => {
   return Array.isArray(raw) ? raw : [];
 });
 
-// 初始加载（useWidgetData autoLoad: false，手动触发）
+// 初始加载（useWidgetData autoLoad: false, 手动Trigger）
 onMounted(() => {
   if (apiUrl.value) void wReload();
 });
 
-// 变量变化后重新拉取（弹窗/详情页 recordId 等）
+// 变量变化后重新拉取（Dialog/Details页 recordId 等）
 watch(apiUrl, (url) => {
   if (url) void wReload();
 });
 
-/** 取字段值 */
+/** 取FieldValue */
 function getFieldValue(field: string): unknown {
   return data.value[field];
 }
 
-/** 格式化显示值 */
+/** FormatShowValue */
 function formatValue(item: DescriptionItemConfig): string {
   const raw = getFieldValue(item.field);
   if (raw == null) return "";
@@ -107,7 +107,7 @@ function formatValue(item: DescriptionItemConfig): string {
   return `${prefix}${str}${suffix}`;
 }
 
-/** tag 类型：根据 value 查找对应的 tag 配置 */
+/** tag Type：根据 value 查找对应的 tag Config */
 function getTagConfig(
   item: DescriptionItemConfig,
 ): { label: string; color?: string } | null {
@@ -117,7 +117,7 @@ function getTagConfig(
   return found || { label: String(raw ?? "") };
 }
 
-/** 日期格式化 */
+/** 日期Format */
 function formatDate(item: DescriptionItemConfig): string {
   const raw = getFieldValue(item.field);
   if (!raw) return "";
@@ -151,7 +151,7 @@ function formatDate(item: DescriptionItemConfig): string {
         :label="item.label"
         :span="item.span || 1"
       >
-        <!-- tag 类型 -->
+        <!-- tag Type -->
         <template v-if="item.type === 'tag'">
           <el-tag
             :type="
@@ -167,14 +167,14 @@ function formatDate(item: DescriptionItemConfig): string {
           </el-tag>
         </template>
 
-        <!-- link 类型 -->
+        <!-- link Type -->
         <template v-else-if="item.type === 'link'">
           <a :class="styles.link" :href="item.href || '#'" target="_blank">
             {{ formatValue(item) }}
           </a>
         </template>
 
-        <!-- image 类型 -->
+        <!-- image Type -->
         <template v-else-if="item.type === 'image'">
           <img
             v-if="getFieldValue(item.field)"
@@ -187,12 +187,12 @@ function formatDate(item: DescriptionItemConfig): string {
           />
         </template>
 
-        <!-- date 类型 -->
+        <!-- date Type -->
         <template v-else-if="item.type === 'date'">
           {{ formatDate(item) }}
         </template>
 
-        <!-- text 类型（默认） -->
+        <!-- text Type（默认） -->
         <template v-else>
           {{ formatValue(item) }}
         </template>

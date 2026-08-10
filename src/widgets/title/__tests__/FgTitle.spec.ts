@@ -11,9 +11,10 @@ import FgTitle from "../FgTitle.vue";
 import { titleConfig } from "../config";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 describe("FgTitle", () => {
   let store: ReturnType<typeof useWidgetStore>;
@@ -72,7 +73,7 @@ describe("FgTitle", () => {
   describe("content 属性", () => {
     it("默认显示标题文字", () => {
       const wrapper = mountWidget();
-      expect(wrapper.text()).toBe("标题文字");
+      expect(wrapper.text()).toBe("Title Text");
     });
 
     it("自定义 content", () => {

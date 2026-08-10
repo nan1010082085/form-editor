@@ -1,16 +1,16 @@
 <script setup lang="ts">
 /**
- * EditorCanvas — 编辑器画布 (Phase 3)
+ * EditorCanvas — Edit器画布 (Phase 3)
  *
- * 简化版画布引擎，包裹 SchemaRender，提供画布上下文。
- * 画布配置从 boardStore 读取，Widget 数据从 widgetStore 读取。
+ * 简化版画布引擎, 包裹 SchemaRender, 提供画布上下文。
+ * 画布Config从 boardStore 读取, Widget Data从 widgetStore 读取。
  *
  * 职责：
- * - 渲染画布容器（尺寸、背景、缩放）
+ * - 渲染画布Container（尺寸、Background、缩放）
  * - 委托 SchemaRender 渲染 Widget 树
  * - 画布交互（选中、拖拽、缩放）后续迭代接入
  */
-import { computed, onMounted, onUnmounted, provide, ref } from "vue";
+import { computed, onMounted, onUnmounted, provide, ref, type CSSProperties } from "vue";
 import { ElMessageBox } from "element-plus";
 import { useBoardStore } from "../../stores/board";
 import { useEditorStore } from "../../stores/editor";
@@ -43,7 +43,12 @@ import { useSnapshot } from "../../composables/useSnapshot";
 import { EDITOR_CONTEXTMENU_KEY } from "./editorContextKeys";
 import { useGridCanvasDropEnabled } from "../../composables/useGridCanvasDrop";
 import { useDuplicateWidget } from "../../composables/useDuplicateWidget";
+import {
+  PREVIEW_VIEWPORT_WIDTH,
+  computeFreePreviewStyle,
+} from "../../composables/previewViewport";
 import { useI18n } from "@schema-platform/platform-shared";
+import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 import styles from "./EditorCanvas.module.scss";
 import rendererStyles from "../WidgetRenderer/style.module.scss";
 
@@ -58,6 +63,7 @@ const emit = defineEmits<{
   openRule: [widget: Widget];
   openApi: [widget: Widget];
   openVariables: [widget: Widget];
+  openChartLinkage: [widget: Widget];
   savePreview: [dataUrl: string];
 }>();
 
@@ -80,6 +86,11 @@ const gridDropEnabled = computed(() => isGridLayout.value && !isPreview.value);
 const showGridEmpty = computed(
   () => gridDropEnabled.value && widgetStore.widgets.length === 0,
 );
+/** 已有WidgetHrs, 底部追加落区提示（流式末尾） */
+const showGridAppend = computed(
+  () => gridDropEnabled.value && widgetStore.widgets.length > 0,
+);
+
 const {
   isDragOver: isGridDragOver,
   handleDragOver: handleGridDragOver,
@@ -88,7 +99,7 @@ const {
 } = useGridCanvasDropEnabled(contentFrameRef, gridDropEnabled);
 const { duplicateFromWidget } = useDuplicateWidget();
 
-// ---- 百分比模式：监听父容器尺寸 ----
+// ---- 百Min比模式：监听父Container尺寸 ----
 
 const parentSize = ref({ width: 1920, height: 1080 });
 let resizeObserver: ResizeObserver | null = null;
@@ -112,29 +123,37 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-/** 画布容器样式：尺寸、背景、内边距、缩放 */
-const canvasStyle = computed(() => {
+/** 画布ContainerStyle：尺寸、Background、Padding、缩放 */
+const canvasStyle = computed((): CSSProperties => {
   const c = boardStore.canvas;
+  const bp = props.previewBreakpoint ?? "desktop";
+  const viewportW = PREVIEW_VIEWPORT_WIDTH[bp];
 
   if (isGridLayout.value) {
-    const zoom = c.zoom ?? 100;
+    const zoom = isPreview.value ? 100 : (c.zoom ?? 100);
+    const constrained = isPreview.value && viewportW != null;
     return {
-      width: "100%",
+      width: constrained ? `${viewportW}px` : "100%",
+      maxWidth: constrained ? `${viewportW}px` : undefined,
       height: "100%",
       minHeight: "100%",
+      margin: constrained ? "0 auto" : undefined,
+      boxShadow: constrained
+        ? "0 0 0 1px var(--el-border-color-lighter)"
+        : undefined,
       backgroundColor: c.backgroundColor,
       padding: c.padding,
-      position: "relative" as const,
-      boxSizing: "border-box" as const,
+      position: "relative",
+      boxSizing: "border-box",
       transform: zoom !== 100 ? `scale(${zoom / 100})` : undefined,
-      transformOrigin: "top left" as const,
+      transformOrigin: "top left",
     };
   }
 
   const wUnit = c.widthUnit ?? "px";
   const hUnit = c.heightUnit ?? "px";
 
-  // 编辑模式有 24px margin（标尺空间），百分比时需扣除 margin
+  // Edit模式有 24px margin（标尺空间）, 百Min比Hrs需扣除 margin
   const margin = isPreview.value ? 0 : 24;
   const availW = parentSize.value.width - margin * 2;
   const availH = parentSize.value.height - margin * 2;
@@ -145,6 +164,21 @@ const canvasStyle = computed(() => {
 
   boardStore.setCanvasPixelSize(widthPx, heightPx);
 
+  // 自由Layout预览：按 scaleMode 适配Container；平板/手机Hrs以设备Width为Container宽
+  if (isPreview.value) {
+    const frameW = viewportW ?? parentSize.value.width;
+    const frameH = parentSize.value.height;
+    return computeFreePreviewStyle({
+      designW: widthPx,
+      designH: heightPx,
+      frameW,
+      frameH,
+      mode: c.scaleMode ?? "contain",
+      backgroundColor: c.backgroundColor,
+      padding: c.padding,
+    });
+  }
+
   return {
     width:
       wUnit === "%" ? `calc(${c.width}% - ${margin * 2}px)` : `${c.width}px`,
@@ -154,11 +188,11 @@ const canvasStyle = computed(() => {
     padding: c.padding,
     transform: `scale(${c.zoom / 100})`,
     transformOrigin: "top left",
-    position: "relative" as const,
+    position: "relative",
   };
 });
 
-// ---- 预览模式：弹窗注册表 + 事件执行上下文 ----
+// ---- 预览模式：Dialog注册表 + Event执Row上下文 ----
 
 const dialogRegistry: DialogRegistry = new Map();
 const lastOpenedDialogId = ref<string | undefined>(undefined);
@@ -273,7 +307,7 @@ const previewEventContext: EventExecutionContext = {
 };
 provide(EVENT_CONTEXT_KEY, previewEventContext);
 
-// ---- 共享联动状态（编辑模式：注入给所有 SchemaNode，避免每个节点独立创建 useLinkage） ----
+// ---- 共享LinkageStatus（Edit模式：注入给所有 SchemaNode, 避免每个节点独立创建 useLinkage） ----
 
 const { stateMap: linkageStateMap } = useLinkage(
   widgetStore.widgets as unknown as PartialWidget[],
@@ -407,7 +441,10 @@ function handleCanvasClick() {
       ref="contentFrameRef"
       :class="[
         styles.contentFrame,
-        { [styles.contentFrameGridDrop]: gridDropEnabled && isGridDragOver },
+        {
+          [styles.contentFrameGridFlow]: gridDropEnabled,
+          [styles.contentFrameGridDrop]: gridDropEnabled && isGridDragOver,
+        },
       ]"
       :style="contentFrameStyle"
       @click="handleCanvasClick"
@@ -415,25 +452,51 @@ function handleCanvasClick() {
       @dragleave="gridDropEnabled ? handleGridDragLeave($event) : undefined"
       @drop="gridDropEnabled ? handleGridDrop($event) : undefined"
     >
-      <!-- Grid 布局：网格渲染，编辑/预览共用 -->
-      <div v-if="showGridEmpty" :class="styles.gridEmpty">
+      <!-- Grid 空画布：整块流式落区 -->
+      <div
+        v-if="showGridEmpty"
+        :class="[
+          styles.gridEmpty,
+          { [styles.gridEmptyActive]: isGridDragOver },
+        ]"
+      >
+        <AppIcon name="plus" :size="28" />
         <span :class="styles.gridEmptyTitle">{{
           t("editor.canvas.emptyGrid")
         }}</span>
-        <span>{{ t("editor.canvas.emptyGridHint") }}</span>
+        <span :class="styles.gridEmptyHint">{{
+          t("editor.canvas.emptyGridHint")
+        }}</span>
       </div>
-      <WidgetRenderer
-        v-if="isGridLayout"
-        :schema="widgetStore.widgets"
-        :layout="rendererLayout"
-        :canvas-config="boardStore.canvas"
-        :user="formGridContext.user"
-        :request="formGridContext.request"
-        :global="formGridContext.global"
-        :editor-selectable="!isPreview"
-      />
 
-      <!-- 自由布局：绝对定位 + 编辑交互层 -->
+      <div
+        v-if="isGridLayout && !showGridEmpty"
+        :class="styles.gridWidgetsLayer"
+      >
+        <WidgetRenderer
+          :schema="widgetStore.widgets"
+          :layout="rendererLayout"
+          :canvas-config="boardStore.canvas"
+          :user="formGridContext.user"
+          :request="formGridContext.request"
+          :global="formGridContext.global"
+          :editor-selectable="!isPreview"
+        />
+        <!-- 已有Widget：底部追加带, 标明流式末尾落点 -->
+        <div
+          v-if="showGridAppend"
+          :class="[
+            styles.gridAppend,
+            { [styles.gridAppendActive]: isGridDragOver },
+          ]"
+          aria-hidden="true"
+        >
+          <AppIcon name="plus" :size="14" />
+          <span>{{ t("editor.canvas.flowAppendHint") }}</span>
+        </div>
+      </div>
+
+      <!-- 自由Layout：绝对定位 + Edit交互层 -->
       <template v-else>
         <SchemaRender v-if="isPreview" :widgets="widgetStore.widgets" />
         <EditorOverlay
@@ -442,6 +505,7 @@ function handleCanvasClick() {
           @open-rule="emit('openRule', $event)"
           @open-api="emit('openApi', $event)"
           @open-variables="emit('openVariables', $event)"
+          @open-chart-linkage="emit('openChartLinkage', $event)"
           @save-preview="emit('savePreview', $event)"
         />
       </template>
@@ -465,6 +529,7 @@ function handleCanvasClick() {
       @open-rule="emit('openRule', $event)"
       @open-api="emit('openApi', $event)"
       @open-variables="emit('openVariables', $event)"
+      @open-chart-linkage="emit('openChartLinkage', $event)"
       @save-preview="handleSavePreview"
     />
   </div>

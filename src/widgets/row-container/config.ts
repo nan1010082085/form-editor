@@ -17,7 +17,7 @@ export const rowContainerConfig: WidgetConfig = {
         label: "Col Gap",
         type: "number",
         default: 12,
-        desc: "单元格之间的间距（px）",
+        desc: "Gap between cells (px)",
       },
     ],
     style: ["margin", "padding", "backgroundColor"],

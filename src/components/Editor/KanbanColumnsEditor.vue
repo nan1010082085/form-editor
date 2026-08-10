@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from "@schema-platform/platform-shared";
 import type { KanbanColumn } from "@/widgets/kanban/config";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 import styles from "./SearchFieldsEditor.module.scss";
@@ -10,6 +11,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   "update:columns": [columns: KanbanColumn[]];
 }>();
+
+const { t } = useI18n();
 
 function addColumn() {
   emit("update:columns", [
@@ -59,7 +62,7 @@ function updateColumn<K extends keyof KanbanColumn>(
       v-if="columns.length === 0"
       :class="styles['search-fields-editor__empty']"
     >
-      未配置看板列。
+      {{ t('editor.kanbanColumnsEditor.empty') }}
     </div>
 
     <div
@@ -68,9 +71,9 @@ function updateColumn<K extends keyof KanbanColumn>(
       :class="styles['search-fields-editor__item']"
     >
       <div :class="styles['search-fields-editor__item-header']">
-        <span :class="styles['search-fields-editor__item-title']"
-          >列 {{ idx + 1 }}</span
-        >
+        <span :class="styles['search-fields-editor__item-title']">
+          {{ t('editor.kanbanColumnsEditor.columnTitle', { index: idx + 1 }) }}
+        </span>
         <div :class="styles['search-fields-editor__item-actions']">
           <el-button
             size="small"
@@ -95,7 +98,9 @@ function updateColumn<K extends keyof KanbanColumn>(
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">Key</label>
+        <label :class="styles['search-fields-editor__label']">{{
+          t("editor.common.key")
+        }}</label>
         <el-input
           :model-value="col.key"
           size="small"
@@ -105,17 +110,21 @@ function updateColumn<K extends keyof KanbanColumn>(
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">标题</label>
+        <label :class="styles['search-fields-editor__label']">
+          {{ t('editor.kanbanColumnsEditor.title') }}
+        </label>
         <el-input
           :model-value="col.title"
           size="small"
-          placeholder="待办"
+          :placeholder="t('editor.kanbanColumnsEditor.titlePlaceholder')"
           @update:model-value="updateColumn(idx, 'title', $event)"
         />
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">状态值</label>
+        <label :class="styles['search-fields-editor__label']">
+          {{ t('editor.kanbanColumnsEditor.statusValue') }}
+        </label>
         <el-input
           :model-value="col.status"
           size="small"
@@ -132,7 +141,7 @@ function updateColumn<K extends keyof KanbanColumn>(
       @click="addColumn"
     >
       <AppIcon name="plus" style="margin-right: 4px" />
-      添加列
+      {{ t('editor.kanbanColumnsEditor.addColumn') }}
     </el-button>
   </div>
 </template>

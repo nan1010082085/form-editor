@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * FgTabContainer — Tab 容器
+ * FgTabContainer — Tab Container
  *
- * 内部切换多个子画布，每个 Tab 页可包含独立的 widget 集合。
- * 与 tabs 的区别：tabs 是布局容器，tab-container 支持子画布级 widget 集合。
+ * 内部切换多个子画布, 每个 Tab 页可包含独立的 widget 集合。
+ * 与 tabs 的区别：tabs 是LayoutContainer, tab-container 支持子画布级 widget 集合。
  */
 import { inject, ref, computed } from "vue";
 import { widgetDataKey, widgetStyleKey, type Widget } from "../base/types";

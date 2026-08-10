@@ -30,7 +30,7 @@ export const autoRefreshConfig: WidgetConfig = {
         key: "targets",
         label: "Target Widget ID",
         type: "input",
-        placeholder: "逗号分隔，如 kpi-1,chart-1",
+        placeholder: "Comma-separated, e.g. kpi-1,chart-1",
         default: "",
       },
       { key: "showStatus", label: "Show Status", type: "switch", default: true },

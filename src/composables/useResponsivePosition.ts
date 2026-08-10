@@ -1,8 +1,8 @@
 /**
- * useResponsivePosition — 响应式位置解析 composable
+ * useResponsivePosition — 响应式位置Parse composable
  *
- * 根据当前预览断点（desktop/tablet/mobile），解析 Widget 的响应式位置覆盖。
- * 仅在预览/发布模式下生效，编辑模式始终使用默认位置。
+ * 根据当前预览断点（desktop/tablet/mobile）, Parse Widget 的响应式位置覆盖。
+ * 仅在预览/发布模式下生效, Edit模式始终使用默认位置。
  *
  * 回退链：当前断点 → desktop → 默认 position
  */
@@ -14,7 +14,7 @@ import type {
   ResponsivePosition,
 } from "@/widgets/base/types";
 
-/** 解析后的位置（完整字段，无 undefined） */
+/** Parse后的位置（完整Field, 无 undefined） */
 export interface ResolvedPosition {
   x: number;
   y: number;
@@ -36,7 +36,7 @@ const FALLBACK_ORDER: Record<PreviewBreakpoint, PreviewBreakpoint[]> = {
 };
 
 /**
- * 从响应式配置中查找最匹配的断点覆盖
+ * 从响应式Config中查找最匹配的断点覆盖
  */
 function findBreakpointOverride(
   responsive: ResponsivePosition | undefined,
@@ -90,17 +90,17 @@ function mergePosition(
 export interface UseResponsivePositionOptions {
   widget: Ref<Widget> | ComputedRef<Widget>;
   breakpoint: Ref<PreviewBreakpoint>;
-  /** 是否为预览/发布模式（编辑模式忽略响应式覆盖） */
+  /** 是否为预览/发布模式（Edit模式忽略响应式覆盖） */
   isPreviewMode: Ref<boolean> | ComputedRef<boolean>;
 }
 
 export interface UseResponsivePositionReturn {
-  /** 解析后的位置（考虑断点覆盖和回退） */
+  /** Parse后的位置（考虑断点覆盖和回退） */
   resolvedPosition: ComputedRef<ResolvedPosition>;
 }
 
 /**
- * 根据当前断点解析 Widget 的响应式位置
+ * 根据当前断点Parse Widget 的响应式位置
  */
 export function useResponsivePosition(
   options: UseResponsivePositionOptions,
@@ -109,7 +109,7 @@ export function useResponsivePosition(
 
   const resolvedPosition = computed<ResolvedPosition>(() => {
     if (!isPreviewMode.value) {
-      // 编辑模式：直接使用默认位置，忽略响应式覆盖
+      // Edit模式：直接使用默认位置, 忽略响应式覆盖
       return mergePosition(widget.value.position, undefined);
     }
     const override = findBreakpointOverride(

@@ -2,8 +2,8 @@
 /**
  * WidgetErrorBoundary - widget 渲染崩溃隔离
  *
- * 基于 Vue 3 onErrorCaptured 捕获子树渲染错误，防止单个 widget 崩溃拖垮整画布。
- * 崩溃时显示「组件渲染异常 + 重置」占位，并上报 telemetry（复用 reportTelemetry）。
+ * 基于 Vue 3 onErrorCaptured 捕获子树Render Error, 防止单个 widget 崩溃拖垮整画布。
+ * 崩溃HrsShow「Component渲染异常 + Reset」占位, 并上报 telemetry（复用 reportTelemetry）。
  *
  * 用法：
  *   <WidgetErrorBoundary :widget-type="widget.type" :widget-id="widget.id">
@@ -32,17 +32,17 @@ onErrorCaptured((err: unknown) => {
   const msg = err instanceof Error ? err.message : String(err);
   errorMessage.value = msg;
   const stack = err instanceof Error ? (err.stack ?? "") : "";
-  // 上报渲染异常到 server /api/telemetry/errors（静默降级，不阻塞）
+  // 上报渲染异常到 server /api/telemetry/errors（静默降级, 不阻塞）
   void reportTelemetryError(
     msg,
     { widgetType: props.widgetType, widgetId: props.widgetId },
     stack,
   );
-  // 复用平台错误上报
+  // 复用平台Error上报
   void reportError(err instanceof Error ? err : new Error(msg), {
     info: `widget render error: ${props.widgetType ?? "unknown"}`,
   });
-  // 阻止错误向上冒泡（不拖垮整画布）
+  // 阻止Error向上冒泡（不拖垮整画布）
   return false;
 });
 

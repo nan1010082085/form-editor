@@ -2,9 +2,9 @@ import type { WidgetConfig } from "../base/types";
 
 export const compareFunnelConfig: WidgetConfig = {
   name: "FgCompareFunnel",
-  displayName: "对比漏斗图",
+  displayName: "Compare漏斗图",
   type: "compare-funnel",
-  description: "对比漏斗图，用于展示两个流程的转化对比",
+  description: "Compare漏斗图, 用于展示两个流程的转化Compare",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
   defaultProps: {
@@ -66,13 +66,13 @@ export const compareFunnelConfig: WidgetConfig = {
       },
       {
         key: "seriesFields",
-        label: "系列字段 (JSON)",
+        label: "SeriesField (JSON)",
         type: "json",
         placeholder: '["value1", "value2"]',
       },
       {
         key: "seriesNames",
-        label: "系列名称 (JSON)",
+        label: "系Column name称 (JSON)",
         type: "json",
         placeholder: '["流程A", "流程B"]',
       },
@@ -84,9 +84,9 @@ export const compareFunnelConfig: WidgetConfig = {
         label: "Color Scheme",
         type: "select",
         options: [
-          { label: "默认", value: "default" },
-          { label: "暗色", value: "dark" },
-          { label: "浅色", value: "light" },
+          { label: "Default", value: "default" },
+          { label: "Dark", value: "dark" },
+          { label: "Light", value: "light" },
         ],
       },
       { key: "customColors", label: "Custom Colors", type: "color-array" },

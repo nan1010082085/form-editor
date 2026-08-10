@@ -1,7 +1,7 @@
 /**
- * 权限控制 Composable
+ * Permission控制 Composable
  *
- * 从 useAppStore.userContext.permissions 获取当前用户的权限码列表，
+ * 从 useAppStore.userContext.permissions 获取当前User的Permission码Column表, 
  * 提供 hasPermission / hasAnyPermission / hasAllPermission 方法。
  *
  * @example
@@ -17,24 +17,24 @@ import { useAppStore } from "@/stores/app";
 export function usePermission() {
   const appStore = useAppStore();
 
-  /** 当前用户的权限码列表（响应式） */
+  /** 当前User的Permission码Column表（响应式） */
   const permissions = computed(() => appStore.userContext.permissions ?? []);
 
   /**
-   * 判断当前用户是否拥有指定权限码
+   * 判断当前User是否拥有指定Permission码
    *
-   * @param code - 权限码，如 'flow:design'
-   * @returns 是否拥有该权限
+   * @param code - Permission码, 如 'flow:design'
+   * @returns 是否拥有该Permission
    */
   function hasPermission(code: string): boolean {
     return permissions.value.includes(code);
   }
 
   /**
-   * 判断当前用户是否拥有任意一个权限码（OR 逻辑）
+   * 判断当前User是否拥有任意一个Permission码（OR 逻辑）
    *
-   * @param codes - 权限码数组
-   * @returns 是否拥有至少一个权限
+   * @param codes - Permission码数组
+   * @returns 是否拥有至少一个Permission
    */
   function hasAnyPermission(codes: string[]): boolean {
     const userPerms = permissions.value;
@@ -42,10 +42,10 @@ export function usePermission() {
   }
 
   /**
-   * 判断当前用户是否拥有全部权限码（AND 逻辑）
+   * 判断当前User是否拥有AllPermission码（AND 逻辑）
    *
-   * @param codes - 权限码数组
-   * @returns 是否拥有全部权限
+   * @param codes - Permission码数组
+   * @returns 是否拥有AllPermission
    */
   function hasAllPermission(codes: string[]): boolean {
     const userPerms = permissions.value;

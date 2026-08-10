@@ -1,13 +1,13 @@
 /**
- * useTenantStore — 租户管理状态
+ * useTenantStore — 租户管理Status
  *
  * 职责：
- * - 租户列表的获取、分页、搜索、状态筛选
- * - 租户的创建、更新、删除、启停用
+ * - 租户Column表的获取、Min页、Search、StatusFilter
+ * - 租户的创建、Update、Delete、启Disabled
  */
 import { defineStore } from "pinia";
 import { ref, reactive, computed } from "vue";
-import { ApiError } from "@/utils/apiClient";
+import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import type { PaginatedResponse } from "@/types/api";
 import type {
   TenantItem,
@@ -25,7 +25,7 @@ import {
 const DEFAULT_PAGE_SIZE = 20;
 
 export const useTenantStore = defineStore("tenant", () => {
-  // ── 状态 ──
+  // ── Status ──
   const tenants = ref<TenantItem[]>([]);
   const loading = ref(false);
   const error = ref("");
@@ -38,7 +38,7 @@ export const useTenantStore = defineStore("tenant", () => {
     totalPages: 0,
   });
 
-  // ── 计算属性 ──
+  // ── 计算Property ──
   const hasTenants = computed(() => tenants.value.length > 0);
   const isEmpty = computed(() => !loading.value && tenants.value.length === 0);
   const hasError = computed(() => error.value !== "");
@@ -59,16 +59,14 @@ export const useTenantStore = defineStore("tenant", () => {
     try {
       return await fn();
     } catch (e: unknown) {
-      if (e instanceof ApiError) setError(e.message);
-      else if (e instanceof Error) setError(e.message);
-      else setError("An unexpected error occurred");
+      setError(resolveApiErrorMessage(e));
       return null;
     } finally {
       loading.value = false;
     }
   }
 
-  // ── 列表操作 ──
+  // ── Column表Action ──
   async function fetchTenants(params?: {
     page?: number;
     pageSize?: number;
@@ -145,9 +143,7 @@ export const useTenantStore = defineStore("tenant", () => {
       }
       return true;
     } catch (e: unknown) {
-      if (e instanceof ApiError) setError(e.message);
-      else if (e instanceof Error) setError(e.message);
-      else setError("An unexpected error occurred");
+      setError(resolveApiErrorMessage(e));
       return false;
     }
   }

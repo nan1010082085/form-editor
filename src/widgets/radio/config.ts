@@ -13,7 +13,7 @@ export const radioConfig: WidgetConfig = {
     disabled: false,
   },
   exposedValues: [
-    { key: "value", type: "string", description: "当前字段值", example: "" },
+    { key: "value", type: "string", description: "Current field value", example: "" },
   ],
   configPanels: ["events", "linkages", "api", "variables"],
   propertyPanel: {

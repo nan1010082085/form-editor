@@ -1,11 +1,11 @@
 /**
  * 统一 API 客户端
  *
- * 基于 fetch 的请求封装，支持：
+ * 基于 fetch 的请求封装, 支持：
  * - 请求/响应拦截器链
  * - 统一 token/cookie 注入
- * - 数据源数据转换（dataPath / labelKey / valueKey）
- * - 统一错误格式（ApiError）
+ * - Data源DataTransform（dataPath / labelKey / valueKey）
+ * - 统一Error格式（ApiError）
  * - Mock 降级
  */
 
@@ -21,7 +21,7 @@ import type {
 import { executeWithRetry, type RetryOptions } from "./retryRequest";
 import { redirectToLogin } from "@schema-platform/platform-shared/utils/authPaths";
 
-// ---- 拦截器类型 ----
+// ---- 拦截器Type ----
 
 export interface RequestConfig {
   url: string;
@@ -75,7 +75,7 @@ export class ApiClient {
   }
 
   async request<T>(config: RequestConfig): Promise<T> {
-    // 执行请求拦截器链
+    // 执Row请求拦截器链
     let cfg = { ...config };
     for (const interceptor of this.requestInterceptors) {
       cfg = await interceptor(cfg);
@@ -121,7 +121,7 @@ export class ApiClient {
         );
       }
 
-      // 5xx 服务器错误：抛出可重试的错误
+      // 5xx 服务器Error：抛出可Retry的Error
       if (response.status >= 500) {
         throw new ApiError(
           json.error?.message ?? `Server error (HTTP ${response.status})`,
@@ -140,7 +140,7 @@ export class ApiClient {
 
       let data = json.data as T;
 
-      // 执行响应拦截器链
+      // 执Row响应拦截器链
       for (const interceptor of this.responseInterceptors) {
         data = await interceptor(data, response);
       }
@@ -148,7 +148,7 @@ export class ApiClient {
       return data;
     };
 
-    // 对网络错误和 5xx 服务器错误启用重试
+    // 对网络Error和 5xx 服务器ErrorEnableRetry
     return executeWithRetry(doFetch, this.retryOptions);
   }
 
@@ -169,8 +169,8 @@ export class ApiClient {
   }
 
   /**
-   * 发送请求到外部 URL，不做 ApiResponse 包装解析，直接返回原始 JSON。
-   * 用于 actionExecutor / requestQueue 等调用用户配置的外部 API 场景。
+   * 发送请求到外部 URL, 不做 ApiResponse 包装Parse, 直接返回原始 JSON。
+   * 用于 actionExecutor / requestQueue 等调用UserConfig的外部 API 场景。
    * 会自动注入 token。
    */
   async requestRaw<T>(
@@ -214,7 +214,7 @@ export class ApiClient {
 
   /**
    * 发送请求到完整 URL（不拼接 baseUrl）。
-   * 供数据源等外部配置的 URL 使用（如 schema apiConfig.url）。
+   * 供Data源等外部Config的 URL 使用（如 schema apiConfig.url）。
    */
   async requestUrl<T>(
     method: string,
@@ -239,12 +239,12 @@ export class ApiClient {
       headers["Content-Type"] = "application/json";
     }
 
-    // 合并自定义 headers（customHeaders 覆盖默认值）
+    // 合并自定义 headers（customHeaders 覆盖Default value）
     if (customHeaders) {
       Object.assign(headers, customHeaders);
     }
 
-    // 超时控制
+    // 超Hrs控制
     if (timeout && timeout > 0) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeout);
@@ -275,7 +275,7 @@ export class ApiClient {
     return this.useMock;
   }
 
-  /** 获取当前 token（供外部需要手动构建请求时使用） */
+  /** 获取当前 token（供外部需要手动构建请求Hrs使用） */
   getTokenValue(): string {
     return this.getToken?.() ?? "";
   }
@@ -306,7 +306,7 @@ export class ApiClient {
 
 export const apiClient = new ApiClient();
 
-// ---- 向后兼容的配置入口 ----
+// ---- 向后兼容的Config入口 ----
 
 export interface ApiClientConfig {
   baseUrl?: string;
@@ -458,7 +458,7 @@ export async function deleteSchema(id: string): Promise<null> {
   return apiClient.delete<null>(`/schemas/${encodeURIComponent(id)}`);
 }
 
-// ---- 版本管理 ----
+// ---- Version管理 ----
 
 export interface VersionEntry {
   id: string;
@@ -516,7 +516,7 @@ export async function deleteVersion(
   );
 }
 
-// ---- 导入 ----
+// ---- Import ----
 
 export interface SchemaImportPayload {
   name: string;
@@ -530,7 +530,7 @@ export async function importSchema(
   return apiClient.post<SchemaDetail>("/schemas/import", payload);
 }
 
-// ---- 数据源 ----
+// ---- Data源 ----
 
 export interface DictItem {
   label: string;
@@ -570,7 +570,7 @@ export async function fetchMockData(
   );
 }
 
-// ---- 模板 ----
+// ---- Template ----
 
 export type TemplateCategory =
   | "form"
@@ -648,7 +648,7 @@ export async function deleteTemplate(id: string): Promise<null> {
   return apiClient.delete<null>(`/templates/${encodeURIComponent(id)}`);
 }
 
-// ---- 认证 ----
+// ---- Authenticate ----
 
 export interface LoginPayload {
   username: string;
@@ -743,7 +743,7 @@ export async function fetchFlowInstanceById(
   );
 }
 
-// ---- 审批日志 ----
+// ---- 审批Log ----
 
 export interface ApprovalLogItem {
   id: string;
@@ -771,7 +771,7 @@ export async function fetchApprovalLogs(
   return response.items;
 }
 
-// ---- 流程定义版本（含图数据）----
+// ---- 流程定义Version（含图Data）----
 
 export interface FlowVersionItem {
   id: string;
@@ -791,7 +791,7 @@ export async function fetchLatestFlowVersion(
   );
 }
 
-// ---- 表单提交数据 ----
+// ---- FormSubmitData ----
 
 export interface SubmissionItem {
   id: string;
@@ -827,7 +827,7 @@ export async function fetchSubmissionDetail(
   );
 }
 
-/** 创建表单提交记录（POST body: { data }） */
+/** 创建FormSubmit记录（POST body: { data }） */
 export async function createSubmission(
   schemaId: string,
   data: Record<string, unknown>,
@@ -923,7 +923,7 @@ export async function exportSubmissions(
   return response.blob();
 }
 
-// ---- 错误类型 ----
+// ---- ErrorType ----
 
 export class ApiError extends Error {
   public readonly status: number;

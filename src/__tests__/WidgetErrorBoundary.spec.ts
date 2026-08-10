@@ -6,10 +6,10 @@ import { mount } from "@vue/test-utils";
 import { defineComponent, h, nextTick } from "vue";
 import WidgetErrorBoundary from "@/components/WidgetRenderer/WidgetErrorBoundary.vue";
 
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-  reportError: vi.fn(),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }), reportError: vi.fn() };
+});
 vi.mock("@/api/telemetryApi", () => ({
   reportTelemetryError: vi.fn(),
 }));

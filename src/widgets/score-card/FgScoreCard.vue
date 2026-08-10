@@ -1,18 +1,23 @@
 <script setup lang="ts">
+/**
+ * FgScoreCard — Score Card
+ */
 import { computed, inject } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
+const { t } = useI18n();
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 
-const LEVEL_LABEL: Record<string, string> = {
-  excellent: "优秀",
-  good: "良好",
-  medium: "中等",
-  poor: "较差",
+/** 评Min等级 i18n key Map */
+const LEVEL_LABEL_KEY: Record<string, string> = {
+  excellent: "editor.scoreCard.levelExcellent",
+  good: "editor.scoreCard.levelGood",
+  medium: "editor.scoreCard.levelMedium",
+  poor: "editor.scoreCard.levelPoor",
 };
+
 const LEVEL_TYPE: Record<string, "success" | "warning" | "danger"> = {
   excellent: "success",
   good: "success",
@@ -25,7 +30,9 @@ const maxScore = computed(() => (widgetData.value.props?.maxScore as number) ?? 
 const level = computed(() => (widgetData.value.props?.level as string) ?? "medium");
 const description = computed(() => (widgetData.value.props?.description as string) ?? "");
 const showLevel = computed(() => (widgetData.value.props?.showLevel as boolean) ?? true);
-const label = computed(() => widgetData.value.label ?? "评分卡");
+const label = computed(
+  () => widgetData.value.label ?? t("editor.scoreCard.defaultLabel"),
+);
 
 const percent = computed(() =>
   maxScore.value > 0 ? Math.round((score.value / maxScore.value) * 100) : 0,
@@ -36,6 +43,14 @@ const scoreColor = computed(() => {
   return "#f56c6c";
 });
 
+/**
+ * Parse评Min等级展示文案
+ */
+function levelLabel(levelKey: string): string {
+  const key = LEVEL_LABEL_KEY[levelKey];
+  return key ? t(key) : levelKey;
+}
+
 useExposeWidget((wd) => ({
   get score() {
     return (wd.value.props?.score as number) ?? 0;
@@ -44,11 +59,11 @@ useExposeWidget((wd) => ({
 </script>
 
 <template>
-  <div :class="$style.scoreCard" :style="{ fontSize: widgetData.style?.fontSize || '14px' }">
+  <div :class="$style.scoreCard" :style="{ fontSize: String(widgetData.style?.fontSize || '14px') }">
     <div :class="$style.header">
       <span :class="$style.label">{{ label }}</span>
       <el-tag v-if="showLevel" :type="LEVEL_TYPE[level] ?? 'info'" size="small">
-        {{ LEVEL_LABEL[level] ?? level }}
+        {{ levelLabel(level) }}
       </el-tag>
     </div>
     <div :class="$style.scoreWrap">

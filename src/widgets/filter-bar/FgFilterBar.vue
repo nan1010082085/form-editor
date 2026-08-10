@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * FgFilterBar — 全局筛选栏
+ * FgFilterBar — 全局Filter栏
  *
- * 水平排列的筛选控件集合，输出筛选参数供图表/表格消费。
- * 支持日期范围、下拉选择、关键词搜索等筛选项。
+ * 水平排Column的Filter控件集合, OutputFilterParams供Chart/表格消费。
+ * 支持Date Range、下拉选择、关键词Search等Filter项。
  */
 import { inject, ref, computed } from "vue";
 import { widgetDataKey, widgetStyleKey } from "../base/types";
@@ -36,7 +36,7 @@ const filterData = computed(() => ({
   keyword: searchValue.value,
 }));
 
-// 自动同步筛选参数到 DataSourceStore + URL
+// 自动SyncFilterParams到 DataSourceStore + URL
 const { clearFilters } = useFilterSync(filterData);
 
 function handleFilterChange(key: string, value: unknown) {

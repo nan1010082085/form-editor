@@ -1,8 +1,8 @@
 /**
- * useSchemaValidation — 手动触发 Schema 校验
+ * useSchemaValidation — 手动Trigger Schema Validate
  *
- * 非阻断式：校验结果以 popover 形式展示，不阻塞主流程。
- * 通过按钮手动触发，不自动执行。
+ * 非阻断式：Validate结果以 popover 形式展示, 不阻塞主流程。
+ * passedButton手动Trigger, 不自动执Row。
  */
 import { ref } from "vue";
 import { useWidgetStore } from "@/stores/widget";

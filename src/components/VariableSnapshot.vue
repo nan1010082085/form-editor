@@ -2,10 +2,11 @@
 /**
  * VariableSnapshot — 变量快照表格
  *
- * 展示工作流执行时的变量名称、类型、最新值。
- * 支持展开行查看变量的历史值变化。
+ * 展示工作流执RowHrs的变量Name、Type、最新Value。
+ * 支持ExpandRowView变量的历史Value变化。
  */
 import { ref, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./VariableSnapshot.module.scss";
 
 // ── Types ──
@@ -19,6 +20,8 @@ interface VariableEntry {
 const props = defineProps<{
   variables: Record<string, unknown>;
 }>();
+
+const { t } = useI18n();
 
 // ── State ──
 const expandedRows = ref<Set<string>>(new Set());
@@ -62,19 +65,19 @@ function toggleRow(name: string) {
 <template>
   <div v-if="entries.length > 0" :class="styles.root">
     <el-table :data="entries" stripe :class="styles.table" size="small" border>
-      <el-table-column prop="name" label="变量名" min-width="160">
+      <el-table-column prop="name" :label="t('editor.variableSnapshot.varName')" min-width="160">
         <template #default="{ row }">
           <span :class="styles.varName">{{ row.name }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column prop="type" label="类型" width="120">
+      <el-table-column prop="type" :label="t('editor.common.type')" width="120">
         <template #default="{ row }">
           <el-tag size="small" :class="styles.varType">{{ row.type }}</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column prop="value" label="最新值" min-width="200">
+      <el-table-column prop="value" :label="t('editor.variableSnapshot.latestValue')" min-width="200">
         <template #default="{ row }">
           <el-tooltip
             :content="formatValue(row.value)"
@@ -88,13 +91,13 @@ function toggleRow(name: string) {
 
       <el-table-column
         v-if="entries.some((e) => isExpandable(e.value))"
-        label="历史"
+        :label="t('editor.variableSnapshot.history')"
         width="100"
       >
         <template #default="{ row }">
           <template v-if="isExpandable(row.value)">
             <span :class="styles.historyToggle" @click="toggleRow(row.name)">
-              {{ expandedRows.has(row.name) ? "收起" : "展开" }}
+              {{ expandedRows.has(row.name) ? t('editor.common.collapse') : t('editor.common.expand') }}
             </span>
           </template>
           <span
@@ -107,5 +110,5 @@ function toggleRow(name: string) {
     </el-table>
   </div>
 
-  <div v-else :class="styles.empty">暂无变量数据</div>
+  <div v-else :class="styles.empty">{{ t('editor.variableSnapshot.empty') }}</div>
 </template>

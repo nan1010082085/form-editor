@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, computed, ref, onMounted, watch, type ComputedRef } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 import { fetchApprovalLogs, type ApprovalLogItem } from "@/api/flowApi";
@@ -7,6 +8,8 @@ import { resolveWidgetUrl } from "@/utils/resolveWidgetUrl";
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from "../base/widgetMock";
 import { flowTimelineMock } from "./mock";
 import styles from "./style.module.scss";
+
+const { t } = useI18n();
 
 const widgetData = inject(widgetDataKey)!;
 const variablesContext = inject<ComputedRef<Record<string, unknown>>>(
@@ -28,8 +31,20 @@ useExposeWidget(() => ({
 }));
 
 const title = computed(
-  () => (widgetData.value.props?.title as string) || "审批记录",
+  () =>
+    (widgetData.value.props?.title as string) ||
+    t("editor.flowTimeline.defaultTitle"),
 );
+
+/** Approval Actions文案Map */
+const ACTION_LABEL_KEY: Record<string, string> = {
+  approve: "editor.flowTimeline.actionApprove",
+  reject: "editor.flowTimeline.actionReject",
+  claim: "editor.flowTimeline.actionClaim",
+  delegate: "editor.flowTimeline.actionDelegate",
+  comment: "editor.flowTimeline.actionComment",
+  "reject-to-node": "editor.flowTimeline.actionRejectToNode",
+};
 
 function resolveInstanceId(): string {
   const fixed = widgetData.value.props?.instanceId as string | undefined;
@@ -42,15 +57,6 @@ function resolveInstanceId(): string {
   return val != null ? String(val) : "";
 }
 
-const ACTION_LABEL: Record<string, string> = {
-  approve: "通过",
-  reject: "驳回",
-  claim: "认领",
-  delegate: "委派",
-  comment: "评论",
-  "reject-to-node": "驳回到节点",
-};
-
 const ACTION_TYPE: Record<string, "" | "success" | "danger" | "warning"> = {
   approve: "success",
   reject: "danger",
@@ -60,7 +66,8 @@ const ACTION_TYPE: Record<string, "" | "success" | "danger" | "warning"> = {
 };
 
 function actionLabel(action: string): string {
-  return ACTION_LABEL[action] ?? action;
+  const key = ACTION_LABEL_KEY[action];
+  return key ? t(key) : action;
 }
 
 function actionType(action: string): "" | "success" | "danger" | "warning" {
@@ -99,8 +106,12 @@ watch(() => widgetData.value.props?.instanceId, loadLogs);
 <template>
   <div :class="styles.wrapper">
     <h4 v-if="title" :class="styles.title">{{ title }}</h4>
-    <div v-if="loading" :class="styles.loading">加载中...</div>
-    <div v-else-if="logs.length === 0" :class="styles.empty">暂无审批记录</div>
+    <div v-if="loading" :class="styles.loading">
+      {{ t("editor.flowTimeline.loading") }}
+    </div>
+    <div v-else-if="logs.length === 0" :class="styles.empty">
+      {{ t("editor.flowTimeline.empty") }}
+    </div>
     <ul v-else :class="styles.list">
       <li v-for="log in logs" :key="log.id" :class="styles.item">
         <div :class="styles.header">

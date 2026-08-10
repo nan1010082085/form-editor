@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * WidgetTemplateView — 组件模板库
+ * WidgetTemplateView — ComponentTemplate Library
  *
- * 卡片网格展示模板，支持搜索、分类筛选、详情预览。
+ * 卡片网格展示Template, 支持Search、Min类Filter、Details预览。
  */
 import { onMounted, ref, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -21,7 +21,7 @@ registerAllWidgets();
 const templateStore = useTemplateStore();
 const { t } = useI18n();
 
-// ---- 分类定义 ----
+// ---- Min类定义 ----
 const CATEGORY_OPTIONS = computed<{ label: string; value: string }[]>(() => [
   { label: t("editor.templateView.categoryAll"), value: "" },
   { label: t("editor.templateView.categoryForm"), value: "form" },
@@ -34,7 +34,7 @@ const CATEGORY_OPTIONS = computed<{ label: string; value: string }[]>(() => [
   { label: t("editor.templateView.categoryOther"), value: "other" },
 ]);
 
-// ---- 搜索防抖 ----
+// ---- Search防抖 ----
 const searchInput = ref("");
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -47,19 +47,19 @@ function handleSearch(val: string) {
   }, 300);
 }
 
-// ---- 分类筛选 ----
+// ---- Min类Filter ----
 function handleCategoryChange(category: string) {
   templateStore.setCategory(category);
   templateStore.loadTemplates();
 }
 
-// ---- 分页 ----
+// ---- Min页 ----
 function handlePageChange(page: number) {
   templateStore.setPage(page);
   templateStore.loadTemplates();
 }
 
-// ---- 详情预览 ----
+// ---- Details预览 ----
 type PreviewMode = "render" | "json";
 const previewVisible = ref(false);
 const previewTemplate = ref<TemplateItem | null>(null);
@@ -75,7 +75,7 @@ function openPreview(template: TemplateItem) {
   previewVisible.value = true;
 }
 
-// ---- 删除模板 ----
+// ---- DeleteTemplate ----
 async function handleDelete(template: TemplateItem) {
   try {
     await ElMessageBox.confirm(
@@ -90,11 +90,11 @@ async function handleDelete(template: TemplateItem) {
     await templateStore.removeTemplate(template.id);
     ElMessage.success(t("editor.templateView.templateDeleted"));
   } catch {
-    // 用户取消
+    // UserCancel
   }
 }
 
-// ---- 分类标签颜色 ----
+// ---- Min类Label颜色 ----
 const CATEGORY_TAG_THEME: Record<
   string,
   "default" | "success" | "warning" | "danger"
@@ -115,14 +115,14 @@ function getCategoryTagType(
   return CATEGORY_TAG_THEME[category] ?? "default";
 }
 
-// ---- 分类中文名 ----
+// ---- Min类中文名 ----
 function getCategoryLabel(category: string): string {
   return (
     CATEGORY_OPTIONS.value.find((c) => c.value === category)?.label ?? category
   );
 }
 
-// ---- 日期格式化 ----
+// ---- 日期Format ----
 function formatDate(dateStr: string | Date) {
   if (!dateStr) return "-";
   const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
@@ -282,7 +282,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- 卡片操作 -->
+          <!-- 卡片Action -->
           <div :class="styles.cardActions">
             <el-tooltip
               :content="t('editor.common.preview')"
@@ -324,7 +324,7 @@ onMounted(() => {
       />
     </div>
 
-    <!-- 详情预览抽屉 -->
+    <!-- Details预览Drawer -->
     <el-drawer
       v-model="previewVisible"
       :title="
@@ -348,7 +348,7 @@ onMounted(() => {
           />
         </div>
 
-        <!-- 模板基本信息 -->
+        <!-- TemplateBasic Info -->
         <div :class="styles.previewMeta">
           <div :class="styles.previewMetaRow">
             <span :class="styles.previewMetaLabel">{{

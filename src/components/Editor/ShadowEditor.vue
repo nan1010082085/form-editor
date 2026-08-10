@@ -1,9 +1,10 @@
 <script setup lang="ts">
 /**
- * ShadowEditor — 盒阴影编辑器
- * 支持外阴影/内阴影，配置 x/y/blur/spread/color
+ * ShadowEditor — 盒ShadowEdit器
+ * 支持外Shadow/内Shadow, Config x/y/blur/spread/color
  */
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 
 const props = defineProps<{
   value: Record<string, string>;
@@ -12,6 +13,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   update: [patch: Record<string, string>];
 }>();
+
+const { t } = useI18n();
 
 type ShadowType = "outer" | "inner" | "none";
 
@@ -59,14 +62,29 @@ function emitChange() {
   emit("update", { boxShadow: buildShadow() });
 }
 
-const presetShadows = [
-  { label: "无", value: "none" },
-  { label: "轻微", value: "0 1px 3px rgba(0,0,0,0.12)" },
-  { label: "标准", value: "0 4px 12px rgba(0,0,0,0.15)" },
-  { label: "加深", value: "0 8px 24px rgba(0,0,0,0.2)" },
-  { label: "浮层", value: "0 12px 32px rgba(0,0,0,0.25)" },
-  { label: "内阴影", value: "inset 0 2px 8px rgba(0,0,0,0.1)" },
-];
+const presetShadows = computed(() => [
+  { label: t("editor.shadowEditor.presetNone"), value: "none" },
+  {
+    label: t("editor.shadowEditor.presetLight"),
+    value: "0 1px 3px rgba(0,0,0,0.12)",
+  },
+  {
+    label: t("editor.shadowEditor.presetStandard"),
+    value: "0 4px 12px rgba(0,0,0,0.15)",
+  },
+  {
+    label: t("editor.shadowEditor.presetDeep"),
+    value: "0 8px 24px rgba(0,0,0,0.2)",
+  },
+  {
+    label: t("editor.shadowEditor.presetFloat"),
+    value: "0 12px 32px rgba(0,0,0,0.25)",
+  },
+  {
+    label: t("editor.shadowEditor.presetInner"),
+    value: "inset 0 2px 8px rgba(0,0,0,0.1)",
+  },
+]);
 
 function applyPreset(val: string) {
   parseShadow(val);
@@ -79,7 +97,7 @@ function applyPreset(val: string) {
     <div :class="$style.presets">
       <el-button
         v-for="p in presetShadows"
-        :key="p.label"
+        :key="p.value"
         size="small"
         :type="buildShadow() === p.value ? 'primary' : 'default'"
         text
@@ -89,15 +107,15 @@ function applyPreset(val: string) {
     </div>
     <div :class="$style.row">
       <el-select v-model="shadowType" size="small" @change="emitChange">
-        <el-option label="无" value="none" />
-        <el-option label="外阴影" value="outer" />
-        <el-option label="内阴影" value="inner" />
+        <el-option :label="t('editor.shadowEditor.typeNone')" value="none" />
+        <el-option :label="t('editor.shadowEditor.typeOuter')" value="outer" />
+        <el-option :label="t('editor.shadowEditor.typeInner')" value="inner" />
       </el-select>
     </div>
     <template v-if="shadowType !== 'none'">
       <div :class="$style.grid">
         <div :class="$style.field">
-          <label>X</label>
+          <label>{{ t("editor.shadowEditor.offsetX") }}</label>
           <el-input-number
             v-model="offsetX"
             size="small"
@@ -107,7 +125,7 @@ function applyPreset(val: string) {
           />
         </div>
         <div :class="$style.field">
-          <label>Y</label>
+          <label>{{ t("editor.shadowEditor.offsetY") }}</label>
           <el-input-number
             v-model="offsetY"
             size="small"
@@ -117,7 +135,7 @@ function applyPreset(val: string) {
           />
         </div>
         <div :class="$style.field">
-          <label>Blur</label>
+          <label>{{ t("editor.shadowEditor.blur") }}</label>
           <el-input-number
             v-model="blur"
             size="small"
@@ -127,7 +145,7 @@ function applyPreset(val: string) {
           />
         </div>
         <div :class="$style.field">
-          <label>Spread</label>
+          <label>{{ t("editor.shadowEditor.spread") }}</label>
           <el-input-number
             v-model="spread"
             size="small"
@@ -138,7 +156,7 @@ function applyPreset(val: string) {
         </div>
       </div>
       <div :class="$style.row">
-        <label>Color</label>
+        <label>{{ t("editor.shadowEditor.color") }}</label>
         <el-color-picker
           v-model="color"
           size="small"

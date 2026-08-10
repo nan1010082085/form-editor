@@ -66,7 +66,7 @@ export default defineComponent({
               h(
                 "span",
                 { class: styles["fg-error-boundary__title"] },
-                "渲染错误",
+                "Render Error",
               ),
             ]),
             nodeInfo.value
@@ -79,12 +79,12 @@ export default defineComponent({
             h(
               "div",
               { class: styles["fg-error-boundary__message"] },
-              error.value?.message ?? "未知错误",
+              error.value?.message ?? "Unknown error",
             ),
             h(
               ElButton,
               { size: "small", type: "primary", onClick: retry },
-              () => "重试",
+              () => "Retry",
             ),
           ]),
         ]);

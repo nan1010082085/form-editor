@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * SaveTemplateDialog — 保存模板对话框
+ * SaveTemplateDialog — SaveTemplate对话框
  *
- * 将画布上的 Widget 树保存为模板。
+ * 将画布上的 Widget 树Save为Template。
  */
 import { ref, watch } from "vue";
 import { ElMessage } from "element-plus";

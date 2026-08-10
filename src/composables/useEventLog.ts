@@ -1,7 +1,7 @@
 /**
- * useEventLog — 事件执行日志存储
+ * useEventLog — Event执RowLog存储
  *
- * 全局单例，捕获 useLogger 输出供 UI 面板展示。
+ * 全局单例, 捕获 useLogger Output供 UI 面板展示。
  */
 import { ref, readonly } from "vue";
 

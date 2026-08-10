@@ -1,36 +1,36 @@
 /**
- * usePropertyAdapters -- Widget 属性适配器
+ * usePropertyAdapters -- Widget Property适配器
  *
  * 职责：
- * - Widget 属性的读写（支持 dot-notation 路径）
- * - 样式属性 → 输入类型映射
- * - 样式属性 → 中文标签映射
- * - 组件 props → 输入类型映射
+ * - Widget Property的读写（支持 dot-notation 路径）
+ * - StyleProperty → InputTypeMap
+ * - StyleProperty → i18n LabelMap
+ * - Component props → InputTypeMap
  *
  * 配合 PropertyPanel / PropertyField 使用。
  */
+import { useI18n } from "@schema-platform/platform-shared";
 import type { Widget } from "../widgets/base/types";
-import { ANIMATION_OPTIONS } from "../utils/widgetAnimations";
+import { getAnimationOptions } from "../utils/widgetAnimations";
 
-// ---- Style metadata maps ----
-
-const STYLE_LABEL_MAP: Record<string, string> = {
-  width: "宽度",
-  height: "高度",
-  margin: "外边距",
-  padding: "内边距",
-  backgroundColor: "背景色",
-  background: "背景",
-  border: "边框",
-  borderRadius: "圆角",
-  boxShadow: "阴影",
-  fontSize: "字号",
-  fontWeight: "字重",
-  color: "颜色",
-  animationPreset: "入场动画",
-  animationDelay: "动画延迟",
-  animationDuration: "动画时长",
-};
+/** StyleProperty → locale key（editor.styleProps.*） */
+const STYLE_LABEL_KEYS = [
+  "width",
+  "height",
+  "margin",
+  "padding",
+  "backgroundColor",
+  "background",
+  "border",
+  "borderRadius",
+  "boxShadow",
+  "fontSize",
+  "fontWeight",
+  "color",
+  "animationPreset",
+  "animationDelay",
+  "animationDuration",
+] as const;
 
 const COLOR_STYLE_PROPS = new Set(["color", "backgroundColor"]);
 const TEXT_STYLE_PROPS = new Set(["width", "height", "fontSize"]);
@@ -43,19 +43,6 @@ const SHADOW_STYLE_PROPS = new Set(["boxShadow"]);
 const BACKGROUND_STYLE_PROPS = new Set(["background"]);
 const NUMBER_STYLE_PROPS = new Set(["animationDelay", "animationDuration"]);
 
-const STYLE_OPTIONS_MAP: Record<
-  string,
-  { label: string; value: string | number }[]
-> = {
-  fontWeight: [
-    { label: "正常", value: "normal" },
-    { label: "粗体", value: "bold" },
-  ],
-  animationPreset: ANIMATION_OPTIONS,
-};
-
-// ---- Props metadata maps ----
-
 const BOOLEAN_PROPS = new Set([
   "disabled",
   "readonly",
@@ -67,15 +54,17 @@ const BOOLEAN_PROPS = new Set([
   "showHeader",
 ]);
 
-// ---- Composable ----
-
+/**
+ * @returns Property读写与Style元Data适配器
+ */
 export function usePropertyAdapters() {
+  const { t } = useI18n();
+
   /**
-   * 读取 Widget 属性（支持 dot-notation 路径）
-   * 如 'position.x' → widget.position.x
-   *    'style.width' → widget.style.width
-   *    'props.placeholder' → widget.props.placeholder
-   *    'field' → widget.field
+   * 读取 Widget Property（支持 dot-notation 路径）
+   *
+   * @param widget - Widget
+   * @param path - 点Min路径
    */
   function readProperty(widget: Widget, path: string): unknown {
     const parts = path.split(".");
@@ -88,8 +77,12 @@ export function usePropertyAdapters() {
   }
 
   /**
-   * 写入 Widget 属性（支持 dot-notation 路径）
-   * 返回 patch 对象，由调用方传给 widgetStore.updateWidget
+   * 写入 Widget Property（支持 dot-notation 路径）
+   * 返回 patch 对象, 由调用方传给 widgetStore.updateWidget
+   *
+   * @param widget - Widget
+   * @param path - 点Min路径
+   * @param value - 新Value
    */
   function writeProperty(
     widget: Widget,
@@ -124,14 +117,21 @@ export function usePropertyAdapters() {
   }
 
   /**
-   * 样式属性 → 中文标签
+   * StyleProperty → 本地化Label
+   *
+   * @param prop - StyleProperty名
    */
   function getStyleLabel(prop: string): string {
-    return STYLE_LABEL_MAP[prop] || prop;
+    if ((STYLE_LABEL_KEYS as readonly string[]).includes(prop)) {
+      return t(`editor.styleProps.${prop}`);
+    }
+    return prop;
   }
 
   /**
-   * 样式属性 → PropertyField 输入类型
+   * StyleProperty → PropertyField InputType
+   *
+   * @param prop - StyleProperty名
    */
   function getStyleInputType(prop: string): string {
     if (COLOR_STYLE_PROPS.has(prop)) return "color";
@@ -148,7 +148,9 @@ export function usePropertyAdapters() {
   }
 
   /**
-   * 组件 props → PropertyField 输入类型
+   * Component props → PropertyField InputType
+   *
+   * @param prop - prop 名
    */
   function getPropInputType(prop: string): string {
     if (BOOLEAN_PROPS.has(prop)) return "switch";
@@ -156,12 +158,23 @@ export function usePropertyAdapters() {
   }
 
   /**
-   * 样式属性 → 下拉选项（仅 select 类型有值）
+   * StyleProperty → 下拉Options（仅 select Type有Value）
+   *
+   * @param prop - StyleProperty名
    */
   function getStyleOptions(
     prop: string,
   ): { label: string; value: string | number }[] | undefined {
-    return STYLE_OPTIONS_MAP[prop];
+    if (prop === "fontWeight") {
+      return [
+        { label: t("editor.styleProps.fontWeightNormal"), value: "normal" },
+        { label: t("editor.styleProps.fontWeightBold"), value: "bold" },
+      ];
+    }
+    if (prop === "animationPreset") {
+      return getAnimationOptions(t);
+    }
+    return undefined;
   }
 
   return {

@@ -1,9 +1,9 @@
 /**
- * 甘特图 Widget - 项目排期/任务时间线展示
+ * Gantt Chart Widget - 项目排期/任务Hrs间线Display
  *
- * 基于 ECharts 实现，适用于项目管理、任务排期、进度跟踪
- * 输入：tasks 数组 [{ name, start, end, status, progress }]
- * 输出：可视化甘特图
+ * 基于 ECharts 实现, 适用于项目Management、任务排期、进度跟踪
+ * Input：tasks 数组 [{ name, start, end, status, progress }]
+ * Output：可视化Gantt Chart
  */
 
 import type { WidgetConfig } from "../base/types";

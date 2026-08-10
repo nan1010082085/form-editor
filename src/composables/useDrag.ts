@@ -20,20 +20,38 @@ import { useAllContainerTypes } from "./useConstant";
 import type { SchemaType, Widget } from "../widgets/base/types";
 import type { DropPreviewLine } from "../stores/drag";
 
-/** 获取容器组件类型集合（动态） */
+/** 获取ContainerComponentType集合（动态） */
 function getContainerTypeSet() {
   return useAllContainerTypes();
+}
+
+/** 面板拖入预览尺寸Cache（按 type, 避免 updateDrag 每帧 createWidget） */
+const panelPreviewSizeCache = new Map<string, { w: number; h: number }>();
+
+/**
+ * 用 createWidget Default position 作为面板拖入碰撞/预览尺寸。
+ */
+function resolvePanelPreviewSize(type: SchemaType): { w: number; h: number } {
+  const cached = panelPreviewSizeCache.get(type);
+  if (cached) return cached;
+  const preview = createWidget(type, `preview_${type}`);
+  const size = {
+    w: preview?.position?.w ?? 100,
+    h: preview?.position?.h ?? 32,
+  };
+  panelPreviewSizeCache.set(type, size);
+  return size;
 }
 
 /**
  * useDrag — 拖拽系统核心逻辑
  *
- * 处理从组件面板拖入画布、画布内拖拽移动、容器碰撞检测、辅助线吸附。
- * 优化项：
+ * 处理从Component面板拖入画布、画布内拖拽移动、Container碰撞检测、辅助线吸附。
+ * 优化items：
  * - 放置预览线（指示插入位置）
- * - 深层嵌套容器碰撞检测（递归收集所有容器）
- * - 拖拽取消恢复（ESC 键恢复原始位置）
- * - 面板拖入时实时预览放置位置
+ * - 深层嵌套Container碰撞检测（递归收集所有Container）
+ * - 拖拽CancelRestore（ESC 键Restore原始位置）
+ * - 面板拖入Hrs实Hrs预览放置位置
  */
 export function useDrag() {
   const dragStore = useDragStore();
@@ -41,7 +59,7 @@ export function useDrag() {
   const editorStore = useEditorStore();
   const boardStore = useBoardStore();
 
-  /** 将 px 坐标转换为 %（如果 widget 使用百分比单位） */
+  /** 将 px 坐标Transform为 %（如果 widget 使用百Min比单位） */
   function applyPercentPosition(widget: Widget) {
     const canvasW = boardStore.getCanvasWidthPx();
     const canvasH = boardStore.getCanvasHeightPx();
@@ -55,13 +73,13 @@ export function useDrag() {
     }
   }
 
-  /** 从面板开始拖拽新组件 */
+  /** 从面板开始拖拽新Component */
   function startDragFromPanel(type: SchemaType) {
     const id = generateWidgetId(type);
     dragStore.startDrag("panel", id, type);
   }
 
-  /** 查找 widget 的父容器偏移量（子组件在容器本地坐标系中） */
+  /** 查找 widget 的父Container偏移量（子Component在Container本地坐标系中） */
   function findParentOffset(
     widgetId: string,
     widgets: Widget[] = widgetStore.widgets,
@@ -87,7 +105,7 @@ export function useDrag() {
     return null;
   }
 
-  /** 查找 widget 的直接父容器 Widget */
+  /** 查找 widget 的直接父Container Widget */
   function findParentContainer(
     widgetId: string,
     widgets: Widget[] = widgetStore.widgets,
@@ -105,8 +123,8 @@ export function useDrag() {
   }
 
   /**
-   * 计算容器的所有父容器偏移量之和（不含容器自身的 position）。
-   * 用于将画布坐标转换为容器本地坐标：localPos = canvasPos - parentOffset - container.position
+   * 计算Container的所有父Container偏移量之和（不含Container自身的 position）。
+   * 用于将画布坐标Transform为Container本地坐标：localPos = canvasPos - parentOffset - container.position
    */
   function findContainerCanvasOffset(containerId: string): {
     x: number;
@@ -124,7 +142,7 @@ export function useDrag() {
         });
         currentId = parent.id;
       } else {
-        // currentId 是根级组件（不是任何容器的子组件），不加入偏移
+        // currentId 是根级Component（不是任何Container的子Component）, 不加入偏移
         break;
       }
     }
@@ -135,7 +153,7 @@ export function useDrag() {
     });
   }
 
-  /** 画布内开始拖拽已有组件（传入初始光标位置和画布元素） */
+  /** 画布内开始拖拽已有Component（传入初始光标位置和画布元素） */
   function startDragOnCanvas(
     widgetId: string,
     clientX: number,
@@ -154,12 +172,12 @@ export function useDrag() {
       zoom,
     );
 
-    // 子组件的 position 是容器本地坐标，需要加上父容器偏移转为画布坐标
+    // 子Component的 position 是Container本地坐标, 需要加上父Container偏移转为画布坐标
     const parentOffset = findParentOffset(widgetId);
     const widgetCanvasX = (parentOffset?.x ?? 0) + (widget?.position.x ?? 0);
     const widgetCanvasY = (parentOffset?.y ?? 0) + (widget?.position.y ?? 0);
 
-    // 记录原始位置，用于取消拖拽时恢复
+    // 记录原始位置, 用于Cancel拖拽HrsRestore
     const parentContainer = findParentContainer(widgetId);
 
     dragStore.startDrag("canvas", widgetId, undefined, {
@@ -175,7 +193,7 @@ export function useDrag() {
 
   /**
    * 计算放置预览线。
-   * 根据鼠标位置和最近的 widget 边缘，确定新组件的插入位置。
+   * 根据鼠标位置和最近的 widget 边缘, OK新Component的插入位置。
    */
   function computeDropPreviewLine(
     _canvasX: number,
@@ -183,9 +201,9 @@ export function useDrag() {
     _widgetW: number,
     _widgetH: number,
   ): DropPreviewLine | null {
-    const PREVIEW_THRESHOLD = 20; // 在 widget 边缘 20px 内显示预览线
+    const PREVIEW_THRESHOLD = 20; // Show preview line within 20px of widget edge
 
-    // 在容器内：根据鼠标相对子组件的位置决定插入到上方还是下方
+    // 在Container内：根据鼠标相对子Component的位置决定插入到上方还是下方
     const hoveredId = dragStore.hoveredContainerId;
     if (hoveredId) {
       const container = widgetStore.findWidget(hoveredId);
@@ -195,7 +213,7 @@ export function useDrag() {
         const cCanvasX = containerOff.x + cPos.x;
         const cCanvasY = containerOff.y + cPos.y;
 
-        // 找到最近的子组件
+        // 找到最近的子Component
         let closestChild: Widget | null = null;
         let closestDist = Infinity;
         let insertBefore = true;
@@ -206,9 +224,9 @@ export function useDrag() {
           const childBottom = childCanvasY + cPos2.h;
           const childCenterY = childCanvasY + cPos2.h / 2;
 
-          // 鼠标在子组件上方区域
+          // 鼠标在子Component上方Region
           const distAbove = Math.abs(canvasY - childCanvasY);
-          // 鼠标在子组件下方区域
+          // 鼠标在子Component下方Region
           const distBelow = Math.abs(canvasY - childBottom);
 
           if (distAbove < closestDist && distAbove < PREVIEW_THRESHOLD) {
@@ -222,7 +240,7 @@ export function useDrag() {
             insertBefore = false;
           }
 
-          // 鼠标在子组件区域内 — 靠近上半部分插入上方，下半部分插入下方
+          // 鼠标在子ComponentRegion内 — 靠近上半部Min插入上方, 下半部Min插入下方
           if (canvasY >= childCanvasY && canvasY <= childBottom) {
             if (canvasY < childCenterY) {
               closestChild = child as Widget;
@@ -251,7 +269,7 @@ export function useDrag() {
           };
         }
 
-        // 容器内无子组件 — 显示容器中心的预览线
+        // Container内无子Component — ShowContainer中心的预览线
         return {
           orientation: "horizontal",
           position: cCanvasY + cPos.h / 2,
@@ -262,7 +280,7 @@ export function useDrag() {
       }
     }
 
-    // 根级：根据鼠标与最近 widget 的位置关系显示预览线
+    // 根级：根据鼠标与最近 widget 的位置关系Show预览线
     let closestWidget: Widget | null = null;
     let closestDist = Infinity;
     let insertBefore = true;
@@ -315,7 +333,7 @@ export function useDrag() {
     return null;
   }
 
-  /** 更新拖拽位置（mousemove 时调用）— 实时移动 Widget */
+  /** Update拖拽位置（mousemove Hrs调用）— 实Hrs移动 Widget */
   function updateDrag(clientX: number, clientY: number, canvasEl: HTMLElement) {
     if (!dragStore.isDragging) return;
 
@@ -332,20 +350,26 @@ export function useDrag() {
 
     dragStore.updateDragPosition(canvasPos.x, canvasPos.y);
 
-    // 画布内拖拽：实时更新 Widget 位置（delta 模式）
+    // 画布内拖拽：实HrsUpdate Widget 位置（delta 模式）
     // canvasX/canvasY 是 widget 在画布坐标系中的位置（用于碰撞检测和辅助线）
     let canvasX = canvasPos.x;
     let canvasY = canvasPos.y;
     let widgetW = 100;
     let widgetH = 32;
 
-    if (dragStore.dragSource === "canvas" && dragStore.dragWidgetId) {
+    if (dragStore.dragSource === "panel" && dragStore.dragWidgetType) {
+      const size = resolvePanelPreviewSize(
+        dragStore.dragWidgetType as SchemaType,
+      );
+      widgetW = size.w;
+      widgetH = size.h;
+    } else if (dragStore.dragSource === "canvas" && dragStore.dragWidgetId) {
       canvasX =
         dragStore.initialWidgetX + (canvasPos.x - dragStore.initialCursorX);
       canvasY =
         dragStore.initialWidgetY + (canvasPos.y - dragStore.initialCursorY);
 
-      // 网格吸附（自由布局模式）
+      // 网格吸附（自由Layout模式）
       const grid = getGridParams(
         boardStore.canvas.freeLayout,
         boardStore.getCanvasWidthPx(),
@@ -355,7 +379,7 @@ export function useDrag() {
         canvasY = snapToGrid(canvasY, grid.gridH, true);
       }
 
-      // 子组件的 position 是容器本地坐标，需要减去父容器偏移
+      // 子Component的 position 是Container本地坐标, 需要减去父Container偏移
       const parentOffset = findParentOffset(dragStore.dragWidgetId);
       const localX = canvasX - (parentOffset?.x ?? 0);
       const localY = canvasY - (parentOffset?.y ?? 0);
@@ -368,9 +392,9 @@ export function useDrag() {
       }
     }
 
-    // 碰撞检测：free 模式下大容器不参与碰撞检测，避免拖拽时被误吸入其他容器。
-    // 容器嵌套本身已放开（store 层允许），grid 模式走 useGridDropZone 不受此限制。
-    // 使用递归收集所有容器（含嵌套），支持深层嵌套拖拽
+    // 碰撞检测：free 模式下大Container不参与碰撞检测, 避免拖拽Hrs被误吸入其他Container。
+    // Container嵌套本身已放开（store 层允许）, grid 模式走 useGridDropZone 不受此限制。
+    // 使用递归收集所有Container（含嵌套）, 支持深层嵌套拖拽
     const draggedType =
       dragStore.dragWidgetType ||
       widgetStore.findWidget(dragStore.dragWidgetId || "")?.type;
@@ -388,7 +412,7 @@ export function useDrag() {
         position: { x: canvasX, y: canvasY, w: widgetW, h: widgetH },
       };
 
-      // 优先尝试递归碰撞检测（支持深层嵌套容器）
+      // 优先尝试递归碰撞检测（支持深层嵌套Container）
       const allContainers = collectAllContainers(
         widgetStore.widgets,
         0,
@@ -409,7 +433,7 @@ export function useDrag() {
         );
         dragStore.updateCollision(hitContainer?.id || null);
       } else {
-        // 回退到根级容器检测
+        // 回退到根级Container检测
         const containers = getRootContainers(
           widgetStore.widgets,
           dragStore.dragWidgetId || undefined,
@@ -440,7 +464,7 @@ export function useDrag() {
     ) {
       const dragRect = { x: canvasX, y: canvasY, w: widgetW, h: widgetH };
 
-      // 面板拖入时，创建临时 widget 用于计算
+      // 面板拖入Hrs, 创建临Hrs widget 用于计算
       if (dragStore.dragSource === "panel") {
         const tempWidget = {
           id: dragStore.dragWidgetId || "",
@@ -460,10 +484,10 @@ export function useDrag() {
         // 画布内拖拽
         const draggingWidget = widgetStore.findWidget(dragStore.dragWidgetId!);
         if (draggingWidget) {
-          // 查找父容器：如果拖拽中的 widget 是某容器的子组件，使用容器内对齐
+          // 查找父Container：如果拖拽中的 widget 是某Container的子Component, 使用Container内对齐
           const parentContainer = findParentContainer(dragStore.dragWidgetId!);
           if (parentContainer) {
-            // 容器内拖拽：只与同级 widget 和容器边界对齐
+            // Container内拖拽：只与同级 widget 和Container边界对齐
             const parentOff = findParentOffset(parentContainer.id);
             const cx = parentOff?.x ?? 0;
             const cy = parentOff?.y ?? 0;
@@ -474,7 +498,7 @@ export function useDrag() {
               cx + ppos.x,
               cy + ppos.y,
             );
-            // 处理百分比宽高
+            // 处理百Min比宽高
             const canvasW = boardStore.getCanvasWidthPx();
             const canvasH = boardStore.getCanvasHeightPx();
             const containerWUnit = ppos.wUnit ?? "px";
@@ -517,15 +541,15 @@ export function useDrag() {
   }
 
   /**
-   * 取消拖拽 — 恢复到拖拽前的状态。
-   * ESC 键触发，widget 位置回退到拖拽开始时的快照。
+   * Cancel拖拽 — Restore到拖拽前的Status。
+   * ESC 键Trigger, widget 位置回退到拖拽开始Hrs的快照。
    */
   function cancelDrag() {
     if (!dragStore.isDragging) return;
 
     const { dragSource, dragWidgetId, originalPosition } = dragStore;
 
-    // 画布内拖拽：恢复原始位置
+    // 画布内拖拽：Restore原始位置
     if (dragSource === "canvas" && dragWidgetId && originalPosition) {
       widgetStore.moveWidget(
         dragWidgetId,
@@ -533,7 +557,7 @@ export function useDrag() {
         originalPosition.y,
       );
 
-      // 如果拖拽过程中发生了 reparent，需要恢复原始父容器
+      // 如果拖拽过程中发生了 reparent, 需要Restore原始父Container
       const currentParent = findParentContainer(dragWidgetId);
       const currentParentId = currentParent?.id ?? null;
 
@@ -554,7 +578,7 @@ export function useDrag() {
     dragStore.endDrag();
   }
 
-  /** 结束拖拽（mouseup 时调用） */
+  /** 结束拖拽（mouseup Hrs调用） */
   function endDrag() {
     if (!dragStore.isDragging) return;
 
@@ -578,8 +602,8 @@ export function useDrag() {
         let y = snapY ?? dragStore.dragY;
 
         if (hoveredContainerId) {
-          // 拖入容器：画布坐标 → 容器本地坐标
-          // 对于嵌套容器，需要递归计算偏移
+          // 拖入Container：画布坐标 → Container本地坐标
+          // 对于嵌套Container, 需要递归计算偏移
           const containerOffsets =
             findContainerCanvasOffset(hoveredContainerId);
           const container = widgetStore.findWidget(hoveredContainerId);
@@ -604,7 +628,7 @@ export function useDrag() {
         newWidget.position.x = x;
         newWidget.position.y = y;
 
-        // 百分比单位转换
+        // 百Min比单位Transform
         applyPercentPosition(newWidget);
 
         widgetStore.addWidget(newWidget);
@@ -614,10 +638,10 @@ export function useDrag() {
         editorStore.pushHistory([...widgetStore.widgets]);
       }
     } else if (dragSource === "canvas" && dragWidgetId) {
-      // 画布内移动 — 位置已在 updateDrag 中实时更新
+      // 画布内移动 — 位置已在 updateDrag 中实HrsUpdate
       const widget = widgetStore.findWidget(dragWidgetId);
       if (widget) {
-        // 先捕获旧父容器偏移（reparent 后就找不到了）
+        // 先捕获旧父Container偏移（reparent 后就找不到了）
         const oldParentOff = findParentOffset(dragWidgetId);
         const canvasX = (oldParentOff?.x ?? 0) + widget.position.x;
         const canvasY = (oldParentOff?.y ?? 0) + widget.position.y;
@@ -639,12 +663,12 @@ export function useDrag() {
           finalCanvasY = constrained.y;
           widgetStore.moveWidget(dragWidgetId, finalCanvasX, finalCanvasY);
           widgetStore.reparentToRoot(dragWidgetId);
-          // 百分比单位转换
+          // 百Min比单位Transform
           const movedWidget = widgetStore.findWidget(dragWidgetId);
           if (movedWidget) applyPercentPosition(movedWidget);
         } else {
-          // 拖入容器：画布坐标 → 容器本地坐标
-          // 对于嵌套容器，需要递归计算偏移
+          // 拖入Container：画布坐标 → Container本地坐标
+          // 对于嵌套Container, 需要递归计算偏移
           const containerOffsets =
             findContainerCanvasOffset(hoveredContainerId);
           const container = widgetStore.findWidget(hoveredContainerId);

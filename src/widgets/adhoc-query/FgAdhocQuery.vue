@@ -1,7 +1,8 @@
 <script setup lang="ts">
-/** E-20 — Adhoc 查询构建器 */
+/** E-20 — Adhoc Query构建器 */
 import { inject, computed, ref, reactive } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import { EVENT_CONTEXT_KEY } from "../../components/WidgetRenderer/types";
 import { useExposeWidget } from "../../composables/useExposeWidget";
@@ -10,6 +11,7 @@ import type { AdhocQueryField, AdhocCondition } from "./config";
 import { buildAdhocFilterParams, emptyAdhocCondition } from "./adhocQueryUtils";
 import styles from "./style.module.scss";
 
+const { t } = useI18n();
 const widgetData = inject(widgetDataKey)!;
 const surface = inject(WIDGET_SURFACE_KEY, "runtime" as WidgetSurface);
 const eventCtx = inject(EVENT_CONTEXT_KEY, null);
@@ -63,7 +65,11 @@ function applyQuery() {
   const params = buildAdhocFilterParams(conditions.value);
   Object.assign(lastParams, params);
   if (surface === "editor") {
-    ElMessage.info(`设计器预览：查询参数 ${JSON.stringify(params)}`);
+    ElMessage.info(
+      t("editor.adhocQuery.editorPreviewQuery", {
+        params: JSON.stringify(params),
+      }),
+    );
     return;
   }
   applyToTarget(params);
@@ -73,7 +79,7 @@ function resetQuery() {
   conditions.value = [emptyAdhocCondition()];
   Object.keys(lastParams).forEach((k) => delete lastParams[k]);
   if (surface === "editor") {
-    ElMessage.info("设计器预览：已重置条件");
+    ElMessage.info(t("editor.adhocQuery.editorPreviewReset"));
     return;
   }
   applyToTarget({});
@@ -86,7 +92,7 @@ function resetQuery() {
       <el-select
         v-model="row.field"
         :class="styles.fieldSelect"
-        placeholder="字段"
+        :placeholder="t('editor.adhocQuery.field')"
         clearable
       >
         <el-option
@@ -97,14 +103,17 @@ function resetQuery() {
         />
       </el-select>
       <el-select v-model="row.operator" :class="styles.operatorSelect">
-        <el-option label="等于" value="eq" />
-        <el-option label="包含" value="contains" />
+        <el-option :label="t('editor.adhocQuery.operatorEq')" value="eq" />
+        <el-option
+          :label="t('editor.adhocQuery.operatorContains')"
+          value="contains"
+        />
       </el-select>
       <el-select
         v-if="fieldMeta(row.field)?.type === 'select'"
         v-model="row.value"
         :class="styles.valueInput"
-        placeholder="值"
+        :placeholder="t('editor.adhocQuery.value')"
         clearable
       >
         <el-option
@@ -118,18 +127,24 @@ function resetQuery() {
         v-else
         v-model="row.value"
         :class="styles.valueInput"
-        placeholder="值"
+        :placeholder="t('editor.adhocQuery.value')"
         clearable
         @keyup.enter="applyQuery"
       />
       <el-button text type="danger" @click="removeCondition(index)">
-        删除
+        {{ t("editor.common.delete") }}
       </el-button>
     </div>
     <div :class="styles.actions">
-      <el-button @click="pushCondition">添加条件</el-button>
-      <el-button type="primary" @click="applyQuery">查询</el-button>
-      <el-button @click="resetQuery">重置</el-button>
+      <el-button @click="pushCondition">
+        {{ t("editor.adhocQuery.addCondition") }}
+      </el-button>
+      <el-button type="primary" @click="applyQuery">
+        {{ t("editor.adhocQuery.query") }}
+      </el-button>
+      <el-button @click="resetQuery">
+        {{ t("editor.common.reset") }}
+      </el-button>
     </div>
   </div>
 </template>

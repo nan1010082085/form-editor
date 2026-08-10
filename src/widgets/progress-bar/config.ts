@@ -46,7 +46,7 @@ export const progressBarConfig: WidgetConfig = {
         ],
       },
       { key: "strokeWidth", label: "Line Width", type: "number", default: 6 },
-      { key: "showText", label: "显示文字", type: "switch", default: true },
+      { key: "showText", label: "Show Text", type: "switch", default: true },
       {
         key: "format",
         label: "Display Format",
@@ -54,7 +54,7 @@ export const progressBarConfig: WidgetConfig = {
         default: "percent",
         options: [
           { label: "Percentage", value: "percent" },
-          { label: "数值/最大值", value: "value" },
+          { label: "Value/Max", value: "value" },
         ],
       },
       { key: "color", label: "Custom Colors", type: "color" },

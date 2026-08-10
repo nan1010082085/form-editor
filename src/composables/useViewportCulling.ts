@@ -1,8 +1,8 @@
 /**
  * useViewportCulling — 画布视口剔除
  *
- * 自由布局画布使用绝对定位，通过视口矩形判断 widget 是否应渲染。
- * 剔除仅影响 DOM 渲染层，交互命中仍基于全量 widget 数据（EditorOverlay）。
+ * 自由Layout画布使用绝对定位, passed视口矩形判断 widget 是否应渲染。
+ * 剔除仅影响 DOM 渲染层, 交互命中仍基于全量 widget Data（EditorOverlay）。
  */
 import type { InjectionKey, Ref } from "vue";
 
@@ -20,8 +20,8 @@ export const VIEWPORT_CULLING_KEY: InjectionKey<Ref<ViewportRect | null>> =
 const DEFAULT_BUFFER = 200;
 
 /**
- * 根据滚动容器状态计算画布坐标系可视矩形。
- * scroll/zoom 将视口映射到画布内容坐标。
+ * 根据滚动ContainerStatus计算画布坐标系可视矩形。
+ * scroll/zoom 将视口Map到画布内容坐标。
  */
 export function computeViewportRect(
   scrollLeft: number,
@@ -57,7 +57,7 @@ export function isRectInViewport(
   );
 }
 
-/** widget 在画布绝对坐标下是否可见 */
+/** widget 在画布绝对坐标下Visible */
 export function isWidgetVisibleInViewport(
   canvasX: number,
   canvasY: number,

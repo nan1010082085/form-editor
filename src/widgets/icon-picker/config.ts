@@ -11,7 +11,7 @@ export const iconPickerConfig: WidgetConfig = {
     fontSize: "14px",
   },
   defaultProps: {
-    placeholder: "请选择图标",
+    placeholder: "Please select icon",
     clearable: true,
     disabled: false,
   },
@@ -27,7 +27,7 @@ export const iconPickerConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择图标",
+        default: "Please select icon",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },

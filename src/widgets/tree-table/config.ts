@@ -39,7 +39,7 @@ export const treeTableConfig: WidgetConfig = {
     props: [
       { key: "columns", label: "Column Config", type: "columns" },
       { key: "rowKey", label: "Row Key", type: "input" },
-      { key: "childrenKey", label: "子节点字段", type: "input" },
+      { key: "childrenKey", label: "Child Node Field", type: "input" },
       { key: "defaultExpandAll", label: "Default Expanded", type: "switch" },
       { key: "height", label: "Height", type: "number" },
       { key: "stripe", label: "Stripe", type: "switch" },

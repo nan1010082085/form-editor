@@ -2,26 +2,51 @@
   position: relative;
   box-sizing: border-box;
   cursor: pointer;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
+  outline: 1px solid transparent;
+  outline-offset: 1px;
   border-radius: 4px;
   transition: outline-color 0.15s ease;
 
   &:hover {
     outline-color: rgb(64 158 255 / 45%);
-  }
-}
 
-.editorShellDraggable {
-  cursor: grab;
-
-  &:active {
-    cursor: grabbing;
+    .dragHandle {
+      opacity: 1;
+    }
   }
 }
 
 .editorShellSelected {
   outline-color: #409eff;
+
+  .dragHandle {
+    opacity: 1;
+  }
+}
+
+/** Grid 流式重排：仅手柄可拖，避免与表单控件抢拖拽 */
+.dragHandle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  color: var(--el-color-primary, #409eff);
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 0 0 1px rgb(64 158 255 / 35%);
+  cursor: grab;
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 /* 编辑态隐藏标识：hidden=true 时半透明 + 虚线，仍可选中取消隐藏 */

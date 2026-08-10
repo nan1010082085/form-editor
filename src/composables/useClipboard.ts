@@ -1,18 +1,22 @@
 /**
- * useClipboard — 剪贴板操作 composable
+ * useClipboard — 剪贴板Action composable
  *
- * 优先使用 navigator.clipboard API，降级到 execCommand('copy')。
- * 自动通过 ElMessage 给出成功/失败反馈。
+ * 优先使用 navigator.clipboard API, 降级到 execCommand('copy')。
+ * 自动passed ElMessage 给出Success/Failed反馈。
  */
 import { ElMessage } from "element-plus";
+import { tt } from "@/locales";
 
 export function useClipboard() {
   /**
-   * 复制文本到剪贴板
-   * @param text 要复制的文本
-   * @param successMsg 成功提示（默认 '已复制'）
+   * Copy文本到剪贴板
+   * @param text 要Copy的文本
+   * @param successMsg Success提示（默认已Copy）
    */
-  async function copy(text: string, successMsg = "已复制"): Promise<boolean> {
+  async function copy(
+    text: string,
+    successMsg = tt("editor.common.copied"),
+  ): Promise<boolean> {
     try {
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(text);
@@ -27,7 +31,7 @@ export function useClipboard() {
         ElMessage.success(successMsg);
         return true;
       } catch {
-        ElMessage.error("复制失败");
+        ElMessage.error(tt("editor.common.copyFailed"));
         return false;
       }
     }

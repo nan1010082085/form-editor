@@ -1,17 +1,17 @@
 /**
- * useWidgetStore — Widget 集合的 CRUD 和树结构操作
+ * useWidgetStore — Widget 集合的 CRUD 和树结构Action
  *
  * 职责：
  * - Widget[] 的增删改查
- * - 树结构遍历（递归搜索、父节点查找）
- * - 位置操作（移动、缩放、层级）
- * - 容器操作（添加到容器、从容器移除、重新挂载）
- * - 表单容器绑定（formId）
+ * - 树结构遍历（递归Search、父节点查找）
+ * - 位置Action（移动、缩放、层级）
+ * - ContainerAction（添加到Container、从Container移除、重新挂载）
+ * - FormContainer绑定（formId）
  * - 页签绑定（tabKey）
- * - 行列绑定（colIndex）
- * - 表单值收集
+ * - RowColumn绑定（colIndex）
+ * - FormValue收集
  *
- * 这是 Widget 数据的唯一 source of truth。
+ * 这是 Widget Data的唯一 source of truth。
  */
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
@@ -24,15 +24,15 @@ import {
 import { getWidget } from "../widgets/registry";
 import { useBoardStore } from "./board";
 
-/** 获取容器组件类型集合（动态） */
+/** 获取ContainerComponentType集合（动态） */
 function getContainerTypes(): Set<string> {
   return useAllContainerTypes() as Set<string>;
 }
 
-/** 容器嵌套深度上限：根级容器 -> 一级子容器，不允许多于 2 层（见 ../docs/editor/container-nesting-decision.md） */
+/** Container嵌套深度上限：根级Container -> 一级子Container, 不允许多于 2 层（见 ../docs/editor/container-nesting-decision.md） */
 const MAX_CONTAINER_DEPTH = 1;
 
-/** 默认 position */
+/** Default position */
 const DEFAULT_POSITION = {
   x: 0,
   y: 0,
@@ -45,11 +45,25 @@ const DEFAULT_POSITION = {
   zIndex: 1,
 };
 
-/** 将 position 宽高同步到 style，供仍读取 style.width/height 的部件使用 */
-function syncStyleDimensions(widget: Widget): void {
+/** 将 position 宽高Sync到 style, 供仍读取 style.width/height 的Widget使用 */
+function syncStyleDimensions(
+  widget: Widget,
+  layoutMode?: BoardLayoutMode,
+): void {
   const pos = widget.position ?? DEFAULT_POSITION;
   const wUnit = pos.wUnit ?? "px";
   const hUnit = pos.hUnit ?? "px";
+
+  // Grid 流式Layout：Height由 adaptWidgetToGrid 决定（Default auto）, 
+  // 禁止用 free 的 position.h 覆盖已有 style.height（会锁死Container/控件视觉Height）。
+  if (layoutMode === "grid") {
+    widget.style = {
+      ...(widget.style ?? {}),
+      width: (widget.style?.width as string) || `${pos.w}${wUnit}`,
+    };
+    return;
+  }
+
   widget.style = {
     ...(widget.style ?? {}),
     width: `${pos.w}${wUnit}`,
@@ -58,10 +72,13 @@ function syncStyleDimensions(widget: Widget): void {
 }
 
 /**
- * 递归补全 widget 的 position 字段。
- * 数据库中的旧数据可能缺少 position，导致渲染崩溃。
+ * 递归补全 widget 的 position Field。
+ * Data库中的旧Data可能缺少 position, 导致渲染崩溃。
  */
-function normalizePosition(widgets: Widget[]): Widget[] {
+function normalizePosition(
+  widgets: Widget[],
+  layoutMode?: BoardLayoutMode,
+): Widget[] {
   return widgets.map((w) => {
     if (!w.position || typeof w.position !== "object") {
       w.position = { ...DEFAULT_POSITION };
@@ -76,17 +93,20 @@ function normalizePosition(widgets: Widget[]): Widget[] {
       if (w.position.hUnit === undefined) w.position.hUnit = "px";
       if (w.position.zIndex === undefined) w.position.zIndex = 1;
     }
-    syncStyleDimensions(w);
+    syncStyleDimensions(w, layoutMode);
     if (w.children?.length) {
-      w.children = normalizePosition(w.children) as Widget[];
+      w.children = normalizePosition(
+        w.children as Widget[],
+        layoutMode,
+      ) as Widget[];
     }
     return w;
   });
 }
 
 /**
- * 列容器容量检查与自动分配 colIndex
- * 返回 true 表示容量已满，无法添加
+ * ColumnContainer容量检查与自动Min配 colIndex
+ * Back true 表示容量已满, 无法添加
  */
 function checkAndAssignColIndex(
   widget: Widget,
@@ -109,8 +129,8 @@ function checkAndAssignColIndex(
 }
 
 /**
- * 计算列容器中子部件的位置和尺寸
- * 列宽支持固定 px（>0）和自适应（0），固定列优先占位，剩余空间均分给自适应列。
+ * 计算ColumnContainer中子Widget的位置和尺寸
+ * Column width支持固定 px（>0）和自适应（0）, Fixed column优先占位, 剩余空间均Min给自适应Column。
  */
 function calculateColPosition(
   widget: Widget,
@@ -166,7 +186,7 @@ function calculateColPosition(
   widget.position.h = containerH;
 }
 
-/** 列容器类型 → 列数映射 */
+/** ColumnContainerType → Column数Map */
 const COL_CONTAINER_COLUMNS: Record<string, number> = {
   "single-col": 1,
   "double-col": 2,
@@ -174,22 +194,22 @@ const COL_CONTAINER_COLUMNS: Record<string, number> = {
   "quad-col": 4,
 };
 
-/** 获取列容器的列数，非列容器返回 0 */
+/** 获取ColumnContainer的Column数, 非ColumnContainerBack 0 */
 function getColContainerColumns(type: string): number {
   return COL_CONTAINER_COLUMNS[type] ?? 0;
 }
 
 /**
- * 容器嵌套治理：容器之间允许互相嵌套（dialog 装表单、card 装 tabs、tabs 嵌套 tabs 等），
- * 但限制最多 2 层（根级容器 -> 一级子容器，见 ../docs/editor/container-nesting-decision.md）。
+ * Container嵌套治理：Container之间允许互相嵌套（dialog 装Form、card 装 tabs、tabs 嵌套 tabs 等）, 
+ * 但限制最多 2 层（根级Container -> 一级子Container, 见 ../docs/editor/container-nesting-decision.md）。
  *
- * 加载时：
+ * 加载Hrs：
  * 1. 递归去重 id（防御性）
- * 2. 超过 MAX_CONTAINER_DEPTH 的容器子节点提升到最近的合法父级列表（扁平化），
- *    保证旧 schema 不会因嵌套过深而无法编辑。
+ * 2. 超过 MAX_CONTAINER_DEPTH 的Container子节点提升到最近的合法父级Column表（扁平化）, 
+ *    保证旧 schema 不会因嵌套过深而无法Edit。
  *
- * 返回 { kept, promoted }：kept 为本层保留节点，promoted 为本层超限提升出来的节点，
- * 由调用方决定提升到何处（根级或父级 children）。
+ * Back { kept, promoted }：kept 为本层保留节点, promoted 为本层超限提升出来的节点, 
+ * 由调用方决定提升到何处（根级or父级 children）。
  */
 function sanitizeContainerNesting(widgets: Widget[]): Widget[] {
   const seenIds = new Set<string>();
@@ -210,7 +230,7 @@ function sanitizeContainerNesting(widgets: Widget[]): Widget[] {
         const childPromoted: Widget[] = [];
         for (const child of w.children) {
           const isContainer = containerTypes.has(child.type);
-          // 容器子节点且已达深度上限：提升
+          // Container子节点且已达深度上限：提升
           if (isContainer && childDepth > MAX_CONTAINER_DEPTH) {
             childPromoted.push(child);
           } else {
@@ -220,7 +240,7 @@ function sanitizeContainerNesting(widgets: Widget[]): Widget[] {
         const sub = walk(childKept, childDepth);
         w.children = sub.kept;
         kept.push(w);
-        // 子层提升的 + 本层超限提升的，交给上层处理
+        // 子层提升的 + 本层超限提升的, 交给上层处理
         promoted.push(...sub.promoted, ...childPromoted);
       } else {
         kept.push(w);
@@ -235,25 +255,25 @@ function sanitizeContainerNesting(widgets: Widget[]): Widget[] {
 
 export const useWidgetStore = defineStore("widget", () => {
   // ================================================================
-  // 数据
+  // Data
   // ================================================================
 
   const widgets = ref<Widget[]>([]);
 
   // ================================================================
-  // 多页面 Widget 管理
+  // 多Page Widget 管理
   // ================================================================
 
-  /** 页面 Widget 缓存（pageId → widgets） */
+  /** Page Widget Cache（pageId → widgets） */
   const pageWidgets = new Map<string, Widget[]>();
 
-  /** 将当前 widgets 保存到指定页面缓存 */
+  /** 将当前 widgets Save到指定PageCache */
   function savePageWidgets(pageId: string): void {
     if (!pageId) return;
     pageWidgets.set(pageId, [...widgets.value]);
   }
 
-  /** 从页面缓存加载 widgets（返回加载的 widgets 数量） */
+  /** 从PageCache加载 widgets（Back加载的 widgets 数量） */
   function loadPageWidgets(pageId: string): number {
     const cached = pageWidgets.get(pageId);
     if (cached) {
@@ -263,7 +283,7 @@ export const useWidgetStore = defineStore("widget", () => {
     return 0;
   }
 
-  /** 切换页面：保存当前页 → 加载目标页 */
+  /** 切换Page：Save当前页 → 加载目标页 */
   function switchPage(
     fromPageId: string,
     toPageId: string,
@@ -281,16 +301,16 @@ export const useWidgetStore = defineStore("widget", () => {
     }
   }
 
-  /** 清除页面缓存 */
+  /** 清除PageCache */
   function clearPageCache(): void {
     pageWidgets.clear();
   }
 
   // ================================================================
-  // Widget 索引（O(1) 查找，避免递归 DFS）
+  // Widget Index（O(1) 查找, 避免递归 DFS）
   // ================================================================
 
-  /** 建立 id → Widget 的平坦索引 */
+  /** 建立 id → Widget 的平坦Index */
   function buildIndex(list: Widget[]): Map<string, Widget> {
     const index = new Map<string, Widget>();
     function walk(items: Widget[]) {
@@ -305,7 +325,7 @@ export const useWidgetStore = defineStore("widget", () => {
     return index;
   }
 
-  /** Widget 索引 — 每次 widgets 引用变化时重建 */
+  /** Widget Index — 每次 widgets 引用变化Hrs重建 */
   const widgetIndex = computed(() => buildIndex(widgets.value));
 
   // ================================================================
@@ -313,14 +333,14 @@ export const useWidgetStore = defineStore("widget", () => {
   // ================================================================
 
   /**
-   * 查找 Widget。优先 O(1) 索引查找，回退到递归 DFS。
+   * 查找 Widget。优先 O(1) Index查找, 回退到递归 DFS。
    */
   function findWidget(id: string, list?: Widget[]): Widget | null {
-    // 快速路径：使用索引（仅当从默认 widgets 查找时）
+    // 快速路径：使用Index（仅当从Default widgets 查找Hrs）
     if (!list) {
       return widgetIndex.value.get(id) ?? null;
     }
-    // 指定列表时回退到递归
+    // 指定Column表Hrs回退到递归
     for (const widget of list) {
       if (widget.id === id) return widget;
       if (widget.children) {
@@ -333,7 +353,7 @@ export const useWidgetStore = defineStore("widget", () => {
 
   /**
    * 查找包含目标 Widget 的父 Widget。
-   * 目标在根级时返回 null。
+   * 目标在根级HrsBack null。
    */
   function findParent(
     id: string,
@@ -385,8 +405,8 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   /**
-   * 计算容器在树中的嵌套深度（根级=0，根级容器的子容器=1，依此类推）。
-   * 用于实施「最多 2 层容器嵌套」决策（见 ../docs/editor/container-nesting-decision.md）。
+   * 计算Container在树中的嵌套深度（根级=0, 根级Container的子Container=1, 依此类推）。
+   * 用于实施「最多 2 层Container嵌套」决策（见 ../docs/editor/container-nesting-decision.md）。
    */
   function getContainerDepth(widgetId: string): number {
     let depth = 0;
@@ -398,16 +418,16 @@ export const useWidgetStore = defineStore("widget", () => {
     return depth;
   }
 
-  /** 将部件放入容器前设置 tabKey / 列索引等元数据，返回 false 表示无法放入 */
+  /** 将Widget放入Container前Settings tabKey / ColumnIndex等元Data, Back false 表示无法放入 */
   function prepareContainerChild(widget: Widget, container: Widget): boolean {
-    // 容器允许嵌套（dialog 装表单、card 装 tabs、tabs 嵌套 tabs 等），
-    // 但限制最多 2 层（根级容器 -> 一级子容器）。目标容器已是子容器时，
-    // 拒绝再放入容器类型，由调用方 fallback 到根级，避免无限嵌套。
+    // Container允许嵌套（dialog 装Form、card 装 tabs、tabs 嵌套 tabs 等）, 
+    // 但限制最多 2 层（根级Container -> 一级子Container）。目标Container已是子ContainerHrs, 
+    // 拒绝再放入ContainerType, 由调用方 fallback 到根级, 避免无限嵌套。
     if (getContainerTypes().has(widget.type)) {
       const containerDepth = getContainerDepth(container.id);
       if (containerDepth >= MAX_CONTAINER_DEPTH) {
         console.warn(
-          `[widgetStore] 容器嵌套超过 ${MAX_CONTAINER_DEPTH + 1} 层，已提升到根级`,
+          `[widgetStore] Container nesting exceeds ${MAX_CONTAINER_DEPTH + 1}  levels, promoted to root`,
         );
         return false;
       }
@@ -426,7 +446,7 @@ export const useWidgetStore = defineStore("widget", () => {
       calculateColPosition(widget, container, colContainerColumns);
     }
 
-    // row-container 子节点填满单元格（span 控制单元格宽度，控件本身 100% 撑满）
+    // row-container 子节点填满单元格（span 控制单元格Width, 控件本身 100% 撑满）
     if (container.type === "row-container") {
       widget.style = { ...(widget.style ?? {}), width: "100%" };
     }
@@ -435,8 +455,8 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   /**
-   * 从指定列表中按 ID 移除 Widget（递归）。
-   * 返回是否成功移除。
+   * 从指定Column表中按 ID 移除 Widget（递归）。
+   * Back是否Success移除。
    */
   function removeFromList(id: string, list: Widget[]): boolean {
     const idx = list.findIndex((w) => w.id === id);
@@ -451,7 +471,7 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   /**
-   * 获取所有 Widget 的最大 zIndex（递归）。
+   * 获取所有 Widget 的Max zIndex（递归）。
    */
   function getMaxZIndex(list: Widget[] = widgets.value): number {
     let max = 0;
@@ -487,17 +507,17 @@ export const useWidgetStore = defineStore("widget", () => {
         ...(config?.config?.defaultPosition ?? {}),
       };
     }
-    // 先按 position 同步 style.width/height（free 模式默认值），
-    // 再用 Board 布局模式适配覆盖：grid 下 width 改为 100%/auto。
-    // 顺序不能反，否则 syncStyleDimensions 会把 grid 的 100% 覆盖回固定 px。
-    syncStyleDimensions(widget);
+    // 先按 position Sync style（free 写 width+height；grid 只补 width）, 
+    // 再用 Board Layout模式适配覆盖：grid 下 height Default改为 auto。
+    // 顺序不能反, 否则 syncStyleDimensions 会把 grid 的 100%/auto 覆盖回固定 px。
     const layoutMode = getBoardLayoutMode();
+    syncStyleDimensions(widget, layoutMode);
     adaptWidgetToBoardLayout(widget, layoutMode);
     const toAdd: Widget[] = [widget];
     let nextZ = getMaxZIndex() + 1;
     widget.position.zIndex = nextZ++;
     if (widget.children?.length) {
-      // 容器允许嵌套，子节点（含容器）保留在父节点下，仅统一 zIndex 与布局适配
+      // Container允许嵌套, 子节点（含Container）保留在父节点下, 仅统一 zIndex 与Layout适配
       const walk = (list: Widget[]): Widget[] =>
         list.map((child) => {
           child.position.zIndex = nextZ++;
@@ -542,6 +562,10 @@ export const useWidgetStore = defineStore("widget", () => {
     }
 
     if (!container.children) container.children = [];
+    // immer 历史曾冻结 children；若仍遇到不可扩展数组则换成可变副本
+    if (!Object.isExtensible(container.children)) {
+      container.children = [...container.children];
+    }
     const clamped = Math.max(0, Math.min(index, container.children.length));
     container.children.splice(clamped, 0, primary);
     if (promoted.length) widgets.value = [...widgets.value, ...promoted];
@@ -597,6 +621,9 @@ export const useWidgetStore = defineStore("widget", () => {
     }
 
     if (!container.children) container.children = [];
+    if (!Object.isExtensible(container.children)) {
+      container.children = [...container.children];
+    }
     target = Math.max(0, Math.min(target, container.children.length));
     container.children.splice(target, 0, extracted);
   }
@@ -612,13 +639,13 @@ export const useWidgetStore = defineStore("widget", () => {
     if (widget) {
       Object.assign(widget, patch);
       if (patch.position) {
-        syncStyleDimensions(widget);
+        syncStyleDimensions(widget, getBoardLayoutMode());
       }
     }
   }
 
   // ================================================================
-  // 位置操作
+  // 位置Action
   // ================================================================
 
   function moveWidget(id: string, x: number, y: number): void {
@@ -634,7 +661,7 @@ export const useWidgetStore = defineStore("widget", () => {
     if (widget) {
       widget.position.w = Math.max(20, w);
       widget.position.h = Math.max(20, h);
-      syncStyleDimensions(widget);
+      syncStyleDimensions(widget, getBoardLayoutMode());
     }
   }
 
@@ -646,29 +673,29 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   // ================================================================
-  // 容器操作
+  // ContainerAction
   // ================================================================
 
   /**
-   * 将 Widget 从当前位置移除，添加到目标容器的 children。
-   * 坐标保持不变（调用方负责坐标转换）。
+   * 将 Widget 从当前位置移除, 添加到目标Container的 children。
+   * 坐标保持不变（调用方负责坐标Transform）。
    */
   function addToContainer(widgetId: string, containerId: string): void {
     const widget = findWidget(widgetId);
     const container = findWidget(containerId);
     if (!widget || !container) return;
     if (widgetId === containerId) return;
-    // 已经是目标容器的直接子节点
+    // 已经是目标Container的直接子节点
     if (container.children?.some((c) => c.id === widgetId)) return;
 
-    // tabs 容器：自动分配 tabKey
+    // tabs Container：自动Min配 tabKey
     if (container.type === "tabs" && !widget.tabKey) {
       const tabs = container.props?.tabs as Array<{ key: string }> | undefined;
       const activeKey = container.props?.activeKey as string | undefined;
       widget.tabKey = activeKey || tabs?.[0]?.key || "tab1";
     }
 
-    // 列容器：容量检查必须在 removeFromList 之前，否则 widget 会从画布消失
+    // ColumnContainer：容量检查必须在 removeFromList 之前, 否则 widget 会从画布消失
     const colContainerColumns = getColContainerColumns(container.type);
     if (colContainerColumns > 0) {
       if (checkAndAssignColIndex(widget, container, colContainerColumns))
@@ -688,7 +715,7 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   /**
-   * 从容器的 children 中移除 Widget，放回根级。
+   * 从Container的 children 中移除 Widget, 放回根级。
    * 坐标保持不变。
    */
   function removeFromContainer(widgetId: string): void {
@@ -697,7 +724,7 @@ export const useWidgetStore = defineStore("widget", () => {
     const widget = findWidget(widgetId);
     if (!widget) return;
 
-    // 从父容器移除
+    // 从父Container移除
     if (parent.children) {
       const idx = parent.children.findIndex((c) => c.id === widgetId);
       if (idx >= 0) {
@@ -725,8 +752,8 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   /**
-   * 将 Widget 重新挂载到目标容器。
-   * x/y 为目标容器的局部坐标。
+   * 将 Widget 重新挂载到目标Container。
+   * x/y 为目标Container的局部坐标。
    */
   function reparentToContainer(
     id: string,
@@ -740,14 +767,14 @@ export const useWidgetStore = defineStore("widget", () => {
     if (id === targetId) return;
     if (target.children?.some((c) => c.id === id)) return;
 
-    // tabs 容器：自动分配 tabKey
+    // tabs Container：自动Min配 tabKey
     if (target.type === "tabs" && !widget.tabKey) {
       const tabs = target.props?.tabs as Array<{ key: string }> | undefined;
       const activeKey = target.props?.activeKey as string | undefined;
       widget.tabKey = activeKey || tabs?.[0]?.key || "tab1";
     }
 
-    // 列容器：容量检查必须在 removeFromList 之前，否则 widget 会从画布消失
+    // ColumnContainer：容量检查必须在 removeFromList 之前, 否则 widget 会从画布消失
     const colContainerColumns = getColContainerColumns(target.type);
     if (colContainerColumns > 0) {
       if (checkAndAssignColIndex(widget, target, colContainerColumns)) return;
@@ -769,11 +796,11 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   // ================================================================
-  // 表单容器绑定
+  // FormContainer绑定
   // ================================================================
 
   /**
-   * 将 Widget 绑定到指定表单容器。
+   * 将 Widget 绑定到指定FormContainer。
    */
   function bindToForm(widgetId: string, formId: string): void {
     const widget = findWidget(widgetId);
@@ -783,7 +810,7 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   /**
-   * 解除 Widget 的表单容器绑定。
+   * 解除 Widget 的FormContainer绑定。
    */
   function unbindFromForm(widgetId: string): void {
     const widget = findWidget(widgetId);
@@ -793,8 +820,8 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   /**
-   * 收集指定表单容器下所有子 Widget 的字段值。
-   * 只收集有 field 属性且在同一 formId 下的 Widget。
+   * 收集指定FormContainer下所有子 Widget 的FieldValue。
+   * 只收集有 field Property且在同一 formId 下的 Widget。
    */
   function collectFormValues(formId: string): Record<string, unknown> {
     const values: Record<string, unknown> = {};
@@ -815,11 +842,11 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   // ================================================================
-  // 页签操作
+  // 页签Action
   // ================================================================
 
   /**
-   * 设置 Widget 绑定的页签 key。
+   * Settings Widget 绑定的页签 key。
    */
   function setTabKey(widgetId: string, tabKey: string): void {
     const widget = findWidget(widgetId);
@@ -829,11 +856,11 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   // ================================================================
-  // 行列操作
+  // RowColumnAction
   // ================================================================
 
   /**
-   * 设置 Widget 绑定的列索引。
+   * Settings Widget 绑定的ColumnIndex。
    */
   function setColIndex(widgetId: string, colIndex: number): void {
     const widget = findWidget(widgetId);
@@ -843,25 +870,25 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   // ================================================================
-  // 批量操作
+  // 批量Action
   // ================================================================
 
   /**
-   * 批量替换所有 Widget（从 API 加载时使用）。
+   * 批量替换所有 Widget（从 API 加载Hrs使用）。
    */
   function loadWidgets(data: Widget[], layoutMode?: BoardLayoutMode): void {
-    // 过滤掉 undefined 和 null 元素，确保数据干净
+    // Filter掉 undefined 和 null 元素, 确保Data干净
     const validWidgets = (data || []).filter(
       (w): w is Widget => w != null && typeof w === "object" && "id" in w,
     );
-    // 补全 position 字段（旧数据可能缺失）
-    const normalized = normalizePosition(validWidgets);
+    // 补全 position Field（旧Data可能缺失）
     const mode = layoutMode ?? getBoardLayoutMode();
+    const normalized = normalizePosition(validWidgets, mode);
     adaptWidgetsToBoardLayout(normalized, mode);
     widgets.value = sanitizeContainerNesting(normalized);
   }
 
-  /** Board 布局模式切换后，同步 Widget 骨架样式 */
+  /** Board Layout模式切换后, Sync Widget 骨架Style */
   function adaptAllToLayoutMode(layoutMode: BoardLayoutMode): void {
     adaptWidgetsToBoardLayout(widgets.value, layoutMode);
   }
@@ -874,11 +901,11 @@ export const useWidgetStore = defineStore("widget", () => {
   }
 
   // ================================================================
-  // 导出
+  // Export
   // ================================================================
 
   return {
-    // 数据
+    // Data
     widgets,
     // 树结构遍历
     findWidget,
@@ -892,28 +919,28 @@ export const useWidgetStore = defineStore("widget", () => {
     moveWidgetToIndex,
     removeWidget,
     updateWidget,
-    // 位置操作
+    // 位置Action
     moveWidget,
     resizeWidget,
     setZIndex,
-    // 容器操作
+    // ContainerAction
     addToContainer,
     removeFromContainer,
     reparentToRoot,
     reparentToContainer,
-    // 表单容器绑定
+    // FormContainer绑定
     bindToForm,
     unbindFromForm,
     collectFormValues,
-    // 页签操作
+    // 页签Action
     setTabKey,
-    // 行列操作
+    // RowColumnAction
     setColIndex,
-    // 批量操作
+    // 批量Action
     loadWidgets,
     adaptAllToLayoutMode,
     clearWidgets,
-    // 多页面
+    // 多Page
     pageWidgets,
     savePageWidgets,
     loadPageWidgets,

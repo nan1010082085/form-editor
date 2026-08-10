@@ -154,7 +154,7 @@ describe("useConditionReferences", () => {
 
       expect(variableRefs.value).toHaveLength(2);
       expect(variableRefs.value[0].value).toBe("variables.threshold");
-      expect(variableRefs.value[0].label).toContain("画布变量");
+      expect(variableRefs.value[0].label).toContain("Canvas Variable");
       expect(variableRefs.value[1].value).toBe("variables.mode");
     });
 
@@ -176,7 +176,7 @@ describe("useConditionReferences", () => {
 
       expect(variableRefs.value).toHaveLength(2);
       expect(variableRefs.value[0].value).toBe("variables.selectedRows");
-      expect(variableRefs.value[0].label).toContain("组件变量");
+      expect(variableRefs.value[0].label).toContain("Component Variable");
     });
 
     it("collects variables from nested widgets", async () => {

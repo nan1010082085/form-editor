@@ -10,9 +10,10 @@ import { nextTick, defineComponent } from "vue";
 import ElementPlus from "element-plus";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 // Mock vue-router
 vi.mock("vue-router", () => ({

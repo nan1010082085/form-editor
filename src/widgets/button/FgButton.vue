@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { inject, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey, widgetStyleKey } from "../base/types";
 import { EVENT_CONTEXT_KEY } from "../../components/WidgetRenderer/types";
 import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { triggerWidgetEvent } from "../../engine/eventEngine";
+
+const { t } = useI18n();
 
 const widgetData = inject(widgetDataKey)!;
 const widgetStyle = inject(widgetStyleKey)!;
@@ -34,7 +37,10 @@ const isPlain = computed(() => Boolean(widgetData.value.props?.plain));
 const isRound = computed(() => Boolean(widgetData.value.props?.round));
 const isCircle = computed(() => Boolean(widgetData.value.props?.circle));
 const buttonText = computed(
-  () => widgetData.value.label || widgetData.value.props?.text || "按钮",
+  () =>
+    widgetData.value.label ||
+    widgetData.value.props?.text ||
+    t("editor.button.defaultText"),
 );
 
 async function handleClick() {

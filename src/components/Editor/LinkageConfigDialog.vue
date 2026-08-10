@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * LinkageConfigDialog — WidgetEvent[] 规则配置对话框
+ * LinkageConfigDialog — WidgetEvent[] RuleConfig对话框
  *
- * 每条规则输出一个 WidgetEvent：
- * - trigger: 'change'（由监听字段值变化驱动）
- * - condition: 条件表达式
- * - actions: SchemaEventAction[]（直接对接事件引擎）
+ * 每条RuleOutput一个 WidgetEvent：
+ * - trigger: 'change'（由监听FieldValue变化驱动）
+ * - condition: Condition表达式
+ * - actions: SchemaEventAction[]（直接对接Event引擎）
  */
 import { ref, watch, computed } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -32,10 +32,10 @@ const emit = defineEmits<{
   save: [events: WidgetEvent[]];
 }>();
 
-// ---- 部件字段选项 ----
+// ---- WidgetFieldOptions ----
 const { allWidgetOptions } = useWidgetOptions();
 
-// ---- 内部编辑模型（与 UI 绑定） ----
+// ---- 内部Edit模型（与 UI 绑定） ----
 
 interface RuleUI {
   watches: { source: string }[];
@@ -45,7 +45,7 @@ interface RuleUI {
 
 const localRules = ref<RuleUI[]>([]);
 
-/** WidgetEvent[] → RuleUI[] 用于编辑 */
+/** WidgetEvent[] → RuleUI[] 用于Edit */
 function fromEvents(events: WidgetEvent[]): RuleUI[] {
   return events.map((ev) => ({
     watches: [],
@@ -54,7 +54,7 @@ function fromEvents(events: WidgetEvent[]): RuleUI[] {
   }));
 }
 
-/** RuleUI[] → WidgetEvent[] 用于保存 */
+/** RuleUI[] → WidgetEvent[] 用于Save */
 function toEvents(rules: RuleUI[]): WidgetEvent[] {
   return rules
     .filter((r) => r.actions.length > 0)
@@ -80,7 +80,7 @@ watch(
   },
 );
 
-// ---- 选项常量 ----
+// ---- Options常量 ----
 
 const actionTypeOptions = computed<ActionTypeOption[]>(() => [
   { label: t("editor.linkageDialog.actionOpenDialog"), value: "open-dialog" },
@@ -100,7 +100,7 @@ const actionTypeOptions = computed<ActionTypeOption[]>(() => [
   { label: t("editor.linkageDialog.actionNavigate"), value: "navigate" },
 ]);
 
-// ---- 规则 CRUD ----
+// ---- Rule CRUD ----
 
 function addRule() {
   localRules.value.push({
@@ -114,7 +114,7 @@ function removeRule(index: number) {
   localRules.value.splice(index, 1);
 }
 
-// ---- 监听字段 CRUD ----
+// ---- 监听Field CRUD ----
 
 function addWatch(ruleIndex: number) {
   localRules.value[ruleIndex].watches.push({ source: "" });
@@ -124,13 +124,13 @@ function removeWatch(ruleIndex: number, watchIndex: number) {
   localRules.value[ruleIndex].watches.splice(watchIndex, 1);
 }
 
-// ---- 动作更新 ----
+// ---- ActionUpdate ----
 
 function handleActionUpdate(ruleIndex: number, actions: SchemaEventAction[]) {
   localRules.value[ruleIndex].actions = actions;
 }
 
-// ---- 保存 / 关闭 ----
+// ---- Save / Close ----
 
 function handleSave() {
   emit("save", toEvents(localRules.value));
@@ -141,7 +141,7 @@ function handleClose() {
   emit("update:visible", false);
 }
 
-// ---- 流程预览数据 ----
+// ---- 流程预览Data ----
 
 const actionLabelMap: Record<string, string> = Object.fromEntries(
   actionTypeOptions.value.map((o: ActionTypeOption) => [o.value, o.label]),
@@ -200,14 +200,14 @@ const flowItems = computed<FlowItem[]>(() =>
     @update:model-value="emit('update:visible', $event)"
   >
     <div :class="styles.body">
-      <!-- 左侧：配置表单 -->
+      <!-- 左侧：ConfigForm -->
       <div :class="styles.form">
-        <!-- 空状态 -->
+        <!-- 空Status -->
         <div v-if="localRules.length === 0" :class="styles.empty">
           {{ t("editor.linkageDialog.emptyHint") }}
         </div>
 
-        <!-- 规则列表 -->
+        <!-- RuleColumn表 -->
         <div v-for="(rule, ri) in localRules" :key="ri" :class="styles.card">
           <div :class="styles.cardHeader">
             <span :class="styles.cardTitle"
@@ -219,7 +219,7 @@ const flowItems = computed<FlowItem[]>(() =>
             </el-button>
           </div>
 
-          <!-- watches（辅助配置，帮助用户理解触发来源） -->
+          <!-- watches（辅助Config, HelpUser理解Trigger来源） -->
           <div :class="styles.row">
             <label :class="styles.label">{{
               t("editor.linkageDialog.watch")
@@ -279,7 +279,7 @@ const flowItems = computed<FlowItem[]>(() =>
           />
         </div>
 
-        <!-- 添加规则 -->
+        <!-- 添加Rule -->
         <el-button type="primary" plain style="width: 100%" @click="addRule">
           <AppIcon name="plus" />
           {{ t("editor.linkageDialog.addRule") }}

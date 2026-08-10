@@ -8,13 +8,13 @@ export const cardConfig: WidgetConfig = {
   defaultStyle: {},
   configPanels: ["events", "variables"],
   defaultProps: {
-    title: "卡片标题",
+    title: "Card Title",
     shadow: "hover" as const,
     showHeader: true,
   },
   propertyPanel: {
     basic: [
-      { key: "title", label: "Title", type: "input", default: "卡片标题" },
+      { key: "title", label: "Title", type: "input", default: "Card Title" },
       {
         key: "shadow",
         label: "Shadow",

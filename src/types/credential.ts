@@ -56,3 +56,40 @@ export const CREDENTIAL_TYPE_FIELD_LABELS: Record<string, string> = {
   password: "Password",
   token: "Token",
 };
+
+/** i18n key per credential type */
+const CREDENTIAL_TYPE_I18N_KEYS: Record<CredentialType, string> = {
+  api_key: "editor.credential.typeApiKey",
+  basic_auth: "editor.credential.typeBasicAuth",
+  bearer_token: "editor.credential.typeBearerToken",
+};
+
+/** i18n key per credential data field */
+const CREDENTIAL_FIELD_I18N_KEYS: Record<string, string> = {
+  apiKey: "editor.credential.fieldApiKey",
+  username: "editor.credential.fieldUsername",
+  password: "editor.credential.fieldPassword",
+  token: "editor.credential.fieldToken",
+};
+
+/**
+ * Resolve localized credential type label; falls back to English constants.
+ */
+export function getCredentialTypeLabel(
+  type: CredentialType,
+  t: (key: string) => string,
+): string {
+  const key = CREDENTIAL_TYPE_I18N_KEYS[type];
+  return key ? t(key) : (CREDENTIAL_TYPE_LABELS[type] ?? type);
+}
+
+/**
+ * Resolve localized credential data field label; falls back to English constants.
+ */
+export function getCredentialFieldLabel(
+  field: string,
+  t: (key: string) => string,
+): string {
+  const key = CREDENTIAL_FIELD_I18N_KEYS[field];
+  return key ? t(key) : (CREDENTIAL_TYPE_FIELD_LABELS[field] ?? field);
+}

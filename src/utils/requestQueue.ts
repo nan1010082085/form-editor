@@ -1,6 +1,6 @@
 /**
- * 请求队列
- * 遍历 Schema 树收集 API 任务，顺序执行请求
+ * 请求队Column
+ * 遍历 Schema 树收集 API 任务, 顺序Execute请求
  */
 import type {
   PartialWidget,
@@ -58,13 +58,13 @@ export function collectApiTasks(schema: PartialWidget[]): QueueTask[] {
   return Array.from(taskMap.values());
 }
 
-/** 顺序执行请求队列 */
+/** 顺序Execute请求队Column */
 export async function executeQueue(
   tasks: QueueTask[],
 ): Promise<Map<string, DictItem[]>> {
   const results = new Map<string, DictItem[]>();
   for (const task of tasks) {
-    // 查缓存
+    // 查Cache
     const cached = getCachedOptions(task.url, task.params);
     if (cached) {
       results.set(task.key, cached);
@@ -98,8 +98,8 @@ export async function executeQueue(
       results.set(task.key, options);
       setCachedOptions(task.url, task.params, options);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "未知错误";
-      logger.api(`${task.url} 加载失败:`, message);
+      const message = e instanceof Error ? e.message : "Unknown error";
+      logger.api(`${task.url} Load failed:`, message);
       results.set(task.key, []);
     }
   }
@@ -107,7 +107,7 @@ export async function executeQueue(
   return results;
 }
 
-/** 便捷方法：收集并执行 */
+/** 便捷方法：收集并Execute */
 export async function processSchema(schema: PartialWidget[]) {
   const tasks = collectApiTasks(schema);
   if (tasks.length === 0) return;

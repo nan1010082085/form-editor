@@ -17,12 +17,12 @@ useExposeWidget((wd) => ({
   },
 }));
 
-// 动态选项加载（api 配置存在时生效）
+// 动态Options加载（api Config存在Hrs生效）
 const { options: dynamicOptions } = useDynamicOptions(
   computed(() => widgetData.value.api),
 );
 
-// 合并：动态选项优先，降级到静态 options
+// 合并：动态Options优先, 降级到静态 options
 const resolvedOptions = computed(() =>
   dynamicOptions.value.length
     ? dynamicOptions.value

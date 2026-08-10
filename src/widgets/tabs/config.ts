@@ -70,8 +70,8 @@ export const tabsConfig: WidgetConfig = {
         label: "Tab",
         type: "array-editor",
         fields: [
-          { key: "key", label: "标识", type: "text", placeholder: "tab1" },
-          { key: "label", label: "Label", type: "text", placeholder: "标签名" },
+          { key: "key", label: "Key", type: "text", placeholder: "tab1" },
+          { key: "label", label: "Label", type: "text", placeholder: "Label" },
         ],
       },
       {

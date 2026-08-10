@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * RequestConfigDialog -- API 请求配置对话框
+ * RequestConfigDialog -- API 请求Config对话框
  *
- * 用于配置 Table 等组件的 API 数据源。
- * 支持 URL、Method、Headers、Response Data Path 配置。
+ * 用于Config Table 等Component的 API Data源。
+ * 支持 URL、Method、Headers、Response Data Path Config。
  */
 import { ref, watch } from "vue";
 import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
@@ -32,7 +32,7 @@ const emit = defineEmits<{
   cancel: [];
 }>();
 
-// ---- 本地编辑副本 ----
+// ---- 本地Edit副本 ----
 
 const localConfig = ref<RequestConfig>({
   apiUrl: "",
@@ -41,7 +41,7 @@ const localConfig = ref<RequestConfig>({
   responseDataPath: "",
 });
 
-// Header 键值对编辑状态
+// Header 键Value对EditStatus
 interface HeaderEntry {
   key: string;
   value: string;
@@ -54,11 +54,11 @@ watch(
   (open) => {
     if (open) {
       localConfig.value = JSON.parse(JSON.stringify(props.config));
-      // 将 headers 对象转为键值对数组
+      // 将 headers 对象转为键Value对数组
       headerEntries.value = Object.entries(localConfig.value.apiHeaders).map(
         ([key, value]) => ({ key, value }),
       );
-      // 确保至少有一行
+      // 确保至少有一Row
       if (headerEntries.value.length === 0) {
         headerEntries.value.push({ key: "", value: "" });
       }
@@ -86,7 +86,7 @@ function syncHeaders() {
   localConfig.value.apiHeaders = headers;
 }
 
-// ---- 方法选项 ----
+// ---- 方法Options ----
 
 const methodOptions = [
   { label: "GET", value: "get" },
@@ -95,7 +95,7 @@ const methodOptions = [
   { label: "DELETE", value: "delete" },
 ];
 
-// ---- 保存 / 关闭 ----
+// ---- Save / Close ----
 
 function handleSave() {
   syncHeaders();
@@ -162,13 +162,13 @@ function handleClose() {
           <el-input
             v-model="entry.key"
             size="small"
-            placeholder="Header Name"
+            :placeholder="t('editor.api.headerName')"
             @change="syncHeaders"
           />
           <el-input
             v-model="entry.value"
             size="small"
-            placeholder="Header Value"
+            :placeholder="t('editor.api.headerValue')"
             @change="syncHeaders"
           />
           <el-button type="danger" text size="small" @click="removeHeader(idx)">

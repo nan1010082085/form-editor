@@ -1,11 +1,11 @@
 /**
- * useBoardPropertyUpdater - 画布属性更新逻辑
+ * useBoardPropertyUpdater - 画布PropertyUpdate逻辑
  *
  * 从 PropertyPanel 抽出的业务逻辑：
- * - themePreset：应用主题预设（canvas + cssVars）
- * - layoutMode：由模板固定，不可切换
- * - freeLayout.*：自由布局子字段
- * - widthUnit / heightUnit：切换单位时自动 px <-> % 换算
+ * - themePreset：应用Theme预设（canvas + cssVars）
+ * - layoutMode：由Template固定, 不可切换
+ * - freeLayout.*：自由Layout子Field
+ * - widthUnit / heightUnit：切换单位Hrs自动 px <-> % 换算
  * - 其他：直接写入 canvas
  */
 import type { useBoardStore } from "@/stores/board";
@@ -33,7 +33,7 @@ export function useBoardPropertyUpdater(
     }
 
     if (key === "layoutMode") {
-      // 布局模式由创建时模板固定，不可切换（工具栏仅展示）
+      // Layout模式由创建HrsTemplate固定, 不可切换（Toolbar仅展示）
       return;
     }
 
@@ -61,7 +61,7 @@ export function useBoardPropertyUpdater(
       return;
     }
 
-    // 切换单位时自动转换数值
+    // 切换单位Hrs自动Transform数Value
     if (key === "widthUnit") {
       const newUnit = value as CanvasUnit;
       const oldUnit = boardStore.canvas.widthUnit ?? "px";

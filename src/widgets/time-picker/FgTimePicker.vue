@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { inject } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import "./FgTimePicker.module.scss";
 import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
 import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
+
+const { t } = useI18n();
 
 const widgetData = inject(widgetDataKey)!;
 const { isDisabled } = useWidgetRenderState();
@@ -22,7 +25,7 @@ useExposeWidget((wd) => ({
   <el-time-picker
     v-model="widgetData.defaultValue as any"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || '请选择时间'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.timePicker.placeholder')"
     :disabled="isDisabled"
     :readonly="(widgetData.props?.readonly as boolean) || false"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"

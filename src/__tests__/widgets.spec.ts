@@ -547,7 +547,7 @@ describe("Widget Default Schema", () => {
     const schema = createDefaultSchema("banner");
     expect(schema.type).toBe("banner");
     expect(schema.props).toBeDefined();
-    expect(schema.props!.text).toBe("提示信息");
+    expect(schema.props!.text).toBe("Notice Info");
     expect(schema.props!.type).toBe("info");
     expect(schema.props!.closable).toBe(true);
   });
@@ -555,7 +555,7 @@ describe("Widget Default Schema", () => {
   it("tree-layout has children and props", () => {
     const schema = createDefaultSchema("tree-layout");
     expect(schema.type).toBe("tree-layout");
-    expect(schema.props!.title).toBe("侧栏面板");
+    expect(schema.props!.title).toBe("Sidebar Panel");
     expect(schema.props!.showSearch).toBe(true);
     expect(Array.isArray(schema.children)).toBe(true);
   });
@@ -564,15 +564,15 @@ describe("Widget Default Schema", () => {
     const schema = createDefaultSchema("date-time-slot");
     expect(schema.type).toBe("date-time-slot");
     expect(schema.field).toBeDefined();
-    expect(schema.props!.startPlaceholder).toBe("开始时间");
-    expect(schema.props!.endPlaceholder).toBe("结束时间");
+    expect(schema.props!.startPlaceholder).toBe("Start time");
+    expect(schema.props!.endPlaceholder).toBe("End time");
     expect(schema.props!.format).toBe("YYYY-MM-DD HH:mm:ss");
   });
 
   it("file-list has props with title and permissions", () => {
     const schema = createDefaultSchema("file-list");
     expect(schema.type).toBe("file-list");
-    expect(schema.props!.title).toBe("附件");
+    expect(schema.props!.title).toBe("Attachments");
     expect(schema.props!.allowDelete).toBe(true);
     expect(schema.props!.allowPreview).toBe(false);
   });
@@ -580,7 +580,7 @@ describe("Widget Default Schema", () => {
   it("transfer has props with titles and filterable", () => {
     const schema = createDefaultSchema("transfer");
     expect(schema.type).toBe("transfer");
-    expect(schema.props!.titles).toEqual(["待选", "已选"]);
+    expect(schema.props!.titles).toEqual(["Available", "Selected"]);
     expect(schema.props!.filterable).toBe(true);
   });
 });

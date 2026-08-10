@@ -1,16 +1,16 @@
 /**
  * useConstant — 全局常量集中管理
  *
- * 消除项目中的魔法数字/字符串，统一引用。
- * 容器类型从 registry 动态获取，支持新增部件自动适配。
+ * 消除项目中的魔法数字/字符串, 统一引用。
+ * ContainerType从 registry 动态获取, 支持CreateWidget自动适配。
  */
 import { computed, type ComputedRef } from "vue";
 import type { SchemaType } from "@/components/WidgetRenderer/types";
 import { getAllWidgets, type WidgetRegistryItem } from "@/widgets/registry";
 
 /**
- * 静态容器类型集合（用于非组件上下文，如工具函数、碰撞检测等）
- * 当 registry 未初始化时作为 fallback。
+ * 静态ContainerType集合（用于非Component上下文, 如工具函数、碰撞检测等）
+ * 当 registry 未初始化Hrs作为 fallback。
  */
 export const LAYOUT_CONTAINER_TYPES: ReadonlySet<SchemaType> =
   new Set<SchemaType>([
@@ -25,16 +25,16 @@ export const LAYOUT_CONTAINER_TYPES: ReadonlySet<SchemaType> =
     "row-container",
   ]);
 
-/** 编辑历史最大快照数 */
+/** Edit历史Max快照数 */
 export const MAX_HISTORY_SIZE = 30;
 
-/** 组件 ID Hash 长度 */
+/** Component ID Hash 长度 */
 export const ID_HASH_LENGTH = 5;
 
 /**
- * 从 registry 动态获取容器类型集合
- * container 分组的 widget 都是容器
- * 当 registry 为空时 fallback 到 LAYOUT_CONTAINER_TYPES
+ * 从 registry 动态获取ContainerType集合
+ * container Group的 widget 都是Container
+ * 当 registry 为空Hrs fallback 到 LAYOUT_CONTAINER_TYPES
  */
 function getContainerTypesFromRegistry(): Set<SchemaType> {
   const types = new Set<SchemaType>();
@@ -49,14 +49,14 @@ function getContainerTypesFromRegistry(): Set<SchemaType> {
   return types;
 }
 
-/** 可容纳子节点的布局容器类型（动态） */
+/** 可容纳子节点的LayoutContainerType（动态） */
 export function useLayoutContainerTypes(): ComputedRef<
   ReadonlySet<SchemaType>
 > {
   return computed(() => getContainerTypesFromRegistry());
 }
 
-/** 编辑器中可接受拖放的容器类型（动态） */
+/** Edit器中可接受拖放的ContainerType（动态） */
 export function useEditableContainerTypes(): ComputedRef<
   ReadonlySet<SchemaType>
 > {
@@ -73,26 +73,26 @@ export const INTERACTION_MODES = [
 
 export type InteractionMode = (typeof INTERACTION_MODES)[number];
 
-/** 布局编辑模式 — 控制画布渲染和 widget 面板行为 */
+/** LayoutEdit模式 — 控制画布渲染和 widget 面板Row为 */
 export const LAYOUT_EDIT_MODES = ["free", "grid"] as const;
 export type LayoutEditMode = (typeof LAYOUT_EDIT_MODES)[number];
 
 /**
- * 判断组件类型是否为可嵌套容器（动态）
+ * 判断ComponentType是否为可嵌套Container（动态）
  */
 export function canNest(type: SchemaType): boolean {
   return getContainerTypesFromRegistry().has(type);
 }
 
 /**
- * 获取所有容器类型（静态缓存，用于非响应式场景）
- * 注意：此函数每次调用都会遍历所有 widgets，建议在非频繁调用场景使用
+ * 获取所有ContainerType（静态Cache, 用于非响应式场景）
+ * 注意：此函数每次调用都会遍历所有 widgets, 建议在非频繁调用场景使用
  */
 export function useAllContainerTypes(): Set<SchemaType> {
   return getContainerTypesFromRegistry();
 }
 
-/** 布局/容器组件（layout + container 分组，动态） */
+/** Layout/ContainerComponent（layout + container Group, 动态） */
 export function useLayoutTypes(): ComputedRef<ReadonlySet<SchemaType>> {
   return computed(() => {
     const types = new Set<SchemaType>();
@@ -105,7 +105,7 @@ export function useLayoutTypes(): ComputedRef<ReadonlySet<SchemaType>> {
   });
 }
 
-/** 静态基础类型 fallback（registry 未初始化时） */
+/** 静态基础Type fallback（registry 未初始化Hrs） */
 const FALLBACK_BASIC_TYPES = new Set<SchemaType>([
   "input",
   "select",
@@ -158,7 +158,7 @@ const FALLBACK_BASIC_TYPES = new Set<SchemaType>([
   "candlestick",
 ]);
 
-/** 静态业务类型 fallback（registry 未初始化时） */
+/** 静态业务Type fallback（registry 未初始化Hrs） */
 const FALLBACK_BUSINESS_TYPES = new Set<SchemaType>([
   "approval-user-picker",
   "approval-role-picker",
@@ -168,7 +168,7 @@ const FALLBACK_BUSINESS_TYPES = new Set<SchemaType>([
   "user-selector",
 ]);
 
-/** 表单控件 + 操作 + 展示 + 表格（动态） */
+/** Form控件 + Action + 展示 + 表格（动态） */
 export function useBasicTypes(): ComputedRef<ReadonlySet<SchemaType>> {
   return computed(() => {
     const types = new Set<SchemaType>();
@@ -184,7 +184,7 @@ export function useBasicTypes(): ComputedRef<ReadonlySet<SchemaType>> {
   });
 }
 
-/** 业务组件（business 分组，动态） */
+/** 业务Component（business Group, 动态） */
 export function useBusinessTypes(): ComputedRef<ReadonlySet<SchemaType>> {
   return computed(() => {
     const types = new Set<SchemaType>();
@@ -201,7 +201,7 @@ export function useBusinessTypes(): ComputedRef<ReadonlySet<SchemaType>> {
 }
 
 /**
- * 获取指定分组的所有组件类型
+ * 获取指定Group的所有ComponentType
  */
 export function useTypesByGroup(
   group: WidgetRegistryItem["group"],

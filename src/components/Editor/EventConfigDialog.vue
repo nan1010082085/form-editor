@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
- * EventConfigDialog -- WidgetEvent[] 配置对话框
+ * EventConfigDialog -- WidgetEvent[] Config对话框
  *
- * 对每个事件支持：
- * - trigger: 触发事件名（select）
- * - condition: 条件表达式（textarea，可选）
- * - confirm: 确认提示（input，可选）
- * - actions[]: 动作列表（type + target + value）
+ * 对每个Event支持：
+ * - trigger: TriggerEvent名（select）
+ * - condition: Condition表达式（textarea, 可选）
+ * - confirm: Confirm提示（input, 可选）
+ * - actions[]: ActionColumn表（type + target + value）
  *
- * 保存时 emit 完整的 WidgetEvent[]，由调用方写入 widget。
+ * SaveHrs emit 完整的 WidgetEvent[], 由调用方写入 widget。
  */
 import { ref, watch, computed } from "vue";
 import type {
@@ -25,6 +25,7 @@ import ActionListEditor from "@/components/Editor/ActionListEditor.vue";
 import type { ActionTypeOption } from "@/components/Editor/ActionListEditor.vue";
 import FlowPreview from "@/components/Editor/FlowPreview.vue";
 import type { FlowItem } from "@/components/Editor/FlowPreview.vue";
+import { EVENT_TRIGGER_I18N_KEYS } from "@/engine";
 import styles from "./EventConfigDialog.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -44,7 +45,7 @@ const emit = defineEmits<{
 
 const widgetStore = useWidgetStore();
 
-// ---- 本地编辑副本 ----
+// ---- 本地Edit副本 ----
 
 const localEvents = ref<WidgetEvent[]>([]);
 
@@ -52,21 +53,20 @@ watch(
   () => props.visible,
   (open) => {
     if (open) {
-      // 深拷贝，编辑期间不影响原始数据
+      // 深拷贝, Edit期间不影响原始Data
       localEvents.value = JSON.parse(JSON.stringify(props.events ?? []));
     }
   },
 );
 
-// ---- 选项常量 ----
+// ---- Options常量（与 eventEngine.EVENT_TRIGGER_I18N_KEYS 同源） ----
 
-const triggerOptions = computed(() => [
-  { label: t("editor.eventDialog.triggerClick"), value: "click" },
-  { label: t("editor.eventDialog.triggerChange"), value: "change" },
-  { label: t("editor.eventDialog.triggerClose"), value: "close" },
-  { label: t("editor.eventDialog.triggerBlur"), value: "blur" },
-  { label: t("editor.eventDialog.triggerFocus"), value: "focus" },
-]);
+const triggerOptions = computed(() =>
+  Object.entries(EVENT_TRIGGER_I18N_KEYS).map(([value, i18nKey]) => ({
+    label: t(i18nKey),
+    value,
+  })),
+);
 
 const actionTypeOptions = computed<ActionTypeOption[]>(() => [
   { label: t("editor.eventDialog.actionShow"), value: "show" },
@@ -94,7 +94,7 @@ const actionTypeOptions = computed<ActionTypeOption[]>(() => [
   },
 ]);
 
-// ---- 根据目标组件获取可接收事件 ----
+// ---- 根据目标Component获取可接收Event ----
 
 function getReceivableEvents(targetId: string): ReceivableEventConfig[] {
   const widget = widgetStore.findWidget(targetId);
@@ -103,7 +103,7 @@ function getReceivableEvents(targetId: string): ReceivableEventConfig[] {
   return registryItem?.config?.receivableEvents ?? [];
 }
 
-// ---- 事件 CRUD ----
+// ---- Event CRUD ----
 
 function addEvent() {
   localEvents.value.push({
@@ -118,13 +118,13 @@ function removeEvent(index: number) {
   localEvents.value.splice(index, 1);
 }
 
-// ---- 动作更新 ----
+// ---- ActionUpdate ----
 
 function handleActionUpdate(eventIndex: number, actions: SchemaEventAction[]) {
   localEvents.value[eventIndex].actions = actions;
 }
 
-// ---- 保存 / 关闭 ----
+// ---- Save / Close ----
 
 function handleSave() {
   emit("save", localEvents.value);
@@ -135,7 +135,7 @@ function handleClose() {
   emit("update:visible", false);
 }
 
-// ---- 流程预览数据 ----
+// ---- 流程预览Data ----
 
 const triggerLabelMap = computed(() =>
   Object.fromEntries(triggerOptions.value.map((o) => [o.value, o.label])),
@@ -200,14 +200,14 @@ const flowItems = computed<FlowItem[]>(() =>
     @update:model-value="emit('update:visible', $event)"
   >
     <div :class="[styles.body, 'editor-ui']">
-      <!-- 左侧：配置表单 -->
+      <!-- 左侧：ConfigForm -->
       <div :class="styles.form">
-        <!-- 空状态 -->
+        <!-- 空Status -->
         <div v-if="localEvents.length === 0" :class="styles.empty">
           {{ t("editor.eventDialog.emptyHint") }}
         </div>
 
-        <!-- 事件列表 -->
+        <!-- EventColumn表 -->
         <div v-for="(evt, ei) in localEvents" :key="ei" :class="styles.card">
           <div :class="styles.cardHeader">
             <span :class="styles.cardTitle"
@@ -295,7 +295,7 @@ const flowItems = computed<FlowItem[]>(() =>
           />
         </div>
 
-        <!-- 添加事件 -->
+        <!-- 添加Event -->
         <el-button type="primary" plain style="width: 100%" @click="addEvent">
           <AppIcon name="plus" />
           {{ t("editor.eventDialog.addEvent") }}

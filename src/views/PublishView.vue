@@ -2,24 +2,24 @@
 /**
  * PublishView — 已发布 Schema 渲染器
  *
- * 通过 path `/view/:schemaCode` 或 route.query.id (publishId) 加载已发布 Schema 并渲染。
- * 支持 postMessage API，可作为 iframe 嵌入宿主系统。
+ * passed path `/view/:schemaCode` 或 route.query.id (publishId) 加载已发布 Schema 并渲染。
+ * 支持 postMessage API, 可作为 iframe 嵌入宿主系统。
  *
  * 宿主通信协议（iframe 嵌入场景）：
- * - fg:set-mode    设置表单模式（mode / editableFields / readonlyFields）
- * - fg:set-context  设置上下文（user / request / global）
+ * - fg:set-mode    SettingsForm模式（mode / editableFields / readonlyFields）
+ * - fg:set-context  Settings上下文（user / request / global）
  * - fg:set-schema   覆盖 schema
- * - fg:set-data     设置表单数据
- * - fg:get-data     获取表单数据（支持 requestId 响应）
- * - fg:validate     校验表单（支持 requestId 响应）
- * - fg:submit       触发表单提交
- * - fg:reset        重置表单
+ * - fg:set-data     SettingsFormData
+ * - fg:get-data     获取FormData（支持 requestId 响应）
+ * - fg:validate     ValidateForm（支持 requestId 响应）
+ * - fg:submit       TriggerFormSubmit
+ * - fg:reset        ResetForm
  */
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { WidgetRenderer } from "@/components/WidgetRenderer";
 import type { FormData } from "@/components/WidgetRenderer";
-import type { PartialWidget, CanvasConfig } from "@/widgets/base/types";
+import type { PartialWidget, CanvasConfig, PreviewBreakpoint } from "@/widgets/base/types";
 import type { PublishedSchemaItem } from "@/types/api";
 import { useAppStore } from "@/stores/app";
 import {
@@ -34,6 +34,7 @@ import {
   resolveRendererLayout,
 } from "@/utils/boardTemplates";
 import { useCanvasScale } from "@/composables/useCanvasScale";
+import { mapWidthToBreakpoint } from "@/composables/useBreakpoint";
 import styles from "./PublishView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -53,7 +54,7 @@ const error = ref("");
 const schemaName = ref("");
 const loadedPublishId = ref("");
 
-// ---- 表单模式状态（由宿主通过 fg:set-mode 设置） ----
+// ---- Form模式Status（由宿主passed fg:set-mode Settings） ----
 const formMode = ref<"edit" | "view" | "partial">("edit");
 const editableFields = ref<string[] | undefined>(undefined);
 const readonlyFields = ref<string[] | undefined>(undefined);
@@ -103,7 +104,22 @@ const contentFrameStyle = computed(() =>
 );
 const isGridLayout = computed(() => canvasConfig.value.layoutMode === "grid");
 
-// ---- 多分辨率自适应 ----
+// ---- 响应式断点自动检测（发布态自适应） ----
+const viewportWidth = ref(typeof window !== "undefined" ? window.innerWidth : 1920);
+const autoBreakpoint = computed<PreviewBreakpoint>(() =>
+  mapWidthToBreakpoint(viewportWidth.value),
+);
+const previewBreakpoint = computed<PreviewBreakpoint>(() => {
+  // URL query 可强制指定断点：?breakpoint=mobile
+  const qp = route.query.breakpoint as string | undefined;
+  if (qp === "mobile" || qp === "tablet" || qp === "desktop") return qp;
+  return autoBreakpoint.value;
+});
+function handleResize() {
+  viewportWidth.value = window.innerWidth;
+}
+
+// ---- 多Min辨率自适应 ----
 const scaleContainerRef = ref<HTMLElement | null>(null);
 const canvasScaleWidth = computed(() => canvasConfig.value.width ?? 1920);
 const canvasScaleHeight = computed(() => canvasConfig.value.height ?? 1080);
@@ -118,7 +134,7 @@ const { canvasStyle: adaptiveCanvasStyle } = useCanvasScale({
   scaleMode: canvasScaleMode,
 });
 
-/** A-08 — 可选 AI 侧边栏（query.aiSidebar=1 或 board 变量 enableAiSidebar） */
+/** A-08 — 可选 AI Sidebar（query.aiSidebar=1 或 board 变量 enableAiSidebar） */
 const showAiSidebar = computed(() => {
   if (route.query.aiSidebar === "1" || route.query.aiSidebar === "true")
     return true;
@@ -136,7 +152,7 @@ const aiSidebarUrl = computed(() => {
   return `/schema-platform/ai/index-sidebar.html?context=${encodeURIComponent(ctx)}`;
 });
 
-/** 将 URL query 映射到画布变量（E-23） */
+/** 将 URL query Map到画布变量（E-23） */
 function buildQueryVariables(
   query: Record<string, unknown>,
 ): Record<string, unknown> {
@@ -170,7 +186,7 @@ function buildQueryVariables(
   return vars;
 }
 
-/** 将 board.variables 数组转为运行时 map */
+/** 将 board.variables 数组转为运RowHrs map */
 function boardVariablesToMap(
   variables?: Array<{ name: string; defaultValue?: unknown }>,
 ): Record<string, unknown> {
@@ -235,7 +251,7 @@ async function loadSchema(id: string) {
   boardVariables.value = {};
 
   try {
-    // 优先按 publishId 查找，找不到再按 sourceId 查找
+    // 优先按 publishId 查找, 找不到再按 sourceId 查找
     let publishedSchema = await fetchPublishedByPublishId(id);
     if (!publishedSchema) {
       publishedSchema = await fetchPublishedSchema(id);
@@ -358,8 +374,14 @@ function handleSubmit(data: FormData) {
   });
 }
 
-onMounted(() => window.addEventListener("message", handleMessage));
-onUnmounted(() => window.removeEventListener("message", handleMessage));
+onMounted(() => {
+  window.addEventListener("message", handleMessage);
+  window.addEventListener("resize", handleResize);
+});
+onUnmounted(() => {
+  window.removeEventListener("message", handleMessage);
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <template>
@@ -435,6 +457,7 @@ onUnmounted(() => window.removeEventListener("message", handleMessage));
           :request="context.request"
           :global="context.global"
           :readonly="isReadonly"
+          :preview-breakpoint="previewBreakpoint"
           :editable-fields="formMode === 'partial' ? editableFields : undefined"
           :readonly-fields="formMode === 'partial' ? readonlyFields : undefined"
           @submit="handleSubmit"
@@ -455,6 +478,7 @@ onUnmounted(() => window.removeEventListener("message", handleMessage));
           :request="context.request"
           :global="context.global"
           :readonly="isReadonly"
+          :preview-breakpoint="previewBreakpoint"
           :editable-fields="formMode === 'partial' ? editableFields : undefined"
           :readonly-fields="formMode === 'partial' ? readonlyFields : undefined"
           @submit="handleSubmit"

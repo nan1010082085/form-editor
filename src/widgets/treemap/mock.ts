@@ -18,7 +18,7 @@ export const treemapMock = [
     ],
   },
   {
-    name: "数据库",
+    name: "Data库",
     children: [
       { name: "MySQL", value: 50 },
       { name: "PostgreSQL", value: 40 },

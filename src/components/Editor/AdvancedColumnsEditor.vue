@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * AdvancedColumnsEditor -- 高级表格列配置编辑器
+ * AdvancedColumnsEditor -- 高级表格ColumnConfigEdit器
  *
- * 支持：render 模式、tooltip、filterable、buttons 行内按钮、linkEvent、colorMap、api、align、fixed 等
+ * 支持：render 模式、tooltip、filterable、buttons Row内Button、linkEvent、colorMap、api、align、fixed 等
  */
 import { ref } from "vue";
 import type {
@@ -255,7 +255,7 @@ function addRowButton(colIndex: number) {
   const buttons = [...(col.buttons || [])];
   buttons.push({
     key: `btn${buttons.length + 1}`,
-    label: "按钮",
+    label: t("editor.columnsEditor.defaultButtonLabel"),
     type: "primary",
     size: "small",
   });
@@ -593,7 +593,7 @@ function toggleButtonEvents(key: string) {
               <el-input
                 :model-value="filter.text"
                 size="small"
-                placeholder="审批中"
+                :placeholder="t('editor.columnsEditor.filterDisplayPlaceholder')"
                 @update:model-value="
                   (v: string) => updateFilter(idx, fi, 'text', v)
                 "
@@ -606,7 +606,7 @@ function toggleButtonEvents(key: string) {
               <el-input
                 :model-value="String(filter.value ?? '')"
                 size="small"
-                placeholder="submitted"
+                :placeholder="t('editor.columnsEditor.filterMatchPlaceholder')"
                 @update:model-value="
                   (v: string) => updateFilter(idx, fi, 'value', v)
                 "
@@ -644,7 +644,7 @@ function toggleButtonEvents(key: string) {
         <el-input
           :model-value="col.linkEvent ?? ''"
           size="small"
-          placeholder="如: view"
+          :placeholder="t('editor.columnsEditor.linkEventPlaceholder')"
           @update:model-value="
             (v: string) => updateColumn(idx, 'linkEvent', v || undefined)
           "
@@ -674,7 +674,7 @@ function toggleButtonEvents(key: string) {
             :model-value="colorMapToText(col.colorMap)"
             :rows="2"
             type="textarea"
-            placeholder='{"启用":"success","停用":"danger"}'
+            placeholder='{"Enable":"success","Disabled":"danger"}'
             @update:model-value="(v: string) => updateColorMap(idx, v)"
           />
         </div>
@@ -686,7 +686,7 @@ function toggleButtonEvents(key: string) {
             :model-value="optionsToText(col.options)"
             :rows="2"
             type="textarea"
-            placeholder='[{"label":"启用","value":"启用"}]'
+            placeholder='[{"label":"Enable","value":"Enable"}]'
             @update:model-value="(v: string) => updateOptions(idx, v)"
           />
         </div>
@@ -836,7 +836,9 @@ function toggleButtonEvents(key: string) {
           </div>
           <div :class="styles['adv-columns-editor__row']">
             <div :class="styles['adv-columns-editor__field']">
-              <label :class="styles['adv-columns-editor__label']">key</label>
+              <label :class="styles['adv-columns-editor__label']">{{
+                t("editor.common.key")
+              }}</label>
               <el-input
                 :model-value="btn.key"
                 size="small"
@@ -886,7 +888,7 @@ function toggleButtonEvents(key: string) {
               <el-input
                 :model-value="btn.confirm ?? ''"
                 size="small"
-                placeholder="可选"
+                :placeholder="t('editor.common.optional')"
                 @update:model-value="
                   (v: string) =>
                     updateRowButton(idx, bi, 'confirm', v || undefined)
@@ -901,7 +903,7 @@ function toggleButtonEvents(key: string) {
             <el-input
               :model-value="btn.visibleCondition ?? ''"
               size="small"
-              placeholder="如: row.status === 'draft'"
+              :placeholder="t('editor.columnsEditor.rowVisibleConditionPlaceholder')"
               @update:model-value="
                 (v: string) =>
                   updateRowButton(idx, bi, 'visibleCondition', v || undefined)

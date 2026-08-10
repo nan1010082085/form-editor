@@ -17,7 +17,7 @@ export const complianceChecklistConfig: WidgetConfig = {
   ],
   configPanels: ["events"],
   defaultProps: {
-    title: "合规检查",
+    title: "Compliance Checklist",
     items: [
       { key: "item1", label: "Check Item 1" },
       { key: "item2", label: "Check Item 2" },
@@ -26,7 +26,7 @@ export const complianceChecklistConfig: WidgetConfig = {
   propertyPanel: {
     basic: ["label"],
     props: [
-      { key: "title", label: "Title", type: "input", default: "合规检查" },
+      { key: "title", label: "Title", type: "input", default: "Compliance Checklist" },
     ],
   },
 };

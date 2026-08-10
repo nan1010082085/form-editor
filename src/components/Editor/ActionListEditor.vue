@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * ActionListEditor — 动作列表编辑器
+ * ActionListEditor — ActionColumn表Edit器
  *
- * 从 EventConfigDialog / LinkageConfigDialog 提取的共享组件。
- * 接收 SchemaEventAction[]，内部维护 UI 别名状态，保存时转回标准类型。
+ * 从 EventConfigDialog / LinkageConfigDialog 提取的共享Component。
+ * 接收 SchemaEventAction[], 内部维护 UI 别名Status, SaveHrs转回标准Type。
  *
  * UI 别名：'visible' ↔ 'show', 'disabled' ↔ 'show' + '__disabled__', 'fetch-data' ↔ 'api'
  */
@@ -470,7 +470,9 @@ function handleChange() {
       <!-- fetch-data / api: URL + method -->
       <template v-if="action.type === 'fetch-data' || action.type === 'api'">
         <div :class="styles.row">
-          <label :class="styles.label">URL</label>
+          <label :class="styles.label">{{
+            t("editor.api.requestUrl")
+          }}</label>
           <el-input
             v-model="action.apiUrl"
             placeholder="/api/data"
@@ -629,7 +631,9 @@ function handleChange() {
       <!-- submitSubmission: schemaId + optional flow -->
       <template v-if="action.type === 'submitSubmission'">
         <div :class="styles.row">
-          <label :class="styles.label">Schema ID</label>
+          <label :class="styles.label">{{
+            t("editor.actionList.schemaId")
+          }}</label>
           <el-input
             v-model="action.schemaId"
             :placeholder="t('editor.actionList.schemaIdPlaceholder')"
@@ -713,7 +717,7 @@ function handleChange() {
         </div>
       </template>
 
-      <!-- 无需配置的类型 -->
+      <!-- 无需Config的Type -->
       <div v-if="NO_CONFIG_TYPES.has(action.type)" :class="styles.noConfigHint">
         {{ t("editor.actionList.noConfigHint") }}
       </div>

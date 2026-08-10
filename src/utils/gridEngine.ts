@@ -1,17 +1,17 @@
 /**
- * gridEngine - 移植自 formily Grid 引擎，简化适配 Vue 响应式
+ * gridEngine - 移植自 formily Grid 引擎, 简化适配 Vue 响应式
  *
  * 核心能力（对齐 formily）：
- * 1. columns -- 根据容器宽度 + minColumns/maxColumns/minWidth/maxWidth/gap 算最优列数
+ * 1. columns -- 根据ContainerWidth + minColumns/maxColumns/minWidth/maxWidth/gap 算最优Column数
  * 2. templateColumns -- repeat(N, minmax(minW, maxW))
  * 3. gap -- `${rowGap}px ${columnGap}px`
- * 4. resolveChildSpan -- 子节点 span 超出剩余列时自动收缩，-1 表示撑满剩余
+ * 4. resolveChildSpan -- 子节点 span 超出剩余ColumnHrs自动收缩, -1 表示撑满剩余
  *
- * 简化（编辑器不需要）：
+ * 简化（Edit器不需要）：
  * - breakpoints / calcFactor -- 无响应式断点
  * - strictAutoFit -- 无严格自适应
- * - shouldVisible -- 无条件显示控制
- * - MutationObserver -- Vue 响应式自动触发重算
+ * - shouldVisible -- 无ConditionShow控制
+ * - MutationObserver -- Vue 响应式自动Trigger重算
  * - @formily/reactive -- 用 Vue ref/computed
  */
 
@@ -26,23 +26,20 @@ export interface GridOptions {
 }
 
 export interface GridChild {
-  /** 原始 span（用户设定值），-1 = 撑满剩余列 */
+  /** 原始 span（User设定Value）, -1 = 撑满剩余Column */
   originSpan: number;
   visible: boolean;
 }
 
 export interface GridResolveResult {
-  /** 实际分配的 span（不超出当前行剩余列） */
+  /** 实际Min配的 span（不超出当前Row剩余Column） */
   span: number;
-  /** grid-column CSS 值 */
+  /** grid-column CSS Value */
   gridColumn: string;
 }
 
-const isValid = (value: unknown): value is number =>
-  value !== undefined && value !== null;
-
 /**
- * 在 [minColumns, maxColumns] 范围内，找到满足 minWidth/maxWidth 约束的最优列数。
+ * 在 [minColumns, maxColumns] 范围内, 找到满足 minWidth/maxWidth 约束的最优Column数。
  * 直接移植自 formily calcSatisfyColumns。
  */
 function calcSatisfyColumns(
@@ -69,13 +66,13 @@ function calcSatisfyColumns(
 }
 
 /**
- * 计算最优列数。直接移植自 formily Grid.columns getter。
+ * 计算最优Column数。直接移植自 formily Grid.columns getter。
  *
  * 逻辑：
- * 1. colWrap=false -> 不换行，列数 = 子节点 span 总和
- * 2. 根据 maxWidth 算最多能放多少列（maxWidthColumns）
- * 3. 根据 minWidth 算最少需要多少列（minWidthColumns）
- * 4. 在 [min, max] 范围内用 calcSatisfyColumns 找最优值
+ * 1. colWrap=false -> 不换Row, Column数 = 子节点 span 总和
+ * 2. 根据 maxWidth 算最多能放多少Column（maxWidthColumns）
+ * 3. 根据 minWidth 算最少需要多少Column（minWidthColumns）
+ * 4. 在 [min, max] 范围内用 calcSatisfyColumns 找最优Value
  * 5. 最终 clamp 到 [minColumns, maxColumns]
  */
 export function computeColumns(
@@ -134,7 +131,7 @@ export function computeColumns(
 }
 
 /**
- * 生成 grid-template-columns 值。移植自 formily Grid.templateColumns getter。
+ * 生成 grid-template-columns Value。移植自 formily Grid.templateColumns getter。
  */
 export function computeTemplateColumns(
   width: number,
@@ -155,12 +152,12 @@ export function computeTemplateColumns(
 }
 
 /**
- * 计算子节点在当前列数下的实际 span 和 grid-column 值。
- * 移植自 formily resolveChildren，但改为纯函数（不操作 DOM）。
+ * 计算子节点在当前Column数下的实际 span 和 grid-column Value。
+ * 移植自 formily resolveChildren, 但改为纯函数（不Action DOM）。
  *
  * - originSpan > columns -> 收缩到 columns
- * - originSpan > 当前行剩余列 -> 收缩到剩余列
- * - originSpan === -1 -> 撑满剩余列 `span N / -1`
+ * - originSpan > 当前Row剩余Column -> 收缩到剩余Column
+ * - originSpan === -1 -> 撑满剩余Column `span N / -1`
  */
 export function resolveChildSpan(
   originSpan: number,
@@ -170,7 +167,7 @@ export function resolveChildSpan(
   const columnIndex = walkedColumns % totalColumns;
   const remainColumns = totalColumns - columnIndex;
 
-  // originSpan=-1: 撑满剩余列
+  // originSpan=-1: 撑满剩余Column
   if (originSpan === -1) {
     return {
       span: remainColumns,
@@ -188,7 +185,7 @@ export function resolveChildSpan(
 }
 
 /**
- * 解析 GridOptions，填充默认值。
+ * Parse GridOptions, 填充Default value。
  */
 export function resolveGridOptions(
   options: GridOptions | undefined,
@@ -205,12 +202,12 @@ export function resolveGridOptions(
 }
 
 /**
- * 计算完整 grid 布局结果（templateColumns + gap + 每个子节点的 gridColumn）。
+ * 计算完整 grid Layout结果（templateColumns + gap + 每个子节点的 gridColumn）。
  *
  * 用法：
  * ```ts
  * const result = computeGridLayout(width, children, options);
- * // 容器: style.gridTemplateColumns = result.templateColumns
+ * // Container: style.gridTemplateColumns = result.templateColumns
  * //       style.gap = result.gap
  * // 子节点: style.gridColumn = result.children[i].gridColumn
  * ```
@@ -262,4 +259,23 @@ export function computeGridLayout(
     gap: `${resolved.rowGap}px ${resolved.columnGap}px`,
     children: childResults,
   };
+}
+
+/**
+ * 将像素Width反算为跨Column数（resize handle 用）。
+ * - 满ColumnHrs返回 -1（与Property面板「撑满」语义一致）
+ * - 否则 clamp 到 [1, columns]
+ */
+export function widthToGridSpan(
+  widthPx: number,
+  columns: number,
+  containerWidth: number,
+  columnGap: number,
+): number {
+  if (columns <= 0 || containerWidth <= 0 || widthPx <= 0) return 1;
+  const colW = (containerWidth - (columns - 1) * columnGap) / columns;
+  if (colW <= 0) return 1;
+  const span = Math.round((widthPx + columnGap) / (colW + columnGap));
+  if (span >= columns) return -1;
+  return Math.max(1, Math.min(columns, span));
 }

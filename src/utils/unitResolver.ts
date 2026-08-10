@@ -1,17 +1,17 @@
 /**
- * 单位解析工具
- * 统一处理 position 中的 px/% 单位转换
+ * 单位Parse工具
+ * 统一处理 position 中的 px/% 单位Transform
  */
 
 import type { Widget } from "../widgets/base/types";
 
 /**
- * 将 widget 的宽高从可能的百分比转换为像素值
+ * 将 widget 的宽高从可能的百Min比Transform为像素Value
  *
  * @param widget widget 对象
- * @param parentWidth 父容器宽度（像素）
- * @param parentHeight 父容器高度（像素）
- * @returns 像素值的宽高
+ * @param parentWidth 父ContainerWidth（像素）
+ * @param parentHeight 父ContainerHeight（像素）
+ * @returns 像素Value的宽高
  */
 export function resolveWidgetSize(
   widget: Widget,
@@ -29,13 +29,13 @@ export function resolveWidgetSize(
 }
 
 /**
- * 将 widget 的位置和尺寸全部转换为像素值
- * 位置（x, y）始终是 px，宽高可能需要转换
+ * 将 widget 的位置和尺寸AllTransform为像素Value
+ * 位置（x, y）始终是 px, 宽高可能需要Transform
  *
  * @param widget widget 对象
- * @param parentWidth 父容器宽度（像素）
- * @param parentHeight 父容器高度（像素）
- * @returns 像素值的矩形区域
+ * @param parentWidth 父ContainerWidth（像素）
+ * @param parentHeight 父ContainerHeight（像素）
+ * @returns 像素Value的矩形Region
  */
 export function resolveWidgetRect(
   widget: Widget,
@@ -54,7 +54,7 @@ export function resolveWidgetRect(
 }
 
 /**
- * 检查 widget 的宽高是否使用了百分比单位
+ * 检查 widget 的宽高是否使用了百Min比单位
  */
 export function hasPercentUnit(widget: Widget): boolean {
   const pos = widget.position;

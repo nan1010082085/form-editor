@@ -30,9 +30,10 @@ function lookup(obj: Record<string, unknown>, path: string): string {
   }
   return typeof cur === "string" ? cur : path;
 }
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => lookup(messages, key) }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => lookup(messages, key) }) };
+});
 import { useEditorStore } from "@/stores/editor";
 import { useWidgetStore } from "@/stores/widget";
 import { registerWidget } from "@/widgets/registry";
@@ -372,7 +373,7 @@ describe("PropertyPanel", () => {
 
   it("does not show property list when nothing is selected", () => {
     const wrapper = mountPanel();
-    expect(wrapper.text()).not.toContain("字段名");
+    expect(wrapper.text()).not.toContain("Field Name");
     expect(wrapper.text()).not.toContain("X");
   });
 
@@ -402,7 +403,7 @@ describe("PropertyPanel", () => {
 
     const wrapper = mountPanel();
     const text = wrapper.text();
-    expect(text).toContain("字段名");
+    expect(text).toContain("Field Name");
     expect(text).toContain("标签");
     expect(text).toContain("默认值");
     expect(text).toContain("隐藏");
@@ -445,9 +446,9 @@ describe("PropertyPanel", () => {
     // widget config adds: width, height, fontSize, color, backgroundColor (merged with public)
     expect(text).toContain("宽度");
     expect(text).toContain("高度");
-    expect(text).toContain("字号");
+    expect(text).toContain("Font Size");
     expect(text).toContain("颜色");
-    expect(text).toContain("背景色");
+    expect(text).toContain("Background");
   });
 
   it("merges public and widget-specific style properties without duplicates", () => {
@@ -458,7 +459,7 @@ describe("PropertyPanel", () => {
     // "宽度" appears in position AND style, but each PropertyField has a unique label
     // Count style-specific labels that come from publicStylePanel
     const text = wrapper.text();
-    expect(text).toContain("外边距");
+    expect(text).toContain("Margin");
     expect(text).toContain("内边距");
     expect(text).toContain("边框");
     expect(text).toContain("圆角");
@@ -559,13 +560,13 @@ describe("PropertyPanel", () => {
     editorStore.select("input_test1");
 
     const wrapper = mountPanel();
-    expect(wrapper.text()).toContain("字段名");
+    expect(wrapper.text()).toContain("Field Name");
 
     editorStore.clearSelection();
     await nextTick();
 
     expect(wrapper.text()).toContain("画布配置");
-    expect(wrapper.text()).not.toContain("字段名");
+    expect(wrapper.text()).not.toContain("Field Name");
   });
 
   it("updates property panel when switching selected widget", async () => {
@@ -593,13 +594,13 @@ describe("PropertyPanel", () => {
     editorStore.select("input_test1");
 
     const wrapper = mountPanel();
-    expect(wrapper.text()).toContain("事件配置");
+    expect(wrapper.text()).toContain("Events");
     expect(wrapper.text()).toContain("字段联动");
   });
 
   it("does not show event/rule buttons when nothing is selected", () => {
     const wrapper = mountPanel();
-    expect(wrapper.text()).not.toContain("事件配置");
+    expect(wrapper.text()).not.toContain("Events");
     expect(wrapper.text()).not.toContain("字段联动");
   });
 

@@ -27,6 +27,7 @@ import { fetchWidgetDataSource } from "@/api/widgetApi";
 import { fetchApprovalLogs, type ApprovalLogItem } from "@/api/flowApi";
 import { resolveWidgetUrl } from "@/utils/resolveWidgetUrl";
 import { apiClient } from "@/utils/apiClient";
+import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import type {
   CrudDetailDialogConfig,
   CrudFormDialogConfig,
@@ -34,6 +35,13 @@ import type {
 } from "./config";
 import type { DescriptionItemConfig } from "../descriptions/config";
 import CrudFormField from "./CrudFormField.vue";
+import {
+  buildFormPayload,
+  getRecordId,
+  initFormValues as applyFormValues,
+  normalizeCreatedRow,
+  resolveRecordIdField,
+} from "./crudFormUtils";
 import { WIDGET_SURFACE_KEY, type WidgetSurface } from "../base/widgetMock";
 import styles from "./style.module.scss";
 
@@ -121,12 +129,19 @@ const formRules = computed<FormRules>(() => {
       {
         required: true,
         message: t("editor.crudListPage.fillRequired", { field: field.label }),
-        trigger: field.type === "select" ? "change" : "blur",
+        trigger: field.type === "select" || field.type === "radio" || field.type === "date"
+          ? "change"
+          : "blur",
       },
     ];
   }
   return rules;
 });
+
+/** 当前配置的主键字段名 */
+const recordIdFieldName = computed(() =>
+  resolveRecordIdField(formDialogConfig.value?.recordIdField),
+);
 
 function buildEventContext(
   row?: Record<string, unknown>,
@@ -139,32 +154,19 @@ function buildEventContext(
   };
 }
 
-function initFormValues(row?: Record<string, unknown>) {
-  const fields = formDialogConfig.value?.fields ?? [];
-  for (const key of Object.keys(formData)) {
-    if (!fields.some((f) => f.field === key)) delete formData[key];
-  }
-  for (const field of fields) {
-    const fromRow = row?.[field.field];
-    if (fromRow !== undefined && fromRow !== null) {
-      formData[field.field] = fromRow;
-    } else if (field.defaultValue !== undefined) {
-      formData[field.field] = field.defaultValue;
-    } else if (field.type === "switch") {
-      formData[field.field] = false;
-    } else {
-      formData[field.field] = "";
-    }
-  }
-}
-
+/**
+ * 打开新建/编辑表单
+ *
+ * @param mode - add | edit
+ * @param row - 编辑Hrs的行数据
+ */
 function openFormDialog(mode: "add" | "edit", row?: Record<string, unknown>) {
   formMode.value = mode;
   editingRecordId.value =
     mode === "edit"
-      ? String(row?.[formDialogConfig.value?.recordIdField ?? "_id"] ?? "")
+      ? getRecordId(row, formDialogConfig.value?.recordIdField)
       : "";
-  initFormValues(row);
+  applyFormValues(formDialogConfig.value?.fields ?? [], row, formData);
   formVisible.value = true;
 }
 
@@ -202,7 +204,12 @@ async function submitFormDialog() {
       return;
     }
 
-    const payload = { ...formData };
+    const payload = buildFormPayload(
+      cfg.fields ?? [],
+      formData,
+      formMode.value,
+    );
+    const idField = resolveRecordIdField(cfg.recordIdField);
     if (formMode.value === "add") {
       if (!cfg.createApiUrl) {
         ElMessage.warning(t("editor.crudListPage.createApiNotConfigured"));
@@ -213,8 +220,9 @@ async function submitFormDialog() {
         url,
         payload,
       );
-      // 乐观更新：立即插入返回行（无 id 时用 payload），失败 refresh 回滚
-      tableRef.value?.insertRow(created ?? payload);
+      tableRef.value?.insertRow(
+        normalizeCreatedRow(created, payload, cfg.recordIdField),
+      );
       ElMessage.success(t("editor.crudListPage.createSuccess"));
     } else {
       if (!cfg.updateApiUrl) {
@@ -228,31 +236,42 @@ async function submitFormDialog() {
       }
       const url = resolveUpdateUrl(cfg.updateApiUrl, id);
       await apiClient.put(url, payload);
-      // 乐观更新：立即合并 patch 到匹配行
-      const idField = (cfg.recordIdField as string) ?? "id";
       tableRef.value?.updateRow(idField, id, payload);
       ElMessage.success(t("editor.crudListPage.saveSuccess"));
     }
     formVisible.value = false;
   } catch (err) {
     console.error("[FgCrudListPage] form submit failed:", err);
-    ElMessage.error(
-      formMode.value === "add"
-        ? t("editor.crudListPage.createFailed")
-        : t("editor.crudListPage.saveFailed"),
-    );
-    // 失败回滚：重新拉取服务端真实状态
+    ElMessage.error(resolveApiErrorMessage(err));
+    // FailedRollback：重新拉取服务端真实Status
     tableRef.value?.refresh();
   } finally {
     formSubmitting.value = false;
   }
 }
 
+/**
+ * 打开Details弹窗：先拉Details, 再按Details结果加载Hrs间线
+ *
+ * @param row - 表格行
+ */
 function openDetailDialog(row: Record<string, unknown>) {
   detailRow.value = row;
   detailVisible.value = true;
-  loadDetailData();
-  loadTimeline();
+  void (async () => {
+    await loadDetailData();
+    await loadTimeline();
+  })();
+}
+
+/**
+ * 读取当前行/Details的主键 ID
+ */
+function currentRecordId(): string {
+  return (
+    getRecordId(detailRow.value, formDialogConfig.value?.recordIdField) ||
+    getRecordId(detailData.value, formDialogConfig.value?.recordIdField)
+  );
 }
 
 async function loadDetailData() {
@@ -261,10 +280,12 @@ async function loadDetailData() {
 
   detailLoading.value = true;
   try {
+    const recordId = currentRecordId();
     const ctx = {
       ...variablesContext.value,
       ...detailRow.value,
-      recordId: detailRow.value._id,
+      recordId,
+      id: recordId,
     };
     const url = resolveWidgetUrl(cfg.detailApiUrl, ctx);
     detailData.value = await fetchWidgetDataSource(url);
@@ -303,7 +324,8 @@ async function loadTimeline() {
 }
 
 function formatDescriptionValue(item: DescriptionItemConfig): string {
-  const raw = detailData.value[item.field];
+  const raw =
+    detailData.value[item.field] ?? detailRow.value[item.field];
   if (raw == null) return "—";
   if (item.type === "tag" && item.options?.length) {
     const found = item.options.find((o) => o.value === raw);
@@ -315,7 +337,8 @@ function formatDescriptionValue(item: DescriptionItemConfig): string {
 }
 
 function getTagType(item: DescriptionItemConfig): string {
-  const raw = detailData.value[item.field];
+  const raw =
+    detailData.value[item.field] ?? detailRow.value[item.field];
   if (!item.options?.length) return "";
   const found = item.options.find((o) => o.value === raw);
   return found?.color ?? "";
@@ -326,13 +349,22 @@ function handleConfirmNavigate() {
   const ctx = buildEventContext(detailRow.value);
   if (!ctx || !cfg?.confirmNavigatePath) return;
 
+  const recordId = currentRecordId();
   ctx.emit("navigate", {
     path: cfg.confirmNavigatePath,
     query: {
-      recordId: String(detailRow.value._id ?? ""),
-      flowInstanceId: String(detailRow.value.flowInstanceId ?? ""),
+      recordId,
+      flowInstanceId: String(
+        detailRow.value.flowInstanceId ??
+          detailData.value.flowInstanceId ??
+          "",
+      ),
       taskId: String(
-        detailRow.value.viewerTaskId ?? detailRow.value.taskId ?? "",
+        detailRow.value.viewerTaskId ??
+          detailRow.value.taskId ??
+          detailData.value.viewerTaskId ??
+          detailData.value.taskId ??
+          "",
       ),
     },
   });
@@ -343,6 +375,16 @@ function shouldOpenDetail(btnKey: string): boolean {
   return btnKey === "view" || btnKey === "detail";
 }
 
+/**
+ * 判断列是否应作为Details入口
+ *
+ * @param col - 表格列
+ */
+function isDetailLinkColumn(col: AdvancedTableColumn): boolean {
+  if (col.render === "link") return true;
+  return col.prop === recordIdFieldName.value || col.prop === "_id" || col.prop === "id";
+}
+
 function navigateToFullDetail(
   ctx: EventExecutionContext,
   row: Record<string, unknown>,
@@ -351,7 +393,7 @@ function navigateToFullDetail(
   ctx.emit("navigate", {
     path,
     query: {
-      recordId: String(row._id ?? ""),
+      recordId: getRecordId(row, formDialogConfig.value?.recordIdField),
       flowInstanceId: String(row.flowInstanceId ?? ""),
       taskId: String(row.viewerTaskId ?? row.taskId ?? ""),
     },
@@ -423,16 +465,13 @@ provide(TABLE_CLICK_INTERCEPT_KEY, {
     const ctx = buildEventContext(row);
     if (!ctx) return false;
 
-    if (
-      detailDialogConfig.value &&
-      (col.prop === "_id" || col.render === "link")
-    ) {
+    if (detailDialogConfig.value && isDetailLinkColumn(col)) {
       openDetailDialog(row);
       return true;
     }
 
     const detailPath = pageActions.value.approveNavigatePath;
-    if (detailPath && (col.prop === "_id" || col.render === "link")) {
+    if (detailPath && isDetailLinkColumn(col)) {
       navigateToFullDetail(ctx, row, detailPath);
       return true;
     }

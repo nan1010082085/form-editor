@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
- * PageTabBar — 多页面 Tab 栏
+ * PageTabBar — 多Page Tab 栏
  *
- * 显示在画布上方，支持切换、新增、重命名、删除页面。
- * 仅在多页面模式下显示。
+ * Show在画布上方, 支持切换、Create、重命名、DeletePage。
+ * 仅在多Page模式下Show。
  */
 import { ref, nextTick } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { useBoardStore } from "@/stores/board";
 import { useWidgetStore } from "@/stores/widget";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
@@ -13,6 +14,7 @@ import styles from "./PageTabBar.module.scss";
 
 const boardStore = useBoardStore();
 const widgetStore = useWidgetStore();
+const { t } = useI18n();
 
 const editingPageId = ref("");
 const editingName = ref("");
@@ -31,7 +33,7 @@ function handleAdd() {
   const pageNum = boardStore.pages.length + 1;
   boardStore.addPage({
     id,
-    name: `页面 ${pageNum}`,
+    name: t("editor.pageTab.defaultPageName", { num: pageNum }),
     widgets: [],
   });
   widgetStore.switchPage(boardStore.currentPageId, id);
@@ -55,7 +57,7 @@ function handleDelete(pageId: string) {
   const idx = boardStore.pages.findIndex((p) => p.id === pageId);
   boardStore.removePage(pageId);
   widgetStore.pageWidgets.delete(pageId);
-  // 切换到相邻页面
+  // 切换到相邻Page
   const newPage = boardStore.pages[Math.min(idx, boardStore.pages.length - 1)];
   if (newPage) {
     widgetStore.switchPage(pageId, newPage.id, newPage.widgets);
@@ -93,14 +95,14 @@ function handleDelete(pageId: string) {
         <button
           v-if="boardStore.pages.length > 1"
           :class="styles.tabClose"
-          title="删除页面"
+          :title="t('editor.pageTab.deletePage')"
           @click.stop="handleDelete(page.id)"
         >
           <AppIcon name="close" :size="12" />
         </button>
       </div>
     </div>
-    <button :class="styles.addTab" title="新增页面" @click="handleAdd">
+    <button :class="styles.addTab" :title="t('editor.pageTab.addPage')" @click="handleAdd">
       <AppIcon name="plus" :size="14" />
     </button>
   </div>

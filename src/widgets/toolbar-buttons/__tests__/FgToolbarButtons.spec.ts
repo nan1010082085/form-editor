@@ -73,8 +73,8 @@ describe("FgToolbarButtons", () => {
       const wrapper = mountWidget();
       const buttons = wrapper.findAll(".el-button");
       expect(buttons.length).toBe(2);
-      expect(buttons[0].text()).toBe("查询");
-      expect(buttons[1].text()).toBe("重置");
+      expect(buttons[0].text()).toBe("Query");
+      expect(buttons[1].text()).toBe("Reset");
     });
 
     it("自定义按钮列表", () => {

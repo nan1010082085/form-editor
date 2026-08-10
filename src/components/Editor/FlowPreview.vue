@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * FlowPreview -- 事件/规则流程预览（垂直时间线）
+ * FlowPreview -- Event/Rule流程预览（垂直Hrs间线）
  *
- * 只读组件，接收标准化的 FlowItem[] 渲染垂直时间线。
- * 每个 FlowItem 可包含子项，支持 trigger / condition / action 三种节点类型。
+ * 只读Component, 接收标准化的 FlowItem[] 渲染垂直Hrs间线。
+ * 每个 FlowItem 可包含子项, 支持 trigger / condition / action 三种节点Type。
  */
 
 export interface FlowItem {
@@ -14,16 +14,19 @@ export interface FlowItem {
 }
 
 import { ElTooltip } from "element-plus";
+import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./FlowPreview.module.scss";
 
 defineProps<{
   items: FlowItem[];
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
   <div :class="styles.root">
-    <div v-if="items.length === 0" :class="styles.empty">暂无配置</div>
+    <div v-if="items.length === 0" :class="styles.empty">{{ t('editor.flowPreview.noConfig') }}</div>
     <div v-for="(item, idx) in items" :key="idx" :class="styles.timeline">
       <!-- 节点 -->
       <div :class="[styles.node, styles[item.type]]">

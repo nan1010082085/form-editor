@@ -101,10 +101,17 @@ async function loadTask() {
         id: String(mock.staticData.taskId ?? "mock-task-001"),
         instanceId: "mock-instance-001",
         nodeId: "node-approve",
-        nodeName: String(mock.staticData.nodeName ?? "部门经理审批"),
+        nodeName: String(
+          mock.staticData.nodeName ?? t("editor.flowTaskActions.mockNodeName"),
+        ),
         status: String(mock.staticData.status ?? "pending"),
       };
-      rejectTargets.value = [{ nodeId: "start", nodeName: "发起人" }];
+      rejectTargets.value = [
+        {
+          nodeId: "start",
+          nodeName: t("editor.flowTaskActions.mockStarter"),
+        },
+      ];
       rejectTarget.value = "start";
     }
     return;

@@ -1,8 +1,8 @@
 /**
- * useChartEvents — 图表事件绑定 composable
+ * useChartEvents — ChartEvent绑定 composable
  *
- * 将 ECharts 交互事件（click 等）转发到事件引擎，
- * 支持图表间联动（钻取、筛选、高亮）。
+ * 将 ECharts 交互Event（click 等）转发到Event引擎, 
+ * 支持Chart间Linkage（钻取、Filter、高亮）。
  */
 import { inject, watch, onUnmounted, type Ref } from "vue";
 import { EVENT_CONTEXT_KEY } from "../components/WidgetRenderer/types";
@@ -20,10 +20,10 @@ export interface ChartClickPayload {
 }
 
 /**
- * 绑定 ECharts 事件到事件引擎
- * @param chartInstance - ECharts 实例（Ref<unknown> 以兼容 echarts.init 返回的完整 ECharts 类型与 EChartsType 的偏差）
- * @param widgetData - 当前 widget 数据
- * @param chartData - 图表原始数据（用于取 dataIndex 对应的行）
+ * 绑定 ECharts Event到Event引擎
+ * @param chartInstance - ECharts 实例（Ref<unknown> 以兼容 echarts.init 返回的完整 ECharts Type与 EChartsType 的偏差）
+ * @param widgetData - 当前 widget Data
+ * @param chartData - Chart原始Data（用于取 dataIndex 对应的Row）
  */
 export function useChartEvents(
   chartInstance: Ref<unknown>,

@@ -1,7 +1,7 @@
 /**
- * buildConfigHelpText - 根据已声明的 configPanels 拼装配置说明 HTML
+ * buildConfigHelpText - 根据已声明的 configPanels 拼装Config说明 HTML
  *
- * 从 PropertyPanel 抽出的纯函数：根据 events/linkages/api/variables 面板声明，
+ * 从 PropertyPanel 抽出的纯函数：根据 events/linkages/api/variables 面板声明, 
  * 返回对应的说明文档 HTML 片段。文案走 i18n。
  */
 import type { TranslateFn } from "@/components/WidgetRenderer/types";

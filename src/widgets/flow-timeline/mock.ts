@@ -7,7 +7,7 @@ export const flowTimelineMock = {
       {
         id: "log-1",
         action: "approve",
-        nodeName: "部门经理审批",
+        nodeName: "Department经理审批",
         operator: "张经理",
         comment: "同意",
         createdAt: "2026-07-02T10:00:00.000Z",

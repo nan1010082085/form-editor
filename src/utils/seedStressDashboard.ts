@@ -1,11 +1,11 @@
 /**
  * seedStressDashboard - 100+ widget FPS 性能压测种子
  *
- * 用于真实浏览器 FPS 演练（/perf 路由）。生成 120 个 widget：
- * - 1 标题 + 1 时钟 + 1 筛选 + 1 刷新
- * - 100 个图表（bar/line/pie/gauge/radar/scatter/heatmap/funnel 循环）
- * - 16 个统计/进度卡片
- * 全部带 region 可见性联动，模拟真实联动开销。
+ * 用于真实浏览器 FPS 演练（/perf Route）。生成 120 个 widget：
+ * - 1 标题 + 1 Hrs钟 + 1 Filter + 1 Refresh
+ * - 100 个Chart（bar/line/pie/gauge/radar/scatter/heatmap/funnel 循环）
+ * - 16 个Statistics/进度卡片
+ * All带 region 可见性Linkage, 模拟真实Linkage开销。
  */
 import type { Widget, CanvasConfig, SchemaLinkage } from "@/widgets/base/types";
 import { createWidget, generateWidgetId } from "@/widgets/registry";
@@ -70,7 +70,7 @@ export function seedStressDashboard(count: number = 120): {
   const title = place(mustCreate("title"), 40, 24, 600, 48);
   title.props = {
     ...title.props,
-    text: `性能压测大屏 (${count} widgets)`,
+    text: `Stress Test Dashboard (${count} widgets)`,
     level: 1,
   };
   title.style = { ...title.style, color: "#e8eaed", fontSize: "28px" };
@@ -81,15 +81,15 @@ export function seedStressDashboard(count: number = 120): {
 
   const filter = place(mustCreate("select"), 40, 90, 240, 40);
   filter.field = "region";
-  filter.label = "区域";
+  filter.label = "Region";
   filter.options = [
-    { label: "全部", value: "all" },
-    { label: "隐藏图表", value: "hidden" },
+    { label: "All", value: "all" },
+    { label: "HideChart", value: "hidden" },
   ];
   filter.defaultValue = "all";
   widgets.push(filter);
 
-  // 网格排布图表：每行 4 个，间距 20px
+  // 网格排布Chart：每Row 4 个, Gap 20px
   const cols = 4;
   const cellW = 440;
   const cellH = 220;
@@ -97,7 +97,7 @@ export function seedStressDashboard(count: number = 120): {
   const startX = 40;
   const startY = 160;
 
-  const chartCount = Math.max(0, count - 20); // 留 20 给卡片
+  const chartCount = Math.max(0, count - 20); // Reserve 20 for cards
   for (let i = 0; i < chartCount; i++) {
     const type = CHART_CYCLE[i % CHART_CYCLE.length];
     const row = Math.floor(i / cols);
@@ -115,7 +115,7 @@ export function seedStressDashboard(count: number = 120): {
     widgets.push(w);
   }
 
-  // 底部一行统计/进度卡片
+  // 底部一RowStatistics/进度卡片
   const cardStartY = startY + Math.ceil(chartCount / cols) * (cellH + gap);
   const cardTypes = ["statistic", "comparison-card", "progress-bar"] as const;
   const cardCount = Math.min(16, Math.max(0, count - chartCount - 4));

@@ -10,14 +10,14 @@ export const dateConfig: WidgetConfig = {
     fontSize: "14px",
   },
   defaultProps: {
-    placeholder: "请选择日期",
+    placeholder: "Please select date",
     clearable: true,
     disabled: false,
     type: "date" as "date" | "datetime" | "daterange",
     format: "YYYY-MM-DD",
   },
   exposedValues: [
-    { key: "value", type: "string", description: "当前字段值", example: "" },
+    { key: "value", type: "string", description: "Current field value", example: "" },
   ],
   configPanels: ["events", "linkages", "variables"],
   propertyPanel: {
@@ -28,7 +28,7 @@ export const dateConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择日期",
+        default: "Please select date",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },
@@ -39,7 +39,7 @@ export const dateConfig: WidgetConfig = {
         options: [
           { label: "Date", value: "date" },
           { label: "DateTime", value: "datetime" },
-          { label: "日期范围", value: "daterange" },
+          { label: "Date Range", value: "daterange" },
         ],
         default: "date",
       },

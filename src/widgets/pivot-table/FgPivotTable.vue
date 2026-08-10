@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, inject } from "vue";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 
 const rowField = computed(() => (widgetData.value.props?.rowField as string) ?? "");
 const columnField = computed(() => (widgetData.value.props?.columnField as string) ?? "");
@@ -63,7 +61,7 @@ const pivotResult = computed(() => {
   });
 
   const columns = [
-    { prop: rf, label: rf, minWidth: 120 },
+    { prop: rf, label: rf, minWidth: 120, align: "left" as const },
     ...colValues.map(cv => ({ prop: cv, label: cv, minWidth: 100, align: "right" as const })),
   ];
   if (showTotals.value) {

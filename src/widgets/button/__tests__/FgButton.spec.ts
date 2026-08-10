@@ -1,8 +1,24 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { mount } from "@vue/test-utils";
 import { computed } from "vue";
 import ElementPlus from "element-plus";
+import editorZhCN from "@/locales/editor-zh-CN";
+
+const messages = editorZhCN as unknown as Record<string, unknown>;
+function lookup(obj: Record<string, unknown>, path: string): string {
+  const parts = path.split(".");
+  let cur: unknown = obj;
+  for (const p of parts) {
+    cur = (cur as Record<string, unknown>)?.[p];
+  }
+  return typeof cur === "string" ? cur : path;
+}
+
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => lookup(messages, key) }) };
+});
 import { useWidgetStore } from "@/stores/widget";
 import { registerAllWidgets } from "@/widgets/index";
 import { createWidget } from "@/widgets/registry";
@@ -162,7 +178,7 @@ describe("FgButton", () => {
         label: undefined,
         props: { text: undefined },
       });
-      expect(wrapper.find(".el-button").text()).toBe("按钮");
+      expect(wrapper.find(".el-button").text()).toBe("Button");
     });
   });
 

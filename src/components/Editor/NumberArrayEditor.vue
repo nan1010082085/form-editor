@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
- * NumberArrayEditor -- 编辑 number[] 类型的属性
+ * NumberArrayEditor -- Edit number[] Type的Property
  *
- * 用于布局容器的 colWidths 配置，如 [50, 50] 或 [33, 34, 33]
- * 支持增减列、拖动排序、数值输入
+ * 用于LayoutContainer的 colWidths Config, 如 [50, 50] 或 [33, 34, 33]
+ * 支持增减Column、拖动Sort、数ValueInput
  */
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./NumberArrayEditor.module.scss";
 
 const props = defineProps<{
@@ -18,6 +19,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   update: [value: number[]];
 }>();
+
+const { t } = useI18n();
 
 function addColumn() {
   const count = props.value.length + 1;
@@ -74,7 +77,9 @@ function moveDown(index: number) {
       :class="styles['number-array-editor__item']"
     >
       <span :class="styles['number-array-editor__item-label']"
-        >列 {{ idx + 1 }}</span
+        >{{
+          t("editor.kanbanColumnsEditor.columnTitle", { index: idx + 1 })
+        }}</span
       >
       <el-input-number
         :model-value="w"
@@ -115,7 +120,8 @@ function moveDown(index: number) {
       style="width: 100%; margin-top: 6px"
       @click="addColumn"
     >
-      <AppIcon name="plus" /> 添加列
+      <AppIcon name="plus" />
+      {{ t("editor.kanbanColumnsEditor.addColumn") }}
     </el-button>
   </div>
 </template>

@@ -2,7 +2,7 @@
 /**
  * FgMarqueeText — 跑马灯/滚动公告
  *
- * 水平滚动文本，支持数据源驱动和自定义速度。
+ * 水平滚动文本, 支持Data源驱动和自定义速度。
  */
 import { inject, ref, computed } from "vue";
 import { widgetDataKey, widgetStyleKey } from "../base/types";

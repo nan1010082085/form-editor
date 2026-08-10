@@ -2,10 +2,10 @@
 /**
  * WidgetTree — Widget 结构树面板
  *
- * 树形展示画布内所有 Widget 的层级结构，支持：
- * - 容器节点可展开/折叠
- * - 点击节点选中对应画布部件
- * - 双向同步选中状态
+ * 树形展示画布内所有 Widget 的层级结构, 支持：
+ * - Container节点可Expand/折叠
+ * - 点击节点选中对应画布Widget
+ * - 双向Sync选中Status
  */
 import { computed, ref, watch, nextTick } from "vue";
 import { useWidgetStore } from "../../stores/widget";
@@ -26,7 +26,7 @@ const { t } = useI18n();
 const widgetStore = useWidgetStore();
 const editorStore = useEditorStore();
 
-// ---- 树节点类型 ----
+// ---- 树节点Type ----
 
 interface TreeNode {
   id: string;
@@ -57,7 +57,7 @@ function buildTree(widgets: Widget[]): TreeNode[] {
 
 const treeData = computed(() => buildTree(widgetStore.widgets));
 
-// ---- 展开状态（由 el-tree default-expand-all 管理） ----
+// ---- ExpandStatus（由 el-tree default-expand-all 管理） ----
 
 const treeRef = ref();
 
@@ -78,7 +78,7 @@ watch(selectedId, (id) => {
   });
 });
 
-// ---- 类型图标 ----
+// ---- Type图标 ----
 
 const TYPE_ICONS: Record<string, string> = {
   form: "document",
@@ -102,7 +102,7 @@ const TYPE_ICONS: Record<string, string> = {
   "toolbar-buttons": "set-up",
   table: "grid",
   button: "click",
-  // 图表部件
+  // ChartWidget
   "bar-chart": "data-board",
   "stacked-bar-chart": "data-board",
   "horizontal-bar-chart": "data-board",
@@ -174,20 +174,20 @@ function getIcon(type: string): string {
             ><AppIcon :name="getIcon(data.type)" :size="14"
           /></span>
 
-          <!-- 类型标签 -->
+          <!-- TypeLabel -->
           <span :class="styles.badge">{{ data.label }}</span>
 
-          <!-- 字段名 -->
+          <!-- Field name -->
           <span v-if="data.widget.field" :class="styles.field">{{
             data.widget.field
           }}</span>
 
-          <!-- 页签标识 -->
+          <!-- 页签Key -->
           <span v-else-if="data.tabKey" :class="styles.tabKey">{{
             data.tabKey
           }}</span>
 
-          <!-- 列索引 -->
+          <!-- ColumnIndex -->
           <span v-else-if="data.colIndex != null" :class="styles.colIndex"
             >{{ t("editor.schemaTree.colLabel") }} {{ data.colIndex + 1 }}</span
           >

@@ -1,14 +1,14 @@
 /**
- * User API — 用户管理相关接口
+ * User API — User管理相关接口
  *
- * 聚合用户 CRUD、重置密码等接口。
- * 底层委托 utils/apiClient。
+ * AggregateUser CRUD、Reset密码等接口。
+ * 底层委托 utils/apiClient（baseUrl 已含 `/api`, 路径勿再加前缀）。
  */
 import { apiClient } from "@/utils/apiClient";
 
-/** 用户列表项 */
+/** UserColumn表项（平台 toJSON 主键为 `id`） */
 export interface UserItem {
-  _id: string;
+  id: string;
   username: string;
   displayName: string;
   roles: string[];
@@ -22,7 +22,7 @@ export interface UserItem {
   updatedAt: string;
 }
 
-/** 分页响应 */
+/** Min页响应 */
 export interface UserListResponse {
   items: UserItem[];
   total: number;
@@ -31,7 +31,7 @@ export interface UserListResponse {
   totalPages: number;
 }
 
-/** 创建用户参数 */
+/** 创建UserParams */
 export interface CreateUserPayload {
   username: string;
   password: string;
@@ -43,7 +43,7 @@ export interface CreateUserPayload {
   roles?: string[];
 }
 
-/** 更新用户参数 */
+/** UpdateUserParams */
 export interface UpdateUserPayload {
   displayName?: string;
   phone?: string;
@@ -53,7 +53,7 @@ export interface UpdateUserPayload {
   roles?: string[];
 }
 
-/** 获取用户列表 */
+/** 获取UserColumn表 */
 export function fetchUsers(
   params: {
     q?: string;
@@ -62,45 +62,39 @@ export function fetchUsers(
     status?: string;
     deptId?: string;
   } = {},
-): Promise<{ success: boolean; data: UserListResponse }> {
-  return apiClient.get("/api/users", params as Record<string, unknown>);
+): Promise<UserListResponse> {
+  return apiClient.get("/users", params as Record<string, unknown>);
 }
 
-/** 获取单个用户 */
-export function fetchUserById(
-  id: string,
-): Promise<{ success: boolean; data: UserItem }> {
-  return apiClient.get(`/api/users/${encodeURIComponent(id)}`);
+/** 获取单个User */
+export function fetchUserById(id: string): Promise<UserItem> {
+  return apiClient.get(`/users/${encodeURIComponent(id)}`);
 }
 
-/** 创建用户 */
-export function createUser(
-  payload: CreateUserPayload,
-): Promise<{ success: boolean; data: UserItem }> {
-  return apiClient.post("/api/users", payload);
+/** 创建User */
+export function createUser(payload: CreateUserPayload): Promise<UserItem> {
+  return apiClient.post("/users", payload);
 }
 
-/** 更新用户 */
+/** UpdateUser */
 export function updateUser(
   id: string,
   payload: UpdateUserPayload,
-): Promise<{ success: boolean; data: UserItem }> {
-  return apiClient.put(`/api/users/${encodeURIComponent(id)}`, payload);
+): Promise<UserItem> {
+  return apiClient.put(`/users/${encodeURIComponent(id)}`, payload);
 }
 
-/** 删除用户 */
-export function deleteUser(
-  id: string,
-): Promise<{ success: boolean; data: null }> {
-  return apiClient.delete(`/api/users/${encodeURIComponent(id)}`);
+/** DeleteUser */
+export function deleteUser(id: string): Promise<null> {
+  return apiClient.delete(`/users/${encodeURIComponent(id)}`);
 }
 
-/** 重置用户密码 */
+/** ResetUser密码 */
 export function resetUserPassword(
   id: string,
   password: string,
-): Promise<{ success: boolean; data: null }> {
-  return apiClient.put(`/api/users/${encodeURIComponent(id)}/password`, {
+): Promise<null> {
+  return apiClient.put(`/users/${encodeURIComponent(id)}/password`, {
     password,
   });
 }

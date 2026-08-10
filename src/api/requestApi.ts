@@ -1,8 +1,8 @@
 /**
  * Generic Request API — 通用请求接口
  *
- * 提供底层 fetch 封装，供 composable 层调用。
- * 所有外部 API 请求必须经过 src/api/ 目录聚合。
+ * 提供底层 fetch 封装, 供 composable 层调用。
+ * 所有外部 API 请求必须经过 src/api/ 目录Aggregate。
  */
 import { apiClient } from "@/utils/apiClient";
 
@@ -37,8 +37,8 @@ export async function genericFetchApi(
 }
 
 /**
- * 请求外部 URL（完整地址），自动注入 token。
- * 用于数据源动态选项加载、API 测试连接等场景。
+ * 请求外部 URL（完整地址）, 自动注入 token。
+ * 用于Data源动态Options加载、API 测试连接等场景。
  */
 export async function requestExternalUrl<T>(
   method: string,

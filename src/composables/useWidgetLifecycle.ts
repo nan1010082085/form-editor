@@ -1,8 +1,8 @@
 /**
- * useWidgetLifecycle — Widget 生命周期管理（最小实现）
+ * useWidgetLifecycle — Widget 生命week期管理（Min实现）
  *
  * 为所有 Widget 提供 onInit / onMount / onUnmount / onDataChange / onVisibleChange 钩子。
- * 钩子支持函数引用模式；字符串表达式模式待 ExpressionRuntime 完成后启用。
+ * 钩子支持函数引用模式；字符串表达式模式待 ExpressionRuntime 完成后Enable。
  */
 import { ref, toValue, type Ref, type MaybeRefOrGetter } from "vue";
 import type { Widget, WidgetLifecycleConfig } from "@/widgets/base/types";
@@ -49,7 +49,7 @@ export function useWidgetLifecycle(
           ...extra,
         });
       }
-      // 字符串表达式模式待 ExpressionRuntime 完成后启用
+      // 字符串表达式模式待 ExpressionRuntime 完成后Enable
     } catch (e) {
       const error = e instanceof Error ? e : new Error(String(e));
       lastError.value = error;

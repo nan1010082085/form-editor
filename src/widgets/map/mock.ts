@@ -1,6 +1,6 @@
 import type { ChartWidgetMock } from "../base/widgetMock";
 
-/** 地图 — 默认 mock（中国省份示例数据） */
+/** 地图 — Default mock（中国省份示例Data） */
 export const mapChartMock: ChartWidgetMock = {
   kind: "chart",
   staticData: [
@@ -20,7 +20,7 @@ export const mapChartMock: ChartWidgetMock = {
     { name: "辽宁", value: 180 },
     { name: "陕西", value: 160 },
     { name: "重庆", value: 340 },
-    { name: "天津", value: 300 },
+    { name: "day津", value: 300 },
     { name: "江西", value: 150 },
     { name: "广西", value: 130 },
     { name: "云南", value: 120 },

@@ -8,8 +8,8 @@ export interface GuideLine {
   end: number;
 }
 
-const SNAP_THRESHOLD = 5; // ±5px 吸附阈值
-const GUIDE_EXTENSION = 20; // 超出对齐边缘 20px
+const SNAP_THRESHOLD = 5; // ±5px snap threshold
+const GUIDE_EXTENSION = 20; // Extend 20px beyond alignment edge
 
 interface Rect {
   left: number;
@@ -70,7 +70,7 @@ export function calculateGuideLines(
   let snapY: number | null = null;
 
   const dPos = draggingWidget.position ?? { x: 0, y: 0, w: 0, h: 0 };
-  // 处理百分比宽高
+  // 处理百Min比宽高
   const { w: dw, h: dh } = resolveWidgetSize(
     draggingWidget,
     canvasWidth,
@@ -118,11 +118,11 @@ export function calculateGuideLines(
 }
 
 /**
- * 计算容器内对齐辅助线（容器作用域 — 检查容器边界 + 同级 widget）
+ * 计算Container内对齐辅助线（Container作用域 — 检查Container边界 + 同级 widget）
  *
  * @param dragRect      拖拽中的 widget 在**画布坐标系**中的矩形
- * @param siblings      同容器内其他 widget 的对齐目标（画布坐标系）
- * @param containerRect 容器在**画布坐标系**中的矩形
+ * @param siblings      同Container内其他 widget 的对齐目标（画布坐标系）
+ * @param containerRect Container在**画布坐标系**中的矩形
  */
 export function calculateContainerGuides(
   dragRect: { x: number; y: number; w: number; h: number },
@@ -142,7 +142,7 @@ export function calculateContainerGuides(
     centerY: dragRect.y + dragRect.h / 2,
   };
 
-  // 容器边界对齐
+  // Container边界对齐
   const container: Rect = {
     left: containerRect.x,
     right: containerRect.x + containerRect.w,
@@ -168,7 +168,7 @@ export function calculateContainerGuides(
   return { lines, snapX, snapY };
 }
 
-/** 收集容器内子 widget 的对齐目标（画布坐标系） */
+/** 收集Container内子 widget 的对齐目标（画布坐标系） */
 export function collectSiblingTargets(
   container: Widget,
   excludeId: string,

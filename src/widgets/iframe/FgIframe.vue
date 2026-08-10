@@ -2,7 +2,7 @@
 /**
  * FgIframe — iframe 嵌入外部网页 Widget
  *
- * 支持全屏模式、弹框模式、边框控制、加载/错误状态。
+ * 支持全屏模式、弹框模式、Border控制、加载/ErrorStatus。
  */
 import { inject, computed, ref } from "vue";
 import { widgetDataKey } from "../base/types";
@@ -69,7 +69,7 @@ const iframeClasses = computed(() => {
   return cls;
 });
 
-// 设计器画布不加载外部 URL，仅展示占位预览
+// 设计器画布不加载外部 URL, 仅展示占位预览
 const isEditorSurface = computed(() => surface === "editor");
 const isEditorMode = computed(() => isEditorSurface.value || !src.value);
 </script>

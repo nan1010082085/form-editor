@@ -11,9 +11,10 @@ import FgFileList from "../FgFileList.vue";
 import { fileListConfig } from "../config";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 describe("FgFileList", () => {
   let store: ReturnType<typeof useWidgetStore>;
@@ -72,7 +73,7 @@ describe("FgFileList", () => {
   describe("title 属性", () => {
     it("默认显示附件", () => {
       const wrapper = mountWidget();
-      expect(wrapper.text()).toContain("附件");
+      expect(wrapper.text()).toContain("Attachments");
     });
 
     it("自定义标题", () => {

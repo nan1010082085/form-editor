@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * ComponentPanel — 左侧组件面板（手风琴折叠）
+ * ComponentPanel — 左侧Component面板（手风琴折叠）
  *
- * 从 widget registry 读取已注册组件，按分组折叠展示。
+ * 从 widget registry 读取已注册Component, 按Group折叠展示。
  * 拖拽 dataTransfer 中携带 SchemaType 字符串。
- * 支持拼音首字母搜索、匹配高亮、200ms 防抖。
- * 使用虚拟滚动优化大量组件时的性能。
+ * 支持拼音首字母Search、匹配高亮、200ms 防抖。
+ * 使用虚拟滚动优化大量ComponentHrs的性能。
  */
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { pinyin } from "pinyin-pro";
@@ -21,7 +21,7 @@ import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./ComponentPanel.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
-// 部件类型图标映射
+// WidgetType图标Map
 const TYPE_ICONS: Record<string, string> = {
   form: "document",
   card: "notebook",
@@ -45,7 +45,7 @@ const TYPE_ICONS: Record<string, string> = {
   "toolbar-buttons": "set-up",
   table: "grid",
   button: "pointer",
-  // 图表部件
+  // ChartWidget
   "bar-chart": "data-board",
   "stacked-bar-chart": "data-board",
   "horizontal-bar-chart": "data-board",
@@ -78,7 +78,7 @@ interface ComponentGroup {
 const boardStore = useBoardStore();
 const { t } = useI18n();
 
-/** 获取翻译后的 Widget 显示名称 */
+/** 获取翻译后的 Widget ShowName */
 function getDisplayName(item: WidgetRegistryItem): string {
   return getWidgetDisplayName(item.type, t);
 }
@@ -130,7 +130,7 @@ function getPinyinInitials(text: string): string {
     .toLowerCase();
 }
 
-/** 获取全拼（无空格，小写） */
+/** 获取全拼（无空格, 小写） */
 function getPinyinFull(text: string): string {
   return pinyin(text, { toneType: "none", type: "array" })
     .join("")
@@ -142,7 +142,7 @@ interface MatchResult {
   matchedIn: "displayName" | "name" | "pinyin";
 }
 
-/** 判断 item 是否匹配查询 */
+/** 判断 item 是否匹配Query */
 function matchItem(item: WidgetRegistryItem, q: string): MatchResult {
   const displayName = getDisplayName(item).toLowerCase();
   const name = item.name.toLowerCase();
@@ -212,6 +212,8 @@ function handleDragStart(
   displayName: string,
 ) {
   event.dataTransfer?.setData("schema-type", type);
+  /** dragover 无法 getData, 把 type 编码进 MIME 名供 types Parse */
+  event.dataTransfer?.setData(`application/x-schema-type/${type}`, type);
   event.dataTransfer?.setData(
     "application/schema-drag",
     JSON.stringify({ source: "panel", type }),
@@ -249,13 +251,13 @@ function handleDragStart(
 // 虚拟滚动相关逻辑
 // ============================================================
 
-/** 部件行高度（含 padding；与 .item min-height 对齐） */
+/** WidgetRowHeight（含 padding；与 .item min-height 对齐） */
 const ITEM_ROW_HEIGHT = 42;
-/** 分组标题行高度 */
+/** Group标题RowHeight */
 const HEADER_ROW_HEIGHT = 36;
 /** 与 .virtualContent gap 一致 */
 const ROW_GAP = 6;
-/** 缓冲区行数 */
+/** 缓冲区Row数 */
 const BUFFER_ROWS = 3;
 
 const scrollContainerRef = ref<HTMLElement | null>(null);
@@ -310,8 +312,8 @@ const flatList = computed<FlatItem[]>(() => {
 });
 
 /**
- * 将扁平列表折叠为网格行（header 独占一行；item 两列一行），
- * 高度含 row gap，避免总高度偏小导致滚不到底部。
+ * 将扁平Column表折叠为网格Row（header 独占一Row；item 两Column一Row）, 
+ * Height含 row gap, 避免总Height偏小导致滚不到底部。
  */
 interface LayoutRow {
   startIndex: number;
@@ -357,7 +359,7 @@ const totalHeight = computed(() => {
   const rows = layoutRows.value;
   if (rows.length === 0) return 0;
   const last = rows[rows.length - 1];
-  // 最后一行不加尾部 gap
+  // 最后一Row不加尾部 gap
   return last.top + last.height;
 });
 
@@ -428,7 +430,7 @@ function isGroupExpanded(groupKey: string): boolean {
                 : `i-${flatItem.item?.type}-${flatItem.item?.name}`
             "
           >
-            <!-- 分组标题 -->
+            <!-- Group标题 -->
             <div
               v-if="flatItem.type === 'header'"
               :class="styles.groupHeader"
@@ -446,7 +448,7 @@ function isGroupExpanded(groupKey: string): boolean {
               <span :class="styles.groupCount">{{ flatItem.count }}</span>
             </div>
 
-            <!-- 组件项 -->
+            <!-- Component项 -->
             <div
               v-else-if="flatItem.type === 'item' && flatItem.item"
               :class="styles.item"

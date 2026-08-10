@@ -14,6 +14,7 @@ import {
   type UserItem,
   type CreateUserPayload,
 } from "../../api/userApi";
+import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import { WIDGET_SURFACE_KEY, getTableRowsFromMock } from "../base/widgetMock";
 import styles from "./style.module.scss";
 
@@ -171,11 +172,11 @@ async function loadData() {
       page: currentPage.value,
       pageSize: String(pageSize.value),
     });
-    tableData.value = res.data.items;
-    total.value = res.data.total;
+    tableData.value = res.items;
+    total.value = res.total;
   } catch (err) {
     if (applyEditorMock()) return;
-    ElMessage.error(t("editor.userManagement.loadUserListFailed"));
+    ElMessage.error(resolveApiErrorMessage(err));
   } finally {
     loading.value = false;
   }
@@ -226,7 +227,7 @@ function openAddDialog() {
 
 function openEditDialog(row: UserItem) {
   dialogMode.value = "edit";
-  editingUserId.value = row._id;
+  editingUserId.value = row.id;
   Object.assign(formData, {
     username: row.username,
     password: "",
@@ -258,11 +259,7 @@ async function submitForm() {
     dialogVisible.value = false;
     loadData();
   } catch (err) {
-    ElMessage.error(
-      dialogMode.value === "add"
-        ? t("editor.userManagement.createFailed")
-        : t("editor.userManagement.updateFailed"),
-    );
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 
@@ -278,11 +275,12 @@ async function handleDelete(row: UserItem) {
         type: "warning",
       },
     );
-    await deleteUser(row._id);
+    await deleteUser(row.id);
     ElMessage.success(t("editor.userManagement.deleteSuccess"));
     loadData();
-  } catch {
-    // user cancelled
+  } catch (err) {
+    if (err === "cancel" || err === "close") return;
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 
@@ -301,11 +299,11 @@ async function submitResetPwd() {
   }
   if (!resetPwdTarget.value) return;
   try {
-    await resetUserPassword(resetPwdTarget.value._id, resetPwdValue.value);
+    await resetUserPassword(resetPwdTarget.value.id, resetPwdValue.value);
     ElMessage.success(t("editor.userManagement.passwordResetSuccess"));
     resetPwdVisible.value = false;
-  } catch {
-    ElMessage.error(t("editor.userManagement.passwordResetFailed"));
+  } catch (err) {
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 

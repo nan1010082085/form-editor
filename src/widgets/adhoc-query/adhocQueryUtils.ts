@@ -1,6 +1,6 @@
 import type { AdhocCondition } from "./config";
 
-/** 将 Adhoc 条件行转为 API 查询参数（空值忽略） */
+/** 将 Adhoc ConditionRow转为 API QueryParams（空Value忽略） */
 export function buildAdhocFilterParams(
   conditions: AdhocCondition[],
 ): Record<string, unknown> {

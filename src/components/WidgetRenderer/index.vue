@@ -5,7 +5,7 @@ import type { FormInstance } from "element-plus";
 import zhCn from "element-plus/es/locale/lang/zh-cn";
 import en from "element-plus/es/locale/lang/en";
 import SchemaRender from "./SchemaRender.vue";
-import type { Widget } from "../../widgets/base/types";
+import type { Widget, PreviewBreakpoint } from "../../widgets/base/types";
 import ErrorBoundary from "@/components/ErrorBoundary.vue";
 // FgDialog import removed — internal dialog rendered inline below
 import type { PartialWidget } from "../../widgets/base/types";
@@ -31,8 +31,10 @@ import {
   EVENT_CONTEXT_KEY,
   DIALOG_REGISTRY_KEY,
   FORM_REGISTRY_KEY,
+  GRID_ENGINE_CONTEXT_KEY,
+  PREVIEW_BREAKPOINT_KEY,
 } from "./types";
-import type { DialogRegistry, FormRegistry } from "./types";
+import type { DialogRegistry, FormRegistry, GridEngineContext } from "./types";
 import type { EventExecutionContext } from "./types";
 import { useLinkage } from "@/composables/useLinkage";
 import { useFormData } from "@/composables/useFormData";
@@ -52,7 +54,7 @@ import styles from "./style.module.scss";
 
 const logger = useLogger("WidgetRenderer");
 
-/** Element Plus 语言包映射 */
+/** Element Plus Language包Map */
 const epLocaleMap: Record<FormGridLocale, typeof zhCn> = {
   "zh-CN": zhCn,
   "en-US": en,
@@ -60,18 +62,20 @@ const epLocaleMap: Record<FormGridLocale, typeof zhCn> = {
 
 const props = defineProps<
   FormGridProps & {
-    /** 编辑器模式：启用容器拖放区域（Sprint 11） */
+    /** Edit器模式：EnableContainer拖放Region（Sprint 11） */
     editable?: boolean;
     /** 是否正在拖拽中（Sprint 11） */
     isDragging?: boolean;
-    /** 只读模式：禁用所有表单输入，隐藏内部按钮（文件列表保留） */
+    /** 只读模式：Disable所有FormInput, Hide内部Button（文件Column表保留） */
     readonly?: boolean;
-    /** partial 模式下只读的字段列表 */
+    /** partial 模式下只读的FieldColumn表 */
     readonlyFields?: string[];
-    /** partial 模式下可编辑的字段列表（与 readonlyFields 二选一） */
+    /** partial 模式下可Edit的FieldColumn表（与 readonlyFields 二选一） */
     editableFields?: string[];
-    /** Grid 编辑模式：点击选中部件 */
+    /** Grid Edit模式：点击选中Widget */
     editorSelectable?: boolean;
+    /** 预览断点（发布态自适应用, Default desktop） */
+    previewBreakpoint?: PreviewBreakpoint;
   }
 >();
 
@@ -80,6 +84,8 @@ const isAbsoluteLayout = computed(() => props.layout === "absolute");
 const {
   templateColumns: gridTemplateColumns,
   gap: gridGap,
+  columns: gridColumns,
+  containerWidth: gridContainerWidth,
   getChildGridColumn,
   connect: connectGrid,
   disconnect: disconnectGrid,
@@ -87,6 +93,16 @@ const {
   () => props.canvasConfig?.gridLayout,
   () => (props.schema ?? []) as Widget[],
 );
+
+const gridColumnGap = computed(
+  () => props.canvasConfig?.gridLayout?.columnGap ?? 8,
+);
+
+provide(GRID_ENGINE_CONTEXT_KEY, {
+  columns: gridColumns,
+  columnGap: gridColumnGap,
+  containerWidth: gridContainerWidth,
+} satisfies GridEngineContext);
 
 const flowContainerStyle = computed(() => ({
   width: "100%",
@@ -97,7 +113,7 @@ const flowContainerStyle = computed(() => ({
   boxSizing: "border-box" as const,
 }));
 
-/** 绝对定位模式下，计算容器样式（画布尺寸 + 背景 + 包围盒） */
+/** 绝对定位模式下, 计算ContainerStyle（画布尺寸 + Background + 包围盒） */
 const absoluteContainerStyle = computed(() => {
   if (!isAbsoluteLayout.value) return undefined;
   const cc = props.canvasConfig;
@@ -173,7 +189,7 @@ function openDialog(config: {
   initialData?: FormData;
 }) {
   if (dialogMode.value === "external") {
-    // 外部模式：仅通知父组件，不接管弹窗渲染
+    // 外部模式：仅Notification父Component, 不接管Dialog渲染
     emit("open-dialog", config);
     return;
   }
@@ -199,7 +215,7 @@ function handleDialogCancel() {
   dialogVisible.value = false;
 }
 
-// ---- 表单数据管理（抽取自 useFormData） ----
+// ---- FormData管理（抽取自 useFormData） ----
 const {
   formData,
   getFormData: getFlowFormData,
@@ -209,7 +225,7 @@ const {
   initFormData,
 } = useFormData(formRef);
 
-// ---- 生命周期钩子 ----
+// ---- 生命week期钩子 ----
 const { executeBeforeSubmit, executeAfterLoad } = useLifecycle(
   props.lifecycle,
   formData,
@@ -231,7 +247,7 @@ const context: FormGridContext = {
 provide(FORM_GRID_CONTEXT_KEY, context);
 provide(FORM_GRID_FORM_KEY, formData);
 
-// 注入 FormGrid API 给子组件（如 FgToolbarButtons、FgSteps）使用
+// 注入 FormGrid API 给子Component（如 FgToolbarButtons、FgSteps）使用
 provide(FORM_GRID_API_KEY, {
   validate,
   validateField,
@@ -239,7 +255,7 @@ provide(FORM_GRID_API_KEY, {
   resetFields,
 });
 
-// 注入 action emit 函数，消除中间层事件转发
+// 注入 action emit 函数, 消除中间层Event转发
 provide(ACTION_EMIT_KEY, (event: string, payload?: unknown) => {
   if (event === "action") {
     emit("action", payload as SchemaAction);
@@ -274,26 +290,26 @@ const variablesContext = computed(() => {
     }
   }
   collect(props.schema);
-  // 合并运行时修改的变量
+  // 合并运RowHrs修改的变量
   Object.assign(vars, runtimeVariables.value);
   return vars;
 });
 
-// 组件暴露值收集（由子组件通过 provide 注入）
+// ComponentExposed Value收集（由子Componentpassed provide 注入）
 const exposedContext = ref<Record<string, Record<string, unknown>>>({});
 
-/** 注册组件暴露值（由子组件调用） */
+/** 注册ComponentExposed Value（由子Component调用） */
 function registerExposed(widgetId: string, state: Record<string, unknown>) {
   exposedContext.value = { ...exposedContext.value, [widgetId]: state };
 }
 
-/** 注销组件暴露值 */
+/** 注销ComponentExposed Value */
 function unregisterExposed(widgetId: string) {
   const { [widgetId]: _, ...rest } = exposedContext.value;
   exposedContext.value = rest;
 }
 
-// 提供暴露值注册接口
+// 提供Exposed Value注册接口
 provide("registerExposed", registerExposed);
 provide("unregisterExposed", unregisterExposed);
 provide("variablesContext", variablesContext);
@@ -302,7 +318,7 @@ provide("setBoardVariable", (name: string, value: unknown) => {
   runtimeVariables.value = { ...runtimeVariables.value, [name]: value };
 });
 
-// 联动状态（支持 variables 和 exposed 引用）
+// LinkageStatus（支持 variables 和 exposed 引用）
 const { stateMap: linkageStateMap } = useLinkage(
   props.schema,
   formData,
@@ -313,12 +329,18 @@ provide(FORM_GRID_LINKAGE_KEY, linkageStateMap);
 
 provide(WIDGET_SURFACE_KEY, "runtime");
 
-// ---- 弹窗注册表（WidgetNode 注册 dialog 回调，eventContext.openDialog 消费） ----
+// ---- 响应式断点（发布态自适应） ----
+const previewBreakpointRef = computed<PreviewBreakpoint>(
+  () => props.previewBreakpoint ?? "desktop",
+);
+provide(PREVIEW_BREAKPOINT_KEY, previewBreakpointRef);
+
+// ---- Dialog注册表（WidgetNode 注册 dialog 回调, eventContext.openDialog 消费） ----
 const dialogRegistry: DialogRegistry = new Map();
 const lastOpenedDialogId = ref<string | undefined>(undefined);
 provide(DIALOG_REGISTRY_KEY, dialogRegistry);
 
-// ---- 表单注册表（FgForm 注册 validate API，absolute 布局聚合 submit/validate） ----
+// ---- Form注册表（FgForm 注册 validate API, absolute LayoutAggregate submit/validate） ----
 const formRegistry: FormRegistry = new Map();
 provide(FORM_REGISTRY_KEY, formRegistry);
 
@@ -326,13 +348,13 @@ provide(FORM_REGISTRY_KEY, formRegistry);
 const readonlyRef = computed(() => props.readonly ?? false);
 provide(FORM_GRID_READONLY_KEY, readonlyRef);
 
-// partial 模式：字段级只读控制
+// partial 模式：Field级只读控制
 const readonlyFieldsRef = computed(() => props.readonlyFields);
 provide(FORM_GRID_READONLY_FIELDS_KEY, readonlyFieldsRef);
 const editableFieldsRef = computed(() => props.editableFields);
 provide(FORM_GRID_EDITABLE_FIELDS_KEY, editableFieldsRef);
 
-// ---- 运行时事件执行上下文 ----
+// ---- 运RowHrsEventExecute上下文 ----
 
 /** 递归查找 schema 树中的 widget */
 function findWidgetInSchema(
@@ -356,14 +378,14 @@ const eventContext: EventExecutionContext = {
     if (widget) Object.assign(widget, patch);
   },
   openDialog: (target: string) => {
-    // 优先通过注册表打开 WidgetNode 渲染的 EnhancedDialog
+    // 优先passed注册表Open WidgetNode 渲染的 EnhancedDialog
     const handler = dialogRegistry.get(target);
     if (handler) {
       lastOpenedDialogId.value = target;
       handler(true);
       return;
     }
-    // 降级：使用 WidgetRenderer 内置 dialog 组件
+    // 降级：使用 WidgetRenderer 内置 dialog Component
     const widget = findWidgetInSchema(props.schema, target);
     if (widget?.type === "dialog") {
       openDialog({
@@ -377,7 +399,7 @@ const eventContext: EventExecutionContext = {
     }
   },
   closeDialog: () => {
-    // 关闭注册表中最近打开的 dialog
+    // Close注册表中最近Open的 dialog
     if (lastOpenedDialogId.value) {
       const handler = dialogRegistry.get(lastOpenedDialogId.value);
       if (handler) handler(false);
@@ -553,12 +575,12 @@ const currentLocale = computed(() => props.locale ?? "zh-CN");
 const { t } = useLocale(currentLocale);
 provide(FORM_GRID_T_KEY, t);
 
-// Element Plus 语言包（按需映射，避免全量加载）
+// Element Plus Language包（按需Map, 避免全量加载）
 const epLocale = computed(() => epLocaleMap[currentLocale.value]);
 
 /**
- * 对 API 返回数据应用字段映射
- * 将 API 返回的字段名转换为 formData 中的字段名
+ * 对 API BackData应用FieldMap
+ * 将 API Back的Field nameTransform为 formData 中的Field name
  */
 function applyFieldMap(
   data: Record<string, unknown>,
@@ -575,8 +597,8 @@ function applyFieldMap(
 }
 
 /**
- * 通过 loadApi 加载数据并回填到 formData
- * 流程：请求 → transformAfterLoad → 字段映射 → 合并 → 触发 onAfterLoad
+ * passed loadApi 加载Data并回填到 formData
+ * 流程：请求 → transformAfterLoad → FieldMap → 合并 → Trigger onAfterLoad
  */
 async function loadApiData(config: LoadApiConfig): Promise<void> {
   loading.value = true;
@@ -584,14 +606,14 @@ async function loadApiData(config: LoadApiConfig): Promise<void> {
     const method = config.method ?? "get";
     const res = await fetchRuntimeUrl(method, config.url, config.params);
 
-    // 假设 API 返回 { code: 0, data: Record<string, any> }
+    // 假设 API Back { code: 0, data: Record<string, any> }
     let rawData: Record<string, unknown> = {};
     if (res && typeof res === "object") {
       const obj = res as Record<string, unknown>;
       rawData = (obj.data ?? obj) as Record<string, unknown>;
     }
 
-    // transformAfterLoad: 加载后数据转换（在字段映射之前）
+    // transformAfterLoad: 加载后DataTransform（在FieldMap之前）
     let transformedData: FormData;
     if (props.transformAfterLoad) {
       try {
@@ -599,23 +621,23 @@ async function loadApiData(config: LoadApiConfig): Promise<void> {
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : t("message.transformFailed");
-        logger.warn("transformAfterLoad 转换失败，使用原始数据降级:", msg);
-        // 降级：使用原始数据
+        logger.warn("transformAfterLoad TransformFailed, falling back to raw data:", msg);
+        // 降级：使用原始Data
         transformedData = applyFieldMap(rawData, config.fieldMap);
         setFormData(transformedData);
         await executeAfterLoad(formData);
         return;
       }
     } else {
-      // 无转换：直接使用原始数据
+      // 无Transform：直接使用原始Data
       transformedData = rawData as FormData;
     }
 
-    // 应用字段映射并合并到 formData
+    // 应用FieldMap并合并到 formData
     const mappedData = applyFieldMap(transformedData, config.fieldMap);
     setFormData(mappedData);
 
-    // 触发 onAfterLoad 钩子
+    // Trigger onAfterLoad 钩子
     await executeAfterLoad(formData);
   } catch (err) {
     const msg = err instanceof Error ? err.message : t("message.loadFailed");
@@ -628,7 +650,7 @@ async function loadApiData(config: LoadApiConfig): Promise<void> {
 
 // ---- 初始化 ----
 onMounted(async () => {
-  // 1. 从 schema 初始化默认值
+  // 1. 从 schema 初始化Default value
   initFormData(props.schema);
   if (isAbsoluteLayout.value) {
     Object.assign(formData, collectSchemaFormData(props.schema));
@@ -639,7 +661,7 @@ onMounted(async () => {
     await loadApiData(props.loadApi);
   }
 
-  // 3. Grid 引擎连接容器（获取宽度计算列数）
+  // 3. Grid 引擎连接Container（获取Width计算Column数）
   if (!isAbsoluteLayout.value) {
     await nextTick();
     const formEl = formRef.value?.$el as HTMLElement | undefined;
@@ -664,7 +686,7 @@ watch(
 
 // ---- 统一 API ----
 
-/** absolute 布局：聚合所有 FgForm 校验 + schema 字段规则 */
+/** absolute Layout：Aggregate所有 FgForm Validate + schema FieldRule */
 async function validateAbsoluteForms(): Promise<boolean> {
   for (const [, api] of formRegistry) {
     api.syncFromWidgets();
@@ -674,14 +696,14 @@ async function validateAbsoluteForms(): Promise<boolean> {
   return true;
 }
 
-/** absolute 布局：重置所有已注册表单 */
+/** absolute Layout：Reset所有已注册Form */
 function resetAbsoluteForms(): void {
   for (const [, api] of formRegistry) {
     api.resetFields();
   }
 }
 
-/** 校验整个表单（带 validate-error 事件上报） */
+/** Validate整个Form（带 validate-error Event上报） */
 async function validate(): Promise<boolean> {
   if (isAbsoluteLayout.value) {
     return validateAbsoluteForms().catch((errors): never => {
@@ -695,17 +717,17 @@ async function validate(): Promise<boolean> {
   });
 }
 
-/** 校验指定字段 */
+/** Validate指定Field */
 async function validateField(fields?: string | string[]): Promise<boolean> {
   return formRef.value?.validateField(fields) ?? true;
 }
 
-/** 清除校验结果 */
+/** 清除Validate结果 */
 function clearValidate(fields?: string | string[]) {
   formRef.value?.clearValidate(fields);
 }
 
-/** 获取指定字段的校验错误信息 */
+/** 获取指定Field的ValidateErrorInfo */
 function getFieldError(field: string): string | undefined {
   const fields = formRef.value?.fields;
   if (!fields) return undefined;
@@ -713,12 +735,12 @@ function getFieldError(field: string): string | undefined {
   return target?.validateMessage || undefined;
 }
 
-/** 滚动到指定字段 */
+/** 滚动到指定Field */
 function scrollToField(field: string) {
   formRef.value?.scrollToField(field);
 }
 
-/** 获取表单数据副本 */
+/** 获取FormData副本 */
 function getFormData(): FormData {
   if (isAbsoluteLayout.value) {
     return collectSchemaFormData(props.schema);
@@ -726,7 +748,7 @@ function getFormData(): FormData {
   return getFlowFormData();
 }
 
-/** 合并设置表单数据 */
+/** 合并SettingsFormData */
 function setFormData(data: FormData) {
   if (isAbsoluteLayout.value) {
     applySchemaFormData(props.schema, data);
@@ -739,7 +761,7 @@ function setFormData(data: FormData) {
   setFlowFormData(data);
 }
 
-/** 重置表单字段 */
+/** ResetFormField */
 function resetFields() {
   if (isAbsoluteLayout.value) {
     resetAbsoluteForms();
@@ -750,17 +772,17 @@ function resetFields() {
   resetFlowFields();
 }
 
-/** 提交表单（校验 + 钩子 + 数据转换后触发 submit 事件） */
+/** SubmitForm（Validate + 钩子 + DataTransform后Trigger submit Event） */
 async function submit() {
-  // 1. onBeforeSubmit 钩子可阻止提交
+  // 1. onBeforeSubmit 钩子可阻止Submit
   const allowed = await executeBeforeSubmit();
   if (!allowed) return;
 
-  // 2. 表单校验
+  // 2. FormValidate
   const valid = await validate();
   if (!valid) return;
 
-  // 3. 提交前数据转换
+  // 3. Submit前DataTransform
   let submitData = getFormData();
   if (props.transformBeforeSubmit) {
     try {
@@ -774,7 +796,7 @@ async function submit() {
     }
   }
 
-  // 4. 触发提交事件
+  // 4. TriggerSubmitEvent
   emit("submit", submitData);
 }
 
@@ -799,12 +821,12 @@ defineExpose({
       :class="styles.fg"
       :style="isAbsoluteLayout ? absoluteContainerStyle : flowContainerStyle"
     >
-      <!-- 绝对定位模式：与编辑器画布一致，保留 position 坐标 -->
+      <!-- 绝对定位模式：与Edit器画布一致, 保留 position 坐标 -->
       <template v-if="isAbsoluteLayout">
         <SchemaRender :widgets="schema as Widget[]" mode="preview" />
       </template>
 
-      <!-- Grid 布局模式：CSS Grid + span 系统 -->
+      <!-- Grid Layout模式：CSS Grid + span 系统 -->
       <el-form v-else ref="formRef" :model="formData" :style="flowContainerStyle" :class="styles.fgGrid">
         <template v-for="(item, idx) in schema" :key="idx">
           <div :style="{ gridColumn: getChildGridColumn(idx) }">

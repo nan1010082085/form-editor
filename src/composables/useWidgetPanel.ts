@@ -10,47 +10,47 @@ export interface WidgetPanelGroup {
   items: WidgetRegistryItem[];
 }
 
-/** 组件面板分组（顺序即展示顺序） */
+/** Component面板Group（顺序即展示顺序） */
 export function useWidgetPanel() {
   const groups = computed<WidgetPanelGroup[]>(() =>
     [
       {
-        label: "布局部件",
+        label: "LayoutWidget",
         key: "layout" as const,
         items: getWidgetsByGroup("layout"),
       },
       {
-        label: "容器部件",
+        label: "ContainerWidget",
         key: "container" as const,
         items: getWidgetsByGroup("container"),
       },
       {
-        label: "表单部件",
+        label: "FormWidget",
         key: "form" as const,
         items: getWidgetsByGroup("form"),
       },
       {
-        label: "表格部件",
+        label: "Table Widget",
         key: "table" as const,
         items: getWidgetsByGroup("table"),
       },
       {
-        label: "图表部件",
+        label: "ChartWidget",
         key: "chart" as const,
         items: getWidgetsByGroup("chart"),
       },
       {
-        label: "展示部件",
+        label: "Display Widget",
         key: "static" as const,
         items: getWidgetsByGroup("static"),
       },
       {
-        label: "操作部件",
+        label: "ActionWidget",
         key: "action" as const,
         items: getWidgetsByGroup("action"),
       },
       {
-        label: "业务部件",
+        label: "Business Widget",
         key: "business" as const,
         items: getWidgetsByGroup("business"),
       },

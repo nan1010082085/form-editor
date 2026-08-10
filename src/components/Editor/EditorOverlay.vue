@@ -1,15 +1,15 @@
 <script setup lang="ts">
 /**
- * EditorOverlay — 编辑器附加层
+ * EditorOverlay — Edit器附加层
  *
- * 包裹 SchemaRender，在渲染层上方叠加编辑 UI：
- * - 选中框（蓝色边框）
+ * 包裹 SchemaRender, 在渲染层上方叠加Edit UI：
+ * - 选中框（蓝色Border）
  * - 缩放手柄（8个方向）
- * - 容器拖放高亮（蓝色虚线）
+ * - Container拖放高亮（蓝色虚线）
  * - 辅助线层（灰色虚线）
- * - 交互事件（选中、拖拽、缩放）
+ * - 交互Event（选中、拖拽、缩放）
  */
-import { computed, ref, onMounted, onUnmounted } from "vue";
+import { computed, ref, onMounted, onUnmounted, inject } from "vue";
 import { ElMessage } from "element-plus";
 import { useWidgetStore } from "../../stores/widget";
 import { useEditorStore } from "../../stores/editor";
@@ -27,14 +27,16 @@ import {
   constrainToCanvasBounds,
 } from "../../utils/coordinate";
 import { collectAllContainers } from "../../utils/collision";
+import { resolveSchemaTypeFromDragTypes } from "../../utils/gridCanvasDrop";
 import type { Widget, SchemaType } from "../../widgets/base/types";
 import type { ResizeHandle } from "../../composables/useResize";
+import { FORM_GRID_LINKAGE_KEY } from "../WidgetRenderer/types";
 import SchemaRender from "../WidgetRenderer/SchemaRender.vue";
 import WidgetContextMenu from "./WidgetContextMenu.vue";
 import styles from "./EditorOverlay.module.scss";
 
 // ================================================================
-// 递归展开 Widget 树，子组件坐标转为画布绝对坐标
+// 递归Expand Widget 树, 子Component坐标转为画布绝对坐标
 // ================================================================
 
 interface FlatWidget {
@@ -105,6 +107,7 @@ const emit = defineEmits<{
   openRule: [widget: Widget];
   openApi: [widget: Widget];
   openVariables: [widget: Widget];
+  openChartLinkage: [widget: Widget];
   savePreview: [dataUrl: string];
 }>();
 
@@ -125,7 +128,7 @@ const {
 const { copy } = useClipboard();
 const { captureElement } = useSnapshot();
 
-// ---- ESC 键取消拖拽 ----
+// ---- ESC 键Cancel拖拽 ----
 
 function handleKeyDown(e: KeyboardEvent) {
   if (e.key === "Escape" && dragStore.isDragging) {
@@ -141,7 +144,7 @@ onUnmounted(() => {
   document.removeEventListener("keydown", handleKeyDown);
 });
 
-/** 自渲染容器：children 在组件内部渲染，flattenWidgets 跳过其子组件 */
+/** 自渲染Container：children 在Component内部渲染, flattenWidgets 跳过其子Component */
 const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
   "single-col",
   "double-col",
@@ -150,7 +153,7 @@ const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
   "tree-layout",
 ]);
 
-/** 交互式容器：hitArea 设为 pointer-events:none，点击穿透到实际 UI */
+/** 交互式Container：hitArea 设为 pointer-events:none, 点击穿透到实际 UI */
 const INTERACTIVE_CONTAINER_TYPES: ReadonlySet<SchemaType> = new Set([
   "tabs",
   "dialog",
@@ -177,7 +180,7 @@ const gridRowHeightPx = computed(
 );
 
 // ================================================================
-// 右键上下文菜单
+// 右键上下文Menu
 // ================================================================
 
 const contextMenu = ref({
@@ -198,10 +201,36 @@ function handleCopyWidget(widget: Widget) {
 function handleDeleteWidget(widget: Widget) {
   widgetStore.removeWidget(widget.id);
   editorStore.select(null);
+  editorStore.pushHistory([...widgetStore.widgets]);
 }
 
 function handleCopyId(id: string) {
   copy(id, t("editor.overlay.copiedWidgetId"));
+}
+
+function handleBringToFront(widget: Widget) {
+  const parent = widgetStore.findParent(widget.id);
+  const parentId = parent?.id ?? null;
+  const siblings = parent?.children ?? widgetStore.widgets;
+  widgetStore.moveWidgetToIndex(widget.id, parentId, siblings.length - 1);
+  editorStore.pushHistory([...widgetStore.widgets]);
+}
+
+function handleSendToBack(widget: Widget) {
+  const parent = widgetStore.findParent(widget.id);
+  const parentId = parent?.id ?? null;
+  widgetStore.moveWidgetToIndex(widget.id, parentId, 0);
+  editorStore.pushHistory([...widgetStore.widgets]);
+}
+
+function handleToggleLock(widget: Widget) {
+  widgetStore.updateWidget(widget.id, { locked: !widget.locked });
+  editorStore.pushHistory([...widgetStore.widgets]);
+}
+
+function handleToggleHidden(widget: Widget) {
+  widgetStore.updateWidget(widget.id, { hidden: !widget.hidden });
+  editorStore.pushHistory([...widgetStore.widgets]);
 }
 
 function handleOpenEvent(widget: Widget) {
@@ -215,6 +244,9 @@ function handleOpenApi(widget: Widget) {
 }
 function handleOpenVariables(widget: Widget) {
   emit("openVariables", widget);
+}
+function handleOpenChartLinkage(widget: Widget) {
+  emit("openChartLinkage", widget);
 }
 
 async function handleSavePreview(widget: Widget) {
@@ -238,7 +270,7 @@ const selectedWidget = computed(() => {
 const selectionStyle = computed(() => {
   const w = selectedWidget.value;
   if (!w) return { display: "none" as const };
-  // 递归查找子组件的画布绝对坐标（跳过自渲染容器内部）
+  // 递归查找子Component的画布绝对坐标（跳过自渲染Container内部）
   const findCanvasPos = (
     widgets: Widget[],
     targetId: string,
@@ -267,7 +299,7 @@ const selectionStyle = computed(() => {
   const x = pos?.x ?? w.position?.x ?? 0;
   const y = pos?.y ?? w.position?.y ?? 0;
   const delta = getStyleSizeDelta(w);
-  // 处理百分比宽高
+  // 处理百Min比宽高
   const wUnit = w.position?.wUnit ?? "px";
   const hUnit = w.position?.hUnit ?? "px";
   const canvasWidth = boardStore.getCanvasWidthPx();
@@ -282,16 +314,29 @@ const selectionStyle = computed(() => {
     top: `${y + delta.my}px`,
     width: `${widgetW + delta.bw}px`,
     height: `${widgetH + delta.bh}px`,
-    border: "2px solid var(--color-primary)",
+    border: "1px solid var(--color-primary)",
+    borderStyle: w.hidden ? ("dashed" as const) : ("solid" as const),
+    opacity: w.hidden ? 0.55 : 1,
     pointerEvents: "none" as const,
     zIndex: 9999,
   };
 });
 
-/** 扁平化所有 Widget（含容器内子组件），坐标转为画布绝对坐标 */
-const flatWidgets = computed(() => flattenWidgets(widgetStore.widgets));
+/** 扁平化所有 Widget；LinkageHide的Field不生成 hitArea（与 SchemaNode 视觉一致） */
+const linkageStateMap = inject(FORM_GRID_LINKAGE_KEY, null);
+const flatWidgets = computed(() => {
+  const all = flattenWidgets(widgetStore.widgets);
+  const map = linkageStateMap?.value;
+  if (!map) return all;
+  return all.filter((fw) => {
+    const field = fw.widget.field;
+    if (!field) return true;
+    const state = map.get(field);
+    return state?.visible !== false;
+  });
+});
 
-// ---- 样式尺寸辅助 ----
+// ---- Style尺寸辅助 ----
 
 function parsePxVal(val?: string): number {
   if (!val) return 0;
@@ -325,7 +370,7 @@ function getStyleSizeDelta(widget: Widget): {
   const mx = ml - mr;
   const my = mt - mb;
 
-  // margin 增量（总宽度 = 左margin + 右margin）
+  // margin 增量（总Width = 左margin + 右margin）
   const marginW = ml + mr;
   const marginH = mt + mb;
 
@@ -383,7 +428,7 @@ const handles: { type: ResizeHandle; style: Record<string, string> }[] = [
 const guideLines = computed(() => dragStore.guideLines);
 
 // ================================================================
-// 容器高亮（拖拽悬停时，支持嵌套容器的画布绝对坐标）
+// Container高亮（拖拽悬停Hrs, 支持嵌套Container的画布绝对坐标）
 // ================================================================
 
 const hoveredContainer = computed(() => {
@@ -391,7 +436,7 @@ const hoveredContainer = computed(() => {
   return widgetStore.findWidget(dragStore.hoveredContainerId);
 });
 
-/** 计算嵌套容器的画布绝对坐标（递归累加父容器偏移） */
+/** 计算嵌套Container的画布绝对坐标（递归累加父Container偏移） */
 function getContainerCanvasPosition(containerId: string): {
   x: number;
   y: number;
@@ -427,7 +472,7 @@ const containerHighlightStyle = computed(() => {
 });
 
 // ================================================================
-// 放置预览线（指示新组件的插入位置）
+// 放置预览线（指示新Component的插入位置）
 // ================================================================
 
 const dropPreviewLine = computed(() => dragStore.dropPreviewLine);
@@ -464,10 +509,10 @@ const dropPreviewLineStyle = computed(() => {
 });
 
 // ================================================================
-// 事件处理
+// Event处理
 // ================================================================
 
-/** 点击空白区域取消选中 */
+/** 点击空白RegionCancel选中 */
 function handleOverlayClick(e: MouseEvent) {
   if (e.target === overlayRef.value) {
     editorStore.clearSelection();
@@ -475,8 +520,8 @@ function handleOverlayClick(e: MouseEvent) {
 }
 
 /**
- * 交互式容器 hitArea click — 将点击穿透到实际 UI（tab headers 等）。
- * hitArea 拦截了 mousedown（用于拖拽检测），click 事件需要手动转发给底层 UI。
+ * 交互式Container hitArea click — 将点击穿透到实际 UI（tab headers 等）。
+ * hitArea 拦截了 mousedown（用于拖拽检测）, click Event需要手动转发给底层 UI。
  */
 function handleInteractiveClick(e: MouseEvent, _widget: Widget) {
   const hitArea = e.currentTarget as HTMLElement;
@@ -490,10 +535,11 @@ function handleInteractiveClick(e: MouseEvent, _widget: Widget) {
   }
 }
 
-/** Widget 上 mousedown — 区分点击和拖拽 */
+/** Widget 上 mousedown — 区Min点击和拖拽；LockHrs仅允许选中 */
 function handleWidgetMouseDown(e: MouseEvent, widget: Widget) {
   e.stopPropagation();
   editorStore.select(widget.id);
+  if (widget.locked) return;
 
   const startX = e.clientX;
   const startY = e.clientY;
@@ -555,6 +601,8 @@ function handleWidgetMouseDown(e: MouseEvent, widget: Widget) {
 function handleHandleMouseDown(e: MouseEvent, handle: ResizeHandle) {
   e.stopPropagation();
   if (!editorStore.selectedId) return;
+  const selected = widgetStore.findWidget(editorStore.selectedId);
+  if (selected?.locked) return;
   startResize(editorStore.selectedId, handle, e.clientX, e.clientY);
 
   const onMouseMove = (me: MouseEvent) => {
@@ -571,7 +619,7 @@ function handleHandleMouseDown(e: MouseEvent, handle: ResizeHandle) {
   document.addEventListener("mouseup", onMouseUp);
 }
 
-/** 拖拽悬停（从面板拖入时更新位置） */
+/** 拖拽悬停（从面板拖入HrsUpdate位置） */
 let dragOverRafId: number | null = null;
 let pendingDragOverEvent: DragEvent | null = null;
 
@@ -588,14 +636,19 @@ function processDragOver() {
 
 function handleDragOver(e: DragEvent) {
   e.preventDefault();
-  // 面板拖入：首次 dragover 时启动拖拽跟踪，使碰撞检测和预览线在悬停阶段生效
+  // 面板拖入：首次 dragover Hrs启动拖拽跟踪, 使碰撞检测和预览线在悬停阶段生效
   if (!dragStore.isDragging) {
+    const types = e.dataTransfer?.types ?? [];
     const hasSchemaType =
-      e.dataTransfer?.types.includes("schema-type") ||
-      e.dataTransfer?.types.includes("application/schema-drag");
+      types.includes("schema-type") ||
+      types.includes("application/schema-drag") ||
+      Array.from(types).some((t) => t.startsWith("application/x-schema-type/"));
     if (hasSchemaType && overlayRef.value) {
-      // dragover 阶段无法读取 data，用临时 type 启动跟踪
-      dragStore.startDrag("panel", `preview_${Date.now()}`, "input");
+      // dragover 无法 getData, 从 MIME 名Parse真实 type（缺省 input）
+      const previewType =
+        (resolveSchemaTypeFromDragTypes(types) as SchemaType | undefined) ||
+        "input";
+      dragStore.startDrag("panel", `preview_${Date.now()}`, previewType);
     }
   }
   if (dragStore.isDragging) {
@@ -606,9 +659,9 @@ function handleDragOver(e: DragEvent) {
   }
 }
 
-/** 拖拽离开画布区域时清理预览状态 */
+/** 拖拽离开画布RegionHrs清理预览Status */
 function handleDragLeave(e: DragEvent) {
-  // 只在真正离开 overlay 区域时清理（避免子元素触发的 leave 事件）
+  // 只在真正离开 overlay RegionHrs清理（避免子元素Trigger的 leave Event）
   const relatedTarget = e.relatedTarget as HTMLElement | null;
   if (relatedTarget && overlayRef.value?.contains(relatedTarget)) return;
   if (dragStore.isDragging && dragStore.dragSource === "panel") {
@@ -629,7 +682,7 @@ function handleDrop(e: DragEvent) {
     | import("../../widgets/base/types").SchemaType
     | undefined;
   if (schemaType) {
-    // 如果 dragover 阶段已经启动了拖拽跟踪，先结束再用正确的类型重新开始
+    // 如果 dragover 阶段已经启动了拖拽跟踪, 先结束再用正确的Type重新开始
     if (dragStore.isDragging) {
       dragStore.endDrag();
     }
@@ -641,7 +694,7 @@ function handleDrop(e: DragEvent) {
   endDrag();
 }
 
-/** 处理模板拖放到画布 */
+/** 处理Template拖放到画布 */
 async function handleTemplateDrop(
   templateId: string,
   clientX: number,
@@ -669,7 +722,7 @@ async function handleTemplateDrop(
       dropY = canvasPos.y;
     }
 
-    // 计算模板 widgets 的包围盒，用于偏移到放置点
+    // 计算Template widgets 的包围盒, 用于偏移到放置点
     if (widgets.length > 0) {
       const minX = Math.min(...widgets.map((w) => w.position?.x ?? 0));
       const minY = Math.min(...widgets.map((w) => w.position?.y ?? 0));
@@ -695,7 +748,7 @@ async function handleTemplateDrop(
         widgetStore.addWidget(w);
       }
     } else {
-      // 无位置信息的 widgets 直接添加
+      // 无位置Info的 widgets 直接添加
       for (const w of widgets) {
         widgetStore.addWidget(w);
       }
@@ -720,12 +773,12 @@ async function handleTemplateDrop(
     @dragleave="handleDragLeave"
     @drop="handleDrop"
   >
-    <!-- 渲染层：事件穿透由 hitArea 层控制 -->
+    <!-- 渲染层：Event穿透由 hitArea 层控制 -->
     <div :class="styles.renderLayer">
       <SchemaRender :widgets="widgetStore.widgets" mode="edit" />
     </div>
 
-    <!-- 网格线层（自由布局 + snapToGrid 启用时显示） -->
+    <!-- 网格线层（自由Layout + snapToGrid EnableHrsShow） -->
     <div
       v-if="gridOverlayVisible"
       :class="styles.gridOverlay"
@@ -741,11 +794,17 @@ async function handleTemplateDrop(
       }"
     />
 
-    <!-- 透明交互层：递归遍历所有 Widget（含容器子组件），捕获点击和拖拽 -->
+    <!-- 透明交互层：递归遍历所有 Widget（含Container子Component）, 捕获点击和拖拽 -->
     <div
       v-for="fw in flatWidgets"
       :key="fw.widget.id"
-      :class="styles.hitArea"
+      :class="[
+        styles.hitArea,
+        {
+          [styles.hitAreaLocked]: fw.widget.locked,
+          [styles.hitAreaHidden]: fw.widget.hidden,
+        },
+      ]"
       :style="
         (() => {
           const d = getStyleSizeDelta(fw.widget);
@@ -769,7 +828,7 @@ async function handleTemplateDrop(
       @contextmenu.prevent="showContextMenu($event, fw.widget)"
     />
 
-    <!-- 容器高亮 -->
+    <!-- Container高亮 -->
     <div v-if="hoveredContainer" :style="containerHighlightStyle" />
 
     <!-- 放置预览线 -->
@@ -808,7 +867,7 @@ async function handleTemplateDrop(
       />
     </svg>
 
-    <!-- 右键上下文菜单 -->
+    <!-- 右键上下文Menu -->
     <WidgetContextMenu
       :visible="contextMenu.visible"
       :x="contextMenu.x"
@@ -818,10 +877,15 @@ async function handleTemplateDrop(
       @copy="handleCopyWidget"
       @copy-id="handleCopyId"
       @delete="handleDeleteWidget"
+      @bring-to-front="handleBringToFront"
+      @send-to-back="handleSendToBack"
+      @toggle-lock="handleToggleLock"
+      @toggle-hidden="handleToggleHidden"
       @open-event="handleOpenEvent"
       @open-rule="handleOpenRule"
       @open-api="handleOpenApi"
       @open-variables="handleOpenVariables"
+      @open-chart-linkage="handleOpenChartLinkage"
       @save-preview="handleSavePreview"
     />
   </div>

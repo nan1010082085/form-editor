@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * TenantFormDialog — 创建/编辑租户弹窗
+ * TenantFormDialog — 创建/Edit租户Dialog
  *
- * 支持 name, code, status, maxUsers, features 字段。
- * 编辑模式下传入 initialData 预填表单。
+ * 支持 name, code, status, maxUsers, features Field。
+ * Edit模式下传入 initialData 预填Form。
  */
 import { ref, watch, computed } from "vue";
 import { ElMessage } from "element-plus";

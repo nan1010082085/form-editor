@@ -1,16 +1,16 @@
 <script setup lang="ts">
 /**
- * SchemaVersionCompare — Schema 版本对比组件
+ * SchemaVersionCompare — Schema VersionCompareComponent
  *
  * 功能：
- * - 版本列表（按时间倒序）
- * - 选择两个版本进行对比
- * - 字段级变更高亮（新增/删除/修改/移动）
- * - 版本回滚
- * - 版本导出
+ * - VersionColumn表（按Hrs间倒序）
+ * - 选择两个Version进RowCompare
+ * - Field级变更高亮（Create/Delete/修改/移动）
+ * - VersionRollback
+ * - VersionExport
  *
  * 依赖：
- * - useSchemaVersionStore — 版本状态管理
+ * - useSchemaVersionStore — VersionStatus管理
  * - schemaDiff — Widget 树差异算法
  */
 import { ref, computed } from "vue";
@@ -31,19 +31,19 @@ const emit = defineEmits<{
   "version-loaded": [version: string];
 }>();
 
-// ---- 视图状态 ----
+// ---- ViewStatus ----
 
 type ViewMode = "list" | "compare";
 const viewMode = ref<ViewMode>("list");
 
-// ---- 格式化 ----
+// ---- Format ----
 
 function formatVersion(v: string): string {
   if (!v || v.length !== 14) return v;
   return `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)} ${v.slice(8, 10)}:${v.slice(10, 12)}:${v.slice(12, 14)}`;
 }
 
-// ---- 版本选择 ----
+// ---- Version选择 ----
 
 const selectedForCompare = ref<Set<string>>(new Set());
 
@@ -59,7 +59,7 @@ function toggleSelect(version: string) {
     }
     selectedForCompare.value.add(version);
   }
-  // 触发响应式更新
+  // Trigger响应式Update
   selectedForCompare.value = new Set(selectedForCompare.value);
 }
 
@@ -71,12 +71,12 @@ const canCompare = computed(() => selectedForCompare.value.size === 2);
 
 const selectedVersions = computed(() => Array.from(selectedForCompare.value));
 
-// ---- 进入对比 ----
+// ---- 进入Compare ----
 
 async function handleCompare() {
   if (selectedVersions.value.length !== 2) return;
 
-  // 排序：较早的放左边
+  // Sort：较早的放左边
   const sorted = [...selectedVersions.value].sort((a, b) => a.localeCompare(b));
 
   versionStore.selectForCompare(sorted[0], "left");
@@ -94,7 +94,7 @@ function handleBackToList() {
   selectedForCompare.value = new Set();
 }
 
-// ---- 版本回滚 ----
+// ---- VersionRollback ----
 
 async function handleRollback(version: string) {
   try {
@@ -128,7 +128,7 @@ async function handleRollback(version: string) {
   }
 }
 
-// ---- 版本导出 ----
+// ---- VersionExport ----
 
 function downloadJson(content: string, filename: string) {
   const blob = new Blob([content], { type: "application/json" });
@@ -153,7 +153,7 @@ async function handleExport(version: string) {
   }
 }
 
-// ---- 版本删除 ----
+// ---- VersionDelete ----
 
 async function handleDelete(entry: VersionEntry) {
   if (entry.published) {
@@ -189,7 +189,7 @@ async function handleDelete(entry: VersionEntry) {
   }
 }
 
-// ---- 刷新 ----
+// ---- Refresh ----
 
 function handleRefresh() {
   versionStore.loadVersions(versionStore.page);
@@ -284,7 +284,7 @@ function getSideLabel(version: string): string {
 }
 
 /**
- * 格式化变更值用于展示。
+ * Format变更Value用于展示。
  */
 function formatChangeValue(val: unknown): string {
   if (val === null || val === undefined)
@@ -310,10 +310,10 @@ function formatChangeValue(val: unknown): string {
       </el-button>
     </div>
 
-    <!-- 版本列表视图 -->
+    <!-- VersionColumn表View -->
     <template v-if="viewMode === 'list'">
       <div :class="$style.versionPanel">
-        <!-- 操作栏 -->
+        <!-- Action栏 -->
         <div :class="$style.versionHeader">
           <div :class="$style.versionHeaderLeft">
             <span :class="$style.versionTitle">{{
@@ -343,7 +343,7 @@ function formatChangeValue(val: unknown): string {
           </div>
         </div>
 
-        <!-- 列表 -->
+        <!-- Column表 -->
         <div :class="$style.versionList" style="overflow: auto; height: 100%">
           <div v-if="versionStore.loading" :class="$style.versionLoading">
             {{ t("editor.versionCompare.loading") }}
@@ -448,7 +448,7 @@ function formatChangeValue(val: unknown): string {
           </template>
         </div>
 
-        <!-- 分页 -->
+        <!-- Min页 -->
         <div
           v-if="versionStore.total > versionStore.pageSize"
           :class="$style.versionPagination"
@@ -465,10 +465,10 @@ function formatChangeValue(val: unknown): string {
       </div>
     </template>
 
-    <!-- 对比视图 -->
+    <!-- CompareView -->
     <template v-if="viewMode === 'compare'">
       <div :class="$style.comparePanel">
-        <!-- 对比头部 -->
+        <!-- Compare头部 -->
         <div :class="$style.compareHeader">
           <span :class="$style.compareTitle">{{
             t("editor.versionCompare.compareTitle")
@@ -483,7 +483,7 @@ function formatChangeValue(val: unknown): string {
           </el-button>
         </div>
 
-        <!-- 对比信息 -->
+        <!-- CompareInfo -->
         <div :class="$style.compareInfo">
           <span :class="$style.compareLabel">{{
             t("editor.versionCompare.oldVersion")
@@ -579,7 +579,7 @@ function formatChangeValue(val: unknown): string {
                   <div :class="$style.diffPath">{{ row.path }}</div>
                 </td>
                 <td :class="$style.diffTd">
-                  <!-- 修改的字段详情 -->
+                  <!-- 修改的FieldDetails -->
                   <div
                     v-if="row.status === 'modified' && row.changes?.length"
                     :class="$style.changesList"

@@ -7,9 +7,9 @@ export function createApprovalRolePickerWidget(id?: string): Widget {
     name: "FgApprovalRolePicker",
     type: "approval-role-picker",
     field: "approvalRole",
-    label: "审批角色",
+    label: "Approval Role",
     props: {
-      placeholder: "请选择审批角色",
+      placeholder: "Please selectApproval Role",
       clearable: true,
       multiple: false,
       apiBaseUrl: "",

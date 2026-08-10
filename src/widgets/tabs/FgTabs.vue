@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
- * FgTabs - 页签容器 Widget
+ * FgTabs - 页签Container Widget
  *
  * 职责：
- * - el-tabs 包裹，支持多标签页
- * - 渲染 tab headers（标签头）
+ * - el-tabs 包裹, 支持多Tab
+ * - 渲染 tab headers（Label头）
  *
- * 子组件渲染：
- * - free 模式：由 SchemaNode 的 childrenLayer 以绝对坐标定位，FgTabs 不消费 slot
- * - grid 模式：WidgetNode 通过默认 slot 传入当前页签的子节点，FgTabs 渲染在 tab 内容区
+ * 子Component渲染：
+ * - free 模式：由 SchemaNode 的 childrenLayer 以绝对坐标定位, FgTabs 不消费 slot
+ * - grid 模式：WidgetNode passed默认 slot 传入当前页签的子节点, FgTabs 渲染在 tab 内容区
  */
 import { inject, ref, computed, watch } from "vue";
 import { widgetDataKey } from "../base/types";
@@ -18,7 +18,7 @@ import styles from "./style.module.scss";
 const props = defineProps<{
   editable?: boolean;
   editorSelectable?: boolean;
-  /** grid 模式下由父级（WidgetNode）通过 slot 传入子节点并设为 true；free 模式（SchemaNode）不传，子节点由 childrenLayer 渲染 */
+  /** grid 模式下由父级（WidgetNode）passed slot 传入子节点并设为 true；free 模式（SchemaNode）不传, 子节点由 childrenLayer 渲染 */
   renderChildren?: boolean;
 }>();
 
@@ -61,8 +61,8 @@ const stretch = computed(() => Boolean(widgetData.value.props?.stretch));
 
 /**
  * 是否渲染默认 slot（子节点）。
- * - free 模式：SchemaNode 不传 renderChildren（默认 false），子节点由 childrenLayer 绝对定位渲染
- * - grid 模式：WidgetNode 传 renderChildren=true，通过 slot 传入子节点（编辑态过滤后+拖放区，预览态全量）
+ * - free 模式：SchemaNode 不传 renderChildren（默认 false）, 子节点由 childrenLayer 绝对定位渲染
+ * - grid 模式：WidgetNode 传 renderChildren=true, passed slot 传入子节点（Edit态Filter后+拖放区, 预览态全量）
  */
 const shouldRenderSlot = computed(() => Boolean(props.renderChildren));
 
@@ -92,7 +92,7 @@ defineExpose({ activeKey });
         :name="tab.key"
       />
     </el-tabs>
-    <!-- Grid 模式：渲染当前页签子节点（由 WidgetNode 通过默认 slot 传入） -->
+    <!-- Grid 模式：渲染当前页签子节点（由 WidgetNode passed默认 slot 传入） -->
     <div v-if="shouldRenderSlot" :class="styles.tabContent">
       <slot />
     </div>

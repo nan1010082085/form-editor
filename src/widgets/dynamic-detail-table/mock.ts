@@ -2,8 +2,8 @@ export const dynamicDetailTableMock = {
   kind: "record" as const,
   defaultProps: {
     columns: [
-      { prop: "name", label: "项目", type: "input" },
-      { prop: "amount", label: "金额", type: "number" },
+      { prop: "name", label: "Item", type: "input" },
+      { prop: "amount", label: "Amount", type: "number" },
     ],
   },
   staticData: {

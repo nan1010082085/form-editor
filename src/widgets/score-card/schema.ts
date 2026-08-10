@@ -7,7 +7,7 @@ export function createScoreCardWidget(id?: string): Widget {
     name: "FgScoreCard",
     type: "score-card",
     field: "scoreCard",
-    label: "评分卡",
+    label: "Score Card",
     props: {
       score: 0,
       maxScore: 100,

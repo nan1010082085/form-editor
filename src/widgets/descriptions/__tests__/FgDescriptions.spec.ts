@@ -10,9 +10,10 @@ import { widgetDataKey, widgetStyleKey } from "../../base/types";
 import FgDescriptions from "../FgDescriptions.vue";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 // Mock global fetch for API data source tests
 const mockFetch = vi.fn();
@@ -86,7 +87,7 @@ describe("FgDescriptions", () => {
     it("默认 title 为 详情", () => {
       const widget = createWidget("descriptions", "test_desc")!;
       store.addWidget(widget);
-      expect(widget.props?.title).toBe("详情");
+      expect(widget.props?.title).toBe("Details");
     });
 
     it("默认 column 为 2", () => {

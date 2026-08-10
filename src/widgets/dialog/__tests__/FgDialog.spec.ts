@@ -14,9 +14,10 @@ import {
 import FgDialog from "../FgDialog.vue";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 vi.mock("@/composables/useWidgetLifecycle", () => ({
   useWidgetLifecycle: () => ({
@@ -96,7 +97,7 @@ describe("FgDialog", () => {
     it("默认 title 属性", () => {
       const widget = createWidget("dialog", "test_dialog")!;
       store.addWidget(widget);
-      expect(widget.props?.title).toBe("弹窗标题");
+      expect(widget.props?.title).toBe("Dialog title");
     });
 
     it("默认 width 为 600px", () => {

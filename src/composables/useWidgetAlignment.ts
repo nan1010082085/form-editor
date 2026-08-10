@@ -1,5 +1,5 @@
 /**
- * useWidgetAlignment — 多选部件对齐、分布、锁定与隐藏
+ * useWidgetAlignment — 多选Widget对齐、Min布、Lock与Hide
  */
 import { useWidgetStore } from "@/stores/widget";
 import { useEditorStore } from "@/stores/editor";

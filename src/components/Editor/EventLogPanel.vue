@@ -1,16 +1,18 @@
 <script setup lang="ts">
 /**
- * EventLogPanel — 事件执行日志面板
+ * EventLogPanel — Event执RowLog面板
  *
- * 展示 useEventLog 捕获的事件/规则/API 执行日志。
+ * 展示 useEventLog 捕获的Event/Rule/API 执RowLog。
  */
-import { ref, nextTick, watch } from "vue";
+import { ref, nextTick, watch, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { useEventLog } from "../../composables/useEventLog";
 import styles from "./EventLogPanel.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
 const { entries, clear } = useEventLog();
 const scrollRef = ref<HTMLElement | null>(null);
+const { t } = useI18n();
 
 watch(
   () => entries.value.length,
@@ -32,21 +34,21 @@ const LEVEL_COLORS: Record<string, string> = {
   debug: "#c0c4cc",
 };
 
-const LEVEL_LABELS: Record<string, string> = {
-  event: "事件",
-  rule: "规则",
-  api: "API",
-  warn: "警告",
-  error: "错误",
-  info: "信息",
-  debug: "调试",
-};
+const LEVEL_LABELS = computed<Record<string, string>>(() => ({
+  event: t("editor.eventLog.levelEvent"),
+  rule: t("editor.eventLog.levelRule"),
+  api: t("editor.eventLog.levelApi"),
+  warn: t("editor.common.warning"),
+  error: t("editor.common.error"),
+  info: t("editor.common.info"),
+  debug: t("editor.eventLog.levelDebug"),
+}));
 </script>
 
 <template>
   <div :class="styles.panel">
     <div :class="styles.header">
-      <span :class="styles.title">执行日志</span>
+      <span :class="styles.title">{{ t('editor.toolbar.executionLog') }}</span>
       <span :class="styles.count">{{ entries.length }}</span>
       <el-button
         :class="styles.clearBtn"
@@ -56,11 +58,11 @@ const LEVEL_LABELS: Record<string, string> = {
         @click="clear"
       >
         <AppIcon name="delete" />
-        清空
+        {{ t('editor.toolbar.clear') }}
       </el-button>
     </div>
     <div ref="scrollRef" :class="styles.scroll">
-      <div v-if="entries.length === 0" :class="styles.empty">暂无日志</div>
+      <div v-if="entries.length === 0" :class="styles.empty">{{ t('editor.eventLog.noEntries') }}</div>
       <div v-for="entry in entries" :key="entry.id" :class="styles.entry">
         <span :class="styles.time">{{ entry.time }}</span>
         <span
@@ -69,7 +71,7 @@ const LEVEL_LABELS: Record<string, string> = {
             color: LEVEL_COLORS[entry.level] || 'var(--text-color-muted)',
           }"
         >
-          {{ LEVEL_LABELS[entry.level] || entry.level }}
+          {{ LEVEL_LABELS[entry.level] ?? entry.level }}
         </span>
         <span :class="styles.scope">[{{ entry.scope }}]</span>
         <span :class="styles.message">{{ entry.message }}</span>

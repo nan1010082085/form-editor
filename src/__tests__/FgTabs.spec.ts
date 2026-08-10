@@ -93,7 +93,7 @@ describe("FgTabs (widget)", () => {
       const wrapper = mountTabs();
       expect(wrapper.text()).toContain("基本信息");
       expect(wrapper.text()).toContain("审批信息");
-      expect(wrapper.text()).toContain("附件");
+      expect(wrapper.text()).toContain("Attachments");
     });
 
     it("renders correct number of tab panes", () => {

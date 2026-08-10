@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * EditorViewRightPanel — 右侧属性面板子组件
+ * EditorViewRightPanel — 右侧Property面板子Component
  *
- * 从 EditorView.vue 拆分而来，负责渲染右侧属性面板区域。
+ * 从 EditorView.vue 拆Min而来, 负责渲染右侧Property面板Region。
  * 包含可见性切换的动画逻辑。
  */
 import PropertyPanel from "@/components/Editor/PropertyPanel.vue";

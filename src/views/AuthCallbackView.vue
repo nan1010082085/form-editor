@@ -1,13 +1,14 @@
 <template>
   <div :class="$style.callback">
     <AppIcon name="loading" :class="$style.spinner" :size="32" />
-    <p :class="$style.text">正在完成登录...</p>
+    <p :class="$style.text">{{ t('editor.errorPage.authCompleting') }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useI18n } from "@schema-platform/platform-shared";
 import {
   SSOClient,
   resolveSsoRedirectUri,
@@ -22,6 +23,7 @@ import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.
 
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 
 onMounted(async () => {
   const origin = window.location.origin;
@@ -43,7 +45,7 @@ onMounted(async () => {
 
     let redirect = route.query.redirect as string | undefined;
 
-    // 避免路径重复：如果 redirect 以 router base 开头，去掉 base 前缀
+    // 避免路径重复：如果 redirect 以 router base 开头, 去掉 base 前缀
     if (redirect) {
       const base = import.meta.env.BASE_URL || "/";
       if (base !== "/" && redirect.startsWith(base)) {

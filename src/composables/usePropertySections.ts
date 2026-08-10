@@ -1,13 +1,13 @@
 /**
- * usePropertySections - 构建属性面板分区列表
+ * usePropertySections - 构建Property面板Min区Column表
  *
- * 从 PropertyPanel 抽出的核心逻辑：根据 widget 配置声明 + 布局模式，
- * 组装 basic / position / grid-layout / style / props 五个分区。
+ * 从 PropertyPanel 抽出的核心逻辑：根据 widget Config声明 + Layout模式, 
+ * 组装 basic / position / grid-layout / style / props 五个Min区。
  *
  * 设计：
- * - 纯函数式组装，依赖通过参数注入（selectedWidget/panelDeclaration/t/stores）
- * - layoutMode 决定 position(free) vs grid-layout(grid) 分支
- * - row-container 子节点额外暴露 span 字段
+ * - 纯函数式组装, 依赖passedParams注入（selectedWidget/panelDeclaration/t/stores）
+ * - layoutMode 决定 position(free) vs grid-layout(grid) Min支
+ * - row-container 子节点额外暴露 span Field
  */
 import { computed, type ComputedRef } from "vue";
 import type { TranslateFn } from "@/components/WidgetRenderer/types";
@@ -37,6 +37,10 @@ export interface PropertyItem {
   visibleOn?: string;
   unit?: string;
   unitKey?: string;
+  /** number Type：MinValue */
+  min?: number;
+  /** number Type：MaxValue */
+  max?: number;
 }
 
 export interface PropertySection {
@@ -162,8 +166,8 @@ export function usePropertySections(
   }
 
   /**
-   * 翻译 Widget 属性标签
-   * 优先使用 editor.widgetProps.${propKey} 的翻译，回退到原始标签
+   * 翻译 Widget PropertyLabel
+   * 优先使用 editor.widgetProps.${propKey} 的翻译, 回退到原始Label
    */
   function translateWidgetPropLabel(
     propKey: string,
@@ -176,8 +180,8 @@ export function usePropertySections(
   }
 
   /**
-   * 翻译 Widget 属性描述
-   * 优先使用 editor.widgetProps.${propKey}Desc 的翻译，回退到原始描述
+   * 翻译 Widget PropertyDescription
+   * 优先使用 editor.widgetProps.${propKey}Desc 的翻译, 回退到原始Description
    */
   function translateWidgetPropDesc(
     propKey: string,
@@ -196,7 +200,7 @@ export function usePropertySections(
     const panel = panelDeclaration.value;
     const widget = selectedWidget.value;
 
-    // 1. 基础属性
+    // 1. 基础Property
     const basicItems: PropertyItem[] = [];
     if (panel.basic) {
       for (const prop of panel.basic) {
@@ -224,7 +228,7 @@ export function usePropertySections(
       });
     }
 
-    // 2. 位置属性（Grid 流式布局无绝对坐标）
+    // 2. 位置Property（Grid 流式Layout无绝对坐标）
     if (boardStore.layoutMode !== "grid") {
       sections.push({
         key: "position",
@@ -277,9 +281,84 @@ export function usePropertySections(
       });
     }
 
-    // 2b. Grid 布局属性（仅Grid 模式）
-    // Grid 模式为纵向流式堆叠，部件宽度通过 style.width 控制（如 100%/50%/240px）。
-    // row-container 子节点额外暴露 span（1-24 栅格），由父容器决定单元格宽度。
+    // 2a. 响应式位置覆盖（仅 free 模式, 预览/发布态生效）
+    if (boardStore.layoutMode !== "grid") {
+      const rp = widget.responsivePosition ?? {};
+      const tablet = rp.tablet ?? {};
+      const mobile = rp.mobile ?? {};
+      sections.push({
+        key: "responsive",
+        label: t("editor.property.responsive"),
+        items: [
+          {
+            key: "responsivePosition.tablet.x",
+            label: t("editor.property.responsiveTabletX"),
+            type: "number",
+            value: tablet.x ?? "",
+            desc: t("editor.property.responsiveTabletDesc"),
+          },
+          {
+            key: "responsivePosition.tablet.y",
+            label: t("editor.property.responsiveTabletY"),
+            type: "number",
+            value: tablet.y ?? "",
+          },
+          {
+            key: "responsivePosition.tablet.w",
+            label: t("editor.property.responsiveTabletW"),
+            type: "number",
+            value: tablet.w ?? "",
+          },
+          {
+            key: "responsivePosition.tablet.h",
+            label: t("editor.property.responsiveTabletH"),
+            type: "number",
+            value: tablet.h ?? "",
+          },
+          {
+            key: "responsivePosition.tablet.hidden",
+            label: t("editor.property.responsiveTabletHidden"),
+            type: "switch",
+            value: tablet.hidden ?? false,
+          },
+          {
+            key: "responsivePosition.mobile.x",
+            label: t("editor.property.responsiveMobileX"),
+            type: "number",
+            value: mobile.x ?? "",
+            desc: t("editor.property.responsiveMobileDesc"),
+          },
+          {
+            key: "responsivePosition.mobile.y",
+            label: t("editor.property.responsiveMobileY"),
+            type: "number",
+            value: mobile.y ?? "",
+          },
+          {
+            key: "responsivePosition.mobile.w",
+            label: t("editor.property.responsiveMobileW"),
+            type: "number",
+            value: mobile.w ?? "",
+          },
+          {
+            key: "responsivePosition.mobile.h",
+            label: t("editor.property.responsiveMobileH"),
+            type: "number",
+            value: mobile.h ?? "",
+          },
+          {
+            key: "responsivePosition.mobile.hidden",
+            label: t("editor.property.responsiveMobileHidden"),
+            type: "switch",
+            value: mobile.hidden ?? false,
+          },
+        ],
+      });
+    }
+
+    // 2b. Grid LayoutProperty（仅Grid 模式）
+    // Grid 模式为纵向流式堆叠, WidgetWidthpassed style.width 控制（如 100%/50%/240px）。
+    // row-container 子节点额外暴露 span（1-24 栅格）, 由父Container决定单元格Width。
     if (boardStore.layoutMode === "grid") {
       const items: PropertyItem[] = [
         {
@@ -311,7 +390,7 @@ export function usePropertySections(
           desc: t("editor.property.marginBottomDesc"),
         },
       ];
-      // 父容器为 row-container 时，暴露栅格 span（1-24）
+      // 父Container为 row-container Hrs, 暴露栅格 span（1-24）
       const parent = widget.id ? widgetStore.findParent(widget.id) : null;
       if (parent?.type === "row-container") {
         const currentSpan = typeof widget.span === "number" ? widget.span : 24;
@@ -321,15 +400,20 @@ export function usePropertySections(
           type: "number",
           value: currentSpan,
           desc: t("editor.property.spanDesc"),
+          min: 1,
+          max: 24,
         });
       } else if (!parent) {
-        // 根级 widget：暴露 gridSpan（跨列数），-1 = 撑满剩余列
+        // 根级 widget：暴露 gridSpan（跨Column数）, -1 = 撑满剩余Column
+        const maxColumns = boardStore.canvas.gridLayout?.maxColumns ?? 12;
         items.push({
           key: "gridSpan",
           label: t("editor.property.gridSpan"),
           type: "number",
           value: widget.gridSpan ?? -1,
           desc: t("editor.property.gridSpanDesc"),
+          min: -1,
+          max: Math.max(1, maxColumns),
         });
       }
       sections.push({
@@ -339,7 +423,7 @@ export function usePropertySections(
       });
     }
 
-    // 3. 样式属性
+    // 3. StyleProperty
     const styleProps = [...publicStylePanel, ...(panel.style ?? [])];
     const uniqueStyleProps = [...new Set(styleProps)];
     const styleItems: PropertyItem[] = [];
@@ -350,7 +434,7 @@ export function usePropertySections(
         label: styleLabel,
         type: getStyleInputType(prop),
         value: widget.style?.[prop],
-        desc: `组件${styleLabel}`,
+        desc: t("editor.property.styleDesc", { label: styleLabel }),
         options: getStyleOptions(prop),
       });
     }
@@ -362,7 +446,7 @@ export function usePropertySections(
       });
     }
 
-    // 4. 组件属性
+    // 4. ComponentProperty
     const propItems: PropertyItem[] = [];
     if (panel.props) {
       for (const prop of panel.props) {

@@ -1,4 +1,4 @@
-/** S-05 — 公告 API 聚合层 */
+/** S-05 — 公告 API Aggregate层 */
 import { apiClient } from "@/utils/apiClient";
 
 export interface NoticeItem {

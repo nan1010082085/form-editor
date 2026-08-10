@@ -5,9 +5,9 @@ export const userManagementMock: TableWidgetMock = {
   total: 4,
   rows: [
     {
-      _id: "u001",
+      id: "u001",
       username: "zhangsan",
-      displayName: "张三",
+      displayName: "Zhang San",
       roles: ["admin"],
       tenantId: "default",
       deptId: "dept-rd",
@@ -18,9 +18,9 @@ export const userManagementMock: TableWidgetMock = {
       updatedAt: "2026-06-20T10:00:00.000Z",
     },
     {
-      _id: "u002",
+      id: "u002",
       username: "lisi",
-      displayName: "李四",
+      displayName: "Li Si",
       roles: ["editor"],
       tenantId: "default",
       deptId: "dept-product",
@@ -31,9 +31,9 @@ export const userManagementMock: TableWidgetMock = {
       updatedAt: "2026-06-18T14:20:00.000Z",
     },
     {
-      _id: "u003",
+      id: "u003",
       username: "wangwu",
-      displayName: "王五",
+      displayName: "Wang Wu",
       roles: ["viewer"],
       tenantId: "default",
       deptId: "dept-hr",
@@ -44,9 +44,9 @@ export const userManagementMock: TableWidgetMock = {
       updatedAt: "2026-05-30T16:45:00.000Z",
     },
     {
-      _id: "u004",
+      id: "u004",
       username: "zhaoliu",
-      displayName: "赵六",
+      displayName: "Zhao Liu",
       roles: ["editor"],
       tenantId: "default",
       deptId: "dept-rd",

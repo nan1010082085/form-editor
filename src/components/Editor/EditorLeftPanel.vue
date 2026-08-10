@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * EditorLeftPanel — 编辑器左侧面板
+ * EditorLeftPanel — Edit器左侧面板
  *
- * 部件库标签页 + 结构树标签页 + 模板标签页
+ * Widget库Tab + 结构树Tab + TemplateTab
  */
 import { ref } from "vue";
 import { ElMessage } from "element-plus";

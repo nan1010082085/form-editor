@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * MicroAppWidget — 微应用嵌入 Widget（编辑器占位）
+ * MicroAppWidget — 微应用嵌入 Widget（Edit器占位）
  *
- * 在编辑器画布中显示为灰色占位容器，
- * 预览/发布时由运行时渲染器通过 <micro-app> 标签加载实际微应用。
+ * 在Edit器画布中Show为灰色占位Container, 
+ * 预览/发布Hrs由运RowHrs渲染器passed <micro-app> Label加载实际微应用。
  */
 import { inject, computed } from "vue";
 import { widgetDataKey } from "../base/types";

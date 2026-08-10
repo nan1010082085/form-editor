@@ -2,8 +2,8 @@
 /**
  * KeyUsageAuditView — Key 使用审计页
  *
- * 展示 API Key 的使用记录和统计信息。
- * 支持按 Key 和按工作流统计。
+ * 展示 API Key 的使用记录和StatisticsInfo。
+ * 支持按 Key 和按工作流Statistics。
  */
 import { onMounted, ref, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
@@ -24,12 +24,12 @@ import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.
 
 const { t } = useI18n();
 
-// ── 状态 ──
+// ── Status ──
 const activeTab = ref<"logs" | "by-key" | "by-workflow">("logs");
 const loading = ref(false);
 const dateRange = ref<[string, string] | null>(null);
 
-// 日志列表
+// LogColumn表
 const logs = ref<KeyUsageLogItem[]>([]);
 const pagination = ref({
   page: 1,
@@ -38,13 +38,13 @@ const pagination = ref({
   totalPages: 0,
 });
 
-// 按 Key 统计
+// 按 Key Statistics
 const statsByKey = ref<KeyUsageStatsByKey[]>([]);
 
-// 按工作流统计
+// 按工作流Statistics
 const statsByWorkflow = ref<KeyUsageStatsByWorkflow[]>([]);
 
-// ── 计算属性 ──
+// ── 计算Property ──
 const totalRequests = computed(() => {
   if (activeTab.value === "by-key") {
     return statsByKey.value.reduce((sum, s) => sum + s.totalRequests, 0);
@@ -81,7 +81,7 @@ const avgDuration = computed(() => {
   return Math.round(totalDuration / totalRequests);
 });
 
-// ── 数据加载 ──
+// ── Data加载 ──
 async function loadLogs(): Promise<void> {
   loading.value = true;
   try {
@@ -357,7 +357,11 @@ function clearDateRange(): void {
                 {{ row.workflowName || "-" }}
               </template>
             </el-table-column>
-            <el-table-column prop="ip" label="IP" width="130" />
+            <el-table-column
+              prop="ip"
+              :label="t('editor.keyUsageAudit.colIp')"
+              width="130"
+            />
             <el-table-column
               prop="createdAt"
               :label="t('editor.keyUsageAudit.colTime')"

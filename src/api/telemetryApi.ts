@@ -1,19 +1,19 @@
 /**
- * Telemetry API - 关键行为埋点上报
+ * Telemetry API - 关键Row为埋点上报
  *
- * 采集编辑器关键路径行为（save/publish/delete/undo 等），上报到 server
+ * 采集Edit器关键路径Row为（save/publish/delete/undo 等）, 上报到 server
  * `/api/telemetry/events`（批量格式）。
  *
  * 对齐 server 契约（server/src/routes/telemetry.ts + schemas/telemetrySchemas.ts）：
  * - POST /api/telemetry/events  body: { events: [{ name, properties, timestamp }] }
- * - 事件名任意字符串（1-200），properties 自由 KV，timestamp 为 finite number
+ * - Event名任意字符串（1-200）, properties 自由 KV, timestamp 为 finite number
  * - 批量上限 100 条/次
  *
- * 降级策略：server 端点未就绪或上报失败时静默降级，不阻塞主流程、不抛错。
+ * 降级策略：server 端点未就绪或上报FailedHrs静默降级, 不阻塞主流程、不抛错。
  */
 import { apiClient } from "@/utils/apiClient";
 
-/** 埋点事件名（编辑器关键路径） */
+/** 埋点Event名（Edit器关键路径） */
 export type TelemetryEvent =
   | "save"
   | "publish"
@@ -26,19 +26,19 @@ export type TelemetryEvent =
   | "import"
   | "export";
 
-/** 编辑器侧埋点 payload（上报前转换为 server 契约） */
+/** Edit器侧埋点 payload（上报前Transform为 server 契约） */
 export interface TelemetryPayload {
-  /** 事件名 */
+  /** Event名 */
   event: TelemetryEvent;
-  /** Schema 实例 ID（可选，操作目标） */
+  /** Schema 实例 ID（可选, Action目标） */
   schemaId?: string;
-  /** 附加属性（如 widgetCount、mode、duration） */
+  /** 附加Property（如 widgetCount、mode、duration） */
   props?: Record<string, unknown>;
-  /** 客户端时间戳（ms epoch；未提供取 Date.now()） */
+  /** 客户端Hrs间戳（ms epoch；未提供取 Date.now()） */
   timestamp?: number;
 }
 
-/** server 单条事件契约 */
+/** server 单条Event契约 */
 interface ServerTelemetryEvent {
   name: string;
   properties: Record<string, unknown>;
@@ -47,7 +47,7 @@ interface ServerTelemetryEvent {
 
 const TELEMETRY_EVENTS_ENDPOINT = "/telemetry/events";
 
-/** 将编辑器 payload 转换为 server 事件契约 */
+/** 将Edit器 payload Transform为 server Event契约 */
 function toServerEvent(payload: TelemetryPayload): ServerTelemetryEvent {
   const properties: Record<string, unknown> = { ...payload.props };
   if (payload.schemaId) properties.schemaId = payload.schemaId;
@@ -59,10 +59,10 @@ function toServerEvent(payload: TelemetryPayload): ServerTelemetryEvent {
 }
 
 /**
- * 上报单个埋点事件。
+ * 上报单个埋点Event。
  *
- * server `/api/telemetry/events` 要求批量格式（events 数组），单条上报包一层数组。
- * 失败时静默降级（console.debug），不抛错、不阻塞调用方。
+ * server `/api/telemetry/events` 要求批量格式（events 数组）, 单条上报包一层数组。
+ * FailedHrs静默降级（console.debug）, 不抛错、不阻塞调用方。
  */
 export async function reportTelemetry(
   event: TelemetryEvent,
@@ -76,15 +76,15 @@ export async function reportTelemetry(
   try {
     await apiClient.post(TELEMETRY_EVENTS_ENDPOINT, { events: [serverEvent] });
   } catch (err) {
-    // 降级：埋点失败不影响业务，仅 debug 级日志
+    // 降级：埋点Failed不影响业务, 仅 debug 级Log
     console.debug("[telemetry] report failed (degraded):", err);
   }
 }
 
 /**
- * 批量上报埋点事件（用于离线缓存后集中上报）。
+ * 批量上报埋点Event（用于离线Cache后集中上报）。
  *
- * server 单次上限 100 条，超出分片上报。
+ * server 单次上限 100 条, 超出Min片上报。
  */
 export async function reportTelemetryBatch(
   events: TelemetryPayload[],
@@ -103,10 +103,10 @@ export async function reportTelemetryBatch(
 }
 
 /**
- * 上报渲染/运行时错误到 server `/api/telemetry/errors`。
+ * 上报渲染/运RowHrsError到 server `/api/telemetry/errors`。
  *
  * 对齐 server 契约：body: { message, stack?, context?, timestamp? }
- * 失败时静默降级（不抛错、不阻塞）。
+ * FailedHrs静默降级（不抛错、不阻塞）。
  */
 export async function reportTelemetryError(
   message: string,
@@ -125,7 +125,7 @@ export async function reportTelemetryError(
   }
 }
 
-/** 编辑器事件聚合看板返回结构（对齐 server GET /api/telemetry/editor-summary） */
+/** Edit器EventAggregateKanban返回结构（对齐 server GET /api/telemetry/editor-summary） */
 export interface EditorTelemetrySummary {
   hours: number;
   since: string;
@@ -137,9 +137,9 @@ export interface EditorTelemetrySummary {
 }
 
 /**
- * 拉取编辑器事件聚合看板数据。
+ * 拉取Edit器EventAggregateKanbanData。
  *
- * GET /api/telemetry/editor-summary?hours=168（默认 7 天）
+ * GET /api/telemetry/editor-summary?hours=168（默认 7 day）
  */
 export async function fetchEditorTelemetrySummary(
   hours = 168,

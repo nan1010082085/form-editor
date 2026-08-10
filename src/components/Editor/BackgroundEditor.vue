@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * BackgroundEditor — 背景编辑器
- * 支持纯色/渐变/背景图片
+ * BackgroundEditor — BackgroundEdit器
+ * 支持纯色/渐变/Background图片
  */
 import { ref, watch } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";

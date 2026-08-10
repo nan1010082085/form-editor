@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
- * FgForm — 表单容器 Widget（完整版）
+ * FgForm — FormContainer Widget（完整版）
  *
  * 职责：
- * - 包裹 el-form，提供表单布局和校验能力
- * - 渲染子组件（通过 slot 接收 SchemaNode 传入的 children）
- * - 收集子组件字段值、校验、提交/重置
- * - provide 表单上下文（formRef + formModel + updateField）给子组件
- * - 集成 useWidgetLifecycle 生命周期钩子
- * - 支持 loadApi 远程数据加载
+ * - 包裹 el-form, 提供FormLayout和Validate能力
+ * - 渲染子Component（passed slot 接收 SchemaNode 传入的 children）
+ * - 收集子ComponentFieldValue、Validate、Submit/Reset
+ * - provide Form上下文（formRef + formModel + updateField）给子Component
+ * - 集成 useWidgetLifecycle 生命week期钩子
+ * - 支持 loadApi 远程Data加载
  */
 import {
   inject,
@@ -49,10 +49,10 @@ useExposeWidget(() => ({
 // ---- ElForm ref ----
 const formRef = ref<FormInstance>();
 
-// ---- 表单数据模型 ----
+// ---- FormData模型 ----
 const formModel = reactive<Record<string, unknown>>({});
 
-/** 递归收集所有后代 Widget 的字段值到 formModel */
+/** 递归收集所有后代 Widget 的FieldValue到 formModel */
 function syncModel(widgets: Widget[]): void {
   for (const w of widgets) {
     if (w.field) {
@@ -64,12 +64,12 @@ function syncModel(widgets: Widget[]): void {
   }
 }
 
-/** 校验前将 widget.defaultValue 同步到 el-form model */
+/** Validate前将 widget.defaultValue Sync到 el-form model */
 function syncFromWidgets() {
   syncModel(widgetData.value.children ?? []);
 }
 
-/** 监听 children 变化，保持 formModel 与 widget 值同步 */
+/** 监听 children 变化, 保持 formModel 与 widget ValueSync */
 watch(
   () => widgetData.value.children,
   (children) => {
@@ -78,7 +78,7 @@ watch(
   { immediate: true, deep: true },
 );
 
-/** updateField — 子组件通过 inject(formContextKey) 调用 */
+/** updateField — 子Componentpassed inject(formContextKey) 调用 */
 function updateField(field: string, value: unknown) {
   const oldValue = formModel[field];
   formModel[field] = value;
@@ -87,10 +87,10 @@ function updateField(field: string, value: unknown) {
   }
 }
 
-// ---- Provide 表单上下文 ----
+// ---- Provide Form上下文 ----
 provide(formContextKey, { formRef, formModel, updateField });
 
-// ---- 注册到 WidgetRenderer 表单聚合表（absolute 布局） ----
+// ---- 注册到 WidgetRenderer FormAggregate表（absolute Layout） ----
 const formRegistry = inject(FORM_REGISTRY_KEY, null);
 
 const { trigger } = useWidgetLifecycle(widgetData, formModel);
@@ -123,7 +123,7 @@ onUnmounted(() => {
   }
 });
 
-// ---- loadApi 远程数据加载 ----
+// ---- loadApi 远程Data加载 ----
 async function loadRemoteData() {
   const api = widgetData.value.api;
   if (!api) return;

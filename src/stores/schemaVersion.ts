@@ -1,22 +1,22 @@
 /**
- * useSchemaVersionStore — Schema 版本管理状态
+ * useSchemaVersionStore — Schema Version管理Status
  *
  * 职责：
- * - 版本列表的获取与分页
- * - 版本详情加载
- * - 两个版本间的 diff 计算
- * - 版本回滚
+ * - VersionColumn表的获取与Min页
+ * - VersionDetails加载
+ * - 两个Version间的 diff 计算
+ * - VersionRollback
  *
  * 设计原则：
- * - 纯版本管理，不持有画布状态
- * - 异步操作用 loading/error 模式管理
- * - 与 apiClient 解耦：调用 apiClient 中已有的版本 API
+ * - 纯Version管理, 不持有画布Status
+ * - AsyncAction用 loading/error 模式管理
+ * - 与 apiClient 解耦：调用 apiClient 中已有的Version API
  */
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { VersionEntry, SchemaDetail } from "@/types/api";
 import type { DiffResult } from "@/utils/schemaDiff";
-import { ApiError } from "@/utils/apiClient";
+import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import {
   fetchVersions as apiFetchVersions,
   fetchVersion as apiFetchVersion,
@@ -27,45 +27,45 @@ import { parseSchemaJson } from "@/utils/parseSchemaJson";
 
 export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   // ================================================================
-  // 状态
+  // Status
   // ================================================================
 
-  /** 版本列表 */
+  /** VersionColumn表 */
   const versions = ref<VersionEntry[]>([]);
 
-  /** 当前版本号 */
+  /** 当前Version号 */
   const currentVersion = ref("");
 
-  /** editId — 版本查询主键 */
+  /** editId — VersionQuery主键 */
   const editId = ref("");
 
-  /** 加载中标志 */
+  /** Loading标志 */
   const loading = ref(false);
 
-  /** 最近一次错误信息 */
+  /** 最近一次ErrorInfo */
   const error = ref("");
 
-  /** 分页 */
+  /** Min页 */
   const page = ref(1);
   const pageSize = ref(20);
   const total = ref(0);
 
-  /** 选中对比的两个版本 */
+  /** 选中Compare的两个Version */
   const compareLeft = ref<string>("");
   const compareRight = ref<string>("");
 
-  /** 对比的两个版本详情 */
+  /** Compare的两个VersionDetails */
   const leftDetail = ref<SchemaDetail | null>(null);
   const rightDetail = ref<SchemaDetail | null>(null);
 
   /** diff 结果 */
   const diffResult = ref<DiffResult | null>(null);
 
-  /** 对比详情加载中 */
+  /** CompareDetailsLoading */
   const compareLoading = ref(false);
 
   // ================================================================
-  // 计算属性
+  // 计算Property
   // ================================================================
 
   const hasVersions = computed(() => versions.value.length > 0);
@@ -74,7 +74,7 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
 
   const hasError = computed(() => error.value !== "");
 
-  /** 是否已选中两个版本 */
+  /** 是否已选中两个Version */
   const canCompare = computed(
     () => !!compareLeft.value && !!compareRight.value,
   );
@@ -116,13 +116,7 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
     try {
       return await fn();
     } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message);
-      } else if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
+      setError(resolveApiErrorMessage(e));
       return null;
     } finally {
       loading.value = false;
@@ -130,11 +124,11 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   }
 
   // ================================================================
-  // 版本列表操作
+  // VersionColumn表Action
   // ================================================================
 
   /**
-   * 设置当前 editId 并加载版本列表。
+   * Settings当前 editId 并加载VersionColumn表。
    */
   async function init(
     editIdParam: string,
@@ -148,7 +142,7 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   }
 
   /**
-   * 加载版本列表。
+   * 加载VersionColumn表。
    */
   async function loadVersions(targetPage = 1): Promise<void> {
     if (!editId.value) return;
@@ -172,11 +166,11 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   }
 
   // ================================================================
-  // 版本对比操作
+  // VersionCompareAction
   // ================================================================
 
   /**
-   * 选择要对比的版本。
+   * 选择要Compare的Version。
    */
   function selectForCompare(version: string, side: "left" | "right"): void {
     if (side === "left") {
@@ -200,8 +194,8 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   }
 
   /**
-   * 执行版本对比。
-   * 加载两个版本的完整 Schema，然后调用 diffSchema 计算差异。
+   * 执RowVersionCompare。
+   * 加载两个Version的完整 Schema, 然后调用 diffSchema 计算差异。
    */
   async function executeCompare(): Promise<boolean> {
     if (!compareLeft.value || !compareRight.value) return false;
@@ -225,13 +219,7 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
       diffResult.value = diffSchema(leftWidgets, rightWidgets);
       return true;
     } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message);
-      } else if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("对比失败");
-      }
+      setError(resolveApiErrorMessage(e));
       return false;
     } finally {
       compareLoading.value = false;
@@ -239,12 +227,12 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   }
 
   // ================================================================
-  // 版本回滚
+  // VersionRollback
   // ================================================================
 
   /**
-   * 回滚到指定版本（加载该版本的 Schema）。
-   * 返回该版本的 SchemaDetail，调用方负责将其写入 WidgetStore。
+   * Rollback到指定Version（加载该Version的 Schema）。
+   * 返回该Version的 SchemaDetail, 调用方负责将其写入 WidgetStore。
    */
   async function rollbackToVersion(
     version: string,
@@ -263,11 +251,11 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   }
 
   // ================================================================
-  // 版本删除
+  // VersionDelete
   // ================================================================
 
   /**
-   * 删除指定版本。
+   * Delete指定Version。
    */
   async function removeVersion(version: string): Promise<boolean> {
     if (!editId.value) return false;
@@ -277,35 +265,29 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
     try {
       await apiDeleteVersion(editId.value, version);
 
-      // 从列表中移除
+      // 从Column表中移除
       versions.value = versions.value.filter((v) => v.version !== version);
       total.value = Math.max(0, total.value - 1);
 
-      // 如果删的是对比中的版本，清除对比状态
+      // 如果删的是Compare中的Version, 清除CompareStatus
       if (compareLeft.value === version) compareLeft.value = "";
       if (compareRight.value === version) compareRight.value = "";
 
       loading.value = false;
       return true;
     } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message);
-      } else if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
+      setError(resolveApiErrorMessage(e));
       return false;
     }
   }
 
   // ================================================================
-  // 版本导出
+  // VersionExport
   // ================================================================
 
   /**
-   * 导出指定版本的 Schema JSON。
-   * 返回 JSON 字符串，调用方负责下载。
+   * Export指定Version的 Schema JSON。
+   * 返回 JSON 字符串, 调用方负责下载。
    */
   async function exportVersion(version: string): Promise<string | null> {
     if (!editId.value) return null;
@@ -314,17 +296,13 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
       const detail = await apiFetchVersion(editId.value, version);
       return JSON.stringify(detail.json, null, 2);
     } catch (e: unknown) {
-      if (e instanceof ApiError) {
-        setError(e.message);
-      } else if (e instanceof Error) {
-        setError(e.message);
-      }
+      setError(resolveApiErrorMessage(e));
       return null;
     }
   }
 
   // ================================================================
-  // 重置
+  // Reset
   // ================================================================
 
   function reset(): void {
@@ -344,7 +322,7 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   }
 
   return {
-    // 状态
+    // Status
     versions,
     currentVersion,
     editId,
@@ -359,14 +337,14 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
     rightDetail,
     diffResult,
     compareLoading,
-    // 计算属性
+    // 计算Property
     hasVersions,
     isEmpty,
     hasError,
     canCompare,
     diffSummary,
     hasDiff,
-    // 操作
+    // Action
     init,
     loadVersions,
     goToPage,

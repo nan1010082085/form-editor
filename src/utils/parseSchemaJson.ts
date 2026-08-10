@@ -1,5 +1,5 @@
 /**
- * parseSchemaJson — 解析 schema JSON 字段
+ * parseSchemaJson — Parse schema JSON Field
  *
  * 支持两种格式：
  * - 新格式：{ widgets: Widget[], board: { canvas, variables, events } }

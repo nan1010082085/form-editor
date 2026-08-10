@@ -2,12 +2,12 @@
 /**
  * SchemaTree — Schema 结构树面板
  *
- * 树形展示 schema 结构，支持：
- * - 容器节点可展开/折叠
- * - 点击节点选中对应画布组件
- * - 双向同步选中状态
- * - 可见性/锁定快捷操作（hover 显示）
- * - 拖拽排序
+ * 树形展示 schema 结构, 支持：
+ * - Container节点可Expand/折叠
+ * - 点击节点选中对应画布Component
+ * - 双向Sync选中Status
+ * - 可见性/Lock快捷Action（hover Show）
+ * - 拖拽Sort
  */
 import { computed, watch, ref } from "vue";
 import type {

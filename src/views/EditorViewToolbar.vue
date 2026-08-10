@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * EditorViewToolbar — 顶部工具栏子组件
+ * EditorViewToolbar — 顶部Toolbar子Component
  *
- * 从 EditorView.vue 拆分而来，负责渲染整个工具栏区域。
- * 直接访问全局 Store 读取状态，通过 emits 向父组件触发操作。
+ * 从 EditorView.vue 拆Min而来, 负责渲染整个ToolbarRegion。
+ * 直接访问全局 Store 读取Status, passed emits 向父ComponentTriggerAction。
  */
 import { ref, computed } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -15,6 +15,7 @@ import { useEditorStore } from "@/stores/editor";
 import { useWidgetStore } from "@/stores/widget";
 import { useSchemaValidation } from "@/composables/useSchemaValidation";
 import { useSchemaLoader } from "@/composables/useSchemaLoader";
+import { useAppLocale } from "@/composables/useAppLocale";
 import { fetchVersions, fetchVersion, deleteVersion } from "@/api/schemaApi";
 import type { VersionEntry } from "@/types/api";
 import type { InteractionMode } from "@/composables/useConstant";
@@ -57,11 +58,18 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const { t } = useI18n();
+const { locale, toggleLocale } = useAppLocale();
 const boardStore = useBoardStore();
 const editorStore = useEditorStore();
 const widgetStore = useWidgetStore();
 const { loadSchemaDetail } = useSchemaLoader();
 const validation = useSchemaValidation();
+
+const langButtonLabel = computed(() =>
+  locale.value === "zh-CN"
+    ? t("editor.toolbar.langEn")
+    : t("editor.toolbar.langZh"),
+);
 
 // ================================================================
 // Canvas size
@@ -105,19 +113,27 @@ function handleCustomSizeApply() {
 // Scale mode (publish/preview 自适应模式)
 // ================================================================
 
-const scaleModeOptions: Array<{ label: string; value: ScaleMode }> = [
-  { label: "等比适应", value: "contain" },
-  { label: "适应宽度", value: "fit-width" },
-  { label: "适应高度", value: "fit-height" },
-  { label: "拉伸填充", value: "stretch" },
-];
+/** 仅自由Layout：发布页 / 预览态真实套用 useCanvasScale */
+const showScaleMode = computed(() => boardStore.layoutMode === "free");
 
+const scaleModeOptions = computed<Array<{ label: string; value: ScaleMode }>>(
+  () => [
+    { label: t("editor.toolbar.scaleContain"), value: "contain" },
+    { label: t("editor.toolbar.scaleFitWidth"), value: "fit-width" },
+    { label: t("editor.toolbar.scaleFitHeight"), value: "fit-height" },
+    { label: t("editor.toolbar.scaleStretch"), value: "stretch" },
+  ],
+);
+
+/**
+ * @param mode - 自适应模式
+ */
 function handleScaleModeChange(mode: ScaleMode) {
   boardStore.updateCanvas({ scaleMode: mode });
 }
 
 // ================================================================
-// Layout mode：创建时由模板固定，工具栏仅展示当前模式，不可切换
+// Layout mode：创建Hrs由Template固定, Toolbar仅展示当前模式, 不可切换
 // ================================================================
 
 const layoutModeLabel = computed(() =>
@@ -210,7 +226,7 @@ async function handleDeleteVersion(entry: VersionEntry) {
 }
 
 // ================================================================
-// Toolbar-local actions (委托给 editorStore 组合操作)
+// Toolbar-local actions (委托给 editorStore 组合Action)
 // ================================================================
 
 function handleUndo() {
@@ -392,30 +408,33 @@ function handleClearCanvas() {
           ]"
           @click="emit('updateAiDrawer')"
         >
-          <span :class="styles.aiLabel">AI</span>
+          <AppIcon name="magic-stick" :size="14" />
         </button>
       </el-tooltip>
       <div :class="styles.divider" />
-      <div
-        :class="styles.modeBadge"
-        role="status"
-        :aria-label="
+      <el-tooltip
+        :content="
           t('editor.toolbar.layoutModeTooltip', {
             mode: layoutModeLabel,
           })
         "
-        :title="
-          t('editor.toolbar.layoutModeTooltip', {
-            mode: layoutModeLabel,
-          })
-        "
+        placement="bottom"
       >
-        <AppIcon
-          :name="boardStore.layoutMode === 'grid' ? 'grid' : 'aim'"
-          :size="14"
-        />
-        <span :class="styles.modeLabel">{{ layoutModeLabel }}</span>
-      </div>
+        <div
+          :class="[styles.iconBtn, styles.modeBadge]"
+          role="status"
+          :aria-label="
+            t('editor.toolbar.layoutModeTooltip', {
+              mode: layoutModeLabel,
+            })
+          "
+        >
+          <AppIcon
+            :name="boardStore.layoutMode === 'grid' ? 'grid' : 'aim'"
+            :size="14"
+          />
+        </div>
+      </el-tooltip>
       <div :class="styles.divider" />
       <el-tooltip
         :content="
@@ -436,7 +455,7 @@ function handleClearCanvas() {
           <AppIcon name="aim" :size="14" />
         </button>
       </el-tooltip>
-      <!-- 快捷键帮助 -->
+      <!-- 快捷键Help -->
       <el-popover placement="bottom" :width="300" trigger="click">
         <div :class="styles.shortcuts">
           <div :class="styles.shortcutsTitle">
@@ -583,14 +602,14 @@ function handleClearCanvas() {
         }}
       </span>
       <div :class="styles.divider" />
-      <!-- 响应式断点切换 -->
+      <!-- 预览断点：收窄视口Width, Grid 重排 / 自由Layout套自适应缩放 -->
       <div :class="styles.breakpointSwitcher">
         <button
           :class="[
             styles.iconBtn,
             { [styles.iconBtnActive]: previewBreakpoint === 'desktop' },
           ]"
-          title="桌面 (≥1024px)"
+          :title="t('editor.toolbar.breakpointDesktop')"
           @click="emit('updatePreviewBreakpoint', 'desktop')"
         >
           <AppIcon name="monitor" :size="14" />
@@ -600,7 +619,7 @@ function handleClearCanvas() {
             styles.iconBtn,
             { [styles.iconBtnActive]: previewBreakpoint === 'tablet' },
           ]"
-          title="平板 (≥768px)"
+          :title="t('editor.toolbar.breakpointTablet')"
           @click="emit('updatePreviewBreakpoint', 'tablet')"
         >
           <AppIcon name="iphone" :size="14" />
@@ -610,7 +629,7 @@ function handleClearCanvas() {
             styles.iconBtn,
             { [styles.iconBtnActive]: previewBreakpoint === 'mobile' },
           ]"
-          title="移动端 (<768px)"
+          :title="t('editor.toolbar.breakpointMobile')"
           @click="emit('updatePreviewBreakpoint', 'mobile')"
         >
           <AppIcon name="cellphone" :size="14" />
@@ -620,6 +639,14 @@ function handleClearCanvas() {
 
     <!-- Right: version + save + publish -->
     <div :class="styles.toolbarRight">
+      <button
+        :class="[styles.iconBtn, styles.langToggle]"
+        :title="t('editor.toolbar.language')"
+        @click="toggleLocale"
+      >
+        <span :class="styles.langBadge">{{ langButtonLabel }}</span>
+      </button>
+      <div :class="styles.divider" />
       <template v-if="mode === 'edit'">
         <!-- Canvas size -->
         <el-dropdown trigger="click" @command="handleCanvasSizeChange">
@@ -642,14 +669,21 @@ function handleClearCanvas() {
                 command="custom"
                 @click="showCustomSizeDialog = true"
               >
-                自定义尺寸...
+                {{ t("editor.toolbar.customSize") }}
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <!-- Scale mode -->
-        <el-dropdown trigger="click" @command="handleScaleModeChange">
-          <button :class="styles.iconBtn" title="发布视图自适应模式">
+        <!-- 自适应：仅自由Layout（发布页 + 预览态真实生效） -->
+        <el-dropdown
+          v-if="showScaleMode"
+          trigger="click"
+          @command="handleScaleModeChange"
+        >
+          <button
+            :class="styles.iconBtn"
+            :title="t('editor.toolbar.scaleModeTitle')"
+          >
             <AppIcon name="rank" :size="14" />
           </button>
           <template #dropdown>
@@ -870,7 +904,7 @@ function handleClearCanvas() {
           <AppIcon name="data-line" :size="14" />
         </button>
         <div :class="styles.divider" />
-        <!-- Schema 校验 -->
+        <!-- Schema Validate -->
         <el-popover
           placement="bottom-end"
           :width="420"
@@ -960,15 +994,15 @@ function handleClearCanvas() {
   <!-- Custom canvas size dialog -->
   <el-dialog
     v-model="showCustomSizeDialog"
-    title="自定义画布尺寸"
+    :title="t('editor.toolbar.customSizeTitle')"
     width="360px"
     append-to-body
   >
     <div style="display: flex; flex-direction: column; gap: 16px">
       <div style="display: flex; align-items: center; gap: 12px">
-        <span style="width: 40px; text-align: right; font-size: 13px"
-          >宽度</span
-        >
+        <span style="width: 40px; text-align: right; font-size: 13px">{{
+          t("editor.property.width")
+        }}</span>
         <el-input-number
           v-model="customWidth"
           :min="320"
@@ -982,9 +1016,9 @@ function handleClearCanvas() {
         >
       </div>
       <div style="display: flex; align-items: center; gap: 12px">
-        <span style="width: 40px; text-align: right; font-size: 13px"
-          >高度</span
-        >
+        <span style="width: 40px; text-align: right; font-size: 13px">{{
+          t("editor.property.height")
+        }}</span>
         <el-input-number
           v-model="customHeight"
           :min="240"
@@ -999,8 +1033,12 @@ function handleClearCanvas() {
       </div>
     </div>
     <template #footer>
-      <el-button @click="showCustomSizeDialog = false">取消</el-button>
-      <el-button type="primary" @click="handleCustomSizeApply">确定</el-button>
+      <el-button @click="showCustomSizeDialog = false">{{
+        t("editor.instances.cancel")
+      }}</el-button>
+      <el-button type="primary" @click="handleCustomSizeApply">{{
+        t("editor.common.confirm")
+      }}</el-button>
     </template>
   </el-dialog>
 </template>

@@ -7,7 +7,7 @@ export const approvalCommentConfig: WidgetConfig = {
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "120px", fontSize: "14px" },
   defaultProps: {
-    placeholder: "请输入审批意见",
+    placeholder: "Please enterApproval Comment",
     rows: 4,
     maxlength: 1000,
     showWordLimit: true,
@@ -18,7 +18,7 @@ export const approvalCommentConfig: WidgetConfig = {
     {
       key: "value",
       type: "string",
-      description: "输入的审批意见",
+      description: "Approval comment input",
       example: "",
     },
   ],
@@ -31,7 +31,7 @@ export const approvalCommentConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请输入审批意见",
+        default: "Please enterApproval Comment",
       },
       { key: "rows", label: "Rows", type: "number", default: 4 },
       { key: "maxlength", label: "Max Chars", type: "number", default: 1000 },

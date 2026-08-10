@@ -1,15 +1,16 @@
 /**
- * Action 执行器
- * 顺序执行按钮动作链，支持确认、API 调用、路由跳转等
+ * Action Execute器
+ * 顺序ExecuteButtonAction链, 支持Confirm、API 调用、Route跳转等
  */
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { SchemaAction, FormData } from "@/components/WidgetRenderer/types";
 import { apiClient } from "./apiClient";
 import { useLogger } from "@/composables/useLogger";
+import { tt } from "@/locales";
 
 const logger = useLogger("ActionExecutor");
 
-/** Action 执行上下文 */
+/** Action Execute上下文 */
 export interface ActionContext {
   emit: (event: string, payload?: unknown) => void;
   validate: () => Promise<boolean>;
@@ -26,7 +27,7 @@ export interface ActionContext {
   triggerUpload?: () => void;
 }
 
-/** 执行动作链 */
+/** ExecuteAction链 */
 export async function executeActions(
   actions: SchemaAction[],
   context: ActionContext,
@@ -34,30 +35,30 @@ export async function executeActions(
   for (const action of actions) {
     if (action.disabled) continue;
 
-    // 确认提示
+    // Confirm提示
     if (action.confirm) {
       try {
-        await ElMessageBox.confirm(action.confirm, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
+        await ElMessageBox.confirm(action.confirm, tt("editor.common.info"), {
+          confirmButtonText: tt("editor.common.confirm"),
+          cancelButtonText: tt("editor.common.cancel"),
           type: "warning",
         });
       } catch {
-        return; // 用户取消，中断整个链
+        return; // User cancelled, breaking chain
       }
     }
 
     try {
       await executeAction(action, context);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "操作失败";
+      const message = e instanceof Error ? e.message : tt("editor.common.failed");
       ElMessage.error(message);
-      return; // 出错中断
+      return; // Error break
     }
   }
 }
 
-/** 执行单个动作 */
+/** Execute单个Action */
 async function executeAction(
   action: SchemaAction,
   context: ActionContext,
@@ -102,7 +103,7 @@ async function executeAction(
       break;
 
     case "api": {
-      if (!action.apiUrl) throw new Error("API 地址未配置");
+      if (!action.apiUrl) throw new Error("API URL not configured");
       const method = action.apiMethod ?? "post";
       const params =
         action.apiParams === "formData"
@@ -118,6 +119,6 @@ async function executeAction(
     }
 
     default:
-      logger.warn("未知动作类型:", (action as { type: string }).type);
+      logger.warn("Unknown action type:", (action as { type: string }).type);
   }
 }

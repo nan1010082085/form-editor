@@ -1,18 +1,18 @@
 <script setup lang="ts">
 /**
- * EditorView — 可视化 Schema 编辑器 (New Architecture)
+ * EditorView — 可视化 Schema Edit器 (New Architecture)
  *
- * 三栏布局：左侧面板 + 中间画布 + 右侧属性面板
+ * 三栏Layout：左侧面板 + 中间画布 + 右侧Property面板
  * 使用 4 个新 Store：
- * - useBoardStore  — 画布配置
- * - useWidgetStore — Widget 数据（source of truth）
+ * - useBoardStore  — 画布Config
+ * - useWidgetStore — Widget Data（source of truth）
  * - useEditorStore — 选中、历史、模式
- * - useDragStore   — 拖拽状态
+ * - useDragStore   — 拖拽Status
  *
- * 已拆分为子组件：
- * - EditorViewToolbar  — 顶部工具栏
+ * 已拆Min为子Component：
+ * - EditorViewToolbar  — 顶部Toolbar
  * - EditorViewLeftPanel — 左侧面板
- * - EditorViewRightPanel — 右侧属性面板
+ * - EditorViewRightPanel — 右侧Property面板
  */
 import {
   ref,
@@ -130,7 +130,7 @@ function unbindViewportListeners() {
   viewportObserver = null;
 }
 
-// 自动保存：脏数据 60 秒后自动触发保存（偏好持久化到 localStorage）
+// 自动Save：脏Data 60 sec后自动TriggerSave（偏好持久化到 localStorage）
 const autoSaveEnabled = ref(localStorage.getItem("editor_auto_save") !== "off");
 const { isAutoSaving } = useAutoSave({
   delayMs: 60_000,
@@ -157,7 +157,7 @@ const showAiDrawer = ref(false);
 const showVersionCompare = ref(false);
 const previewBreakpoint = ref<PreviewBreakpoint>("desktop");
 
-/** 缩放指示器右侧偏移：属性面板 300px + AI 抽屉 400px */
+/** 缩放指示器右侧偏移：Property面板 300px + AI Drawer 400px */
 const zoomRightOffset = computed(() => {
   let offset = 0;
   if (rightPanelVisible.value) offset += 300;
@@ -175,7 +175,7 @@ const aiBaseUrl = import.meta.env.DEV
 
 const mode = computed(() => editorStore.mode);
 
-/** Store 完整数据快照（供 code 面板展示） */
+/** Store 完整Data快照（供 code 面板展示） */
 const storeSnapshot = computed(() => {
   const data = {
     board: {
@@ -202,7 +202,7 @@ const currentEditId = ref("");
 const currentVersion = ref("");
 
 onMounted(async () => {
-  // 接入事件日志收集器
+  // 接入EventLog收集器
   const { push } = useEventLog();
   setLogCollector(push);
 
@@ -211,7 +211,7 @@ onMounted(async () => {
   const version = route.query.version as string | undefined;
 
   if (editId && version) {
-    // 加载特定版本
+    // 加载特定Version
     const detail = await fetchVersion(editId, version);
     if (detail) {
       loadSchemaDetail(detail);
@@ -232,15 +232,15 @@ onMounted(async () => {
     boardStore.name = t("editor.editorView.unnamedCanvas");
   }
 
-  // 从实例列表进入时，始终为编辑模式
+  // 从实例Column表进入Hrs, 始终为Edit模式
   editorStore.setMode("edit");
 
-  // Socket: 监听 AI 推送事件
+  // Socket: 监听 AI 推送Event
   connectSocket();
   onAiApply(async (data: AiApplyEvent) => {
     if (data.type === "schema" && Array.isArray(data.payload)) {
       const { widgets } = parseSchemaJson(data.payload);
-      // 逐个插入到当前画布，而非替换
+      // 逐个插入到当前画布, 而非替换
       for (const widget of widgets) {
         widgetStore.addWidget(widget);
       }
@@ -248,7 +248,7 @@ onMounted(async () => {
         t("editor.editorView.insertSuccess", { count: widgets.length }),
       );
 
-      // 自动保存并生成缩略图
+      // 自动Save并生成缩略图
       await nextTick();
       await handleSave();
     }
@@ -300,13 +300,13 @@ function handleAiReady(event: MessageEvent) {
 window.addEventListener("message", handleAiReady);
 onUnmounted(() => window.removeEventListener("message", handleAiReady));
 
-// 监听 AI drawer 开关，动态设置 iframe src
+// 监听 AI drawer 开关, 动态Settings iframe src
 watch(showAiDrawer, async (open) => {
   if (open) {
     await nextTick();
     if (aiIframeRef.value) {
       if (!aiIframeRef.value.src) {
-        // 首次加载：设置 src，等 iframe 发 ai:ready 信号后再发上下文
+        // 首次加载：Settings src, 等 iframe 发 ai:ready 信号后再发上下文
         aiIframeRef.value.src = aiBaseUrl;
       } else {
         // 已加载过：直接发上下文
@@ -316,7 +316,7 @@ watch(showAiDrawer, async (open) => {
   }
 });
 
-// 监听 Schema 变化，实时更新 AI sidebar
+// 监听 Schema 变化, 实HrsUpdate AI sidebar
 watch(
   () => widgetStore.widgets,
   () => {
@@ -327,7 +327,7 @@ watch(
   { deep: true },
 );
 
-// 页面刷新/关闭拦截
+// PageRefresh/Close拦截
 function handleBeforeUnload(e: BeforeUnloadEvent) {
   if (editorStore.isDirty) {
     e.preventDefault();
@@ -361,7 +361,7 @@ function handleKeyDown(e: KeyboardEvent) {
     }
   }
 
-  // 对齐/分布依赖绝对坐标，仅在自由布局下生效；Grid 流式布局无意义且会污染 position 数据
+  // 对齐/Min布依赖绝对坐标, 仅在自由Layout下生效；Grid 流式Layout无意义且会污染 position Data
   if (e.altKey && e.shiftKey && boardStore.layoutMode === "free") {
     const key = e.key.toLowerCase();
     if (key === "l") {
@@ -420,7 +420,7 @@ function handleKeyDown(e: KeyboardEvent) {
       e.preventDefault();
       handleSave();
     }
-    // Ctrl+Up/Down: 同级内前移/后移（grid 流式重排为主，free 也可用）
+    // Ctrl+Up/Down: 同级内前移/后移（grid 流式重排为主, free 也可用）
     if (e.key === "ArrowUp") {
       e.preventDefault();
       editorStore.performMoveSelected("up");
@@ -433,7 +433,7 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 // ================================================================
-// Context menu dialog targets — 委托给 editorStore，PropertyPanel 监听并打开弹框
+// Context menu dialog targets — 委托给 editorStore, PropertyPanel 监听并Open弹框
 // ================================================================
 
 function handleOpenEvent(widget: Widget) {
@@ -448,9 +448,12 @@ function handleOpenApi(widget: Widget) {
 function handleOpenVariables(widget: Widget) {
   editorStore.openConfigDialog(widget, "variables");
 }
+function handleOpenChartLinkage(widget: Widget) {
+  editorStore.openConfigDialog(widget, "chart-linkages");
+}
 
 // ================================================================
-// Toolbar actions (委托给 editorStore 组合操作，消除重复代码)
+// Toolbar actions (委托给 editorStore 组合Action, 消除重复代码)
 // ================================================================
 
 function handleUndo() {
@@ -481,7 +484,7 @@ const saving = ref(false);
 const publishing = ref(false);
 const COOLDOWN_MS = 2000;
 
-// 同步互斥锁，防止快速点击穿透 Vue 响应式批量更新
+// Sync互斥锁, 防止快速点击穿透 Vue 响应式批量Update
 let _savingLock = false;
 let _publishingLock = false;
 
@@ -575,7 +578,7 @@ async function handlePublish() {
       }, COOLDOWN_MS);
     }
   } catch {
-    // 用户取消
+    // UserCancel
   }
 }
 
@@ -671,17 +674,18 @@ function handleVersionLoadedFromToolbar(version: string) {
             @open-rule="handleOpenRule"
             @open-api="handleOpenApi"
             @open-variables="handleOpenVariables"
+            @open-chart-linkage="handleOpenChartLinkage"
             @save-preview="handleSavePreview"
           />
         </div>
-        <!-- 缩放指示器：放在 .center 内，无 transform 祖先，fixed 相对视口 -->
+        <!-- 缩放指示器：放在 .center 内, 无 transform 祖先, fixed 相对视口 -->
         <ZoomIndicator
           v-if="mode === 'edit' && editorStore.showZoomIndicator"
           :right-offset="zoomRightOffset"
         />
         <EventLogPanel v-if="mode !== 'edit' && showLogPanel" />
 
-        <!-- Store 数据面板（全屏覆盖） -->
+        <!-- Store Data面板（全屏覆盖） -->
         <div
           v-if="mode !== 'edit' && showCodePanel"
           :class="styles.codeOverlay"
@@ -724,7 +728,7 @@ function handleVersionLoadedFromToolbar(version: string) {
       </div>
     </div>
 
-    <!-- 版本对比面板 -->
+    <!-- VersionCompare面板 -->
     <el-drawer
       v-model="showVersionCompare"
       :title="t('editor.editorView.versionCompare')"
@@ -738,7 +742,7 @@ function handleVersionLoadedFromToolbar(version: string) {
       />
     </el-drawer>
 
-    <!-- 保存为模板对话框 -->
+    <!-- Save为Template对话框 -->
     <SaveTemplateDialog
       v-model:visible="showSaveTemplateDialog"
       :widgets="widgetStore.widgets as any"

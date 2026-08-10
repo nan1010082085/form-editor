@@ -10,7 +10,7 @@ export const numberConfig: WidgetConfig = {
     fontSize: "14px",
   },
   defaultProps: {
-    placeholder: "请输入数字",
+    placeholder: "Please enter number",
     disabled: false,
     min: undefined as number | undefined,
     max: undefined as number | undefined,
@@ -18,7 +18,7 @@ export const numberConfig: WidgetConfig = {
     precision: undefined as number | undefined,
   },
   exposedValues: [
-    { key: "value", type: "string", description: "当前字段值", example: "" },
+    { key: "value", type: "string", description: "Current field value", example: "" },
   ],
   configPanels: ["events", "linkages", "variables"],
   propertyPanel: {
@@ -29,7 +29,7 @@ export const numberConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请输入数字",
+        default: "Please enter number",
       },
       { key: "disabled", label: "Disabled", type: "switch", default: false },
       { key: "min", label: "Min", type: "number", default: undefined },

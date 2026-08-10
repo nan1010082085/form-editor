@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * BreadcrumbNav — 面包屑导航
+ * BreadcrumbNav — BreadcrumbNavigation
  *
- * 根据当前路由自动生成面包屑路径。
+ * 根据当前Route自动生成Breadcrumb路径。
  */
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -17,14 +17,14 @@ interface BreadcrumbItem {
 }
 
 const routeLabelMap: Record<string, string> = {
-  instances: "实例管理",
-  "widget-templates": "模板库",
-  submissions: "表单提交数据",
-  credentials: "凭证管理",
+  instances: "Instances",
+  "widget-templates": "Template Library",
+  submissions: "FormSubmitData",
+  credentials: "Credentials",
 };
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
-  const items: BreadcrumbItem[] = [{ label: "首页", path: "/instances" }];
+  const items: BreadcrumbItem[] = [{ label: "Home", path: "/instances" }];
 
   const routeName = route.name as string | undefined;
   if (routeName && routeLabelMap[routeName]) {

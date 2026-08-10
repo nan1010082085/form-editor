@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * OptionsEditor -- 选项列表编辑器（独立行组件）
+ * OptionsEditor -- OptionsColumn表Edit器（独立RowComponent）
  *
- * 用于 select/radio/checkbox 等组件的选项配置。
- * 每个选项包含 label + value，支持增删。
+ * 用于 select/radio/checkbox 等Component的OptionsConfig。
+ * 每个Options包含 label + value, 支持增删。
  */
 import { ref, watch } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";

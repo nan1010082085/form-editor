@@ -1,5 +1,5 @@
 /**
- * 将 Widget 数据源 URL 中的 {{variables.xxx}} / {{xxx}} 占位符替换为运行时变量值。
+ * 将 Widget Data源 URL 中的 {{variables.xxx}} / {{xxx}} Placeholder替换为运RowHrs变量Value。
  */
 export function resolveWidgetUrl(
   url: string,

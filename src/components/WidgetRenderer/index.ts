@@ -1,4 +1,4 @@
-// WidgetRenderer 组件库 barrel export
+// WidgetRenderer Component库 barrel export
 export { default as WidgetRenderer } from "./index.vue";
 export { default as SchemaRender } from "./SchemaRender.vue";
 export type {

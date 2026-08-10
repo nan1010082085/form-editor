@@ -8,11 +8,11 @@ export const flowTaskActionsConfig: WidgetConfig = {
   defaultStyle: { width: "100%" },
   exposedValues: [
     { key: "taskId", type: "string", description: "Current Task ID" },
-    { key: "loading", type: "boolean", description: "操作进行中" },
+    { key: "loading", type: "boolean", description: "Operation in progress" },
   ],
   configPanels: ["events", "variables"],
   defaultProps: {
-    title: "审批操作",
+    title: "Approval Actions",
     taskIdVariable: "taskId",
     instanceIdVariable: "flowInstanceId",
     commentWidgetId: "detail-comment",
@@ -22,7 +22,7 @@ export const flowTaskActionsConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "Title", type: "input", default: "审批操作" },
+      { key: "title", label: "Title", type: "input", default: "Approval Actions" },
       {
         key: "taskIdVariable",
         label: "Task ID Var",

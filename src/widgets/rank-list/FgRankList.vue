@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * FgRankList — 排行榜列表
+ * FgRankList — 排Row榜Column表
  *
- * 数据源驱动的排名列表，支持动态排名、趋势箭头、数值高亮。
+ * Data源驱动的RankingColumn表, 支持动态Ranking、Trend箭头、数Value高亮。
  */
 import { inject, ref, computed } from "vue";
 import { widgetDataKey, widgetStyleKey } from "../base/types";

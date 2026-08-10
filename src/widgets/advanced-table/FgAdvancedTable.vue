@@ -64,7 +64,7 @@ const {
 
 const serverSideFilter = computed(() => serverSideFilterFn(columns.value));
 
-// ---- 数据层 ----
+// ---- Data层 ----
 
 function onSearch(params: Record<string, unknown>) {
   setSearchParams(params);
@@ -96,7 +96,7 @@ const {
   listApi: listApiConfig,
   pageSize: paginationConfig.value.pageSize,
   autoLoad: false,
-  enableRetry: true, // 高可用：网络抖动时自动重试（指数退避，3 次）
+  enableRetry: true, // HA: auto retry on network jitter (exponential backoff, 3 times)
 });
 
 watch(
@@ -130,7 +130,7 @@ useExposeWidget(() => ({
   },
 }));
 
-// ---- 事件分发（抽到 useAdvancedTableEvents） ----
+// ---- EventMin发（抽到 useAdvancedTableEvents） ----
 
 const {
   onSortChange,
@@ -216,26 +216,44 @@ watch(
 
 // ---- Expose methods ----
 
-/** 乐观插入一行（头部），同步 total */
+/** 乐观插入一Row（头部）, Sync total */
 function insertRow(row: Record<string, unknown>): void {
   tableData.value = [row, ...tableData.value];
   total.value += 1;
 }
 
-/** 乐观更新匹配行（按 idField+id 定位），patch 合并 */
+/**
+ * 宽松匹配行主键（number / string 统一比较）
+ *
+ * @param rowValue - 行上的主键值
+ * @param id - 待匹配 ID
+ */
+function matchRowId(rowValue: unknown, id: unknown): boolean {
+  if (
+    rowValue === undefined ||
+    rowValue === null ||
+    id === undefined ||
+    id === null
+  ) {
+    return false;
+  }
+  return String(rowValue) === String(id);
+}
+
+/** 乐观更新匹配行（按 idField+id 定位）, patch 合并 */
 function updateRow(
   idField: string,
   id: unknown,
   patch: Record<string, unknown>,
 ): void {
   tableData.value = tableData.value.map((r) =>
-    r[idField] === id ? { ...r, ...patch } : r,
+    matchRowId(r[idField], id) ? { ...r, ...patch } : r,
   );
 }
 
-/** 乐观删除匹配行，同步 total */
+/** 乐观Delete匹配行, 同步 total */
 function removeRow(idField: string, id: unknown): void {
-  tableData.value = tableData.value.filter((r) => r[idField] !== id);
+  tableData.value = tableData.value.filter((r) => !matchRowId(r[idField], id));
   total.value = Math.max(0, total.value - 1);
 }
 
@@ -291,7 +309,7 @@ defineExpose({
       }}</el-button>
     </div>
 
-    <!-- Table + 统一状态壳（loading/empty/error） -->
+    <!-- Table + 统一Status壳（loading/empty/error） -->
     <WidgetStateShell
       :loading="loading && tableData.length === 0"
       :error="error"
@@ -300,7 +318,7 @@ defineExpose({
       :min-height="(tableHeight ?? 200) + 'px'"
       @retry="fetchData"
     >
-      <!-- 虚拟滚动路径：数据 > 阈值且 virtual 开启 -->
+      <!-- 虚拟滚动路径：Data > 阈Value且 virtual 开启 -->
       <FgAdvancedTableVirtual
         v-if="useVirtual"
         :columns="columns"

@@ -1,8 +1,8 @@
 /**
- * useTemplateStore — 组件模板库状态管理
+ * useTemplateStore — ComponentTemplate LibraryStatus管理
  *
- * 使用 useDataLoading 统一 loading/error 状态管理。
- * 仅在数据获取区域显示 loading（配合 v-loading 使用）。
+ * 使用 useDataLoading 统一 loading/error Status管理。
+ * 仅在Data获取RegionShow loading（配合 v-loading 使用）。
  */
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
@@ -17,7 +17,7 @@ import type { TemplateItem, TemplateCategory } from "@/utils/apiClient";
 
 export const useTemplateStore = defineStore("template", () => {
   // ================================================================
-  // 数据
+  // Data
   // ================================================================
 
   const templates = ref<TemplateItem[]>([]);
@@ -25,7 +25,7 @@ export const useTemplateStore = defineStore("template", () => {
   const { loading, error, withLoading } = useDataLoading({ timeout: 15000 });
 
   // ================================================================
-  // 筛选 / 分页
+  // Filter / Min页
   // ================================================================
 
   const searchKeyword = ref("");
@@ -37,7 +37,7 @@ export const useTemplateStore = defineStore("template", () => {
   const hasMore = computed(() => page.value < totalPages.value);
 
   // ================================================================
-  // 加载模板
+  // 加载Template
   // ================================================================
 
   async function loadTemplates(): Promise<void> {
@@ -54,7 +54,7 @@ export const useTemplateStore = defineStore("template", () => {
   }
 
   // ================================================================
-  // 搜索 / 筛选操作
+  // Search / FilterAction
   // ================================================================
 
   function setSearch(keyword: string): void {
@@ -78,20 +78,20 @@ export const useTemplateStore = defineStore("template", () => {
   }
 
   // ================================================================
-  // 应用模板
+  // 应用Template
   // ================================================================
 
   async function applyTemplateById(
     id: string,
   ): Promise<Record<string, unknown>[]> {
     const result = await applyTemplate(id);
-    // 刷新列表以更新 usageCount
+    // RefreshColumn表以Update usageCount
     loadTemplates();
     return result.widgets;
   }
 
   // ================================================================
-  // 创建模板
+  // 创建Template
   // ================================================================
 
   async function saveTemplate(payload: {
@@ -103,32 +103,32 @@ export const useTemplateStore = defineStore("template", () => {
     thumbnail?: string;
   }): Promise<TemplateItem> {
     const template = await createTemplate(payload);
-    // 刷新列表
+    // RefreshColumn表
     loadTemplates();
     return template;
   }
 
   // ================================================================
-  // 删除模板
+  // DeleteTemplate
   // ================================================================
 
   async function removeTemplate(id: string): Promise<void> {
     await deleteTemplate(id);
-    // 刷新列表
+    // RefreshColumn表
     loadTemplates();
   }
 
   // ================================================================
-  // 导出
+  // Export
   // ================================================================
 
   return {
-    // 数据
+    // Data
     templates,
     total,
     loading,
     error,
-    // 筛选 / 分页
+    // Filter / Min页
     searchKeyword,
     selectedCategory,
     page,

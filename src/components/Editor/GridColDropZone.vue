@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import type { Widget } from "@/widgets/base/types";
 import { useGridDropZone } from "@/composables/useGridDropZone";
 import SchemaRender from "../WidgetRenderer/SchemaRender.vue";
@@ -11,6 +12,8 @@ const props = defineProps<{
   allChildren: Widget[];
   editorSelectable?: boolean;
 }>();
+
+const { t } = useI18n();
 
 const siblings = computed(() =>
   props.allChildren.filter((c) => (c.colIndex ?? 0) === props.colIndex),
@@ -24,7 +27,7 @@ const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
     () => siblings.value,
     () => Boolean(props.editorSelectable),
     () => ({ colIndex: props.colIndex }),
-    // col 容器按 colIndex 过滤，拖放索引需映射回全量 children
+    // col Container按 colIndex Filter, 拖放Index需Map回全量 children
     () => props.allChildren,
   );
 </script>
@@ -43,6 +46,6 @@ const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
       :schema="child"
       :editor-selectable="editorSelectable"
     />
-    <div v-if="!siblings.length" :class="styles.gridDropEmpty">拖入部件</div>
+    <div v-if="!siblings.length" :class="styles.gridDropEmpty">{{ t('editor.canvas.dragWidget') }}</div>
   </div>
 </template>

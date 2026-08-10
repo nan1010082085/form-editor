@@ -1,15 +1,15 @@
 <script setup lang="ts">
 /**
- * EditorRuler — 画布标尺组件
+ * EditorRuler — 画布标尺Component
  *
- * 使用 canvas 绘制水平和垂直标尺，与画布背景点对齐。
- * 固定在滚动容器边缘，不随内容滚动。
+ * 使用 canvas 绘制水平和垂直标尺, 与画布Background点对齐。
+ * 固定在滚动Container边缘, 不随内容滚动。
  */
 import { ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
 import { useBoardStore } from "../../stores/board";
 
 const props = defineProps<{
-  /** 滚动容器 */
+  /** 滚动Container */
   scrollContainer?: HTMLElement | null;
 }>();
 
@@ -44,11 +44,11 @@ function drawHorizontalRuler(scrollLeft: number) {
   canvas.height = height * dpr;
   ctx.scale(dpr, dpr);
 
-  // 背景
+  // Background
   ctx.fillStyle = "#f8f9fa";
   ctx.fillRect(0, 0, width, height);
 
-  // 底部边框
+  // 底部Border
   ctx.strokeStyle = "#dee2e6";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -106,11 +106,11 @@ function drawVerticalRuler(scrollTop: number) {
   canvas.height = height * dpr;
   ctx.scale(dpr, dpr);
 
-  // 背景
+  // Background
   ctx.fillStyle = "#f8f9fa";
   ctx.fillRect(0, 0, width, height);
 
-  // 右侧边框
+  // 右侧Border
   ctx.strokeStyle = "#dee2e6";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -171,11 +171,11 @@ function drawCorner() {
   canvas.height = size * dpr;
   ctx.scale(dpr, dpr);
 
-  // 背景
+  // Background
   ctx.fillStyle = "#f8f9fa";
   ctx.fillRect(0, 0, size, size);
 
-  // 边框
+  // Border
   ctx.strokeStyle = "#dee2e6";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -196,7 +196,7 @@ function drawCorner() {
   ctx.stroke();
 }
 
-/** 同步滚动位置 */
+/** Sync滚动位置 */
 function syncScroll() {
   if (!props.scrollContainer) return;
 
@@ -205,13 +205,13 @@ function syncScroll() {
   drawVerticalRuler(scrollTop);
 }
 
-/** 处理滚动事件 */
+/** 处理滚动Event */
 function handleScroll() {
   if (animFrameId) cancelAnimationFrame(animFrameId);
   animFrameId = requestAnimationFrame(syncScroll);
 }
 
-/** 监听容器变化 */
+/** 监听Container变化 */
 let resizeObserver: ResizeObserver | null = null;
 
 onMounted(async () => {
@@ -238,7 +238,7 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-// 监听滚动容器变化
+// 监听滚动Container变化
 watch(
   () => props.scrollContainer,
   async (newContainer, oldContainer) => {

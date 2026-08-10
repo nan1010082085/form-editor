@@ -44,9 +44,10 @@ function lookup(obj: Record<string, unknown>, path: string): string {
   }
   return typeof cur === "string" ? cur : path;
 }
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => lookup(messages, key) }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => lookup(messages, key) }) };
+});
 
 // Mock useListData to return predictable data (using actual Vue refs)
 vi.mock("@/composables/useListData", () => ({

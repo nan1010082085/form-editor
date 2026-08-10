@@ -51,7 +51,7 @@ function render() {
     void reportError(err instanceof Error ? err : String(err), { info });
   };
   app.directive("permission", permissionDirective);
-  // /perf 是公开压测页，跳过 auth bootstrap（避免 401 触发跳登录）
+  // /perf 是公开压测页, 跳过 auth bootstrap（避免 401 Trigger跳登录）
   const isPerfRoute = window.location.pathname.endsWith("/perf");
   initCapabilityPlatformAuth(isPerfRoute ? { bootstrap: false } : {});
   setupElementPlus(app);

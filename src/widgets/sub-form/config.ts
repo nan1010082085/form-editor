@@ -8,7 +8,7 @@ export const subFormConfig: WidgetConfig = {
   defaultStyle: { width: "100%" },
   defaultProps: {
     fields: [
-      { key: "name", label: "Name", type: "text", placeholder: "请输入名称" },
+      { key: "name", label: "Name", type: "text", placeholder: "Please enterName" },
       { key: "quantity", label: "Count", type: "number", placeholder: "0" },
     ] as Array<{
       key: string;
@@ -18,7 +18,7 @@ export const subFormConfig: WidgetConfig = {
     }>,
     minRows: 0,
     maxRows: 10,
-    addButtonText: "添加一行",
+    addButtonText: "Add Row",
   },
   exposedValues: [
     { key: "rows", type: "array", description: "Sub Form Data" },

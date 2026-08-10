@@ -8,10 +8,10 @@ export const dialogConfig: WidgetConfig = {
   author: "yangdongnan",
   defaultStyle: {},
   defaultProps: {
-    title: "弹窗标题",
+    title: "Dialog title",
     width: "600px",
-    confirmText: "确定",
-    cancelText: "取消",
+    confirmText: "OK",
+    cancelText: "Cancel",
     destroyOnClose: true,
     contentMode: "edit" as const,
     showFooter: true,
@@ -21,23 +21,23 @@ export const dialogConfig: WidgetConfig = {
   },
   propertyPanel: {
     basic: [
-      { key: "title", label: "Title", type: "input", default: "弹窗标题" },
+      { key: "title", label: "Title", type: "input", default: "Dialog title" },
       { key: "width", label: "Width", type: "input", default: "600px" },
       {
         key: "confirmText",
         label: "Confirm Text",
         type: "input",
-        default: "确定",
+        default: "OK",
       },
       {
         key: "cancelText",
         label: "Cancel Text",
         type: "input",
-        default: "取消",
+        default: "Cancel",
       },
       {
         key: "destroyOnClose",
-        label: "关闭时销毁",
+        label: "Destroy on close",
         type: "switch",
         default: true,
       },
@@ -49,7 +49,7 @@ export const dialogConfig: WidgetConfig = {
       },
       {
         key: "closeOnClickModal",
-        label: "点击遮罩关闭",
+        label: "Close on mask click",
         type: "switch",
         default: false,
       },
@@ -63,7 +63,7 @@ export const dialogConfig: WidgetConfig = {
         ],
         default: "edit",
       },
-      // 子应用配置区块 — 仅微应用模式可见
+      // Micro-app config section — Only visible in micro-app mode
       ...createMicroappPropertyItems("props.contentMode === 'microapp'"),
     ],
     style: [],

@@ -2,12 +2,12 @@
 /**
  * FgAdvancedTableVirtual - advanced-table 的虚拟滚动渲染路径
  *
- * 当 advanced-table 配置 virtual=true 且数据量超过阈值时启用，使用 el-table-v2
- * 渲染 1000+ 行而不卡顿。支持主要列渲染类型：text/tag/link/image/buttons。
- * 不支持的复杂类型（flowStatus/expiryAlert/badge/custom）回退为 text。
+ * 当 advanced-table Config virtual=true 且Data量超过阈ValueHrsEnable, 使用 el-table-v2
+ * 渲染 1000+ Row而不卡顿。支持主要Column渲染Type：text/tag/link/image/buttons。
+ * 不支持的复杂Type（flowStatus/expiryAlert/badge/custom）回退为 text。
  *
- * el-table-v2 与 el-table API 差异较大（columns prop + cellRenderer 函数），
- * 故独立组件，由 FgAdvancedTable 按 virtual 开关切换。
+ * el-table-v2 与 el-table API 差异较大（columns prop + cellRenderer 函数）, 
+ * 故独立Component, 由 FgAdvancedTable 按 virtual 开关切换。
  */
 import { computed, h } from "vue";
 import {
@@ -42,7 +42,7 @@ const emit = defineEmits<{
 
 const tableHeight = computed(() => props.height ?? 400);
 
-/** tag type 解析（复用 advanced-table 的 colorMap 逻辑） */
+/** tag type Parse（复用 advanced-table 的 colorMap 逻辑） */
 function getTagType(
   colorMap: Record<string, string> | undefined,
   value: unknown,
@@ -50,7 +50,7 @@ function getTagType(
   return colorMap?.[String(value)] ?? "info";
 }
 
-/** option label 解析 */
+/** option label Parse */
 function getOptionLabel(
   options: Array<{ label: string; value: string | number }> | undefined,
   value: unknown,
@@ -58,7 +58,7 @@ function getOptionLabel(
   return options?.find((o) => o.value === value)?.label ?? String(value ?? "");
 }
 
-/** el-table-v2 列定义：将 AdvancedTableColumn 转为 cellRenderer 形式 */
+/** el-table-v2 Column定义：将 AdvancedTableColumn 转为 cellRenderer 形式 */
 const v2Columns = computed(() =>
   props.columns.map((col): Column => {
     const cellRenderer = ({

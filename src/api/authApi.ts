@@ -1,7 +1,7 @@
 /**
- * Auth API — 认证相关接口
+ * Auth API — Authenticate相关接口
  *
- * 聚合登录、登出、获取当前用户等接口。
+ * Aggregate登录、登出、获取当前User等接口。
  * 底层委托 utils/apiClient。
  */
 export { login, logout, fetchCurrentUser } from "@/utils/apiClient";

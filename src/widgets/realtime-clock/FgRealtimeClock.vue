@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * FgRealtimeClock — 实时时钟
+ * FgRealtimeClock — 实HrsHrs钟
  *
- * 大屏必备组件，显示当前日期和时间，支持多种格式。
+ * Dashboard必备Component, Show当前日期和Hrs间, 支持多种格式。
  */
 import { inject, ref, computed, onMounted, onUnmounted } from "vue";
 import { widgetDataKey, widgetStyleKey } from "../base/types";

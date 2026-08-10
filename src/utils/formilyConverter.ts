@@ -1,8 +1,8 @@
 /**
- * Formily Schema 导入转换器
+ * Formily Schema ImportTransform器
  *
- * 将 Formily JSON Schema 转换为 editor 的 Widget[] 格式，
- * 降低 Formily 用户迁移成本，借势 Formily 生态。
+ * 将 Formily JSON Schema Transform为 editor 的 Widget[] 格式, 
+ * 降低 Formily UserMigrate成本, 借势 Formily 生态。
  *
  * Formily Schema 示例：
  * {
@@ -10,22 +10,22 @@
  *   "properties": {
  *     "username": {
  *       "type": "string",
- *       "title": "用户名",
+ *       "title": "User名",
  *       "required": true,
  *       "x-component": "Input",
- *       "x-component-props": { "placeholder": "请输入" }
+ *       "x-component-props": { "placeholder": "Please enter" }
  *     }
  *   }
  * }
  *
- * 转换为 editor Widget：
- * { id, name: "FgInput", type: "input", field: "username", label: "用户名", props: {...}, ... }
+ * Transform为 editor Widget：
+ * { id, name: "FgInput", type: "input", field: "username", label: "User名", props: {...}, ... }
  */
 
 import { nanoid } from "nanoid";
 import type { Widget } from "@/widgets/base/types";
 
-/** Formily x-component -> editor widget type/name 映射 */
+/** Formily x-component -> editor widget type/name Map */
 const FORMILY_COMPONENT_MAP: Record<string, { type: string; name: string }> = {
   Input: { type: "input", name: "FgInput" },
   TextArea: { type: "textarea", name: "FgTextarea" },
@@ -68,9 +68,9 @@ interface FormilySchema {
 }
 
 /**
- * 将 Formily Schema 转换为 editor Widget[]
+ * 将 Formily Schema Transform为 editor Widget[]
  * @param formilySchema Formily JSON Schema 对象
- * @param startY 起始 Y 坐标（用于布局）
+ * @param startY 起始 Y 坐标（用于Layout）
  * @returns editor Widget[] 数组
  */
 export function convertFormilyToWidgets(
@@ -85,7 +85,7 @@ export function convertFormilyToWidgets(
   const FIELD_WIDTH = 280;
 
   for (const [fieldKey, field] of Object.entries(formilySchema.properties)) {
-    // 递归处理嵌套（如对象类型）
+    // 递归处理嵌套（如对象Type）
     if (field.properties && Object.keys(field.properties).length > 0) {
       const nested = convertFormilyToWidgets(
         { type: "object", properties: field.properties },
@@ -100,14 +100,14 @@ export function convertFormilyToWidgets(
     const mapping = FORMILY_COMPONENT_MAP[component];
 
     if (!mapping) {
-      // 未知组件，降级为 input
-      console.warn(`[formilyConverter] 未知 Formily 组件 "${component}"，字段 "${fieldKey}" 降级为 input`);
+      // 未知Component, falling back to input
+      console.warn(`[formilyConverter] Unknown Formily component "${component}", Field "${fieldKey}" falling back to input`);
     }
 
     const widgetType = mapping?.type ?? "input";
     const widgetName = mapping?.name ?? "FgInput";
 
-    // 转换 enum 选项
+    // Transform enum Options
     const options = field.enum
       ? field.enum.map((item) =>
           typeof item === "string" ? { label: item, value: item } : item,
@@ -138,7 +138,7 @@ export function convertFormilyToWidgets(
       widget.props!.required = true;
     }
 
-    // 描述作为 placeholder 或 tooltip
+    // Description作为 placeholder or tooltip
     if (field.description) {
       widget.props!.placeholder = field.description;
     }
@@ -150,7 +150,7 @@ export function convertFormilyToWidgets(
   return widgets;
 }
 
-/** 根据 JSON Schema type 推断 Formily 组件 */
+/** 根据 JSON Schema type 推断 Formily Component */
 function inferComponentByType(type?: string): string {
   switch (type) {
     case "string":
@@ -167,7 +167,7 @@ function inferComponentByType(type?: string): string {
 }
 
 /**
- * 校验是否为合法 Formily Schema
+ * Validate是否为合法 Formily Schema
  */
 export function isFormilySchema(schema: unknown): schema is FormilySchema {
   if (!schema || typeof schema !== "object") return false;

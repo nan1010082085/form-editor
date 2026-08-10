@@ -14,9 +14,9 @@ export const kanbanConfig: WidgetConfig = {
   defaultStyle: { width: "100%", minHeight: "420px" },
   defaultProps: {
     columns: [
-      { key: "open", title: "待办", status: "open" },
-      { key: "progress", title: "进行中", status: "in_progress" },
-      { key: "done", title: "已关闭", status: "closed" },
+      { key: "open", title: "To Do", status: "open" },
+      { key: "progress", title: "In progress", status: "in_progress" },
+      { key: "done", title: "Done", status: "closed" },
     ] as KanbanColumn[],
     cardTitleField: "title",
     cardSubtitleField: "severity",
@@ -35,7 +35,7 @@ export const kanbanConfig: WidgetConfig = {
     props: [
       { key: "columns", label: "Column Config", type: "kanban-columns" },
       { key: "cardTitleField", label: "Title Field", type: "input" },
-      { key: "cardSubtitleField", label: "副标题字段", type: "input" },
+      { key: "cardSubtitleField", label: "Subtitle Field", type: "input" },
       { key: "statusField", label: "Status Field", type: "input" },
     ],
   },

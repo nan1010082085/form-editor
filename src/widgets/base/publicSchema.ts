@@ -1,9 +1,9 @@
 import type { SchemaType, Widget } from "./types";
 
 /**
- * 公共字段工厂函数
- * 为所有 Widget 提供统一的默认值基底
- * 返回 Omit<Widget, 'name'>，工厂函数补充 name 后即可满足 Widget 类型
+ * 公共Field工厂函数
+ * 为所有 Widget 提供统一的Default value基底
+ * 返回 Omit<Widget, 'name'>, 工厂函数补充 name 后即可满足 Widget Type
  */
 export function publicSchema(
   id: string,
@@ -23,8 +23,8 @@ export function publicSchema(
 }
 
 /**
- * 公共样式面板声明
- * 所有组件共享的可配置样式属性
+ * 公共Style面板声明
+ * 所有Component共享的可ConfigStyleProperty
  */
 export const publicStylePanel = [
   "margin",

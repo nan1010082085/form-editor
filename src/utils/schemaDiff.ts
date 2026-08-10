@@ -1,18 +1,18 @@
 /**
  * Schema Diff 算法
  *
- * 递归比较两棵 Widget 树，生成差异操作列表。
- * 支持识别：新增 / 删除 / 修改 / 移动（父子关系变化）
+ * 递归比较两棵 Widget 树, 生成差异ActionColumn表。
+ * 支持识别：Create / Delete / 修改 / 移动（父子关系变化）
  */
 import type { Widget } from "@/widgets/base/types";
 
 // ============================================================
-// 类型定义
+// Type定义
 // ============================================================
 
-/** 字段级变化 */
+/** Field级变化 */
 export interface FieldChange {
-  /** 变化的字段路径（如 'props.placeholder'） */
+  /** 变化的Field路径（如 'props.placeholder'） */
   field: string;
   oldValue: unknown;
   newValue: unknown;
@@ -22,15 +22,15 @@ export interface FieldChange {
 export interface WidgetDiff {
   /** Widget ID */
   id: string;
-  /** Widget 名称 */
+  /** Widget Name */
   name: string;
-  /** Widget 类型 */
+  /** Widget Type */
   type: string;
-  /** Widget 标签 */
+  /** Widget Label */
   label?: string;
   /** 树中的路径（如 'card-001 / input-002'） */
   path: string;
-  /** 具体字段变化（修改时有值） */
+  /** 具体Field变化（修改Hrs有Value） */
   changes?: FieldChange[];
 }
 
@@ -46,7 +46,7 @@ export interface DiffResult {
 // 内部工具
 // ============================================================
 
-/** 要忽略比较的字段 — 这些是运行时状态或由子节点 diff 单独处理 */
+/** 要忽略比较的Field — 这些是运RowHrsStatusor由子节点 diff 单独处理 */
 const IGNORED_KEYS = new Set(["disabled", "children"]);
 
 /**
@@ -79,7 +79,7 @@ function flattenTree(
 }
 
 /**
- * 递归收集字段级变化。
+ * 递归收集Field级变化。
  */
 function collectFieldChanges(
   oldVal: unknown,
@@ -90,7 +90,7 @@ function collectFieldChanges(
   if (oldVal === newVal) return;
   if (oldVal == null && newVal == null) return;
 
-  // 如果其中一个是原始值或 null，直接比较
+  // 如果其中一个是原始Valueor null, 直接比较
   if (
     typeof oldVal !== "object" ||
     oldVal === null ||
@@ -128,10 +128,10 @@ function collectFieldChanges(
 // ============================================================
 
 /**
- * 比较两棵 Widget 树，返回差异结果。
+ * 比较两棵 Widget 树, Back差异结果。
  *
- * @param oldWidgets - 旧版本 Widget 数组
- * @param newWidgets - 新版本 Widget 数组
+ * @param oldWidgets - 旧Version Widget 数组
+ * @param newWidgets - 新Version Widget 数组
  * @returns DiffResult
  */
 export function diffSchema(
@@ -146,11 +146,11 @@ export function diffSchema(
   const modified: WidgetDiff[] = [];
   const moved: WidgetDiff[] = [];
 
-  // 遍历旧版本：检测 removed / modified / moved
+  // 遍历旧Version：检测 removed / modified / moved
   for (const [id, oldEntry] of oldMap) {
     const newEntry = newMap.get(id);
     if (!newEntry) {
-      // 被删除
+      // 被Delete
       removed.push({
         id,
         name: oldEntry.widget.name,
@@ -187,7 +187,7 @@ export function diffSchema(
     }
   }
 
-  // 遍历新版本：检测 added
+  // 遍历新Version：检测 added
   for (const [id, newEntry] of newMap) {
     if (!oldMap.has(id)) {
       added.push({
@@ -204,13 +204,13 @@ export function diffSchema(
 }
 
 /**
- * 计算差异统计摘要。
+ * 计算差异Statistics摘要。
  */
 export function getDiffSummary(result: DiffResult): string {
   const parts: string[] = [];
-  if (result.added.length) parts.push(`${result.added.length} 个新增`);
-  if (result.removed.length) parts.push(`${result.removed.length} 个删除`);
-  if (result.modified.length) parts.push(`${result.modified.length} 个修改`);
-  if (result.moved.length) parts.push(`${result.moved.length} 个移动`);
-  return parts.length > 0 ? parts.join("，") : "无差异";
+  if (result.added.length) parts.push(`${result.added.length}  added`);
+  if (result.removed.length) parts.push(`${result.removed.length}  removed`);
+  if (result.modified.length) parts.push(`${result.modified.length}  modified`);
+  if (result.moved.length) parts.push(`${result.moved.length}  moved`);
+  return parts.length > 0 ? parts.join(", ") : "No differences";
 }

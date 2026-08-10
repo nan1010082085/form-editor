@@ -2,19 +2,21 @@
 /**
  * ZoomIndicator — 画布缩放指示器
  *
- * 浮动在画布右下角，显示当前缩放百分比，支持 +/- 操作和一键重置。
- * 右侧偏移量根据 AI 抽屉是否展开动态调整。
+ * 浮动在画布右下角, Show当前缩放百Min比, 支持 +/- Action和一键Reset。
+ * 右侧偏移量根据 AI Drawer是否Expand动态调整。
  */
 import { computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { useBoardStore } from "@/stores/board";
 import styles from "./ZoomIndicator.module.scss";
 
 const props = defineProps<{
-  /** 右侧抽屉宽度（AI 抽屉展开时传入 400，否则 0） */
+  /** 右侧DrawerWidth（AI DrawerExpandHrs传入 400, 否则 0） */
   rightOffset?: number;
 }>();
 
 const boardStore = useBoardStore();
+const { t } = useI18n();
 
 const zoom = computed(() => boardStore.canvas.zoom);
 const canZoomOut = computed(() => zoom.value > 50);
@@ -41,7 +43,7 @@ function resetZoom() {
     <button
       :class="styles.btn"
       :disabled="!canZoomOut"
-      title="缩小"
+      :title="t('editor.zoomIndicator.zoomOut')"
       @click="zoomOut"
     >
       -
@@ -50,7 +52,7 @@ function resetZoom() {
     <button
       :class="styles.btn"
       :disabled="!canZoomIn"
-      title="放大"
+      :title="t('editor.zoomIndicator.zoomIn')"
       @click="zoomIn"
     >
       +
@@ -58,10 +60,10 @@ function resetZoom() {
     <button
       v-if="!isDefaultZoom"
       :class="styles.reset"
-      title="重置为 100%"
+      :title="t('editor.zoomIndicator.resetTo100')"
       @click="resetZoom"
     >
-      重置
+      {{ t('editor.zoomIndicator.reset') }}
     </button>
   </div>
 </template>

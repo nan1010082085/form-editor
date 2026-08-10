@@ -26,7 +26,7 @@ export interface CrudDetailDialogConfig {
   confirmText?: string;
 }
 
-/** 新增/编辑弹窗字段 */
+/** Create/EditDialogField */
 export interface CrudFormFieldSchema {
   field: string;
   label: string;
@@ -47,7 +47,7 @@ export interface CrudFormFieldSchema {
   hiddenOnEdit?: boolean;
 }
 
-/** 新增/编辑弹窗配置 */
+/** Create/EditDialogConfig */
 export interface CrudFormDialogConfig {
   title?: string;
   createTitle?: string;
@@ -114,14 +114,27 @@ export const crudListPageConfig: WidgetConfig = {
     } as SearchBarConfig,
     pageActions: {} as CrudPageActions,
     detailDialog: {
-      title: "申请详情",
+      title: "Application details",
       detailApiUrl: "",
-      descriptionItems: [],
+      descriptionItems: [
+        { label: "Applicant", field: "applicantName", type: "text" },
+        {
+          label: "Status",
+          field: "status",
+          type: "tag",
+          options: [
+            { label: "Pending", value: "submitted", color: "warning" },
+            { label: "Approved", value: "approved", color: "success" },
+            { label: "Rejected", value: "rejected", color: "danger" },
+          ],
+        },
+        { label: "Reason", field: "reason", type: "text", span: 2 },
+      ],
       showFlowTimeline: true,
-      confirmText: "全屏审批",
+      confirmText: "Full screen approval",
     } as CrudDetailDialogConfig,
     formDialog: {
-      createTitle: "新增",
+      createTitle: "Create",
       editTitle: "Edit",
       width: "640px",
       fields: [
@@ -147,7 +160,7 @@ export const crudListPageConfig: WidgetConfig = {
       ],
       createApiUrl: "",
       updateApiUrl: "",
-      recordIdField: "_id",
+      recordIdField: "id",
     } as CrudFormDialogConfig,
   },
   exposedValues: [
@@ -161,7 +174,7 @@ export const crudListPageConfig: WidgetConfig = {
     {
       name: "set-search-params",
       description: "Set Search Params",
-      params: { params: "参数对象" },
+      params: { params: "Parameter object" },
     },
   ],
   eventTargets: (widget: Widget): EventTargetConfig[] => {
@@ -171,7 +184,7 @@ export const crudListPageConfig: WidgetConfig = {
     ];
     const toolbar = (widget.props?.toolbar as ActionButton[]) || [];
     for (const btn of toolbar) {
-      targets.push({ id: `toolbar-${btn.key}`, label: `工具栏: ${btn.label}` });
+      targets.push({ id: `toolbar-${btn.key}`, label: `Toolbar: ${btn.label}` });
     }
     const columns = (widget.props?.columns as AdvancedTableColumn[]) || [];
     const seenRowKeys = new Set<string>();
@@ -182,13 +195,13 @@ export const crudListPageConfig: WidgetConfig = {
             seenRowKeys.add(btn.key);
             targets.push({
               id: `row-${btn.key}`,
-              label: `行按钮: ${btn.label}`,
+              label: `Row button: ${btn.label}`,
             });
           }
         }
       }
       if (col.render === "link") {
-        targets.push({ id: `link-${col.prop}`, label: `链接: ${col.label}` });
+        targets.push({ id: `link-${col.prop}`, label: `Link: ${col.label}` });
       }
     }
     return targets;
@@ -204,7 +217,7 @@ export const crudListPageConfig: WidgetConfig = {
       { key: "selection.enabled", label: "Row Select", type: "switch" },
       { key: "stripe", label: "Stripe", type: "switch" },
       { key: "border", label: "Border", type: "switch" },
-      { key: "height", label: "表格高度", type: "number" },
+      { key: "height", label: "Table height", type: "number" },
       { key: "pagination.enabled", label: "Pagination", type: "switch" },
       { key: "pagination.pageSize", label: "Page Size", type: "number" },
       {
@@ -222,6 +235,39 @@ export const crudListPageConfig: WidgetConfig = {
       { key: "detailDialog.title", label: "Detail Dialog Title", type: "text" },
       { key: "detailDialog.detailApiUrl", label: "Detail API", type: "text" },
       {
+        key: "detailDialog.descriptionItems",
+        label: "Detail Fields",
+        type: "array-editor",
+        itemLabel: "label",
+        fields: [
+          {
+            key: "label",
+            label: "Label",
+            type: "text",
+            placeholder: "Display name",
+          },
+          {
+            key: "field",
+            label: "Field",
+            type: "text",
+            placeholder: "Data field name",
+          },
+          {
+            key: "type",
+            label: "Type",
+            type: "select",
+            default: "text",
+            options: [
+              { label: "Text", value: "text" },
+              { label: "Tag", value: "tag" },
+              { label: "Link", value: "link" },
+              { label: "Date", value: "date" },
+            ],
+          },
+          { key: "span", label: "Span", type: "number", default: 1 },
+        ],
+      },
+      {
         key: "detailDialog.showFlowTimeline",
         label: "Approval Timeline",
         type: "switch",
@@ -234,6 +280,11 @@ export const crudListPageConfig: WidgetConfig = {
       { key: "detailDialog.confirmText", label: "Fullscreen Approval Button", type: "text" },
       { key: "formDialog.createApiUrl", label: "Create API", type: "text" },
       { key: "formDialog.updateApiUrl", label: "Update API", type: "text" },
+      {
+        key: "formDialog.recordIdField",
+        label: "Record ID Field",
+        type: "text",
+      },
       { key: "formDialog.fields", label: "Form Field", type: "crud-form-fields" },
       { key: "formDialog.width", label: "Dialog Width", type: "text" },
     ],

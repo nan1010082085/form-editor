@@ -4,10 +4,10 @@ import { resolveWidgetSize } from "./unitResolver";
 
 /**
  * 碰撞检测
- * 判断组件与容器的重叠面积是否超过 50%
+ * 判断Component与Container的重叠面积是否超过 50%
  */
 
-/** 获取容器组件类型集合（动态） */
+/** 获取ContainerComponentType集合（动态） */
 function getContainerTypesSet() {
   return useAllContainerTypes();
 }
@@ -29,12 +29,12 @@ function overlapArea(
 }
 
 /**
- * 检测 widget 是否拖入了某个容器。
- * 判定条件：widget 与容器的重叠面积 >= widget 面积的 50%。
- * 避免仅中心点在容器内就吸附的问题。
+ * 检测 widget 是否拖入了某个Container。
+ * 判定Condition：widget 与Container的重叠面积 >= widget 面积的 50%。
+ * 避免仅中心点在Container内就吸附的问题。
  *
- * @param canvasWidth 画布宽度（用于计算百分比宽高）
- * @param canvasHeight 画布高度（用于计算百分比宽高）
+ * @param canvasWidth 画布Width（用于计算百Min比宽高）
+ * @param canvasHeight 画布Height（用于计算百Min比宽高）
  */
 export function detectContainerCollision(
   widget: Widget,
@@ -46,7 +46,7 @@ export function detectContainerCollision(
   const wx = wp.x;
   const wy = wp.y;
 
-  // 处理百分比宽高
+  // 处理百Min比宽高
   const cw = canvasWidth ?? 1920;
   const ch = canvasHeight ?? 1080;
   const { w: ww, h: wh } = resolveWidgetSize(widget, cw, ch);
@@ -66,13 +66,13 @@ export function detectContainerCollision(
 }
 
 /**
- * 检测 widget 是否拖入了某个容器（支持嵌套容器的画布绝对坐标碰撞检测）。
+ * 检测 widget 是否拖入了某个Container（支持嵌套Container的画布绝对坐标碰撞检测）。
  *
- * 与 detectContainerCollision 不同，此函数接收的 containers 已带有画布绝对坐标，
- * 可用于深层嵌套容器的碰撞检测。
+ * 与 detectContainerCollision 不同, 此函数接收的 containers 已带有画布绝对坐标, 
+ * 可用于深层嵌套Container的碰撞检测。
  *
- * @param canvasWidth 画布宽度（用于计算百分比宽高）
- * @param canvasHeight 画布高度（用于计算百分比宽高）
+ * @param canvasWidth 画布Width（用于计算百Min比宽高）
+ * @param canvasHeight 画布Height（用于计算百Min比宽高）
  */
 export function detectNestedContainerCollision(
   widget: Widget,
@@ -84,13 +84,13 @@ export function detectNestedContainerCollision(
   const wx = wp.x;
   const wy = wp.y;
 
-  // 处理百分比宽高
+  // 处理百Min比宽高
   const cw = canvasWidth ?? 1920;
   const ch = canvasHeight ?? 1080;
   const { w: ww, h: wh } = resolveWidgetSize(widget, cw, ch);
   const widgetArea = ww * wh;
 
-  // 优先匹配最深层的容器（后遍历的通常是更深层的子容器）
+  // 优先匹配最深层的Container（后遍历的通常是更深层的子Container）
   let best: (Widget & { _canvasX: number; _canvasY: number }) | null = null;
   let bestDepth = -1;
 
@@ -116,7 +116,7 @@ export function detectNestedContainerCollision(
   return best;
 }
 
-/** 获取所有根级容器（排除 widget 自身） */
+/** 获取所有根级Container（排除 widget 自身） */
 export function getRootContainers(
   widgets: Widget[],
   excludeId?: string,
@@ -128,17 +128,17 @@ export function getRootContainers(
 }
 
 /**
- * 递归收集所有容器（含嵌套），并计算其画布绝对坐标。
- * 返回的 Widget 对象附加了 _canvasX、_canvasY、_depth 属性。
+ * 递归收集所有Container（含嵌套）, 并计算其画布绝对坐标。
+ * 返回的 Widget 对象附加了 _canvasX、_canvasY、_depth Property。
  *
- * 用于深层嵌套拖拽碰撞检测：当组件需要拖入第 3+ 层容器时，
+ * 用于深层嵌套拖拽碰撞检测：当Component需要拖入第 3+ 层ContainerHrs, 
  * 必须用画布绝对坐标做碰撞判定。
  *
- * @param widgets    当前层级的 Widget 列表
+ * @param widgets    当前层级的 Widget Column表
  * @param offsetX    当前层级的 X 偏移（画布坐标）
  * @param offsetY    当前层级的 Y 偏移（画布坐标）
  * @param depth      当前嵌套深度
- * @param excludeId  需要排除的 Widget ID（通常为正在拖拽的组件）
+ * @param excludeId  需要排除的 Widget ID（通常为正在拖拽的Component）
  */
 export function collectAllContainers(
   widgets: Widget[],
@@ -163,7 +163,7 @@ export function collectAllContainers(
         _canvasY: canvasY,
         _depth: depth,
       });
-      // 自渲染容器（多列布局）的子组件坐标系由容器内部管理，
+      // 自渲染Container（多ColumnLayout）的子Component坐标系由Container内部管理, 
       // 但其 children 仍需递归收集以支持深层嵌套碰撞
       if (w.children?.length) {
         result.push(

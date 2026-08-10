@@ -1,6 +1,6 @@
 import type { ChartWidgetMock } from "../base/widgetMock";
 
-/** 柱状图 — 默认 mock（月度申请量） */
+/** 柱状图 — 默认 mock（month度申请量） */
 export const barChartMock: ChartWidgetMock = {
   kind: "chart",
   staticData: [

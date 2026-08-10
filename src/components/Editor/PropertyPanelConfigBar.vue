@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * PropertyPanelConfigBar — 事件/联动/数据源/变量配置入口
+ * PropertyPanelConfigBar — Event/Linkage/Data源/变量Config入口
  */
+import { useI18n } from "@schema-platform/platform-shared";
 import type { Widget } from "../../widgets/base/types";
 import type { ConfigPanelType } from "../../widgets/base/types";
 import styles from "./style.module.scss";
@@ -20,6 +21,8 @@ const emit = defineEmits<{
   openVariables: [];
   openChartLinkage: [];
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -38,7 +41,7 @@ const emit = defineEmits<{
         </el-popover>
         <template v-for="panel in configPanels" :key="panel">
           <el-button v-if="panel === 'events'" plain @click="emit('openEvent')">
-            事件配置
+            {{ t("editor.property.helpEvents") }}
             <span v-if="selectedWidget.events?.length" :class="styles.badge">
               {{ selectedWidget.events.length }}
             </span>
@@ -48,13 +51,13 @@ const emit = defineEmits<{
             plain
             @click="emit('openLinkage')"
           >
-            字段联动
+            {{ t("editor.property.helpLinkage") }}
             <span v-if="selectedWidget.linkages?.length" :class="styles.badge">
               {{ selectedWidget.linkages.length }}
             </span>
           </el-button>
           <el-button v-if="panel === 'api'" plain @click="emit('openApi')">
-            数据源
+            {{ t("editor.property.helpApi") }}
             <span v-if="selectedWidget.api" :class="styles.badge">1</span>
           </el-button>
           <el-button
@@ -62,7 +65,7 @@ const emit = defineEmits<{
             plain
             @click="emit('openVariables')"
           >
-            变量
+            {{ t("editor.property.helpVariable") }}
             <span v-if="selectedWidget.variables?.length" :class="styles.badge">
               {{ selectedWidget.variables.length }}
             </span>
@@ -72,7 +75,7 @@ const emit = defineEmits<{
             plain
             @click="emit('openChartLinkage')"
           >
-            图表联动
+            {{ t("editor.contextMenu.chartLinkageConfig") }}
             <span
               v-if="selectedWidget.chartLinkages?.length"
               :class="styles.badge"

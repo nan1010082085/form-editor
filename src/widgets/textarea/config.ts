@@ -10,7 +10,7 @@ export const textareaConfig: WidgetConfig = {
     fontSize: "14px",
   },
   defaultProps: {
-    placeholder: "请输入",
+    placeholder: "Please enter",
     disabled: false,
     readonly: false,
     rows: 3,
@@ -18,7 +18,7 @@ export const textareaConfig: WidgetConfig = {
     showWordLimit: false,
   },
   exposedValues: [
-    { key: "value", type: "string", description: "当前字段值", example: "" },
+    { key: "value", type: "string", description: "Current field value", example: "" },
   ],
   configPanels: ["events", "linkages", "variables"],
   propertyPanel: {
@@ -29,7 +29,7 @@ export const textareaConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请输入",
+        default: "Please enter",
       },
       { key: "disabled", label: "Disabled", type: "switch", default: false },
       { key: "readonly", label: "Read Only", type: "switch", default: false },

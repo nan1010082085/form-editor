@@ -1,12 +1,12 @@
 /**
- * useConditionReferences — 收集所有可用于条件表达式的引用
+ * useConditionReferences — 收集所有可用于Condition表达式的引用
  *
  * 三类引用：
- * - 表单字段：有 field 属性的组件 → 直接用 field 名（如 status）
- * - 变量：画布变量 + 组件变量 → variables.xxx
- * - 暴露值：组件 exposedValues → exposed.widgetId.key
+ * - FormField：有 field Property的Component → 直接用 field 名（如 status）
+ * - 变量：Canvas Variable + Component Variable → variables.xxx
+ * - Exposed Value：Component exposedValues → exposed.widgetId.key
  *
- * 返回分组选项列表，供 ConditionBuilder 使用。
+ * BackGroupOptionsColumn表, 供 ConditionBuilder 使用。
  */
 import { computed } from "vue";
 import { useWidgetStore } from "@/stores/widget";
@@ -26,7 +26,7 @@ function collectFields(widgets: Widget[]): ConditionReference[] {
     if (w.field) {
       const label = w.label || w.field;
       result.push({
-        label: `${label}（字段）`,
+        label: `${label}（Field）`,
         value: w.field,
         group: "field",
       });
@@ -43,7 +43,7 @@ function collectVariables(
   const result: ConditionReference[] = [];
   for (const v of boardVars) {
     result.push({
-      label: `${v.name}（画布变量）`,
+      label: `${v.name}（Canvas Variable）`,
       value: `variables.${v.name}`,
       group: "variable",
     });
@@ -53,7 +53,7 @@ function collectVariables(
       if (w.variables?.length) {
         for (const v of w.variables) {
           result.push({
-            label: `${v.name}（组件变量）`,
+            label: `${v.name}（Component Variable）`,
             value: `variables.${v.name}`,
             group: "variable",
           });
@@ -75,7 +75,7 @@ function collectExposed(widgets: Widget[]): ConditionReference[] {
       if (evs?.length) {
         for (const ev of evs) {
           result.push({
-            label: `${w.label || w.type} - ${ev.description}（暴露值）`,
+            label: `${w.label || w.type} - ${ev.description}（Exposed Value）`,
             value: `exposed.${w.id}.${ev.key}`,
             group: "exposed",
           });

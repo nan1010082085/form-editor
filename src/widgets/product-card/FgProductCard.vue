@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, inject } from "vue";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 
 const nameField = computed(() => (widgetData.value.props?.nameField as string) ?? "name");
 const priceField = computed(() => (widgetData.value.props?.priceField as string) ?? "price");

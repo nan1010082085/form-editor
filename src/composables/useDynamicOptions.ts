@@ -1,8 +1,8 @@
 /**
- * 动态选项加载 composable
+ * 动态Options加载 composable
  * 支持 API 请求和字典查找两种模式
  *
- * apiConfig 支持静态值或响应式 getter，当联动切换 API 配置时自动重新加载
+ * apiConfig 支持静态Valueor响应式 getter, 当Linkage切换 API ConfigHrs自动重新加载
  */
 import {
   ref,
@@ -45,9 +45,9 @@ export function useDynamicOptions(
   const options = ref<DictItem[]>([]) as Ref<DictItem[]>;
   const loading = ref(false);
   const error = ref("");
-  /** 递增的请求序号，用于丢弃过期响应（防竞态） */
+  /** 递增的请求No., 用于丢弃过期响应（防竞态） */
   let requestGeneration = 0;
-  /** 组件是否已卸载 */
+  /** Component是否已卸载 */
   let isUnmounted = false;
 
   const context = inject(FORM_GRID_CONTEXT_KEY, null);
@@ -88,7 +88,7 @@ export function useDynamicOptions(
       try {
         options.value = await fetchDictByCode(config.dictCode);
       } catch (e: unknown) {
-        error.value = e instanceof Error ? e.message : "字典加载失败";
+        error.value = e instanceof Error ? e.message : "Dictionary load failed";
       } finally {
         loading.value = false;
       }
@@ -136,14 +136,14 @@ export function useDynamicOptions(
       ? interpolateParams(config.params)
       : undefined;
 
-    // 2. 查缓存 (use resolved params for cache key)
+    // 2. 查Cache (use resolved params for cache key)
     const cached = getCachedOptions(config.url, resolvedParams);
     if (cached) {
       options.value = cached;
       return;
     }
 
-    // 3. 发起请求（支持重试）— 递增 generation 用于丢弃过期响应
+    // 3. 发起请求（支持Retry）— 递增 generation 用于丢弃过期响应
     const gen = ++requestGeneration;
     loading.value = true;
     error.value = "";
@@ -157,7 +157,7 @@ export function useDynamicOptions(
       // 过期响应丢弃
       if (gen !== requestGeneration || isUnmounted) return;
 
-      // 归一化响应：支持 dataPath 配置或自动探测常见包装键
+      // 归一化响应：支持 dataPath Configor自动探测常见包装键
       const { data: rawList } = normalizeListResponse(res, {
         dataPath: config.dataPath,
       });
@@ -186,7 +186,7 @@ export function useDynamicOptions(
         }));
       }
 
-      // 写缓存
+      // 写Cache
       setCachedOptions(
         config.url,
         resolvedParams,
@@ -195,7 +195,7 @@ export function useDynamicOptions(
       );
     } catch (e: unknown) {
       if (gen !== requestGeneration || isUnmounted) return;
-      error.value = e instanceof Error ? e.message : "加载选项失败";
+      error.value = e instanceof Error ? e.message : "Failed to load options";
       logger.api(error.value);
     } finally {
       if (gen === requestGeneration && !isUnmounted) {
@@ -204,8 +204,8 @@ export function useDynamicOptions(
     }
   }
 
-  // 监听 apiConfig 变化，自动重新加载
-  // 当联动切换 API 配置时触发
+  // 监听 apiConfig 变化, 自动重新加载
+  // 当Linkage切换 API ConfigHrsTrigger
   watch(
     () => toValue(apiConfig),
     (newConfig, oldConfig) => {
@@ -213,7 +213,7 @@ export function useDynamicOptions(
         options.value = [];
         return;
       }
-      // 配置变化时重新加载（url 或 params 变化）
+      // Config变化Hrs重新加载（url or params 变化）
       const newKey =
         newConfig.dictCode ??
         `${newConfig.url}:${JSON.stringify(newConfig.params ?? {})}`;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * FgFormSteps — 分步表单容器
+ * FgFormSteps — Min步FormContainer
  *
- * 内置步骤条 + 上一步/下一步按钮，每步可包含独立的 widget 集合。
+ * 内置步骤条 + 上一步/下一步Button, 每步可包含独立的 widget 集合。
  */
 import { inject, ref, computed } from "vue";
 import { widgetDataKey, widgetStyleKey, type Widget } from "../base/types";

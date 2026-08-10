@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * EditorToolbar — 顶部工具栏
+ * EditorToolbar — 顶部Toolbar
  *
- * 布局：左侧(返回/名称/面板切换) | 中间(编辑操作按钮组) | 右侧(画布/预览/保存)
- * 保留新版设计风格，恢复旧版关键功能
+ * Layout：左侧(返回/Name/面板切换) | 中间(EditActionButton组) | 右侧(画布/预览/Save)
+ * 保留新版设计风格, Restore旧版关键功能
  */
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
@@ -286,7 +286,7 @@ onUnmounted(() => {
 
 <template>
   <div :class="styles['editor-toolbar']">
-    <!-- 左侧：返回 / 名称 / 面板切换 -->
+    <!-- 左侧：返回 / Name / 面板切换 -->
     <div :class="styles['editor-toolbar__left']">
       <el-tooltip :content="t('editor.toolbar.backToList')" placement="bottom">
         <button
@@ -333,7 +333,7 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <!-- 中间：编辑操作按钮组（仅编辑模式显示） -->
+    <!-- 中间：EditActionButton组（仅Edit模式Show） -->
     <div v-if="mode === 'edit'" :class="styles['editor-toolbar__center']">
       <div :class="styles['editor-toolbar__btn-group']">
         <el-tooltip
@@ -505,7 +505,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- 右侧：模式切换/画布/缩略图/导出/预览/保存/发布 -->
+    <!-- 右侧：模式切换/画布/缩略图/Export/预览/Save/发布 -->
     <div :class="styles['editor-toolbar__right']">
       <!-- 模式切换下拉 -->
       <el-dropdown
@@ -680,7 +680,7 @@ onUnmounted(() => {
         <span>{{ t("editor.toolbar.publish") }}</span>
       </button>
 
-      <!-- 保存 -->
+      <!-- Save -->
       <button
         :class="[
           styles['editor-toolbar__btn'],
@@ -693,7 +693,7 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <!-- 从服务器加载弹窗 -->
+  <!-- 从服务器加载Dialog -->
   <el-dialog
     v-model="showLoadDialog"
     :title="t('editor.toolbar.loadSchemaTitle')"
@@ -722,7 +722,7 @@ onUnmounted(() => {
     </p>
   </el-dialog>
 
-  <!-- 导入弹窗 -->
+  <!-- ImportDialog -->
   <el-dialog
     v-model="showImportDialog"
     :title="t('editor.toolbar.importJsonTitle')"

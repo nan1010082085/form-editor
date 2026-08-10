@@ -12,19 +12,19 @@ export function createTreeSelectWidget(id: string): Widget {
     props: { ...treeSelectConfig.defaultProps },
     options: [
       {
-        label: "节点一",
+        label: "Node One",
         value: "1",
         children: [
-          { label: "子节点 1-1", value: "1-1" },
-          { label: "子节点 1-2", value: "1-2" },
+          { label: "Child Node 1-1", value: "1-1" },
+          { label: "Child Node 1-2", value: "1-2" },
         ],
       },
       {
-        label: "节点二",
+        label: "Node Two",
         value: "2",
-        children: [{ label: "子节点 2-1", value: "2-1" }],
+        children: [{ label: "Child Node 2-1", value: "2-1" }],
       },
-      { label: "节点三", value: "3" },
+      { label: "Node Three", value: "3" },
     ],
   };
 }

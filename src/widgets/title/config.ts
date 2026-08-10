@@ -11,7 +11,7 @@ export const titleConfig: WidgetConfig = {
   },
   configPanels: ["events"],
   defaultProps: {
-    content: "标题文字",
+    content: "Title Text",
     level: 3 as 1 | 2 | 3 | 4,
     align: "left" as "left" | "center" | "right",
   },
@@ -19,10 +19,10 @@ export const titleConfig: WidgetConfig = {
     basic: ["field", "label"],
     style: ["fontSize", "fontWeight", "color", "backgroundColor"],
     props: [
-      { key: "content", label: "Title Content", type: "input", default: "标题文字" },
+      { key: "content", label: "Title Content", type: "input", default: "Title Text" },
       {
         key: "level",
-        label: "级别",
+        label: "Level",
         type: "select",
         options: [
           { label: "H1", value: 1 },

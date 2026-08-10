@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, ref, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 import { useChartOption } from "../base/useChartOption";
@@ -7,6 +8,7 @@ import { useChartLazyInit } from "../base/useChartLazyInit";
 import { echarts, type EChartsType } from "../base/echarts";
 import styles from "./style.module.scss";
 
+const { t } = useI18n();
 const widgetData = inject(widgetDataKey)!;
 
 function buildOption(
@@ -15,7 +17,10 @@ function buildOption(
 ): Record<string, unknown> {
   const nameField = (props.nameField as string) || "name";
   const seriesFields = (props.seriesFields as string[]) || ["value1", "value2"];
-  const seriesNames = (props.seriesNames as string[]) || ["流程A", "流程B"];
+  const seriesNames = (props.seriesNames as string[]) || [
+    t("editor.compareFunnel.seriesA"),
+    t("editor.compareFunnel.seriesB"),
+  ];
   const title = props.title as string;
   const showLegend = props.showLegend !== false;
   const showLabel = props.showLabel !== false;

@@ -1,9 +1,9 @@
 /**
- * useDataSourceStore — 全局数据源管理
+ * useDataSourceStore — 全局Data源管理
  *
- * 集中管理 API 数据源定义，支持 HTTP 轮询和 WebSocket 推送。
- * Widget 通过 subscribe(dsId, callback) 订阅数据变更，store 自动管理传输生命周期。
- * 统一 L1 内存缓存 + L2 IndexedDB 缓存（复用现有 useCache Worker）。
+ * 集中管理 API Data源定义, 支持 HTTP 轮询和 WebSocket 推送。
+ * Widget passed subscribe(dsId, callback) 订阅Data变更, store 自动管理传输生命week期。
+ * 统一 L1 内存Cache + L2 IndexedDB Cache（复用现有 useCache Worker）。
  */
 import { defineStore } from "pinia";
 import { ref, shallowRef } from "vue";
@@ -23,7 +23,7 @@ export const useDataSourceStore = defineStore("dataSource", () => {
   const subscriptions = ref(new Map<string, Set<(data: unknown) => void>>());
   const filterParams = ref<Record<string, unknown>>({});
 
-  // L1 内存缓存
+  // L1 内存Cache
   const l1Cache = new Map<
     string,
     { data: unknown; timestamp: number; ttl: number }
@@ -40,7 +40,7 @@ export const useDataSourceStore = defineStore("dataSource", () => {
   // 注册 / 注销
   // ================================================================
 
-  /** 从 schema 加载时注册所有数据源定义 */
+  /** 从 schema 加载Hrs注册所有Data源定义 */
   function registerAll(defs: DataSourceDefinition[]): void {
     const next = new Map<string, DataSourceDefinition>();
     for (const def of defs) {
@@ -60,7 +60,7 @@ export const useDataSourceStore = defineStore("dataSource", () => {
     definitions.value = next;
   }
 
-  /** 卸载所有（路由切换时调用） */
+  /** 卸载所有（Route切换Hrs调用） */
   function dispose(): void {
     for (const [id] of pollers) stopPolling(id);
     for (const [url] of wsConnections) closeWebSocket(url);
@@ -71,12 +71,12 @@ export const useDataSourceStore = defineStore("dataSource", () => {
     l1Cache.clear();
   }
 
-  /** 设置筛选参数（合并模式） */
+  /** SettingsFilterParams（合并模式） */
   function setFilterParams(params: Record<string, unknown>): void {
     filterParams.value = { ...filterParams.value, ...params };
   }
 
-  /** 清除所有筛选参数 */
+  /** 清除所有FilterParams */
   function clearFilterParams(): void {
     filterParams.value = {};
   }
@@ -85,7 +85,7 @@ export const useDataSourceStore = defineStore("dataSource", () => {
   // 核心请求
   // ================================================================
 
-  /** 获取数据源数据（带 L1/L2 缓存） */
+  /** 获取Data源Data（带 L1/L2 Cache） */
   async function fetch(dsId: string, force = false): Promise<unknown> {
     const def = definitions.value.get(dsId);
     if (!def) throw new Error(`DataSource "${dsId}" not found`);
@@ -98,7 +98,7 @@ export const useDataSourceStore = defineStore("dataSource", () => {
       if (l1Hit !== undefined) return l1Hit;
     }
 
-    // 标记加载中
+    // 标记Loading
     updateState(dsId, { loading: true, error: null });
 
     try {
@@ -120,7 +120,7 @@ export const useDataSourceStore = defineStore("dataSource", () => {
       const rawList = extractList(response, http.dataPath);
       const mapped = mapToDictItems(rawList, def.mapping);
 
-      // 写入 L1 缓存
+      // 写入 L1 Cache
       l1Set(cacheKey, mapped, def.cache.ttlMs);
 
       updateState(dsId, {
@@ -232,7 +232,7 @@ export const useDataSourceStore = defineStore("dataSource", () => {
   // 订阅
   // ================================================================
 
-  /** 订阅数据源变更，返回取消订阅函数 */
+  /** 订阅Data源变更, 返回Cancel订阅函数 */
   function subscribe(
     dsId: string,
     callback: (data: unknown) => void,

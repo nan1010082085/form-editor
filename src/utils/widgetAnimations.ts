@@ -1,70 +1,88 @@
 /**
  * widgetAnimations — Widget 入场动画预设
  *
- * 仅使用 opacity / transform，不影响布局。
- * 所有动画通过 CSS @keyframes 实现，JS 层只负责配置映射。
+ * 仅使用 opacity / transform, 不影响Layout。
+ * 所有动画passed CSS @keyframes 实现, JS 层只负责ConfigMap。
  */
 
 export interface AnimationPreset {
   name: string;
   label: string;
-  /** 纯 CSS animation 属性值（不含 @keyframes 定义） */
+  /** 纯 CSS animation PropertyValue（不含 @keyframes 定义） */
   css: string;
 }
 
 export const ANIMATION_PRESETS: Record<string, AnimationPreset> = {
-  none: { name: "none", label: "无", css: "" },
+  none: { name: "none", label: "None", css: "" },
   fadeIn: {
     name: "fadeIn",
-    label: "淡入",
+    label: "Fade In",
     css: "animation: widgetFadeIn 0.6s ease-out forwards;",
   },
   slideUp: {
     name: "slideUp",
-    label: "上滑",
+    label: "Slide Up",
     css: "animation: widgetSlideUp 0.6s ease-out forwards;",
   },
   slideDown: {
     name: "slideDown",
-    label: "下滑",
+    label: "Slide Down",
     css: "animation: widgetSlideDown 0.6s ease-out forwards;",
   },
   slideLeft: {
     name: "slideLeft",
-    label: "左滑",
+    label: "Slide Left",
     css: "animation: widgetSlideLeft 0.6s ease-out forwards;",
   },
   slideRight: {
     name: "slideRight",
-    label: "右滑",
+    label: "Slide Right",
     css: "animation: widgetSlideRight 0.6s ease-out forwards;",
   },
   scaleIn: {
     name: "scaleIn",
-    label: "缩放",
+    label: "Scale In",
     css: "animation: widgetScaleIn 0.5s ease-out forwards;",
   },
   bounceIn: {
     name: "bounceIn",
-    label: "弹入",
+    label: "Bounce In",
     css: "animation: widgetBounceIn 0.8s ease-out forwards;",
   },
   rotateIn: {
     name: "rotateIn",
-    label: "旋入",
+    label: "Rotate In",
     css: "animation: widgetRotateIn 0.6s ease-out forwards;",
   },
 };
 
-/** 动画预设选项列表（供属性面板下拉选择） */
+/** 动画预设OptionsColumn表（英文 fallback, 供非 i18n 场景） */
 export const ANIMATION_OPTIONS = Object.values(ANIMATION_PRESETS).map((p) => ({
   label: p.label,
   value: p.name,
 }));
 
 /**
- * @keyframes 定义 — 注入到全局样式表
- * 仅使用 opacity / transform，不影响文档流
+ * 获取本地化动画预设Options
+ *
+ * @param t - i18n 翻译函数
+ */
+export function getAnimationOptions(
+  t: (key: string) => string,
+): { label: string; value: string }[] {
+  return Object.values(ANIMATION_PRESETS).map((p) => {
+    const key = `editor.animationPresets.${p.name}`;
+    const translated = t(key);
+    return {
+      label: translated === key ? p.label : translated,
+      value: p.name,
+    };
+  });
+}
+
+/**
+ * @keyframes 定义 — 注入到全局Style表
+ * 仅使用 opacity / transform, 不影响文档流
  */
 export const ANIMATION_KEYFRAMES = `
 @keyframes widgetFadeIn {
@@ -111,10 +129,10 @@ export const ANIMATION_KEYFRAMES = `
 `;
 
 /**
- * 获取动画的 CSS 内联样式字符串
- * @param presetName 预设名称
- * @param delay 延迟毫秒数
- * @param duration 自定义持续时间毫秒数（可选，覆盖预设默认值）
+ * 获取动画的 CSS 内联Style字符串
+ * @param presetName 预设Name
+ * @param delay 延迟毫sec数
+ * @param duration 自定义持续Hrs间毫sec数（可选, 覆盖预设Default value）
  */
 export function getAnimationStyle(
   presetName: string | undefined,

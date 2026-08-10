@@ -2,10 +2,10 @@ import type { InjectionKey, ComputedRef, Ref } from "vue";
 import type { FormItemRule } from "element-plus";
 
 // ============================================================
-// SchemaType — 组件类型枚举
+// SchemaType — Component Type Enum
 // ============================================================
 
-/** 容器组件类型 */
+/** ContainerComponentType */
 export type ContainerType =
   | "form"
   | "card"
@@ -18,7 +18,7 @@ export type ContainerType =
   | "micro-app-container"
   | "row-container";
 
-/** 基础组件类型 */
+/** Basic Component Types */
 export type BasicType =
   | "input"
   | "number"
@@ -90,10 +90,10 @@ export type BasicType =
   | "dynamic-detail-table"
   | "qr-scanner";
 
-/** 嵌入类组件 */
+/** Embedded Components */
 export type EmbedType = "iframe" | "micro-app";
 
-/** 业务场景组件 */
+/** Business Scenario Components */
 export type BusinessType =
   | "crud-list-page"
   | "user-management"
@@ -108,10 +108,10 @@ export type BusinessType =
   | "auto-refresh"
   | "compliance-checklist";
 
-/** 所有组件类型 — 运行时真源为 widgets/registry，新增类型仅需 registerWidget */
+/** All Component Types — runtime source is widgets/registry, new types only need registerWidget */
 export type SchemaType = string;
 
-/** @internal 内置 Widget 类型字面量（文档与 fallback 用） */
+/** @internal Built-in Widget Type Literal (for docs and fallback) */
 export type KnownSchemaType =
   | ContainerType
   | BasicType
@@ -119,7 +119,7 @@ export type KnownSchemaType =
   | BusinessType;
 
 // ============================================================
-// 表单字段值类型
+// FormFieldValueType
 // ============================================================
 
 export type FormFieldValue =
@@ -134,7 +134,7 @@ export type FormFieldValue =
   | Record<string, unknown>[];
 
 // ============================================================
-// 字典项
+// Dictionary item
 // ============================================================
 
 export interface DictItem {
@@ -146,10 +146,10 @@ export interface DictItem {
 }
 
 // ============================================================
-// 校验规则（Element Plus FormItemRule + 自定义 WidgetRule 扩展）
+// Validation rules (Element Plus FormItemRule + custom WidgetRule extension)
 // ============================================================
 
-/** 扩展 FormItemRule，支持 WidgetRule 系统的 watches/condition/actions */
+/** Extend FormItemRule, supports WidgetRule system watches/condition/actions */
 export interface SchemaRule extends FormItemRule {
   watches?: Array<{ type: string; source: string }>;
   condition?: string;
@@ -159,7 +159,7 @@ export interface SchemaRule extends FormItemRule {
 export type SchemaRules = SchemaRule[];
 
 // ============================================================
-// Widget 变量
+// Widget variables
 // ============================================================
 
 export interface WidgetVariable {
@@ -170,10 +170,10 @@ export interface WidgetVariable {
 }
 
 // ============================================================
-// 事件动作
+// EventAction
 // ============================================================
 
-/** 事件动作类型 */
+/** EventActionType */
 export type EventActionType =
   | "show"
   | "hide"
@@ -184,112 +184,112 @@ export type EventActionType =
   | "submit"
   | "reset"
   | "emit"
-  | "set-variable" // 修改用户变量
-  | "trigger-event" // 触发目标组件的指定事件
-  | "post-message" // 向父窗口发送 postMessage
-  | "close-tab" // 关闭浏览器页签
-  | "copy" // 复制文本到剪贴板
-  | "refresh" // 刷新目标组件数据
-  | "api" // 调用后端 API
-  | "navigate" // 路由跳转
-  | "startFlow" // 发起流程
-  | "endFlow" // 结束流程
-  | "submitSubmission" // 校验并提交表单数据到 Submission API
-  | "exportData" // 导出文件下载（CSV/Excel 等）
-  | "chart-linkage"; // 图表联动（钻取/筛选/高亮）
+  | "set-variable" // Modify user variable
+  | "trigger-event" // Trigger specified event on target widget
+  | "post-message" // Send postMessage to parent window
+  | "close-tab" // Close browser tab
+  | "copy" // Copy text to clipboard
+  | "refresh" // Refresh target widget data
+  | "api" // Call backend API
+  | "navigate" // Route navigation
+  | "startFlow" // Start workflow
+  | "endFlow" // End workflow
+  | "submitSubmission" // Validate and submit form data to Submission API
+  | "exportData" // Export file download (CSV/Excel etc.)
+  | "chart-linkage"; // Chart linkage (drilldown/filter/highlight)
 
-/** 事件动作 */
+/** EventAction */
 export interface SchemaEventAction {
   type: EventActionType;
-  /** 目标组件 ID 或弹窗 ID */
+  /** Target Component ID or Dialog ID */
   target?: string;
-  /** 附带值（如切换到哪个标签、emit 的 payload） */
+  /** Attached value (e.g. which Tab to switch to, emit payload) */
   value?: unknown;
-  // ---- set-variable 专用 ----
-  /** 变量名 */
+  // ---- set-variable specific ----
+  /** Variable name */
   variable?: string;
-  // ---- trigger-event 专用 ----
-  /** 要触发的事件名 */
+  // ---- trigger-event specific ----
+  /** Event name to trigger */
   event?: string;
-  // ---- post-message 专用 ----
-  /** 消息内容 */
+  // ---- post-message specific ----
+  /** Message content */
   message?: Record<string, unknown>;
-  // ---- copy 专用 ----
-  /** 要复制的文本（支持 formData.xxx 引用） */
+  // ---- copy specific ----
+  /** Text to copy (supports formData.xxx references) */
   text?: string;
-  // ---- api 专用 ----
-  /** API 地址 */
+  // ---- api specific ----
+  /** API URL */
   apiUrl?: string;
-  /** 请求方法 */
+  /** Request method */
   apiMethod?: "get" | "post" | "put" | "delete";
-  /** 请求参数，'formData' 表示使用表单数据 */
+  /** Request params, 'formData' means use FormData */
   apiParams?: Record<string, unknown> | "formData";
-  // ---- navigate 专用 ----
-  /** 路由路径 */
+  // ---- navigate specific ----
+  /** Route path */
   navigatePath?: string;
-  /** 路由查询参数 */
+  /** RouteQueryParams */
   navigateQuery?: Record<string, string>;
-  // ---- startFlow 专用 ----
-  /** 流程定义 ID */
+  // ---- startFlow specific ----
+  /** Workflow definition ID */
   definitionId?: string;
-  /** 流程变量 */
+  /** Workflow variables */
   variables?: Record<string, unknown>;
-  // ---- endFlow 专用 ----
-  /** 流程实例 ID */
+  // ---- endFlow specific ----
+  /** Workflow instance ID */
   instanceId?: string;
-  /** 结束原因 */
+  /** End reason */
   reason?: string;
-  // ---- submitSubmission 专用 ----
-  /** 目标 Schema ID（sourceId 或 publishId） */
+  // ---- submitSubmission specific ----
+  /** Target Schema ID (sourceId or publishId) */
   schemaId?: string;
-  /** exportData 专用：下载文件名（不含扩展名时可从 Content-Disposition 推断） */
+  /** exportData specific: download filename (when extension is missing, can be inferred from Content-Disposition) */
   exportFileName?: string;
-  // ---- chart-linkage 专用 ----
-  /** 图表联动规则 ID */
+  // ---- chart-linkage specific ----
+  /** ChartLinkageRule ID */
   chartLinkageRuleId?: string;
 }
 
 // ============================================================
-// Widget 事件
+// Widget Event
 // ============================================================
 
 export interface WidgetEvent {
-  /** 触发事件名（click / change / close 等） */
+  /** Trigger event name (click / change / close etc.) */
   trigger: string;
-  /** 事件目标（部件内部元素标识，为空则绑定到整个部件） */
+  /** Event target (Widget internal element identifier, empty binds to entire Widget) */
   eventTarget?: string;
-  /** 执行条件表达式 */
+  /** Execute condition expression */
   condition?: string;
-  /** 执行前确认提示 */
+  /** Confirm prompt before execution */
   confirm?: string;
   actions: SchemaEventAction[];
 }
 
-/** 事件目标配置 — 声明部件内可绑定事件的子元素 */
+/** Event target config — declares child elements in Widget that can bind events */
 export interface EventTargetConfig {
-  /** 目标标识（传给 triggerWidgetEvent 的第三个参数） */
+  /** Target identifier (third param passed to triggerWidgetEvent) */
   id: string;
-  /** 显示名称 */
+  /** ShowName */
   label: string;
-  /** 描述 */
+  /** Description */
   description?: string;
 }
 
 // ============================================================
-// Widget 规则
+// Widget Rule
 // ============================================================
 
 // ============================================================
-// 搜索字段配置
+// SearchFieldConfig
 // ============================================================
 
-/** 搜索字段配置 */
+/** SearchFieldConfig */
 export interface SearchFieldConfig {
-  /** 字段名（作为 API 查询参数 key） */
+  /** Field name (as API query param key) */
   field: string;
-  /** 显示标签 */
+  /** ShowLabel */
   label: string;
-  /** 搜索控件类型 */
+  /** Search control type */
   type:
     | "input"
     | "select"
@@ -299,57 +299,57 @@ export interface SearchFieldConfig {
     | "time-picker"
     | "number"
     | "checkbox";
-  /** 占位文字 */
+  /** Placeholder text */
   placeholder?: string;
-  /** 下拉选项（type=select/checkbox 时使用） */
+  /** Dropdown options (used when type=select/checkbox) */
   options?: { label: string; value: string | number | boolean }[];
-  /** 级联选项（type=cascader 时使用） */
+  /** Cascade options (used when type=cascader) */
   cascaderOptions?: {
     label: string;
     value: string | number;
     children?: unknown[];
   }[];
-  /** 默认值 */
+  /** Default value */
   defaultValue?: unknown;
-  /** number 类型最小值 */
+  /** number TypeMinValue */
   min?: number;
-  /** number 类型最大值 */
+  /** number TypeMaxValue */
   max?: number;
-  /** number 类型步长 */
+  /** number type step */
   step?: number;
 }
 
 // ============================================================
-// API 数据源配置
+// API data source config
 // ============================================================
 
-/** 动态数据请求配置 */
+/** Dynamic data request config */
 export interface SchemaApiConfig {
   url: string;
   method?: "get" | "post";
   params?: Record<string, unknown>;
-  headers?: Record<string, string>; // 自定义 HTTP 请求头
-  body?: Record<string, unknown>; // POST 请求体（与 params 分离，params 是 query 参数）
-  timeout?: number; // 请求超时时间（毫秒），默认 5000
+  headers?: Record<string, string>; // Custom HTTP request headers
+  body?: Record<string, unknown>; // POST body (separate from params which are query params)
+  timeout?: number; // Request timeout (ms), default 5000
   dataPath?: string; // dot-notation path to data array (e.g. "result.records"). Falls back to data > list > rows > items > records
-  labelKey?: string; // 默认 'label'
-  valueKey?: string; // 默认 'value'
-  childrenKey?: string; // 树形数据子节点字段（保留树形结构不拍平）
-  ttl?: number; // 缓存 TTL（毫秒），默认 0 = 永不过期
-  immediate?: boolean; // 默认 true，挂载时加载
-  dictCode?: string; // 从 global.dictMap 查找（优先于 url）
-  cacheLevel?: "memory" | "indexeddb" | "both"; // 缓存策略，默认 'memory'
-  enableRetry?: boolean; // 开启重试，默认 false
-  retryCount?: number; // 重试次数，默认 3，最高 5
-  /** 引用全局 DataSourceDefinition 的 ID — 设置后 url/method/params 等字段被忽略 */
+  labelKey?: string; // Default 'label'
+  valueKey?: string; // Default 'value'
+  childrenKey?: string; // Tree data child key (preserve tree structure)
+  ttl?: number; // Cache TTL (ms), default 0 = never expires
+  immediate?: boolean; // default true, load on mount
+  dictCode?: string; // lookup from global.dictMap (priority over url)
+  cacheLevel?: "memory" | "indexeddb" | "both"; // Cache strategy, default 'memory'
+  enableRetry?: boolean; // Enable retry, default false
+  retryCount?: number; // Retry count, default 3, max 5
+  /** Reference global DataSourceDefinition ID — after setting, url/method/params fields are ignored */
   dataSourceId?: string;
 }
 
 // ============================================================
-// 联动配置
+// LinkageConfig
 // ============================================================
 
-/** 联动类型 */
+/** LinkageType */
 export type LinkageType =
   | "visible"
   | "disabled"
@@ -358,95 +358,95 @@ export type LinkageType =
   | "set-value"
   | "reset-fields";
 
-/** 联动配置 */
+/** LinkageConfig */
 export interface SchemaLinkage {
-  /** 联动类型 */
+  /** LinkageType */
   type: LinkageType;
-  /** 监听的字段列表 */
+  /** Watched field list */
   watchFields: string[];
-  /** 联动条件 — 函数或字符串表达式 */
+  /** Linkage condition — function or string expression */
   condition: string | ((values: Record<string, FormFieldValue>) => boolean);
-  /** options 联动时，条件为真的静态选项 */
+  /** Static options when condition is true (options linkage) */
   thenOptions?: DictItem[];
-  /** options 联动时，条件为真的动态 API 配置 */
+  /** Dynamic API config when condition is true (options linkage) */
   thenApi?: SchemaApiConfig;
-  /** 条件为假时的回退值（visible=false, disabled=false 等） */
+  /** Fallback value when condition is false (visible=false, disabled=false etc.) */
   elseValue?: FormFieldValue;
-  /** set-value 联动：条件为真时设置的字面值 */
+  /** set-value linkage: literal value to set when condition is true */
   thenValue?: FormFieldValue;
-  /** set-value 联动：条件为真时复制值来源字段 */
+  /** set-value linkage: source field to copy value from when condition is true */
   valueSource?: string;
-  /** reset-fields 联动：条件为真时要重置的目标字段列表 */
+  /** reset-fields linkage: target field list to reset when condition is true */
   targetFields?: string[];
 }
 
-/** 联动计算后的字段状态 */
+/** Field status after linkage calculation */
 export interface LinkageState {
-  /** 是否可见 */
+  /** Visible */
   visible: boolean;
-  /** 是否禁用 */
+  /** Whether disabled */
   disabled: boolean;
-  /** 是否必填 */
+  /** Required */
   required: boolean;
-  /** options 联动覆盖的静态选项 */
+  /** Static options overridden by options linkage */
   options?: DictItem[];
-  /** options 联动覆盖的 API 配置 */
+  /** API config overridden by options linkage */
   optionsApi?: SchemaApiConfig;
-  /** elseValue: 联动条件为 false 时回退到此值 */
+  /** elseValue: fallback to this value when linkage condition is false */
   elseValue?: FormFieldValue;
-  /** set-value 联动设置的目标值 */
+  /** Target value set by set-value linkage */
   targetValue?: FormFieldValue;
-  /** reset-fields 联动：条件为真时要重置的目标字段列表 */
+  /** reset-fields linkage: target field list to reset when condition is true */
   resetFields?: string[];
 }
 
 // ============================================================
-// 图表联动配置
+// ChartLinkageConfig
 // ============================================================
 
-/** 图表联动触发方式 */
+/** Chart linkage trigger mode */
 export type ChartLinkageTrigger = "click" | "select" | "hover";
 
-/** 图表联动动作类型 */
+/** ChartLinkageActionType */
 export type ChartLinkageAction = "filter" | "drilldown" | "highlight";
 
-/** 图表联动规则 */
+/** ChartLinkageRule */
 export interface ChartLinkageRule {
-  /** 规则 ID */
+  /** Rule ID */
   id: string;
-  /** 源图表 Widget ID（触发联动的图表） */
+  /** Source chart widget ID (chart that triggers linkage) */
   sourceWidgetId: string;
-  /** 触发方式 */
+  /** Trigger mode */
   trigger: ChartLinkageTrigger;
-  /** 目标图表 Widget ID 列表（被联动的图表） */
+  /** Target chart widget ID list (charts being linked) */
   targetWidgetIds: string[];
-  /** 参数映射：源数据字段 -> 目标筛选字段 */
+  /** Param mapping: source data field -> target filter field */
   paramMapping: Record<string, string>;
-  /** 联动动作类型 */
+  /** LinkageActionType */
   action: ChartLinkageAction;
-  /** 钻取维度字段（drilldown 动作专用） */
+  /** Drilldown dimension field (for drilldown action) */
   drilldownField?: string;
-  /** 钻取层级标签（用于面包屑显示） */
+  /** Drilldown level label (for breadcrumb display) */
   drilldownLabel?: string;
 }
 
-/** 图表钻取历史记录 */
+/** Chart drilldown history */
 export interface DrilldownHistoryEntry {
-  /** 钻取的维度值 */
+  /** Drilldown dimension value */
   value: string;
-  /** 钻取的维度字段 */
+  /** Drilldown dimension field */
   field: string;
-  /** 显示标签 */
+  /** ShowLabel */
   label: string;
-  /** 钻取时的筛选条件快照 */
+  /** Filter condition snapshot during drilldown */
   filters: Record<string, unknown>;
 }
 
 // ============================================================
-// 属性面板配置类型
+// Property panel config type
 // ============================================================
 
-/** 配置面板类型（属性面板底部的弹框入口按钮） */
+/** Config panel type (dialog entry button at bottom of property panel) */
 export type ConfigPanelType =
   | "events"
   | "linkages"
@@ -454,7 +454,7 @@ export type ConfigPanelType =
   | "variables"
   | "chart-linkages";
 
-/** 属性面板声明中的基础属性快捷键 */
+/** Basic property shortcut in property panel declaration */
 export type BasicPropKey =
   | "field"
   | "label"
@@ -463,7 +463,7 @@ export type BasicPropKey =
   | "options"
   | "validationRules";
 
-/** 属性面板声明中的属性项（字符串快捷键 或 完整配置对象） */
+/** Property item in property panel declaration (string shortcut or full config object) */
 export type PropertyPanelItem =
   | BasicPropKey
   | {
@@ -479,23 +479,23 @@ export type PropertyPanelItem =
       visibleOn?: string;
     };
 
-/** 属性面板声明 */
+/** Property panel declaration */
 export interface PropertyPanelConfig {
   basic?: PropertyPanelItem[];
   style?: string[];
   props?: PropertyPanelItem[];
 }
 
-/** Widget 完整配置（config.ts 导出的对象结构） */
+/** Widget complete config (object structure exported from config.ts) */
 export interface WidgetConfig {
   name: string;
   displayName: string;
-  type?: SchemaType; // 组件类型（变体需要指定，基础组件可省略）
-  description: string; // 部件描述，用于属性面板 tooltip
-  author?: string; // 部件作者
+  type?: SchemaType; // Component type (variant needs to specify, basic component can omit)
+  description: string; // Widget description, used for property panel tooltip
+  author?: string; // Widget author
   defaultStyle?: Record<string, unknown>;
   defaultProps?: Record<string, unknown>;
-  /** 拖入画布时的默认位置（覆盖全局 DEFAULT_POSITION） */
+  /** Default position when dragging to canvas (overrides global DEFAULT_POSITION) */
   defaultPosition?: Partial<{
     x: number;
     y: number;
@@ -509,41 +509,43 @@ export interface WidgetConfig {
   }>;
   propertyPanel?: PropertyPanelConfig;
   configPanels?: ConfigPanelType[];
-  /** 事件目标列表 — 声明部件内可独立绑定事件的子元素（支持静态数组或动态函数） */
+  /** Event target list — declares child elements in Widget that can independently bind events (supports static array or dynamic function) */
   eventTargets?:
     | EventTargetConfig[]
     | ((widget: Widget) => EventTargetConfig[]);
-  /** 组件暴露的运行时值 — 供联动条件表达式引用 exposed.widgetId.xxx */
+  /** Component exposed runtime values — for linkage condition expressions to reference exposed.widgetId.xxx */
   exposedValues?: ExposedValueConfig[];
-  /** 组件可接收的外部事件 — 由事件引擎 trigger-event 动作触发 */
+  /** External events Component can receive — triggered by event engine trigger-event action */
   receivableEvents?: ReceivableEventConfig[];
-  /** 该 widget 可用的画布模式。未声明 = 两种模式都可用；声明则必须包含当前模式，否则组件面板隐藏 */
+  /** Canvas modes available for this widget. Not declared = both modes available; if declared must include current mode, otherwise component panel hides */
   contexts?: BoardLayoutMode[];
+  /** Component icon name (for component panel display) */
+  icon?: string;
 }
 
-/** 组件暴露值配置 */
+/** Component exposed value config */
 export interface ExposedValueConfig {
-  /** 引用 key，如 selectedRows / loading */
+  /** Reference key, e.g. selectedRows / loading */
   key: string;
-  /** 值类型 */
+  /** ValueType */
   type: "string" | "number" | "boolean" | "object" | "array";
-  /** 说明 */
+  /** Description */
   description: string;
-  /** 示例值 */
+  /** Example value */
   example?: unknown;
 }
 
-/** 组件可接收事件配置 */
+/** Component receivable event config */
 export interface ReceivableEventConfig {
-  /** 事件名，如 refresh / reset-search */
+  /** Event name, e.g. refresh / reset-search */
   name: string;
-  /** 说明 */
+  /** Description */
   description: string;
-  /** 参数说明 */
+  /** ParamsDescription */
   params?: Record<string, string>;
 }
 
-/** 通用数组编辑器字段声明 */
+/** Generic array editor field declaration */
 export interface ArrayFieldSchema {
   key: string;
   label: string;
@@ -558,162 +560,162 @@ export interface ArrayFieldSchema {
 // ============================================================
 
 export interface Widget {
-  // === 基础标识 ===
-  /** 唯一 ID（组件Key + 5位随机Hash） */
+  // === Basic identifiers ===
+  /** Unique ID (ComponentKey + 5 char random hash) */
   id: string;
-  /** 组件名称（如 'FgInput'） */
+  /** Component name (e.g. 'FgInput') */
   name: string;
-  /** 组件类型 */
+  /** ComponentType */
   type: SchemaType;
 
-  // === 属性配置 ===
-  /** 表单字段名 */
+  // === PropertyConfig ===
+  /** Form field name */
   field?: string;
-  /** 组件标签 */
+  /** ComponentLabel */
   label?: string;
-  /** 组件特有属性 */
+  /** Component specific properties */
   props?: Record<string, unknown>;
-  /** 选项列表 */
+  /** Options list */
   options?: DictItem[];
-  /** 默认值 */
+  /** Default value */
   defaultValue?: FormFieldValue;
 
-  // === 位置配置 ===
+  // === Position config ===
   position: {
-    x: number; // 水平位置 - 绝对定位
-    y: number; // 垂直位置 - 绝对定位
-    w: number; // 宽度值
-    h: number; // 高度值
-    xUnit?: "px" | "%"; // 水平位置单位，默认 px
-    yUnit?: "px" | "%"; // 垂直位置单位，默认 px
-    wUnit?: "px" | "%"; // 宽度单位，默认 px
-    hUnit?: "px" | "%"; // 高度单位，默认 px
+    x: number; // Horizontal position - absolute positioning
+    y: number; // Vertical position - absolute positioning
+    w: number; // WidthValue
+    h: number; // HeightValue
+    xUnit?: "px" | "%"; // Horizontal position unit, default px
+    yUnit?: "px" | "%"; // Vertical position unit, default px
+    wUnit?: "px" | "%"; // Width unit, default px
+    hUnit?: "px" | "%"; // Height unit, default px
     zIndex?: number;
   };
 
-  // === 响应式位置 ===
-  /** 按断点覆盖位置/尺寸（仅预览/发布模式生效） */
+  // === Responsive position ===
+  /** Override position/size by breakpoint (only effective in preview/publish mode) */
   responsivePosition?: ResponsivePosition;
 
-  // === 样式配置 ===
-  /** 组件特有样式 */
+  // === StyleConfig ===
+  /** Component specific styles */
   style?: Record<string, unknown>;
 
-  // === 变量 ===
-  /** 组件内部变量 */
+  // === Variables ===
+  /** Component internal variables */
   variables?: WidgetVariable[];
 
-  // === 事件 ===
-  /** 组件事件列表 */
+  // === Event ===
+  /** Component event list */
   events?: WidgetEvent[];
 
-  // === 联动 ===
-  /** 组件联动规则列表（SchemaLinkage） */
+  // === Linkage ===
+  /** Component linkage rule list (SchemaLinkage) */
   linkages?: SchemaLinkage[];
 
-  // === 图表联动 ===
-  /** 图表联动规则列表（ChartLinkageRule） */
+  // === ChartLinkage ===
+  /** Chart linkage rule list (ChartLinkageRule) */
   chartLinkages?: ChartLinkageRule[];
 
-  // === 运行时状态（由规则引擎设置） ===
-  /** 组件是否禁用（规则引擎可动态设置） */
+  // === Runtime status (set by rule engine) ===
+  /** Whether component is disabled (rule engine can dynamically set) */
   disabled?: boolean;
 
-  // === 数据源 ===
-  /** API 数据源配置（用于动态加载 options 等） */
+  // === Data source ===
+  /** API data source config (for dynamic loading of options etc.) */
   api?: SchemaApiConfig;
 
-  // === 校验规则 ===
-  /** 表单校验规则（Element Plus FormItemRule） */
+  // === ValidateRule ===
+  /** FormValidateRule（Element Plus FormItemRule） */
   validationRules?: SchemaRules;
 
-  // === 容器绑定 ===
-  /** 表单容器专用：绑定到哪个表单容器 */
+  // === Container binding ===
+  /** Form container specific: which form container to bind to */
   formId?: string;
-  /** 页签容器专用：绑定到哪个标签 */
+  /** Tab container specific: which tab label to bind to */
   tabKey?: string;
-  /** 行列容器专用：绑定到哪一列 */
+  /** Row container specific: which column to bind to */
   colIndex?: number;
 
-  // === 静态属性 ===
-  /** 设计时隐藏 */
+  // === Static properties ===
+  /** Hidden in design mode */
   hidden?: boolean;
-  /** 锁定位置与尺寸，禁止拖拽/缩放 */
+  /** Lock position and size, disable drag/resize */
   locked?: boolean;
 
-  // === 布局属性（流式渲染器使用） ===
-  /** 栅格列宽（1-24），row-container 子节点用 */
+  // === Layout properties (used by flow renderer) ===
+  /** Grid column span (1-24), used by row-container children */
   span?: number | Record<string, number>;
-  /** Grid 画布子节点跨列数（0 或未设 = 1 列，-1 = 撑满剩余列） */
+  /** Grid canvas child column span (0 or unset = 1 column, -1 = fill remaining columns) */
   gridSpan?: number;
-  /** 表格列合并 */
+  /** Table column merge */
   colspan?: number;
-  /** 表格行合并 */
+  /** Table row merge */
   rowspan?: number;
-  /** CSS 宽度 */
+  /** CSS Width */
   width?: string;
-  /** CSS 高度 */
+  /** CSS Height */
   height?: string;
-  /** 对齐方式 */
+  /** Alignment */
   align?: "left" | "center" | "right";
-  /** 显示边框 */
+  /** ShowBorder */
   border?: boolean;
 
-  // === 条件表达式 ===
-  /** 条件可见 — 表达式求值为 true 时可见 */
+  // === Condition expressions ===
+  /** Conditional visible — visible when expression evaluates to true */
   visibleOn?: string;
-  /** 条件禁用 — 表达式求值为 true 时禁用 */
+  /** Conditional disabled — disabled when expression evaluates to true */
   disabledOn?: string;
-  /** 条件必填 — 表达式求值为 true 时必填 */
+  /** Conditional required — required when expression evaluates to true */
   requiredOn?: string;
 
-  // === 按钮配置 ===
-  /** 按钮文本 */
+  // === Button config ===
+  /** Button text */
   text?: string;
-  /** 按钮类型 */
+  /** Button type */
   buttonType?: "" | "primary" | "success" | "warning" | "danger" | "info";
-  /** 图标 */
+  /** Icon */
   icon?: string;
-  /** 按钮动作列表 */
+  /** Button action list */
   actions?: Record<string, unknown>[];
-  /** 按钮组配置 */
+  /** Button group config */
   buttons?: Record<string, unknown>[];
 
-  // === 表格/搜索列表 ===
-  /** 列表 API 配置 */
+  // === Table/Search list ===
+  /** List API config */
   listApi?: Record<string, unknown>;
-  /** 搜索字段定义 */
+  /** Search field definition */
   searchFields?: Record<string, unknown>[];
-  /** 表格列定义 */
+  /** Table column definition */
   columns?: Record<string, unknown>[];
-  /** 行操作按钮 */
+  /** Row action button */
   rowActions?: Record<string, unknown>[];
 
-  // === 高级配置 ===
-  /** 边框隐藏 */
+  // === Advanced config ===
+  /** BorderHide */
   hideBorder?: string[];
-  /** 权限角色白名单 */
+  /** Permission role whitelist */
   permissionRoles?: string[];
-  /** 只读模式 */
+  /** Readonly mode */
   readonly?: boolean;
-  /** 自定义 HTML 属性 */
+  /** Custom HTML properties */
   customAttrs?: Record<string, string>;
 
-  // === 子组件 ===
-  /** 子 Widget 列表（容器组件） */
+  // === Child components ===
+  /** Child widget list (Container component) */
   children?: Widget[];
 
-  // === 生命周期 ===
-  /** Widget 生命周期钩子 */
+  // === Lifecycle ===
+  /** Widget lifecycle hooks */
   lifecycle?: WidgetLifecycleConfig;
 }
 
 /**
- * PartialWidget — Widget 的 schema 存储形态
+ * PartialWidget — Widget schema storage form
  *
- * 与 Widget 结构相同，但 id/name/position 为可选。
- * 用于 API 存储、文档示例、schema 导入导出等场景。
- * 编辑器加载后会补全为完整的 Widget。
+ * Same structure as Widget, but id/name/position are optional.
+ * Used for API storage, documentation examples, schema import/export etc.
+ * Editor will complete it to a full Widget after loading.
  */
 export type PartialWidget = Omit<
   Widget,
@@ -725,7 +727,7 @@ export type PartialWidget = Omit<
   children?: PartialWidget[];
 };
 
-/** 全宽组件类型集合 — 这些组件在 grid-col 中渲染时强制占满整行 */
+/** Full-width component type set — these components fill the entire row when rendered in grid-col */
 export const FULL_WIDTH_TYPES = [
   "table",
   "advanced-table",
@@ -758,26 +760,26 @@ export const FULL_WIDTH_TYPES = [
 ] as const;
 
 /**
- * 判断组件类型是否为全宽组件
- * 全宽组件在 grid-col 中渲染时 span 强制为 24
+ * Check if component type is full-width component
+ * Full-width component span is forced to 24 when rendered in grid-col
  */
 export function isFullWidthType(type: SchemaType): boolean {
   return (FULL_WIDTH_TYPES as readonly string[]).includes(type);
 }
 
 // ============================================================
-// Board（画布）
+// Board (Canvas)
 // ============================================================
 
 export type CanvasUnit = "px" | "%";
 
-/** 画布布局模式：free=绝对定位自由画布，grid=CSS Grid 网格页面布局 */
+/** Canvas layout mode: free=absolute positioning free canvas, grid=CSS Grid page layout */
 export type BoardLayoutMode = "free" | "grid";
 
-/** 响应式断点（编辑器预览/发布模式） */
+/** Responsive breakpoint (editor preview/publish mode) */
 export type PreviewBreakpoint = "desktop" | "tablet" | "mobile";
 
-/** 单个断点的位置/尺寸覆盖 */
+/** Position/size override for a single breakpoint */
 export interface BreakpointPosition {
   x?: number;
   y?: number;
@@ -788,16 +790,16 @@ export interface BreakpointPosition {
   wUnit?: "px" | "%";
   hUnit?: "px" | "%";
   zIndex?: number;
-  /** 是否在该断点下隐藏 */
+  /** Whether hidden at this breakpoint */
   hidden?: boolean;
 }
 
-/** 响应式位置配置 — 按断点覆盖 Widget 位置 */
+/** Responsive position config — override widget position by breakpoint */
 export type ResponsivePosition = Partial<
   Record<PreviewBreakpoint, BreakpointPosition>
 >;
 
-/** 自由布局留白预设 */
+/** Free layout whitespace preset */
 export type FreeLayoutPreset =
   | "full"
   | "form-narrow"
@@ -805,48 +807,48 @@ export type FreeLayoutPreset =
   | "list-wide"
   | "dashboard-demo";
 
-/** Grid 页面模板 */
+/** Grid PageTemplate */
 export type GridPageTemplate = "form" | "list" | "detail" | "page" | "blank";
 
-/** 自由布局内容区留白 */
+/** Free layout content area whitespace */
 export interface FreeLayoutOptions {
-  /** 内容最大宽度（px），超出则居中留白 */
+  /** Content max width (px), center with whitespace when exceeded */
   maxContentWidth?: number;
-  /** 水平对齐 */
+  /** Horizontal alignment */
   contentAlign?: "left" | "center";
-  /** 左右内边距，如 "24px" */
+  /** Left/right inner margin, e.g. "24px" */
   marginX?: string;
-  /** 启用网格吸附 */
+  /** Enable grid snap */
   snapToGrid?: boolean;
-  /** 网格列数（12 或 24），默认 24 */
+  /** Grid column count (12 or 24), default 24 */
   gridColumns?: number;
-  /** 网格行高（px），默认 8 */
+  /** Grid row height (px), default 8 */
   gridRowHeight?: number;
 }
 
-/** Grid 布局选项（layoutMode=grid 时生效），参考 formily Grid */
+/** Grid layout options (effective when layoutMode=grid), reference formily Grid */
 export interface GridLayoutOptions {
-  /** 行间距（px），默认 12 */
+  /** Row gap (px), default 12 */
   rowGap?: number;
-  /** 列间距（px），默认 8 */
+  /** Column gap (px), default 8 */
   columnGap?: number;
-  /** 最大列数，默认无穷 */
+  /** Max column count, default infinite */
   maxColumns?: number;
-  /** 最小列数，默认 1 */
+  /** Min column count, default 1 */
   minColumns?: number;
-  /** 每列最大宽度（px），默认无穷（均分） */
+  /** Max width per column (px), default infinite (equal distribution) */
   maxWidth?: number;
-  /** 每列最小宽度（px），默认 100 */
+  /** Min width per column (px), default 100 */
   minWidth?: number;
-  /** 子节点是否自动换行，默认 true */
+  /** Whether child nodes auto wrap to new row, default true */
   colWrap?: boolean;
-  /** 内容区最大宽度（px），超出则居中留白 */
+  /** Content area max width (px), center with whitespace when exceeded */
   maxContentWidth?: number;
-  /** 水平对齐 */
+  /** Horizontal alignment */
   contentAlign?: "left" | "center";
 }
 
-/** 发布视图自适应模式 */
+/** Publish view adaptive mode */
 export type ScaleMode = "fit-width" | "fit-height" | "contain" | "stretch";
 
 export interface CanvasConfig {
@@ -856,19 +858,19 @@ export interface CanvasConfig {
   heightUnit?: CanvasUnit;
   backgroundColor: string;
   padding: string;
-  /** 缩放比例 100-150 */
+  /** Scale ratio 100-150 */
   zoom: number;
-  /** 布局模式，默认 free（兼容旧 Schema） */
+  /** Layout mode, default free (compatible with old Schema) */
   layoutMode?: BoardLayoutMode;
-  /** 自由布局留白（layoutMode=free 时生效） */
+  /** Free layout whitespace (effective when layoutMode=free) */
   freeLayout?: FreeLayoutOptions;
-  /** Grid 布局选项（layoutMode=grid 时生效） */
+  /** Grid layout options (effective when layoutMode=grid) */
   gridLayout?: GridLayoutOptions;
-  /** Grid 页面模板标识（layoutMode=grid 时记录创建模板） */
+  /** Grid page template identifier (records creation template when layoutMode=grid) */
   gridTemplate?: GridPageTemplate;
-  /** 大屏主题预设 ID（boardThemes.ts） */
+  /** Dashboard theme preset ID (boardThemes.ts) */
   themePreset?: string;
-  /** 发布视图自适应模式（仅 publish/preview 生效） */
+  /** Publish view adaptive mode (only effective in publish/preview) */
   scaleMode?: ScaleMode;
 }
 
@@ -885,37 +887,37 @@ export interface BoardEvent {
   actions: SchemaEventAction[];
 }
 
-/** 画布页面 — 每个页面有独立的画布配置和 widget 集合 */
+/** Canvas page — each page has independent canvas config and widget collection */
 export interface BoardPage {
-  /** 页面 ID */
+  /** Page ID */
   id: string;
-  /** 页面名称 */
+  /** PageName */
   name: string;
-  /** 页面级画布配置（覆盖 Board.canvas） */
+  /** Page level canvas config (overrides Board.canvas) */
   canvas?: Partial<CanvasConfig>;
-  /** 页面级变量 */
+  /** Page level variables */
   variables?: BoardVariable[];
-  /** 页面级事件 */
+  /** Page level events */
   events?: BoardEvent[];
-  /** 页面的 widget 集合 */
+  /** Page widget collection */
   widgets: Widget[];
 }
 
 export interface Board {
-  /** 画布实例 ID */
+  /** Canvas instance ID */
   id: string;
-  /** 画布名称 */
+  /** Canvas name */
   name: string;
   status: "draft" | "published";
   canvas: CanvasConfig;
   variables: BoardVariable[];
   events: BoardEvent[];
   widgets: Widget[];
-  /** 多页面支持 — 存在时优先使用 pages[currentPageId] 的 widgets */
+  /** Multi-page support — when exists, prioritize using pages[currentPageId] widgets */
   pages?: BoardPage[];
-  /** 当前活跃页面 ID */
+  /** Current active page ID */
   currentPageId?: string;
-  /** 集中管理的数据源定义 */
+  /** Centrally managed data source definitions */
   dataSources?: import("../../types/dataSource").DataSourceDefinition[];
 }
 
@@ -923,79 +925,79 @@ export interface Board {
 // Injection Keys
 // ============================================================
 
-/** 注入当前 Widget 数据 */
+/** Inject current widget data */
 export const widgetDataKey: InjectionKey<ComputedRef<Widget>> =
   Symbol("WidgetData");
 
-/** 注入当前 Widget 样式配置 */
+/** Inject current widget style config */
 export const widgetStyleKey: InjectionKey<
   ComputedRef<Record<string, unknown>>
 > = Symbol("WidgetStyle");
 
 // ============================================================
-// Widget 渲染状态（规则引擎输出）
+// Widget render status (rule engine output)
 // ============================================================
 
-/** 规则引擎计算的渲染状态 */
+/** Render status computed by rule engine */
 export interface WidgetRenderState {
-  /** 是否可见 */
+  /** Visible */
   visible: boolean;
-  /** 是否禁用 */
+  /** Whether disabled */
   disabled: boolean;
-  /** 是否必填 */
+  /** Required */
   required: boolean;
 }
 
-/** 注入规则引擎计算的渲染状态 */
+/** Inject render status computed by rule engine */
 export const widgetRenderStateKey: InjectionKey<
   ComputedRef<WidgetRenderState>
 > = Symbol("WidgetRenderState");
 
 // ============================================================
-// 表单上下文（FgForm provide → SchemaNode inject）
+// Form context (FgForm provide → SchemaNode inject)
 // ============================================================
 
-/** 表单上下文，由 FgForm 提供给子组件 */
+/** Form context, provided by FgForm to child components */
 export interface FormContext {
-  /** el-form 组件引用 */
+  /** el-form component reference */
   formRef: Ref<unknown>;
-  /** 表单数据模型（field → value），绑定到 el-form :model */
+  /** Form data model (field → value), bound to el-form :model */
   formModel: Record<string, unknown>;
-  /** 更新指定字段值（子组件通过 inject 调用） */
+  /** Update specified field value (child component calls via inject) */
   updateField: (field: string, value: unknown) => void;
 }
 
-/** 注入表单上下文（el-form ref + model） */
+/** Inject form context (el-form ref + model) */
 export const formContextKey: InjectionKey<FormContext> = Symbol("FormContext");
 
-/** 组件暴露值注入 Key — 每个组件 provide 自己的 exposedState */
+/** Component exposed value injection key — each component provides its own exposedState */
 export const widgetExposedKey: InjectionKey<Record<string, unknown>> =
   Symbol("WidgetExposed");
 
-/** 解析后的部件像素尺寸（与 overlay 计算一致） */
+/** Parsed widget pixel size (consistent with overlay calculation) */
 export interface WidgetBounds {
   widthPx: number;
   heightPx: number;
 }
 
-/** 当前部件的解析尺寸 — SchemaNode provide，部件 inject */
+/** Current widget parsed size — SchemaNode provide, Widget inject */
 export const widgetBoundsKey: InjectionKey<ComputedRef<WidgetBounds>> =
   Symbol("WidgetBounds");
 
-/** 父容器解析尺寸 — 嵌套部件用于 % 单位换算 */
+/** Parent container parsed size — used by nested widget for % unit conversion */
 export const parentBoundsKey: InjectionKey<ComputedRef<WidgetBounds>> =
   Symbol("ParentBounds");
 
 // ============================================================
-// Widget 生命周期
+// Widget lifecycle
 // ============================================================
 
-/** 生命周期钩子：字符串表达式或函数 */
+/** Lifecycle hook: string expression or function */
 export type LifecycleHook =
   | string
   | ((ctx: LifecycleContext) => void | Promise<void>);
 
-/** 生命周期钩子配置 */
+/** Lifecycle hook config */
 export interface WidgetLifecycleConfig {
   onInit?: LifecycleHook;
   onMount?: LifecycleHook;
@@ -1008,7 +1010,7 @@ export interface WidgetLifecycleConfig {
   onClose?: LifecycleHook;
 }
 
-/** 生命周期执行上下文 */
+/** Lifecycle execution context */
 export interface LifecycleContext {
   widget: Widget;
   formData: Record<string, unknown>;

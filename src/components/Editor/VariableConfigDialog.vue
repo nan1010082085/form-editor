@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * VariableConfigDialog — 变量配置对话框
+ * VariableConfigDialog — 变量Config对话框
  *
- * 支持配置 WidgetVariable[] 或 BoardVariable[]。
+ * 支持Config WidgetVariable[] 或 BoardVariable[]。
  * 每个变量包含：name, type, defaultValue, description。
  */
 import { ref, watch, computed } from "vue";
@@ -25,7 +25,7 @@ const emit = defineEmits<{
   save: [variables: WidgetVariable[]];
 }>();
 
-// ---- 本地编辑副本 ----
+// ---- 本地Edit副本 ----
 
 const localVariables = ref<WidgetVariable[]>([]);
 
@@ -38,7 +38,7 @@ watch(
   },
 );
 
-// ---- 类型选项 ----
+// ---- TypeOptions ----
 
 const typeOptions = computed(() => [
   { label: t("editor.variableConfig.typeString"), value: "string" },
@@ -63,7 +63,7 @@ function removeVariable(index: number) {
   localVariables.value.splice(index, 1);
 }
 
-// ---- JSON 输入处理 ----
+// ---- JSON Input处理 ----
 
 function handleJsonInput(v: WidgetVariable, val: string) {
   try {
@@ -73,7 +73,7 @@ function handleJsonInput(v: WidgetVariable, val: string) {
   }
 }
 
-// ---- 名称校验 ----
+// ---- NameValidate ----
 
 const nameError = computed(() => {
   const names = localVariables.value.map((v) => v.name).filter(Boolean);
@@ -88,11 +88,11 @@ const nameError = computed(() => {
   return "";
 });
 
-// ---- 保存 / 关闭 ----
+// ---- Save / Close ----
 
 function handleSave() {
   if (nameError.value) return;
-  // 过滤掉空名称的变量
+  // Filter掉空Name的变量
   const valid = localVariables.value.filter((v) => v.name.trim());
   emit("save", valid);
   emit("update:visible", false);
@@ -111,12 +111,12 @@ function handleClose() {
     @update:model-value="emit('update:visible', $event)"
   >
     <div :class="styles.body">
-      <!-- 空状态 -->
+      <!-- 空Status -->
       <div v-if="localVariables.length === 0" :class="styles.empty">
         {{ t("editor.variableConfig.emptyHint") }}
       </div>
 
-      <!-- 变量列表 -->
+      <!-- 变量Column表 -->
       <div v-for="(v, i) in localVariables" :key="i" :class="styles.card">
         <div :class="styles.cardHeader">
           <span :class="styles.cardTitle">{{
@@ -212,7 +212,7 @@ function handleClose() {
         </div>
       </div>
 
-      <!-- 错误提示 -->
+      <!-- Error提示 -->
       <div v-if="nameError" :class="styles.error">{{ nameError }}</div>
 
       <!-- 添加变量 -->

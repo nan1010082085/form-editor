@@ -2,11 +2,9 @@
 import { ref, computed, inject, onMounted, onUnmounted, watch } from "vue";
 import * as echarts from "echarts";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 const chartRef = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
 

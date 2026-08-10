@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, inject } from "vue";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 
 const url = computed(() => (widgetData.value.props?.url as string) ?? "");
 const fileType = computed(() => (widgetData.value.props?.fileType as string) ?? "image");

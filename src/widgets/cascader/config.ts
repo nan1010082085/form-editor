@@ -10,7 +10,7 @@ export const cascaderConfig: WidgetConfig = {
     height: "40px",
   },
   defaultProps: {
-    placeholder: "请选择",
+    placeholder: "Please select",
     clearable: true,
     disabled: false,
     showAllLevels: true,
@@ -35,7 +35,7 @@ export const cascaderConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择",
+        default: "Please select",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },
@@ -47,7 +47,7 @@ export const cascaderConfig: WidgetConfig = {
       },
       {
         key: "collapseTags",
-        label: "折叠标签",
+        label: "Collapse Label",
         type: "switch",
         default: false,
       },

@@ -1,17 +1,17 @@
 /**
- * 表单生命周期钩子 composable
+ * Form生命week期钩子 composable
  *
  * 支持四种钩子：
- * - onFormMount: 表单挂载后触发（仅一次）
- * - onFieldChange: 字段值变化时触发（300ms 防抖，初始化阶段跳过）
- * - onBeforeSubmit: 提交前校验，返回 false 可阻止提交
- * - onAfterLoad: 数据回填完成后触发
+ * - onFormMount: Form挂载后Trigger（仅一次）
+ * - onFieldChange: FieldValue变化HrsTrigger（300ms 防抖, 初始化阶段跳过）
+ * - onBeforeSubmit: Submit前Validate, Back false 可阻止Submit
+ * - onAfterLoad: Data回填完成后Trigger
  *
  * 设计要点：
  * 1. 钩子支持函数和字符串表达式两种模式（与 useLinkage 共享沙箱模式）
- * 2. onFieldChange 使用 300ms 防抖，避免频繁触发
- * 3. 初始化阶段通过 isInitialized flag 跳过 onFieldChange
- * 4. 所有钩子异常捕获并 console.error，不阻塞表单主流程
+ * 2. onFieldChange 使用 300ms 防抖, 避免频繁Trigger
+ * 3. 初始化阶段passed isInitialized flag 跳过 onFieldChange
+ * 4. 所有钩子异常捕获并 console.error, 不阻塞Form主流程
  */
 import { onMounted, onUnmounted, watch, ref } from "vue";
 import type {
@@ -22,17 +22,17 @@ import { useLogger } from "@/composables/useLogger";
 
 const logger = useLogger("Lifecycle");
 
-/** 生命周期钩子执行结果 */
+/** 生命week期钩子Execute结果 */
 export interface UseLifecycleReturn {
-  /** 执行 onBeforeSubmit 钩子，返回 false 可阻止提交 */
+  /** Execute onBeforeSubmit 钩子, Back false 可阻止Submit */
   executeBeforeSubmit: () => Promise<boolean>;
-  /** 执行 onAfterLoad 钩子（loadApi 回填完成后调用） */
+  /** Execute onAfterLoad 钩子（loadApi 回填完成后调用） */
   executeAfterLoad: (data: FormData) => Promise<void>;
 }
 
 /**
- * 编译字符串表达式为可执行函数
- * 沙箱限制：通过 new Function 创建，仅注入显式参数
+ * 编译字符串表达式为可Execute函数
+ * 沙箱限制：passed new Function 创建, 仅注入显式Params
  */
 function compileExpression<T extends (...args: unknown[]) => unknown>(
   expression: string,
@@ -41,18 +41,18 @@ function compileExpression<T extends (...args: unknown[]) => unknown>(
   try {
     return new Function(...paramNames, `"use strict"; ${expression}`) as T;
   } catch {
-    logger.error(`表达式编译失败: "${expression}"`);
+    logger.error(`Expression compilation failed: "${expression}"`);
     return (() => {}) as unknown as T;
   }
 }
 
 /**
- * 安全执行钩子 — 统一处理函数/表达式两种模式和异常捕获
+ * 安全Execute钩子 — 统一处理函数/表达式两种模式和异常捕获
  *
- * @param hook - 钩子配置（函数或字符串表达式）
- * @param args - 传递给钩子的参数
- * @param paramNames - 字符串表达式的参数名列表
- * @returns 钩子返回值（onBeforeSubmit 场景需要 boolean）
+ * @param hook - 钩子Config（函数or字符串表达式）
+ * @param args - 传递给钩子的Params
+ * @param paramNames - 字符串表达式的Params名Column表
+ * @returns 钩子BackValue（onBeforeSubmit 场景需要 boolean）
  */
 async function executeHook<R = void>(
   hook: ((...args: unknown[]) => R | Promise<R>) | string | undefined,
@@ -70,7 +70,7 @@ async function executeHook<R = void>(
     }
     return await fn(...args);
   } catch (err) {
-    logger.error("钩子执行异常:", err);
+    logger.error("Hook execution error:", err);
     return undefined;
   }
 }
@@ -78,18 +78,18 @@ async function executeHook<R = void>(
 /**
  * useLifecycle composable
  *
- * @param lifecycle - 生命周期钩子配置（可选，无配置时所有操作为空操作）
- * @param formData - 响应式表单数据
- * @returns 钩子执行方法
+ * @param lifecycle - 生命week期钩子Config（可选, 无ConfigHrs所有Action为空Action）
+ * @param formData - 响应式FormData
+ * @returns 钩子Execute方法
  */
 export function useLifecycle(
   lifecycle: FormLifecycleConfig | undefined,
   formData: FormData,
 ): UseLifecycleReturn {
-  // 初始化标记：onMounted 完成前的 watch 不触发 onFieldChange
+  // 初始化标记：onMounted 完成前的 watch 不Trigger onFieldChange
   const isInitialized = ref(false);
 
-  // ---- onFormMount: 挂载后触发一次 ----
+  // ---- onFormMount: 挂载后Trigger一次 ----
   onMounted(async () => {
     if (lifecycle?.onFormMount) {
       await executeHook(
@@ -101,11 +101,11 @@ export function useLifecycle(
         ["formData"],
       );
     }
-    // 标记初始化完成，后续字段变化才触发 onFieldChange
+    // 标记初始化完成, 后续Field变化才Trigger onFieldChange
     isInitialized.value = true;
   });
 
-  // ---- onFieldChange: 深度监听 formData，300ms 防抖 ----
+  // ---- onFieldChange: 深度监听 formData, 300ms 防抖 ----
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   if (lifecycle?.onFieldChange) {
@@ -115,7 +115,7 @@ export function useLifecycle(
         // 初始化阶段跳过
         if (!isInitialized.value) return;
 
-        // 找出变化的字段
+        // 找出变化的Field
         const allKeys = new Set([
           ...Object.keys(newData),
           ...(oldData ? Object.keys(oldData) : []),
@@ -123,7 +123,7 @@ export function useLifecycle(
 
         for (const key of allKeys) {
           if (newData[key] !== oldData?.[key]) {
-            // 防抖：清除上一个定时器，设置新的 300ms 延迟
+            // 防抖：清除上一个定Hrs器, Settings新的 300ms 延迟
             if (debounceTimer) {
               clearTimeout(debounceTimer);
             }
@@ -136,7 +136,7 @@ export function useLifecycle(
                 ["field", "value", "formData"],
               );
             }, 300);
-            // 只触发一次（取第一个变化的字段），防抖合并后续变化
+            // 只Trigger一次（取第一个变化的Field）, 防抖合并后续变化
             break;
           }
         }
@@ -145,7 +145,7 @@ export function useLifecycle(
     );
   }
 
-  // ---- 组件卸载时清理防抖定时器 ----
+  // ---- Component卸载Hrs清理防抖定Hrs器 ----
   onUnmounted(() => {
     if (debounceTimer) {
       clearTimeout(debounceTimer);
@@ -153,7 +153,7 @@ export function useLifecycle(
     }
   });
 
-  // ---- onBeforeSubmit: 提交前校验 ----
+  // ---- onBeforeSubmit: Submit前Validate ----
   async function executeBeforeSubmit(): Promise<boolean> {
     if (!lifecycle?.onBeforeSubmit) return true;
     const result = await executeHook<boolean>(
@@ -164,11 +164,11 @@ export function useLifecycle(
       [formData],
       ["formData"],
     );
-    // 未定义或异常时默认允许提交
+    // 未定义or异常HrsDefault允许Submit
     return result !== false;
   }
 
-  // ---- onAfterLoad: 数据回填完成后 ----
+  // ---- onAfterLoad: Data回填完成后 ----
   async function executeAfterLoad(data: FormData): Promise<void> {
     if (lifecycle?.onAfterLoad) {
       await executeHook(

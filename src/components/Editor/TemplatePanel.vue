@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * TemplatePanel — 左侧模板面板
+ * TemplatePanel — 左侧Template面板
  *
- * 展示组件模板库，支持搜索/分类筛选。
- * 模板卡片可拖拽到画布（通过 dataTransfer 传递模板 ID）。
- * 支持应用模板和删除操作。
+ * 展示ComponentTemplate Library, 支持Search/Min类Filter。
+ * Template卡片可拖拽到画布（passed dataTransfer 传递Template ID）。
+ * 支持应用Template和DeleteAction。
  */
 import { ref, watch, computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -118,7 +118,7 @@ async function handleDelete(template: WidgetTemplateItem) {
     ElMessage.success(t("editor.templatePanel.templateDeleted"));
     loadTemplates();
   } catch {
-    // 用户取消
+    // UserCancel
   }
 }
 
@@ -169,7 +169,7 @@ defineExpose({ loadTemplates });
 
 <template>
   <div :class="styles.panel">
-    <!-- 搜索和筛选 -->
+    <!-- Search和Filter -->
     <div :class="styles.toolbar">
       <el-input
         v-model="searchQuery"
@@ -198,7 +198,7 @@ defineExpose({ loadTemplates });
       </el-select>
     </div>
 
-    <!-- 模板列表 -->
+    <!-- TemplateColumn表 -->
     <div v-loading="loading" :class="styles.scroll">
       <div :class="styles.grid">
         <div
@@ -220,7 +220,7 @@ defineExpose({ loadTemplates });
             }}</span>
           </div>
 
-          <!-- 信息 -->
+          <!-- Info -->
           <div :class="styles.info">
             <div :class="styles.name">{{ template.name }}</div>
             <div :class="styles.meta">
@@ -234,7 +234,7 @@ defineExpose({ loadTemplates });
             </div>
           </div>
 
-          <!-- 操作按钮 -->
+          <!-- ActionButton -->
           <div :class="styles.actions">
             <el-tooltip
               :content="t('editor.templatePanel.preview')"
@@ -283,7 +283,7 @@ defineExpose({ loadTemplates });
       </div>
     </div>
 
-    <!-- 分页 -->
+    <!-- Min页 -->
     <div v-if="totalPages > 1" :class="styles.pagination">
       <el-pagination
         small

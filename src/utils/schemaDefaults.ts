@@ -123,39 +123,39 @@ export function createDefaultSchema(type: SchemaType): PartialWidget {
     case "banner":
       item = {
         type: "banner",
-        props: { text: "提示信息", type: "info", closable: true },
+        props: { text: "Notice", type: "info", closable: true },
       };
       break;
     case "tree-layout":
       item = {
         type: "tree-layout",
-        label: "侧栏面板",
-        props: { title: "侧栏面板", showSearch: true },
+        label: "Sidebar Panel",
+        props: { title: "Sidebar Panel", showSearch: true },
         children: [],
       };
       break;
     case "date-time-slot":
       item = {
         ...base,
-        label: "日期时间区间",
+        label: "Date Time Range",
         props: {
-          startPlaceholder: "开始时间",
-          endPlaceholder: "结束时间",
+          startPlaceholder: "Start time",
+          endPlaceholder: "End time",
           format: "YYYY-MM-DD HH:mm:ss",
-          rangeSeparator: "至",
+          rangeSeparator: "to",
         },
       };
       break;
     case "file-list":
       item = {
         type: "file-list",
-        props: { title: "附件", allowDelete: true, allowPreview: false },
+        props: { title: "Attachments", allowDelete: true, allowPreview: false },
       };
       break;
     case "transfer":
       item = {
         type: "transfer",
-        props: { titles: ["待选", "已选"], filterable: true },
+        props: { titles: ["Available", "Selected"], filterable: true },
       };
       break;
     case "table":

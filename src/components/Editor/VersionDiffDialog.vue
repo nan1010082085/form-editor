@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * VersionDiffDialog — Schema 版本对比对话框
+ * VersionDiffDialog — Schema VersionCompare对话框
  *
  * 功能：
- * - 选择两个版本进行对比
- * - 左右分栏显示差异（左=旧版本，右=新版本）
- * - 红色=删除，黄色=修改，绿色=新增，蓝色=移动
- * - 差异统计摘要
- * - 加载历史版本到画布
+ * - 选择两个Version进RowCompare
+ * - 左右Min栏Show差异（左=旧Version, 右=新Version）
+ * - 红色=Delete, 黄色=修改, 绿色=Create, 蓝色=移动
+ * - 差异Statistics摘要
+ * - 加载历史Version到画布
  */
 import { ref, watch } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -31,26 +31,26 @@ const emit = defineEmits<{
   "load-version": [version: string, widgets: Widget[]];
 }>();
 
-// ---- 版本列表 ----
+// ---- VersionColumn表 ----
 const versionList = ref<VersionEntry[]>([]);
 const versionLoading = ref(false);
 
-// ---- 选择的版本 ----
+// ---- 选择的Version ----
 const leftVersion = ref("");
 const rightVersion = ref("");
 
-// ---- Diff 状态 ----
+// ---- Diff Status ----
 const diffResult = ref<DiffResult | null>(null);
 const diffLoading = ref(false);
 
-// ---- 加载版本列表 ----
+// ---- 加载VersionColumn表 ----
 async function loadVersions() {
   if (!props.editId) return;
   versionLoading.value = true;
   try {
     const res = await fetchVersions(props.editId, 1, 50);
     versionList.value = res.items;
-    // 默认选中：左=当前版本前一个版本，右=当前版本
+    // 默认选中：左=当前Version前一个Version, 右=当前Version
     if (res.items.length >= 2) {
       const currentIdx = res.items.findIndex(
         (e) => e.version === props.currentVersion,
@@ -75,7 +75,7 @@ async function loadVersions() {
   }
 }
 
-// ---- 执行 Diff ----
+// ---- 执Row Diff ----
 async function performDiff() {
   if (!leftVersion.value || !rightVersion.value) return;
   diffLoading.value = true;
@@ -94,13 +94,13 @@ async function performDiff() {
   }
 }
 
-// ---- 格式化版本号 ----
+// ---- FormatVersion号 ----
 function formatVersion(v: string): string {
   if (!v || v.length !== 14) return v;
   return `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)} ${v.slice(8, 10)}:${v.slice(10, 12)}:${v.slice(12, 14)}`;
 }
 
-// ---- Badge 标签 ----
+// ---- Badge Label ----
 const badgeLabels: Record<string, string> = {
   added: "+",
   removed: "-",
@@ -108,7 +108,7 @@ const badgeLabels: Record<string, string> = {
   moved: "M",
 };
 
-// ---- 截断显示值 ----
+// ---- 截断ShowValue ----
 function truncateValue(val: unknown, maxLen = 60): string {
   if (val === null || val === undefined)
     return t("editor.versionDiff.emptyValue");
@@ -116,7 +116,7 @@ function truncateValue(val: unknown, maxLen = 60): string {
   return str.length > maxLen ? str.slice(0, maxLen) + "..." : str;
 }
 
-// ---- 加载版本 ----
+// ---- 加载Version ----
 async function handleLoadVersion(version: string) {
   try {
     const detail = await fetchVersion(props.editId, version);
@@ -149,7 +149,7 @@ watch(
     :class="styles['diff-dialog']"
     @update:model-value="emit('update:visible', $event)"
   >
-    <!-- 顶部版本选择器 -->
+    <!-- 顶部Version选择器 -->
     <div :class="styles['version-selectors']">
       <span :class="styles['version-selectors__label']">{{
         t("editor.versionDiff.oldVersion")
@@ -201,7 +201,7 @@ watch(
       </el-button>
     </div>
 
-    <!-- 差异统计 -->
+    <!-- 差异Statistics -->
     <div v-if="diffResult" :class="styles['diff-summary']">
       <span :class="styles['diff-summary__text']">{{
         t("editor.versionDiff.diffLabel")
@@ -246,9 +246,9 @@ watch(
       >
     </div>
 
-    <!-- 对比主体 -->
+    <!-- Compare主体 -->
     <div :class="styles['diff-body']">
-      <!-- 左栏：旧版本 -->
+      <!-- 左栏：旧Version -->
       <div :class="styles['diff-panel']">
         <div :class="styles['diff-panel__header']">
           <span :class="styles['diff-panel__title']">{{
@@ -267,7 +267,7 @@ watch(
         </div>
         <div :class="styles['diff-panel__scroll']">
           <template v-if="diffResult">
-            <!-- 删除项（仅旧版本有） -->
+            <!-- Delete项（仅旧Version有） -->
             <div
               v-for="item in diffResult.removed"
               :key="'r-' + item.id"
@@ -287,7 +287,7 @@ watch(
                 <span :class="styles['diff-node__path']">{{ item.path }}</span>
               </div>
             </div>
-            <!-- 修改项（旧值） -->
+            <!-- 修改项（旧Value） -->
             <div
               v-for="item in diffResult.modified"
               :key="'m-old-' + item.id"
@@ -341,7 +341,7 @@ watch(
                 <span :class="styles['diff-node__path']">{{ item.path }}</span>
               </div>
             </div>
-            <!-- 无差异 -->
+            <!-- No differences -->
             <div
               v-if="
                 !diffResult.removed.length &&
@@ -359,7 +359,7 @@ watch(
         </div>
       </div>
 
-      <!-- 右栏：新版本 -->
+      <!-- 右栏：新Version -->
       <div :class="styles['diff-panel']">
         <div :class="styles['diff-panel__header']">
           <span :class="styles['diff-panel__title']">{{
@@ -378,7 +378,7 @@ watch(
         </div>
         <div :class="styles['diff-panel__scroll']">
           <template v-if="diffResult">
-            <!-- 新增项（仅新版本有） -->
+            <!-- Create项（仅新Version有） -->
             <div
               v-for="item in diffResult.added"
               :key="'a-' + item.id"
@@ -398,7 +398,7 @@ watch(
                 <span :class="styles['diff-node__path']">{{ item.path }}</span>
               </div>
             </div>
-            <!-- 修改项（新值） -->
+            <!-- 修改项（新Value） -->
             <div
               v-for="item in diffResult.modified"
               :key="'m-new-' + item.id"
@@ -452,7 +452,7 @@ watch(
                 <span :class="styles['diff-node__path']">{{ item.path }}</span>
               </div>
             </div>
-            <!-- 无差异 -->
+            <!-- No differences -->
             <div
               v-if="
                 !diffResult.added.length &&

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** E-07 — 树形表格：部门/菜单等层级数据 */
+/** E-07 — 树形表格：Department/Menu等层级Data */
 import { inject, computed, onMounted, type ComputedRef } from "vue";
 import { widgetDataKey } from "../base/types";
 import { useExposeWidget } from "../../composables/useExposeWidget";

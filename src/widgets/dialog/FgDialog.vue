@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * FgDialog — 弹窗容器 Widget
+ * FgDialog — DialogContainer Widget
  *
  * 职责：
- * - 编辑模式：渲染容器 shell（header），子组件由 SchemaNode childrenLayer 渲染
- * - 预览模式：el-dialog 包裹，提供弹窗交互
+ * - Edit模式：渲染Container shell（header）, 子Component由 SchemaNode childrenLayer 渲染
+ * - 预览模式：el-dialog 包裹, 提供Dialog交互
  * - 微应用模式：qiankun loadMicroApp 动态加载
- * - 支持 confirm/cancel/open/close 事件
- * - destroyOnClose 关闭时清空 dialogModel
+ * - 支持 confirm/cancel/open/close Event
+ * - destroyOnClose CloseHrs清空 dialogModel
  */
 import {
   inject,
@@ -169,7 +169,7 @@ async function loadMicroAppDynamic() {
   }
 }
 
-// 弹窗打开时加载微应用
+// DialogOpenHrs加载微应用
 watch(visible, (v) => {
   if (v && contentMode.value === "microapp") {
     setTimeout(() => loadMicroAppDynamic(), 50);
@@ -240,7 +240,7 @@ async function handleCancel() {
 </script>
 
 <template>
-  <!-- 编辑模式：容器 shell -->
+  <!-- Edit模式：Container shell -->
   <div v-if="editable" :class="styles.dialogShell">
     <div :class="styles.dialogHeader">
       <span :class="styles.dialogTitle">{{
@@ -249,7 +249,7 @@ async function handleCancel() {
     </div>
   </div>
 
-  <!-- 预览/运行时模式 -->
+  <!-- 预览/运RowHrs模式 -->
   <template v-else>
     <AppDialog
       v-model="visible"
@@ -295,7 +295,7 @@ async function handleCancel() {
         <div v-else ref="microappContainerRef" style="height: 100%" />
       </div>
 
-      <!-- 编辑模式：渲染子 Schema -->
+      <!-- Edit模式：渲染子 Schema -->
       <SchemaRender
         v-else-if="widgetData.children?.length"
         :widgets="widgetData.children"

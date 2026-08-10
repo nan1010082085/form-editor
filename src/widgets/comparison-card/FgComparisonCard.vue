@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * FgComparisonCard — 对比卡片
+ * FgComparisonCard — Compare卡片
  *
- * 展示两个指标对比（同比/环比），带趋势箭头和百分比。
+ * 展示两个MetricCompare（同比/环比）, 带Trend箭头和百Min比。
  */
 import { inject, ref, computed } from "vue";
 import { widgetDataKey, widgetStyleKey } from "../base/types";

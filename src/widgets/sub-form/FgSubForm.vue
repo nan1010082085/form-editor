@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * FgSubForm — 子表单/明细表单
+ * FgSubForm — 子Form/明细Form
  *
- * 支持动态增删行，每行包含一组子字段。
- * 比 dynamic-detail-table 更通用，不依赖表格布局。
+ * 支持动态增删Row, 每Row包含一组子Field。
+ * 比 dynamic-detail-table 更通用, 不依赖表格Layout。
  */
 import { inject, ref, computed } from "vue";
 import {
@@ -75,7 +75,7 @@ function updateCell(index: number, key: string, value: FormFieldValue) {
   }
 }
 
-// 初始化至少 minRows 行
+// 初始化至少 minRows Row
 if (rows.value.length === 0 && minRows.value > 0) {
   for (let i = 0; i < minRows.value; i++) {
     rows.value.push(createRow());

@@ -7,9 +7,9 @@ export function createAiSuggestionPanelWidget(id?: string): Widget {
     name: "FgAiSuggestionPanel",
     type: "ai-suggestion-panel",
     field: "aiSuggestions",
-    label: "AI建议面板",
+    label: "AI Suggestion Panel",
     props: {
-      title: "AI 建议",
+      title: "AI Suggestions",
       suggestions: [],
       showIcon: true,
       collapsible: true,

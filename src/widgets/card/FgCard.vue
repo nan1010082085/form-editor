@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * FgCard — 卡片容器 Widget
+ * FgCard — 卡片Container Widget
  *
  * 职责：
- * - el-card 包裹，提供卡片视觉容器
- * - 渲染标题和子组件
+ * - el-card 包裹, 提供卡片视觉Container
+ * - 渲染标题和子Component
  */
 import { inject, computed } from "vue";
 import { widgetDataKey } from "../base/types";

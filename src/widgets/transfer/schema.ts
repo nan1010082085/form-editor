@@ -11,9 +11,9 @@ export function createTransferWidget(id: string): Widget {
     style: { ...transferConfig.defaultStyle },
     props: { ...transferConfig.defaultProps },
     options: [
-      { label: "选项A", value: "a" },
-      { label: "选项B", value: "b" },
-      { label: "选项C", value: "c" },
+      { label: "OptionsA", value: "a" },
+      { label: "OptionsB", value: "b" },
+      { label: "OptionsC", value: "c" },
     ],
     defaultValue: [],
   };

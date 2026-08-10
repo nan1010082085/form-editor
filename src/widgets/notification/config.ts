@@ -15,7 +15,7 @@ export const notificationConfig: WidgetConfig = {
   exposedValues: [{ key: "items", type: "array", description: "Notice List" }],
   configPanels: ["events", "variables"],
   defaultProps: {
-    title: "最新公告",
+    title: "Latest Notice",
     pageSize: 5,
     source: "notices",
     staticData: notificationMock.staticData.items,
@@ -24,7 +24,7 @@ export const notificationConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "Title", type: "input", default: "最新公告" },
+      { key: "title", label: "Title", type: "input", default: "Latest Notice" },
       {
         key: "source",
         label: "Data Source",

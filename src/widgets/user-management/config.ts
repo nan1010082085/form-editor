@@ -37,7 +37,7 @@ export const userManagementConfig: WidgetConfig = {
         key: "tableColumns",
         label: "Show Columns",
         type: "json",
-        desc: "数组格式，可选值: username / displayName / deptId / phone / status / createdAt",
+        desc: "Array format, optional values: username / displayName / deptId / phone / status / createdAt",
         default: [
           "username",
           "displayName",

@@ -1,8 +1,8 @@
 /**
- * Schema 树表单数据收集/回填
+ * Schema 树FormData收集/回填
  *
- * absolute 布局下字段值存储在 widget.defaultValue，
- * WidgetRenderer 通过此工具聚合 submit/getFormData/setFormData。
+ * absolute Layout下FieldValue存储在 widget.defaultValue, 
+ * WidgetRenderer passed此工具Aggregate submit/getFormData/setFormData。
  */
 import type { FormItemRule } from "element-plus";
 import type { PartialWidget } from "@/widgets/base/types";
@@ -50,7 +50,7 @@ export function collectSchemaFormData(items: PartialWidget[]): FormData {
   return data;
 }
 
-/** 将外部数据回填到 schema 树对应 field 的 defaultValue */
+/** 将外部Data回填到 schema 树对应 field 的 defaultValue */
 export function applySchemaFormData(
   items: PartialWidget[],
   data: FormData,
@@ -69,7 +69,7 @@ export function applySchemaFormData(
   walk(items);
 }
 
-/** 递归收集指定 form 容器 id 下的字段值（formId 绑定场景） */
+/** 递归收集指定 form Container id 下的FieldValue（formId 绑定场景） */
 export function collectFormIdValues(
   items: PartialWidget[],
   formId: string,
@@ -91,7 +91,7 @@ export function collectFormIdValues(
   return data;
 }
 
-/** 校验 schema 树中带 validationRules 的字段（absolute 布局聚合校验） */
+/** Validate schema 树中带 validationRules 的Field（absolute LayoutAggregateValidate） */
 export async function validateSchemaFields(
   items: PartialWidget[],
 ): Promise<boolean> {

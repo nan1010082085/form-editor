@@ -20,9 +20,10 @@ import SchemaVersionCompare from "@/components/SchemaVersionCompare.vue";
 import { useSchemaVersionStore } from "@/stores/schemaVersion";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 import type { VersionEntry, SchemaDetail } from "@/types/api";
 
 // ---- Mocks ----
@@ -354,7 +355,7 @@ describe("SchemaVersionCompare", () => {
     const result = await store.executeCompare();
     expect(result).toBe(true);
     expect(store.hasDiff).toBe(false);
-    expect(store.diffSummary).toBe("无差异");
+    expect(store.diffSummary).toBe("No differences");
   });
 
   it("store: executeCompare detects all 4 diff types", async () => {
@@ -469,10 +470,10 @@ describe("SchemaVersionCompare", () => {
     expect(store.diffResult!.removed).toHaveLength(1);
     expect(store.diffResult!.modified).toHaveLength(1);
     expect(store.diffResult!.moved).toHaveLength(1);
-    expect(store.diffSummary).toContain("1 个新增");
-    expect(store.diffSummary).toContain("1 个删除");
-    expect(store.diffSummary).toContain("1 个修改");
-    expect(store.diffSummary).toContain("1 个移动");
+    expect(store.diffSummary).toContain("1  added");
+    expect(store.diffSummary).toContain("1  removed");
+    expect(store.diffSummary).toContain("1  modified");
+    expect(store.diffSummary).toContain("1  moved");
   });
 
   it("store: rollbackToVersion returns version detail", async () => {

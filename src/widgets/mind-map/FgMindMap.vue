@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, inject } from "vue";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 
 interface TreeNode {
   id?: string;
@@ -19,7 +17,7 @@ const data = computed<TreeNode>(() => {
   return raw && typeof raw === "object" ? (raw as TreeNode) : { id: "root", label: "Root", children: [] };
 });
 
-const layout = computed(() => (widgetData.value.props?.layout as string) ?? "vertical");
+// const layout = computed(() => (widgetData.value.props?.layout as string) ?? "vertical");
 const expandAll = computed(() => (widgetData.value.props?.expandAll as boolean) ?? true);
 
 function toElTreeData(node: TreeNode, path = ""): Record<string, unknown> {

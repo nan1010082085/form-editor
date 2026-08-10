@@ -2,7 +2,7 @@
  * 应用全局 Store
  *
  * 管理应用上下文（user / request / global）
- * 以及 FormGrid 渲染所需的聚合上下文
+ * 以及 FormGrid 渲染所需的Aggregate上下文
  */
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
@@ -13,13 +13,13 @@ import type {
   FormGridContext,
 } from "@/components/WidgetRenderer/types";
 
-// ---- 默认值（冻结防止意外修改） ----
+// ---- Default value（冻结防止意外修改） ----
 
 /**
- * 默认用户上下文（冻结防止意外修改）
+ * 默认User上下文（冻结防止意外修改）
  *
  * roles 数组额外内层冻结——数组的 push/pop 等变异方法
- * 不会被外层 Object.freeze 阻止，需单独保护。
+ * 不会被外层 Object.freeze 阻止, 需单独保护。
  */
 const DEFAULT_USER: Readonly<UserContext> = Object.freeze({
   id: "",
@@ -54,7 +54,7 @@ export const useAppStore = defineStore("app", () => {
   const requestContext = ref<RequestContext>({ ...DEFAULT_REQUEST });
   const globalContext = ref<GlobalContext>({ ...DEFAULT_GLOBAL });
 
-  /** 聚合上下文，供 FormGrid 内部组件通过 inject 获取 */
+  /** Aggregate上下文, 供 FormGrid 内部Componentpassed inject 获取 */
   const formGridContext = computed<FormGridContext>(() => ({
     user: userContext.value,
     request: requestContext.value,
@@ -62,14 +62,14 @@ export const useAppStore = defineStore("app", () => {
   }));
 
   /**
-   * 更新请求上下文（部分更新）
+   * Update请求上下文（部MinUpdate）
    */
   function updateRequestContext(patch: Partial<RequestContext>): void {
     Object.assign(requestContext.value, patch);
   }
 
   /**
-   * 更新全局上下文（部分更新）
+   * Update全局上下文（部MinUpdate）
    */
   function updateGlobalContext(patch: Partial<GlobalContext>): void {
     Object.assign(globalContext.value, patch);

@@ -7,7 +7,7 @@ export const approvalUserPickerConfig: WidgetConfig = {
   author: "yangdongnan",
   defaultStyle: { width: "240px", height: "40px", fontSize: "14px" },
   defaultProps: {
-    placeholder: "请选择审批人",
+    placeholder: "Please selectApprover",
     clearable: true,
     disabled: false,
     multiple: false,
@@ -26,7 +26,7 @@ export const approvalUserPickerConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择审批人",
+        default: "Please selectApprover",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },

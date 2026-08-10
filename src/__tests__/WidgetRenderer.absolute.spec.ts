@@ -25,10 +25,10 @@ vi.mock("@/composables/useLogger", () => ({
 }));
 
 // WidgetErrorBoundary（WidgetNode 包裹层）依赖 useI18n / reportError，测试环境 mock
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-  reportError: vi.fn(),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }), reportError: vi.fn() };
+});
 vi.mock("@/api/telemetryApi", () => ({
   reportTelemetryError: vi.fn(),
   reportTelemetry: vi.fn(),

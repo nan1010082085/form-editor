@@ -1,8 +1,8 @@
 /**
- * useAdvancedTableConfig - advanced-table 的 schema 配置解析
+ * useAdvancedTableConfig - advanced-table 的 schema ConfigParse
  *
- * 从 FgAdvancedTable 抽出：从 widgetData.props 解析 columns/toolbar/pagination/
- * selection/searchBar/stripe/border/height/sortable/virtual 等响应式配置。
+ * 从 FgAdvancedTable 抽出：从 widgetData.props Parse columns/toolbar/pagination/
+ * selection/searchBar/stripe/border/height/sortable/virtual 等响应式Config。
  */
 import { computed, reactive, watch, type ComputedRef, type Ref } from "vue";
 import type { Widget } from "../base/types";
@@ -31,7 +31,7 @@ export interface AdvancedTableConfig {
   searchFields: ComputedRef<SearchField[]>;
   searchEnabled: ComputedRef<boolean>;
   listApiConfig: ListApiConfig;
-  /** serverSideFilter 依赖 listApiConfig.url，故在 composable 内一并计算 */
+  /** serverSideFilter 依赖 listApiConfig.url, 故在 composable 内一并计算 */
   serverSideFilter: (columns: AdvancedTableColumn[]) => boolean;
 }
 
@@ -92,7 +92,7 @@ export function useAdvancedTableConfig(
       searchBarConfig.value.enabled !== false && searchFields.value.length > 0,
   );
 
-  // ---- ListApiConfig（reactive，watch url 重建） ----
+  // ---- ListApiConfig（reactive, watch url 重建） ----
   function buildListApiConfig(): ListApiConfig {
     const api = widgetData.value.api;
     if (api?.url) {

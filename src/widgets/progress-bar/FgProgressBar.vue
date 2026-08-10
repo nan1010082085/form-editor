@@ -2,7 +2,7 @@
 /**
  * FgProgressBar — 进度条/环形进度
  *
- * 支持线性进度条和环形进度两种形态，支持阈值颜色。
+ * 支持线性进度条和环形进度两种形态, 支持阈Value颜色。
  */
 import { inject, ref, computed } from "vue";
 import { widgetDataKey, widgetStyleKey } from "../base/types";

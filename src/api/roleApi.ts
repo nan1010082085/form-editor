@@ -1,14 +1,14 @@
 /**
- * Role API — 角色管理相关接口
+ * Role API — Role管理相关接口
  *
- * 聚合角色 CRUD、权限分配等接口。
- * 底层委托 utils/apiClient。
+ * AggregateRole CRUD、PermissionMin配等接口。
+ * 底层委托 utils/apiClient（baseUrl 已含 `/api`, 路径勿再加前缀）。
  */
 import { apiClient } from "@/utils/apiClient";
 
-/** 角色列表项 */
+/** RoleColumn表项（平台 toJSON 主键为 `id`） */
 export interface RoleItem {
-  _id: string;
+  id: string;
   name: string;
   description?: string;
   permissions: string[];
@@ -18,16 +18,16 @@ export interface RoleItem {
   updatedAt: string;
 }
 
-/** 权限项 */
+/** Permission项 */
 export interface PermissionItem {
-  _id: string;
+  id: string;
   code: string;
   name: string;
   module: string;
   description?: string;
 }
 
-/** 分页响应 */
+/** Min页响应 */
 export interface RoleListResponse {
   items: RoleItem[];
   total: number;
@@ -36,7 +36,7 @@ export interface RoleListResponse {
   totalPages: number;
 }
 
-/** 创建角色参数 */
+/** 创建RoleParams */
 export interface CreateRolePayload {
   name: string;
   description?: string;
@@ -45,7 +45,7 @@ export interface CreateRolePayload {
   dept_ids?: string[];
 }
 
-/** 更新角色参数 */
+/** UpdateRoleParams */
 export interface UpdateRolePayload {
   name?: string;
   description?: string;
@@ -54,47 +54,41 @@ export interface UpdateRolePayload {
   dept_ids?: string[];
 }
 
-/** 获取角色列表 */
+/** 获取RoleColumn表 */
 export function fetchRoles(
   params: {
     q?: string;
     page?: number;
     pageSize?: string;
   } = {},
-): Promise<{ success: boolean; data: RoleListResponse }> {
-  return apiClient.get("/api/roles", params as Record<string, unknown>);
+): Promise<RoleListResponse> {
+  return apiClient.get("/roles", params as Record<string, unknown>);
 }
 
-/** 获取单个角色 */
-export function fetchRoleById(
-  id: string,
-): Promise<{ success: boolean; data: RoleItem }> {
-  return apiClient.get(`/api/roles/${encodeURIComponent(id)}`);
+/** 获取单个Role */
+export function fetchRoleById(id: string): Promise<RoleItem> {
+  return apiClient.get(`/roles/${encodeURIComponent(id)}`);
 }
 
-/** 创建角色 */
-export function createRole(
-  payload: CreateRolePayload,
-): Promise<{ success: boolean; data: RoleItem }> {
-  return apiClient.post("/api/roles", payload);
+/** 创建Role */
+export function createRole(payload: CreateRolePayload): Promise<RoleItem> {
+  return apiClient.post("/roles", payload);
 }
 
-/** 更新角色 */
+/** UpdateRole */
 export function updateRole(
   id: string,
   payload: UpdateRolePayload,
-): Promise<{ success: boolean; data: RoleItem }> {
-  return apiClient.put(`/api/roles/${encodeURIComponent(id)}`, payload);
+): Promise<RoleItem> {
+  return apiClient.put(`/roles/${encodeURIComponent(id)}`, payload);
 }
 
-/** 删除角色 */
-export function deleteRole(
-  id: string,
-): Promise<{ success: boolean; data: null }> {
-  return apiClient.delete(`/api/roles/${encodeURIComponent(id)}`);
+/** DeleteRole */
+export function deleteRole(id: string): Promise<null> {
+  return apiClient.delete(`/roles/${encodeURIComponent(id)}`);
 }
 
-/** 权限列表分页响应 */
+/** PermissionColumn表Min页响应 */
 export interface PermissionListResponse {
   items: PermissionItem[];
   total: number;
@@ -103,14 +97,10 @@ export interface PermissionListResponse {
   totalPages: number;
 }
 
-/** 获取可用权限列表 */
-export async function fetchPermissions(): Promise<{
-  success: boolean;
-  data: PermissionItem[];
-}> {
-  const response = await apiClient.get<{
-    success: boolean;
-    data: PermissionListResponse;
-  }>("/api/roles/permissions");
-  return { success: response.success, data: response.data.items };
+/** 获取可用PermissionColumn表 */
+export async function fetchPermissions(): Promise<PermissionItem[]> {
+  const response = await apiClient.get<PermissionListResponse>(
+    "/roles/permissions",
+  );
+  return response.items;
 }

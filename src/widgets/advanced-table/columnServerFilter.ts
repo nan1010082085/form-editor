@@ -1,6 +1,6 @@
 import type { AdvancedTableColumn } from "./config";
 
-/** 将 el-table filter-change 事件转为 API 查询参数（E-30） */
+/** 将 el-table filter-change Event转为 API QueryParams（E-30） */
 export function buildServerFilterParams(
   filters: Record<string, unknown>,
   columns: AdvancedTableColumn[],
@@ -24,7 +24,7 @@ export function buildServerFilterParams(
   return params;
 }
 
-/** 配置了 API 且存在 filterable 列时，默认走服务端筛选 */
+/** Config了 API 且存在 filterable ColumnHrs, 默认走服务端Filter */
 export function shouldUseServerSideFilter(
   props: Record<string, unknown> | undefined,
   hasApiUrl: boolean,

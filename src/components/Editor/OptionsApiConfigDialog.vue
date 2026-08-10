@@ -1,11 +1,13 @@
 <script setup lang="ts">
 /**
- * OptionsApiConfigDialog -- SchemaApiConfig 配置对话框
+ * OptionsApiConfigDialog -- SchemaApiConfig Config对话框
  *
- * 900px 宽左右分栏，toolbar 移至底部。
- * ApiConfig 内部自渲染左右分栏（表单 + 测试面板），本组件只负责弹窗壳和底部操作栏。
+ * 900px 宽左右Min栏, toolbar 移至底部。
+ * ApiConfig 内部自渲染左右Min栏（Form + 测试面板）, 本Component只负责Dialog壳和底部Action栏。
  */
 import { ref, watch } from "vue";
+import { ElMessage } from "element-plus";
+import { useI18n } from "@schema-platform/platform-shared";
 import type { SchemaApiConfig } from "../../widgets/base/types";
 import ApiConfig from "./ApiConfig.vue";
 import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
@@ -21,7 +23,9 @@ const emit = defineEmits<{
   save: [api: SchemaApiConfig | undefined];
 }>();
 
-// ---- 本地编辑副本 ----
+const { t } = useI18n();
+
+// ---- 本地Edit副本 ----
 const localApi = ref<SchemaApiConfig | undefined>(undefined);
 
 watch(
@@ -35,7 +39,7 @@ watch(
   },
 );
 
-// ---- ApiConfig 事件处理 ----
+// ---- ApiConfig Event处理 ----
 function handleApiUpdate(api: SchemaApiConfig | undefined) {
   localApi.value = api;
 }
@@ -44,8 +48,13 @@ function clearApi() {
   localApi.value = undefined;
 }
 
-// ---- 保存 / 关闭 ----
+// ---- Save / Close ----
 function handleSave() {
+  /** 已Config API 对象Hrs url 必填；清除Config（undefined）允许Save */
+  if (localApi.value && !String(localApi.value.url ?? "").trim()) {
+    ElMessage.warning(t("editor.api.urlRequired"));
+    return;
+  }
   emit("save", localApi.value);
   emit("update:visible", false);
 }
@@ -58,7 +67,7 @@ function handleClose() {
 <template>
   <AppDialog
     :model-value="visible"
-    title="数据源配置"
+    :title="t('editor.configDialog.dataSource')"
     width="900px"
     @update:model-value="emit('update:visible', $event)"
   >
@@ -71,8 +80,8 @@ function handleClose() {
     </div>
 
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleSave">保存</el-button>
+      <el-button @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
+      <el-button type="primary" @click="handleSave">{{ t('editor.common.save') }}</el-button>
     </template>
   </AppDialog>
 </template>

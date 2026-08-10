@@ -10,9 +10,10 @@ import { widgetDataKey, widgetStyleKey } from "../../base/types";
 import FgCard from "../FgCard.vue";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 describe("FgCard", () => {
   let store: ReturnType<typeof useWidgetStore>;
@@ -70,7 +71,7 @@ describe("FgCard", () => {
     it("默认 title 属性", () => {
       const widget = createWidget("card", "test_card")!;
       store.addWidget(widget);
-      expect(widget.props?.title).toBe("卡片标题");
+      expect(widget.props?.title).toBe("Card Title");
     });
 
     it("title 属性可自定义", () => {

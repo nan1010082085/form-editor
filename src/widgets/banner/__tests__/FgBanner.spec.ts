@@ -11,9 +11,10 @@ import FgBanner from "../FgBanner.vue";
 import { bannerConfig } from "../config";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 describe("FgBanner", () => {
   let store: ReturnType<typeof useWidgetStore>;
@@ -72,7 +73,7 @@ describe("FgBanner", () => {
   describe("text 属性", () => {
     it("默认显示提示信息", () => {
       const wrapper = mountWidget();
-      expect(wrapper.find(".el-alert__title").text()).toBe("提示信息");
+      expect(wrapper.find(".el-alert__title").text()).toBe("Notice Info");
     });
 
     it("自定义文本", () => {

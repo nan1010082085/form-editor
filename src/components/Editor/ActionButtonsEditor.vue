@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * ActionButtonsEditor -- 工具栏按钮编辑器
+ * ActionButtonsEditor -- ToolbarButtonEdit器
  *
- * 配置按钮列表，每个按钮可独立设置事件链（包含 API 调用、设置变量、路由跳转等 18 种动作）
- * 按钮支持 visibleCondition 控制显示时机（如 selectedRows.length > 0）
+ * ConfigButtonColumn表, 每个Button可独立SettingsEvent链（包含 API 调用、Settings变量、Route跳转等 18 种Action）
+ * Button支持 visibleCondition 控制ShowHrs机（如 selectedRows.length > 0）
  */
 import { ref, computed } from "vue";
 import type {
@@ -154,7 +154,9 @@ function toggleEvents(index: number) {
       <!-- Basic fields -->
       <div :class="styles['action-buttons-editor__row']">
         <div :class="styles['action-buttons-editor__field']">
-          <label :class="styles['action-buttons-editor__label']">key</label>
+          <label :class="styles['action-buttons-editor__label']">{{
+            t("editor.common.key")
+          }}</label>
           <el-input
             :model-value="btn.key"
             size="small"

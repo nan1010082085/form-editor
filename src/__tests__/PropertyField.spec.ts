@@ -31,9 +31,10 @@ function lookup(obj: Record<string, unknown>, path: string): string {
   }
   return typeof cur === "string" ? cur : path;
 }
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => lookup(messages, key) }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => lookup(messages, key) }) };
+});
 
 // ---- Stub Element Plus components ----
 
@@ -350,7 +351,7 @@ describe("PropertyPanel - chart staticData array-editor", () => {
         },
       },
     });
-    expect(wrapper.text()).toContain("静态数据");
+    expect(wrapper.text()).toContain("Static Data");
   });
 
   it("renders staticData with existing data items", () => {

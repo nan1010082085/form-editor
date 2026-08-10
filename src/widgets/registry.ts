@@ -3,13 +3,13 @@ import type { Component } from "vue";
 
 /** Widget 注册项 */
 export interface WidgetRegistryItem {
-  /** 组件名称 */
+  /** ComponentName */
   name: string;
-  /** 显示名称 */
+  /** ShowName */
   displayName: string;
-  /** 组件类型 */
+  /** ComponentType */
   type: SchemaType;
-  /** 分组 */
+  /** Group */
   group:
     | "layout"
     | "form"
@@ -19,13 +19,13 @@ export interface WidgetRegistryItem {
     | "static"
     | "business"
     | "chart";
-  /** Vue 组件 */
+  /** Vue Component */
   component: Component;
   /** 创建 Widget 的工厂函数 */
   create: (id: string) => Widget;
-  /** 组件配置 */
+  /** ComponentConfig */
   config: WidgetConfig;
-  /** 可用布局模式 — undefined 表示两种模式都可用 */
+  /** 可用Layout模式 — undefined 表示两种模式都可用 */
   availableIn?: ("free" | "grid")[];
 }
 
@@ -34,7 +34,7 @@ const registry = new Map<SchemaType, WidgetRegistryItem>();
 
 /** 注册 Widget */
 export function registerWidget(item: WidgetRegistryItem): void {
-  // 未显式声明 availableIn 时，从 config.contexts 透传（声明式控制 widget 可用画布模式）
+  // 未显式声明 availableIn Hrs, 从 config.contexts 透传（声明式控制 widget 可用画布模式）
   if (item.availableIn === undefined && item.config?.contexts) {
     item.availableIn = item.config.contexts;
   }
@@ -51,7 +51,7 @@ export function getAllWidgets(): WidgetRegistryItem[] {
   return Array.from(registry.values());
 }
 
-/** 按分组获取 Widget */
+/** 按Group获取 Widget */
 export function getWidgetsByGroup(
   group: WidgetRegistryItem["group"],
 ): WidgetRegistryItem[] {
@@ -61,7 +61,7 @@ export function getWidgetsByGroup(
 /** Cached component map — registry is static after initialization */
 let _cachedComponentMap: Record<string, Component> | null = null;
 
-/** 获取组件映射表（用于 SchemaRender），带缓存 */
+/** 获取ComponentMap表（用于 SchemaRender）, 带Cache */
 export function getComponentMap(): Record<string, Component> {
   if (!_cachedComponentMap) {
     const map: Record<string, Component> = {};
@@ -102,7 +102,7 @@ export function createWidgetPlugin(plugin: WidgetPlugin): void {
   }
 }
 
-/** 获取所有已注册类型（运行时清单） */
+/** 获取所有已注册Type（运RowHrs清单） */
 export function getRegisteredTypes(): SchemaType[] {
   return Array.from(registry.keys());
 }
@@ -113,7 +113,7 @@ function widgetI18nTypeKey(type: string): string {
 }
 
 /**
- * 解析 Widget 文案：先试 kebab type，再试 camelCase（兼容旧 locale 键）
+ * Parse Widget 文案：先试 kebab type, 再试 camelCase（兼容旧 locale 键）
  */
 function resolveWidgetI18n(
   type: SchemaType,
@@ -132,8 +132,8 @@ function resolveWidgetI18n(
 }
 
 /**
- * 获取 Widget 翻译后的显示名称
- * 优先使用 i18n 翻译，回退到 config.displayName
+ * 获取 Widget 翻译后的ShowName
+ * 优先使用 i18n 翻译, 回退到 config.displayName
  */
 export function getWidgetDisplayName(
   type: SchemaType,
@@ -149,8 +149,8 @@ export function getWidgetDisplayName(
 }
 
 /**
- * 获取 Widget 翻译后的描述
- * 优先使用 i18n 翻译，回退到 config.description
+ * 获取 Widget 翻译后的Description
+ * 优先使用 i18n 翻译, 回退到 config.description
  */
 export function getWidgetDescription(
   type: SchemaType,

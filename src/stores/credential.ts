@@ -1,13 +1,13 @@
 /**
  * useCredentialStore -- Credential management state
  *
- * 使用 useDataLoading 统一 loading/error 状态管理。
- * 仅在数据获取区域显示 loading（配合 v-loading 使用）。
+ * 使用 useDataLoading 统一 loading/error Status管理。
+ * 仅在Data获取RegionShow loading（配合 v-loading 使用）。
  */
 import { defineStore } from "pinia";
 import { ref, reactive, computed } from "vue";
 import { useDataLoading } from "@schema-platform/platform-shared/utils/useDataLoading";
-import { ApiError } from "@/utils/apiClient";
+import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import type { PaginatedResponse } from "@/types/api";
 import type {
   CredentialItem,
@@ -48,6 +48,23 @@ export const useCredentialStore = defineStore("credential", () => {
     error.value = null;
   }
 
+  /**
+   * 包装 withLoading, 将错误文案统一经 resolveApiErrorMessage 转换
+   *
+   * @param fn - 异步操作
+   */
+  async function withResolvedLoading<T>(
+    fn: () => Promise<T>,
+  ): Promise<T | null> {
+    return withLoading(async () => {
+      try {
+        return await fn();
+      } catch (e: unknown) {
+        throw new Error(resolveApiErrorMessage(e));
+      }
+    });
+  }
+
   async function fetchCredentials(params?: {
     page?: number;
     pageSize?: number;
@@ -59,7 +76,7 @@ export const useCredentialStore = defineStore("credential", () => {
     const search = params?.search ?? searchQuery.value;
     const type = params?.type ?? typeFilter.value;
 
-    const result = await withLoading(() =>
+    const result = await withResolvedLoading(() =>
       apiFetchCredentials({
         page,
         pageSize,
@@ -84,13 +101,13 @@ export const useCredentialStore = defineStore("credential", () => {
   async function fetchCredentialById(
     id: string,
   ): Promise<CredentialDetail | null> {
-    return withLoading(() => apiFetchCredentialById(id));
+    return withResolvedLoading(() => apiFetchCredentialById(id));
   }
 
   async function createCredential(
     payload: CredentialCreatePayload,
   ): Promise<CredentialItem | null> {
-    const result = await withLoading(() => apiCreateCredential(payload));
+    const result = await withResolvedLoading(() => apiCreateCredential(payload));
     if (result) await fetchCredentials({ page: 1 });
     return result;
   }
@@ -99,7 +116,9 @@ export const useCredentialStore = defineStore("credential", () => {
     id: string,
     payload: CredentialUpdatePayload,
   ): Promise<CredentialItem | null> {
-    const result = await withLoading(() => apiUpdateCredential(id, payload));
+    const result = await withResolvedLoading(() =>
+      apiUpdateCredential(id, payload),
+    );
     if (result) {
       const idx = credentials.value.findIndex((c) => c.id === id);
       if (idx >= 0) credentials.value[idx] = result;
@@ -122,13 +141,7 @@ export const useCredentialStore = defineStore("credential", () => {
       }
       return true;
     } catch (e: unknown) {
-      const msg =
-        e instanceof ApiError
-          ? e.message
-          : e instanceof Error
-            ? e.message
-            : "操作失败";
-      error.value = msg;
+      error.value = resolveApiErrorMessage(e);
       return false;
     }
   }

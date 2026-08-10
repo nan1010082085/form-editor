@@ -305,7 +305,7 @@ describe("getDiffSummary", () => {
       modified: [],
       moved: [],
     });
-    expect(summary).toBe("无差异");
+    expect(summary).toBe("No differences");
   });
 
   it("formats single change type", () => {
@@ -315,7 +315,7 @@ describe("getDiffSummary", () => {
       modified: [],
       moved: [],
     });
-    expect(summary).toBe("1 个新增");
+    expect(summary).toBe("1  added");
   });
 
   it("formats multiple change types", () => {
@@ -325,6 +325,6 @@ describe("getDiffSummary", () => {
       modified: [{ id: "c", name: "C", type: "input", path: "C" }],
       moved: [{ id: "d", name: "D", type: "input", path: "D" }],
     });
-    expect(summary).toBe("1 个新增，1 个删除，1 个修改，1 个移动");
+    expect(summary).toBe("1  added, 1  removed, 1  modified, 1  moved");
   });
 });

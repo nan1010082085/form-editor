@@ -7,8 +7,8 @@ export const transferConfig: WidgetConfig = {
   author: "yangdongnan",
   defaultStyle: { width: "700px", height: "300px" },
   defaultProps: {
-    leftTitle: "待选",
-    rightTitle: "已选",
+    leftTitle: "Available",
+    rightTitle: "Selected",
     filterable: true,
   },
   exposedValues: [{ key: "value", type: "array", description: "Selected Value" }],
@@ -17,8 +17,8 @@ export const transferConfig: WidgetConfig = {
     basic: ["field", "label", "options"],
     style: [],
     props: [
-      { key: "leftTitle", label: "Left Title", type: "text", default: "待选" },
-      { key: "rightTitle", label: "Right Title", type: "text", default: "已选" },
+      { key: "leftTitle", label: "Left Title", type: "text", default: "Available" },
+      { key: "rightTitle", label: "Right Title", type: "text", default: "Selected" },
       { key: "filterable", label: "Searchable", type: "switch", default: true },
     ],
   },

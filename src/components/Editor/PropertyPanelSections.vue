@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * PropertyPanelSections — 属性手风琴分区渲染
- * 从 PropertyPanel 拆出，降低主文件体积。
+ * PropertyPanelSections — Property手风琴Min区渲染
+ * 从 PropertyPanel 拆出, 降低主文件体积。
  */
 import type { Widget } from "../../widgets/base/types";
 import type { ArrayFieldSchema } from "../../widgets/base/types";
@@ -48,6 +48,8 @@ export interface PropertyItem {
   unit?: string;
   unitKey?: string;
   itemLabel?: string;
+  min?: number;
+  max?: number;
 }
 
 export interface PropertySection {
@@ -306,6 +308,8 @@ const emit = defineEmits<{
                 size="small"
                 controls-position="right"
                 style="flex: 1"
+                :min="item.min"
+                :max="item.max"
                 @update:model-value="
                   (v: unknown) => emit('updateProperty', item.key, v)
                 "
@@ -334,6 +338,8 @@ const emit = defineEmits<{
             :remote-url="item.remoteUrl"
             :label-field="item.labelField"
             :value-field="item.valueField"
+            :min="item.min"
+            :max="item.max"
             @update="(v: unknown) => emit('updateProperty', item.key, v)"
           />
         </template>

@@ -9,14 +9,14 @@ export const formStepsConfig: WidgetConfig = {
   defaultStyle: { width: "100%", minHeight: "300px" },
   defaultProps: {
     steps: [
-      { title: "基本信息", description: "Fill Basic Info", children: [] },
-      { title: "详细信息", description: "Fill Details", children: [] },
-      { title: "确认提交", description: "Check and Submit", children: [] },
+      { title: "Basic Info", description: "Fill Basic Info", children: [] },
+      { title: "Detailed Info", description: "Fill Details", children: [] },
+      { title: "ConfirmSubmit", description: "Check and Submit", children: [] },
     ] as Array<{ title: string; description?: string; children: unknown[] }>,
   },
   exposedValues: [
     { key: "currentStep", type: "number", description: "Current Step Index" },
-    { key: "totalSteps", type: "number", description: "总步骤数" },
+    { key: "totalSteps", type: "number", description: "Total steps" },
   ],
   eventTargets: [
     { id: "step-change", label: "Step Switch", description: "On Step Switch" },
@@ -28,7 +28,7 @@ export const formStepsConfig: WidgetConfig = {
     {
       name: "go-to-step",
       description: "Go To Step",
-      params: { step: "步骤索引" },
+      params: { step: "Step Index" },
     },
   ],
   configPanels: ["events", "variables"],

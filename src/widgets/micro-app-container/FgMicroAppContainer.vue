@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * FgMicroAppContainer — 微应用容器 Widget
+ * FgMicroAppContainer — 微应用Container Widget
  *
- * 通过 qiankun loadMicroApp 动态加载子应用
- * 支持：沙箱隔离、CSS 隔离、超时兜底、参数传递、路由前缀
+ * passed qiankun loadMicroApp 动态加载子应用
+ * 支持：沙箱隔离、CSS Isolation、超Hrs兜底、Params传递、Route Prefix
  */
 import { inject, computed, ref, watch, onUnmounted } from "vue";
 import { widgetDataKey } from "../base/types";
@@ -91,7 +91,7 @@ async function loadApp() {
     microApp = null;
   }
 
-  // 超时兜底
+  // 超Hrs兜底
   if (timeoutTimer) clearTimeout(timeoutTimer);
   timeoutTimer = setTimeout(() => {
     if (loading.value) {

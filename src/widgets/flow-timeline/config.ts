@@ -13,12 +13,12 @@ export const flowTimelineConfig: WidgetConfig = {
     padding: "16px",
   },
   exposedValues: [
-    { key: "logs", type: "array", description: "审批日志列表" },
+    { key: "logs", type: "array", description: "Approval log list" },
     { key: "loading", type: "boolean", description: "Loading State" },
   ],
   configPanels: ["events", "variables"],
   defaultProps: {
-    title: "审批记录",
+    title: "Approval Records",
     instanceIdVariable: "flowInstanceId",
     staticData: flowTimelineMock.staticData.logs,
   },
@@ -26,7 +26,7 @@ export const flowTimelineConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "Title", type: "input", default: "审批记录" },
+      { key: "title", label: "Title", type: "input", default: "Approval Records" },
       {
         key: "instanceIdVariable",
         label: "Instance ID Var Name",
@@ -37,7 +37,7 @@ export const flowTimelineConfig: WidgetConfig = {
         key: "instanceId",
         label: "Fixed Instance ID",
         type: "input",
-        desc: "留空则从 board 变量读取",
+        desc: "Leave empty to read from board variables",
       },
     ],
   },

@@ -4,7 +4,7 @@ export const horizontalBarChartConfig: WidgetConfig = {
   name: "FgHorizontalBarChart",
   displayName: "水平柱状图",
   type: "horizontal-bar-chart",
-  description: "水平柱状图，适合展示排名数据",
+  description: "水平柱状图, 适合展示RankingData",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
   defaultProps: {
@@ -81,9 +81,9 @@ export const horizontalBarChartConfig: WidgetConfig = {
         label: "Color Scheme",
         type: "select",
         options: [
-          { label: "默认", value: "default" },
-          { label: "暗色", value: "dark" },
-          { label: "浅色", value: "light" },
+          { label: "Default", value: "default" },
+          { label: "Dark", value: "dark" },
+          { label: "Light", value: "light" },
         ],
       },
       { key: "customColors", label: "Custom Colors", type: "color-array" },

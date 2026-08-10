@@ -1,13 +1,13 @@
 /**
- * useBoardStore — 实例信息和画布配置
+ * useBoardStore — 实例Info和画布Config
  *
  * 职责：
- * - 画布实例元数据（id, name, status）
- * - 画布配置（宽高、背景色、内边距、缩放）
+ * - 画布实例元Data（id, name, status）
+ * - 画布Config（宽高、Background、Padding、缩放）
  * - 顶层变量集合
- * - 顶层事件集合
+ * - 顶层Event集合
  *
- * 变化频率低，与 Widget 数据解耦。
+ * 变化频率低, 与 Widget Data解耦。
  */
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
@@ -18,13 +18,13 @@ import type {
   BoardPage,
 } from "../widgets/base/types";
 
-/** 统一缩放阈值，EditorViewToolbar 和 setZoom 共用 */
+/** 统一缩放阈Value, EditorViewToolbar 和 setZoom 共用 */
 export const MIN_ZOOM = 50;
 export const MAX_ZOOM = 200;
 
 export const useBoardStore = defineStore("board", () => {
   // ================================================================
-  // 实例信息
+  // 实例Info
   // ================================================================
 
   const id = ref("");
@@ -32,7 +32,7 @@ export const useBoardStore = defineStore("board", () => {
   const status = ref<"draft" | "published">("draft");
 
   // ================================================================
-  // 画布配置
+  // 画布Config
   // ================================================================
 
   const canvas = ref<CanvasConfig>({
@@ -47,10 +47,10 @@ export const useBoardStore = defineStore("board", () => {
     freeLayout: { contentAlign: "left", marginX: "0" },
   });
 
-  /** 当前布局模式（响应式） */
+  /** 当前Layout模式（响应式） */
   const layoutMode = computed(() => canvas.value.layoutMode ?? "free");
 
-  /** 画布实际像素尺寸（百分比模式需基于父容器计算） */
+  /** 画布实际像素尺寸（百Min比模式需基于父Container计算） */
   const canvasPixelSize = ref({ width: 1920, height: 1080 });
 
   function setCanvasPixelSize(width: number, height: number) {
@@ -72,13 +72,13 @@ export const useBoardStore = defineStore("board", () => {
   const variables = ref<BoardVariable[]>([]);
 
   // ================================================================
-  // 顶层事件集合
+  // 顶层Event集合
   // ================================================================
 
   const events = ref<BoardEvent[]>([]);
 
   // ================================================================
-  // 画布配置操作
+  // 画布ConfigAction
   // ================================================================
 
   function updateCanvas(patch: Partial<CanvasConfig>): void {
@@ -90,7 +90,7 @@ export const useBoardStore = defineStore("board", () => {
   }
 
   // ================================================================
-  // 变量操作
+  // 变量Action
   // ================================================================
 
   function addVariable(variable: BoardVariable): void {
@@ -112,7 +112,7 @@ export const useBoardStore = defineStore("board", () => {
   }
 
   // ================================================================
-  // 事件操作
+  // EventAction
   // ================================================================
 
   function addEvent(event: BoardEvent): void {
@@ -132,13 +132,13 @@ export const useBoardStore = defineStore("board", () => {
   }
 
   // ================================================================
-  // 多页面支持
+  // 多Page支持
   // ================================================================
 
   const pages = ref<BoardPage[]>([]);
   const currentPageId = ref("");
 
-  /** 当前页面（无页面时返回 null） */
+  /** 当前Page（无PageHrs返回 null） */
   const currentPage = computed<BoardPage | null>(() => {
     if (pages.value.length === 0) return null;
     return (
@@ -148,7 +148,7 @@ export const useBoardStore = defineStore("board", () => {
     );
   });
 
-  /** 是否处于多页面模式 */
+  /** 是否处于多Page模式 */
   const isMultiPage = computed(() => pages.value.length > 0);
 
   function addPage(page: BoardPage): void {
@@ -187,7 +187,7 @@ export const useBoardStore = defineStore("board", () => {
   }
 
   // ================================================================
-  // 批量初始化（从 API 加载时使用）
+  // 批量初始化（从 API 加载Hrs使用）
   // ================================================================
 
   function loadBoard(data: {
@@ -222,36 +222,36 @@ export const useBoardStore = defineStore("board", () => {
   }
 
   // ================================================================
-  // 导出
+  // Export
   // ================================================================
 
   return {
-    // 实例信息
+    // 实例Info
     id,
     name,
     status,
-    // 画布配置
+    // 画布Config
     canvas,
     layoutMode,
     // 变量
     variables,
-    // 事件
+    // Event
     events,
-    // 画布配置操作
+    // 画布ConfigAction
     updateCanvas,
     setZoom,
     setCanvasPixelSize,
     getCanvasWidthPx,
     getCanvasHeightPx,
-    // 变量操作
+    // 变量Action
     addVariable,
     removeVariable,
     updateVariable,
-    // 事件操作
+    // EventAction
     addEvent,
     removeEvent,
     updateEvent,
-    // 多页面
+    // 多Page
     pages,
     currentPageId,
     currentPage,

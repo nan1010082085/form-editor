@@ -26,7 +26,7 @@ export function buildFiltersFromDistinctRows(
   return filters.sort((a, b) => String(a.text).localeCompare(String(b.text)));
 }
 
-/** 解析列筛选选项：filterable 关闭返回 undefined；有显式 filters 优先；否则从 options 或行数据去重生成 */
+/** ParseColumnFilterOptions：filterable Close返回 undefined；有显式 filters 优先；否则从 options 或RowData去重生成 */
 export function resolveColumnFilters(
   col: AdvancedTableColumn,
   rows: Record<string, unknown>[],

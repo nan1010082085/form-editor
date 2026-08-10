@@ -1,14 +1,14 @@
 /**
- * useCanvasScale — 发布视图多分辨率自适应
+ * useCanvasScale — 发布View多Min辨率自适应
  *
- * 根据 canvas 配置尺寸和容器实际尺寸，计算 CSS transform scale。
- * 仅用于 publish / preview 模式，不影响编辑器缩放（boardStore.zoom）。
+ * 根据 canvas Config尺寸和Container实际尺寸, 计算 CSS transform scale。
+ * 仅用于 publish / preview 模式, 不影响Edit器缩放（boardStore.zoom）。
  *
  * 支持 4 种 scaleMode：
- * - fit-width  按容器宽度等比缩放
- * - fit-height 按容器高度等比缩放
- * - contain    等比缩放至完全容纳于容器（默认）
- * - stretch    拉伸填满容器（忽略宽高比）
+ * - fit-width  按ContainerWidth等比缩放
+ * - fit-height 按ContainerHeight等比缩放
+ * - contain    等比缩放至完全容纳于Container（Default）
+ * - stretch    拉伸填满Container（忽略宽高比）
  */
 import {
   ref,
@@ -32,7 +32,7 @@ export interface UseCanvasScaleReturn {
   containerHeight: Ref<number>;
   scale: Ref<number>;
   canvasStyle: Ref<CSSProperties>;
-  /** 手动销毁 ResizeObserver（非组件上下文时使用） */
+  /** 手动销毁 ResizeObserver（非Component上下文Hrs使用） */
   dispose: () => void;
 }
 
@@ -76,7 +76,7 @@ export function useCanvasScale(
     resizeObserver = null;
   }
 
-  // 立即初始化（兼容非组件上下文）
+  // 立即初始化（兼容非Component上下文）
   if (containerRef.value) {
     setupObserver(containerRef.value);
   }
@@ -85,7 +85,7 @@ export function useCanvasScale(
     setupObserver(el);
   });
 
-  // 组件上下文中自动清理
+  // Component上下文中自动清理
   onUnmounted(dispose);
 
   const effectiveMode = computed<ScaleMode>(
@@ -106,7 +106,7 @@ export function useCanvasScale(
       case "fit-height":
         return vh / ch;
       case "stretch":
-        return 1; // stretch 不用 scale，改用 width/height
+        return 1; // stretch does not use scale, uses width/height instead
       case "contain":
       default:
         return Math.min(vw / cw, vh / ch);

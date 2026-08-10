@@ -1,7 +1,7 @@
 /**
- * boardTemplates — 新建实例时的画布 + Widget 种子
+ * boardTemplates — 新建实例Hrs的画布 + Widget 种子
  *
- * layoutMode 决定编辑器/运行时渲染路径；gridTemplate / freePreset 决定初始结构。
+ * layoutMode 决定Edit器/运RowHrs渲染路径；gridTemplate / freePreset 决定初始结构。
  */
 import type {
   CanvasConfig,
@@ -80,8 +80,8 @@ function baseCanvas(
             rowGap: 12,
             columnGap: 8,
             minColumns: 1,
-            maxColumns: 3,
-            minWidth: 200,
+            maxColumns: 12,
+            minWidth: 80,
             colWrap: true,
           },
         }
@@ -107,7 +107,7 @@ function withFlowStyle(widget: Widget, fullWidth = true): Widget {
 
 function seedFormGrid(): Widget[] {
   const title = mustCreate("title");
-  title.props = { ...title.props, text: "表单标题", level: 2 };
+  title.props = { ...title.props, text: "Form标题", level: 2 };
   title.style = { width: "100%", marginBottom: "16px" };
 
   const form = mustCreate("form");
@@ -119,24 +119,24 @@ function seedFormGrid(): Widget[] {
 
   const inputA = mustCreate("input");
   inputA.field = "name";
-  inputA.label = "名称";
+  inputA.label = "Name";
   inputA.formId = form.id;
   inputA.colIndex = 0;
-  inputA.props = { ...inputA.props, placeholder: "请输入名称" };
+  inputA.props = { ...inputA.props, placeholder: "Please enterName" };
 
   const inputB = mustCreate("input");
   inputB.field = "code";
   inputB.label = "编码";
   inputB.formId = form.id;
   inputB.colIndex = 1;
-  inputB.props = { ...inputB.props, placeholder: "请输入编码" };
+  inputB.props = { ...inputB.props, placeholder: "Please enter编码" };
 
   col.children = [inputA, inputB];
   form.children = [col];
 
   const submitBtn = mustCreate("button");
-  submitBtn.label = "提交";
-  submitBtn.props = { ...submitBtn.props, text: "提交", type: "primary" };
+  submitBtn.label = "Submit";
+  submitBtn.props = { ...submitBtn.props, text: "Submit", type: "primary" };
   submitBtn.style = { marginTop: "16px" };
 
   return [title, form, submitBtn].map((w) => withFlowStyle(w));
@@ -159,22 +159,22 @@ function seedListGrid(): Widget[] {
         },
         {
           field: "status",
-          label: "状态",
+          label: "Status",
           type: "select",
           span: 8,
           options: [
-            { label: "全部", value: "" },
+            { label: "All", value: "" },
             { label: "审批中", value: "submitted" },
-            { label: "已通过", value: "approved" },
-            { label: "已驳回", value: "rejected" },
+            { label: "已passed", value: "approved" },
+            { label: "Rejected", value: "rejected" },
           ],
         },
         { field: "createdAt", label: "申请日期", type: "date-range", span: 8 },
       ],
     },
     toolbar: [
-      { key: "add", label: "新增", type: "primary", icon: "plus" },
-      { key: "export", label: "导出", type: "default", icon: "download" },
+      { key: "add", label: "Create", type: "primary", icon: "plus" },
+      { key: "export", label: "Export", type: "default", icon: "download" },
     ],
   };
   return [withFlowStyle(crud)];
@@ -182,19 +182,19 @@ function seedListGrid(): Widget[] {
 
 function seedDetailGrid(): Widget[] {
   const title = mustCreate("title");
-  title.props = { ...title.props, text: "详情页", level: 2 };
+  title.props = { ...title.props, text: "Details页", level: 2 };
   title.style = { width: "100%", marginBottom: "12px" };
 
   const desc = mustCreate("descriptions");
   desc.style = { width: "100%" };
   desc.props = {
     ...desc.props,
-    title: "基本信息",
+    title: "Basic Info",
     column: 2,
     items: [
-      { field: "name", label: "名称" },
-      { field: "status", label: "状态" },
-      { field: "createdAt", label: "创建时间" },
+      { field: "name", label: "Name" },
+      { field: "status", label: "Status" },
+      { field: "createdAt", label: "Created at" },
     ],
   };
 
@@ -206,7 +206,7 @@ function seedDetailGrid(): Widget[] {
 
 function seedPageGrid(): Widget[] {
   const title = mustCreate("title");
-  title.props = { ...title.props, text: "数据看板", level: 1 };
+  title.props = { ...title.props, text: "DataKanban", level: 1 };
   title.style = { width: "100%", marginBottom: "16px" };
 
   const statRow = mustCreate("card");
@@ -263,7 +263,7 @@ function seedFreeTemplate(preset: FreeLayoutPreset): BoardSeedResult {
   };
 }
 
-/** 根据布局模式与模板生成初始 board + widgets */
+/** 根据Layout模式与Template生成初始 board + widgets */
 export function createBoardFromTemplate(
   options: CreateBoardOptions,
 ): BoardSeedResult {
@@ -283,7 +283,7 @@ export function resolveRendererLayout(
   return canvas?.layoutMode === "grid" ? "flow" : "absolute";
 }
 
-/** 计算内容区留白样式（EditorCanvas / PublishView 共用） */
+/** 计算内容区留白Style（EditorCanvas / PublishView 共用） */
 export function buildContentFrameStyle(
   canvas?: Partial<CanvasConfig>,
 ): Record<string, string> {

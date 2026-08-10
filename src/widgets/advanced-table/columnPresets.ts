@@ -1,4 +1,4 @@
-/** E-35 — 列模板库（常用业务台账配方） */
+/** E-35 — ColumnTemplate Library（常用业务台账配方） */
 import type { AdvancedTableColumn } from "./config";
 
 export interface ColumnPreset {

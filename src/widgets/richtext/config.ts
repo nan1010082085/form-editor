@@ -11,11 +11,11 @@ export const richtextConfig: WidgetConfig = {
     height: "200px",
   },
   defaultProps: {
-    placeholder: "请输入内容",
+    placeholder: "Please enter content",
     readonly: false,
   },
   exposedValues: [
-    { key: "value", type: "string", description: "当前字段值", example: "" },
+    { key: "value", type: "string", description: "Current field value", example: "" },
   ],
   configPanels: ["events", "linkages", "variables"] as const,
   propertyPanel: {
@@ -26,7 +26,7 @@ export const richtextConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请输入内容",
+        default: "Please enter content",
       },
       { key: "readonly", label: "Read Only", type: "switch", default: false },
       {

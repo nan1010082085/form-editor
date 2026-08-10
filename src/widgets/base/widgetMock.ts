@@ -1,8 +1,8 @@
 /**
- * Widget Mock 数据注册表
+ * Widget Mock Data注册表
  *
- * 复杂部件在 widgets/{name}/mock.ts 定义默认可视化数据，
- * 设计器画布（无 API）下用于预览，PublishView 运行时无 API 则不展示 mock。
+ * 复杂Widget在 widgets/{name}/mock.ts 定义默认可视化Data, 
+ * 设计器画布（无 API）下用于预览, PublishView 运RowHrs无 API 则不展示 mock。
  */
 import type { InjectionKey } from "vue";
 import { advancedTableMock } from "../advanced-table/mock";
@@ -25,7 +25,7 @@ import { tableMock } from "../table/mock";
 import { flowTaskActionsMock } from "../flow-task-actions/mock";
 import { mapChartMock } from "../map/mock";
 
-/** 渲染表面：editor=设计器画布，runtime=PublishView/正式运行时 */
+/** 渲染表面：editor=设计器画布, runtime=PublishView/正式运RowHrs */
 export type WidgetSurface = "editor" | "runtime";
 
 export const WIDGET_SURFACE_KEY: InjectionKey<WidgetSurface> =
@@ -38,20 +38,20 @@ export interface TableWidgetMock {
   total?: number;
 }
 
-/** 图表类 mock（对应 props.staticData） */
+/** Chart类 mock（对应 props.staticData） */
 export interface ChartWidgetMock {
   kind: "chart";
   staticData: Record<string, unknown>[];
 }
 
-/** 键值/详情类 mock */
+/** 键Value/Details类 mock */
 export interface RecordWidgetMock {
   kind: "record";
   staticData: Record<string, unknown>;
   defaultProps?: Record<string, unknown>;
 }
 
-/** 统计卡片 mock */
+/** Statistics卡片 mock */
 export interface StatisticWidgetMock {
   kind: "statistic";
   defaultProps: Record<string, unknown>;
@@ -63,7 +63,7 @@ export type WidgetMockBundle =
   | RecordWidgetMock
   | StatisticWidgetMock;
 
-/** 需要 mock.ts 的复杂部件类型（新增时在此登记） */
+/** 需要 mock.ts 的复杂WidgetType（CreateHrs在此登记） */
 export const COMPLEX_WIDGET_MOCK_TYPES = [
   "advanced-table",
   "crud-list-page",

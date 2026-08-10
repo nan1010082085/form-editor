@@ -10,7 +10,7 @@ export const timePickerConfig: WidgetConfig = {
     height: "40px",
   },
   defaultProps: {
-    placeholder: "请选择时间",
+    placeholder: "Please select time",
     clearable: true,
     disabled: false,
     readonly: false,
@@ -30,7 +30,7 @@ export const timePickerConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择时间",
+        default: "Please select time",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },

@@ -1,9 +1,9 @@
 /**
- * useWidgetOptions — 从 widget store 提取所有部件 ID 生成选项列表
+ * useWidgetOptions — 从 widget store 提取所有Widget ID 生成OptionsColumn表
  *
- * 用于属性面板中需要选择部件 ID 的场景（如联动 targetFields、事件绑定等）。
- * 返回响应式 options 数组，store 变化时自动更新。
- * 容器类型从 registry 动态获取，支持新增部件自动适配。
+ * 用于Property面板中需要选择Widget ID 的场景（如Linkage targetFields、Event绑定等）。
+ * 返回响应式 options 数组, store 变化Hrs自动Update。
+ * ContainerType从 registry 动态获取, 支持CreateWidget自动适配。
  */
 import { computed } from "vue";
 import { useWidgetStore } from "@/stores/widget";
@@ -29,7 +29,7 @@ function flattenWidgets(list: Widget[]): WidgetOption[] {
   return result;
 }
 
-/** 表单字段类型（有 field 属性） */
+/** FormFieldType（有 field Property） */
 function hasField(w: Widget): boolean {
   return !!w.field;
 }
@@ -39,7 +39,7 @@ export function useWidgetOptions() {
 
   const widgetOptions = computed(() => flattenWidgets(widgetStore.widgets));
 
-  /** 所有组件选项（含无 field 的组件，按 ID 选择） */
+  /** 所有ComponentOptions（含无 field 的Component, 按 ID 选择） */
   const allWidgetOptions = computed(() => {
     const result: WidgetOption[] = [];
     function collect(list: Widget[]) {
@@ -53,13 +53,13 @@ export function useWidgetOptions() {
     return result;
   });
 
-  /** 可显示/隐藏的组件（非根级容器，动态获取容器类型） */
+  /** 可Show/Hide的Component（非根级Container, 动态获取ContainerType） */
   const showHideOptions = computed(() => {
     const containerTypes = useAllContainerTypes();
     const result: WidgetOption[] = [];
     function collect(list: Widget[], isRoot: boolean) {
       for (const w of list) {
-        // 跳过根级容器
+        // 跳过根级Container
         if (isRoot && containerTypes.has(w.type)) {
           if (w.children?.length) collect(w.children, false);
           continue;
@@ -73,7 +73,7 @@ export function useWidgetOptions() {
     return result;
   });
 
-  /** 可打开的弹窗组件（动态获取 dialog 类型） */
+  /** 可Open的DialogComponent（动态获取 dialog Type） */
   const dialogOptions = computed(() => {
     const result: WidgetOption[] = [];
     function collect(list: Widget[]) {
@@ -89,7 +89,7 @@ export function useWidgetOptions() {
     return result;
   });
 
-  /** 可切换页签的 tabs 组件（动态获取 tabs 类型） */
+  /** 可切换页签的 tabs Component（动态获取 tabs Type） */
   const tabsOptions = computed(() => {
     const result: WidgetOption[] = [];
     function collect(list: Widget[]) {
@@ -105,7 +105,7 @@ export function useWidgetOptions() {
     return result;
   });
 
-  /** 可设置值的表单字段组件 */
+  /** 可SettingsValue的FormFieldComponent */
   const setValueOptions = computed(() => {
     const result: WidgetOption[] = [];
     function collect(list: Widget[]) {
@@ -121,7 +121,7 @@ export function useWidgetOptions() {
     return result;
   });
 
-  /** 可触发事件的组件（排除容器，动态获取容器类型） */
+  /** 可TriggerEvent的Component（排除Container, 动态获取ContainerType） */
   const triggerEventOptions = computed(() => {
     const containerTypes = useAllContainerTypes();
     const result: WidgetOption[] = [];

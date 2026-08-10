@@ -21,7 +21,7 @@ const value = computed({
   <el-input
     v-if="!field.type || field.type === 'input'"
     v-model="value as string"
-    :placeholder="field.placeholder || `请输入${field.label}`"
+    :placeholder="field.placeholder || `Please enter${field.label}`"
     clearable
   />
   <el-input
@@ -29,18 +29,19 @@ const value = computed({
     v-model="value as string"
     type="textarea"
     :rows="3"
-    :placeholder="field.placeholder || `请输入${field.label}`"
+    :placeholder="field.placeholder || `Please enter${field.label}`"
   />
   <el-input-number
     v-else-if="field.type === 'number'"
-    v-model="value as number"
+    :model-value="typeof value === 'number' ? value : undefined"
     controls-position="right"
     style="width: 100%"
+    @update:model-value="value = $event"
   />
   <el-select
     v-else-if="field.type === 'select'"
     v-model="value"
-    :placeholder="field.placeholder || `请选择${field.label}`"
+    :placeholder="field.placeholder || `Please select${field.label}`"
     clearable
     style="width: 100%"
   >
@@ -66,7 +67,7 @@ const value = computed({
     v-model="value as string"
     type="date"
     value-format="YYYY-MM-DD"
-    :placeholder="field.placeholder || `请选择${field.label}`"
+    :placeholder="field.placeholder || `Please select${field.label}`"
     style="width: 100%"
     clearable
   />

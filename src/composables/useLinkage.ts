@@ -1,12 +1,12 @@
 /**
- * 字段联动 composable
- * 支持 visible / disabled / required / options 四种联动类型
+ * FieldLinkage composable
+ * 支持 visible / disabled / required / options 四种LinkageType
  *
  * 设计要点：
  * 1. 递归遍历 schema 收集所有带 linkages 的节点
- * 2. 按 watchFields 建立依赖图，批量合并 watch
+ * 2. 按 watchFields 建立依赖图, 批量合并 watch
  * 3. condition 支持函数和字符串表达式两种模式
- * 4. DFS 检测循环依赖，发现后降级处理
+ * 4. DFS 检测循环依赖, 发现后降级处理
  */
 import {
   computed,
@@ -26,11 +26,11 @@ import { checkSecurity } from "@/utils/expression";
 
 const logger = useLogger("Linkage");
 
-/** 收集到的联动节点信息 */
+/** 收集到的Linkage节点Info */
 interface LinkageEntry {
-  /** 字段名（schema.field） */
+  /** Field name（schema.field） */
   field: string;
-  /** 该字段的所有联动配置 */
+  /** 该Field的所有LinkageConfig */
   linkages: SchemaLinkage[];
 }
 
@@ -38,7 +38,7 @@ interface LinkageEntry {
 type DependencyGraph = Map<string, Set<string>>;
 
 /**
- * 递归遍历 schema 树，收集所有带 linkages 的节点
+ * 递归遍历 schema 树, 收集所有带 linkages 的节点
  */
 function collectLinkageEntries(schema: PartialWidget[]): LinkageEntry[] {
   const entries: LinkageEntry[] = [];
@@ -60,7 +60,7 @@ function collectLinkageEntries(schema: PartialWidget[]): LinkageEntry[] {
 
 /**
  * 构建依赖图
- * key: 联动字段, value: 它所监听的字段集合
+ * key: LinkageField, value: 它所监听的Field集合
  */
 function buildDependencyGraph(entries: LinkageEntry[]): DependencyGraph {
   const graph: DependencyGraph = new Map();
@@ -80,7 +80,7 @@ function buildDependencyGraph(entries: LinkageEntry[]): DependencyGraph {
 
 /**
  * DFS 检测循环依赖
- * 返回所有存在循环的字段集合
+ * Back所有存在循环的Field集合
  */
 function detectCycles(graph: DependencyGraph): Set<string> {
   const cyclicFields = new Set<string>();
@@ -97,7 +97,7 @@ function detectCycles(graph: DependencyGraph): Set<string> {
     const deps = graph.get(field);
     if (deps) {
       for (const dep of deps) {
-        // 只有当 dep 也在图中（也是联动字段）时才需要检测
+        // 只有当 dep 也在图中（也是LinkageField）Hrs才需要检测
         if (graph.has(dep) && dfs(dep)) {
           cyclicFields.add(field);
           cyclicFields.add(dep);
@@ -119,8 +119,8 @@ function detectCycles(graph: DependencyGraph): Set<string> {
 }
 
 /**
- * 编译字符串表达式为求值函数
- * 沙箱限制：仅允许访问 values、variables、exposed 对象的属性
+ * 编译字符串表达式为求Value函数
+ * 沙箱限制：仅允许访问 values、variables、exposed 对象的Property
  */
 function compileCondition(
   expression: string,
@@ -137,8 +137,8 @@ function compileCondition(
   }
 
   try {
-    // 使用 with(env) 让表达式可以直接引用表单字段名（如 status、lock），
-    // 同时支持 values.xxx、variables.xxx、exposed.xxx 命名空间访问。
+    // 使用 with(env) 让表达式可以直接引用FormField name（如 status、lock）, 
+    // 同Hrs支持 values.xxx、variables.xxx、exposed.xxx 命名空间访问。
     const fn = new Function("env", `with(env) { return (${expression}); }`);
     return (
       values: Record<string, FormFieldValue>,
@@ -155,18 +155,18 @@ function compileCondition(
         };
         return Boolean(fn(env));
       } catch {
-        logger.rule(`条件表达式求值失败: "${expression}"`);
+        logger.rule(`Condition expression evaluation failed: "${expression}"`);
         return false;
       }
     };
   } catch {
-    logger.rule(`条件表达式编译失败: "${expression}"`);
+    logger.rule(`ConditionExpression compilation failed: "${expression}"`);
     return () => false;
   }
 }
 
 /**
- * 对单个联动配置求值
+ * 对单个LinkageConfig求Value
  */
 function evaluateCondition(
   linkage: SchemaLinkage,
@@ -183,7 +183,7 @@ function evaluateCondition(
     try {
       return linkage.condition(values);
     } catch {
-      logger.rule(`条件函数求值失败`);
+      logger.rule(`Condition function evaluation failed`);
       return false;
     }
   }
@@ -192,7 +192,7 @@ function evaluateCondition(
 }
 
 /**
- * 默认联动状态
+ * DefaultLinkageStatus
  */
 const DEFAULT_STATE: LinkageState = {
   visible: true,
@@ -203,11 +203,11 @@ const DEFAULT_STATE: LinkageState = {
 /**
  * useLinkage composable
  *
- * @param schema - 表单 schema 定义
- * @param formData - 响应式表单数据（reactive 对象、ref 或 getter）
- * @param variables - 可选的变量上下文（供条件表达式使用）
- * @param exposed - 可选的组件暴露值上下文（供条件表达式使用）
- * @returns stateMap - 所有联动字段的状态映射
+ * @param schema - Form schema 定义
+ * @param formData - 响应式FormData（reactive 对象、ref or getter）
+ * @param variables - 可选的变量上下文（供Condition表达式使用）
+ * @param exposed - 可选的ComponentExposed Value上下文（供Condition表达式使用）
+ * @returns stateMap - 所有LinkageField的StatusMap
  */
 export function useLinkage(
   schema: PartialWidget[],
@@ -215,7 +215,7 @@ export function useLinkage(
   variables?: MaybeRefOrGetter<Record<string, unknown>>,
   exposed?: MaybeRefOrGetter<Record<string, Record<string, unknown>>>,
 ): { stateMap: ComputedRef<Map<string, LinkageState>> } {
-  // 收集所有联动节点（静态，不依赖 formData）
+  // 收集所有Linkage节点（静态, 不依赖 formData）
   const entries = computed(() => collectLinkageEntries(schema));
 
   // 构建依赖图
@@ -224,9 +224,9 @@ export function useLinkage(
   // 检测循环依赖
   const cyclicFields = computed(() => detectCycles(dependencyGraph.value));
 
-  // 计算联动状态映射
-  // 通过在 computed 内部读取 formData[watchField] 建立响应式依赖
-  // 当任何 watchField 的值变化时，此 computed 会自动重算
+  // 计算LinkageStatusMap
+  // passed在 computed 内部读取 formData[watchField] 建立响应式依赖
+  // 当任何 watchField 的Value变化Hrs, 此 computed 会自动重算
   const stateMap = computed<Map<string, LinkageState>>(() => {
     const currentFormData = toValue(formData);
     const currentVariables = variables ? toValue(variables) : undefined;
@@ -236,7 +236,7 @@ export function useLinkage(
     const map = new Map<string, LinkageState>();
 
     for (const entry of currentEntries) {
-      // 循环依赖的字段降级为默认状态
+      // 循环依赖的Field降级为DefaultStatus
       if (cyclic.has(entry.field)) {
         map.set(entry.field, { ...DEFAULT_STATE });
         continue;

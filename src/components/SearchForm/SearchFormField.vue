@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import type {
   FormFieldValue,
   SearchFieldSchema,
@@ -15,6 +16,8 @@ const emit = defineEmits<{
   "update:modelValue": [value: FormFieldValue];
 }>();
 
+const { t } = useI18n();
+
 const value = computed({
   get: () => props.modelValue,
   set: (v) => emit("update:modelValue", v),
@@ -28,13 +31,29 @@ const selectOptions = computed(() => {
 });
 
 const fieldProps = computed(() => props.field.props ?? {});
+
+const fieldDisplayName = computed(
+  () => props.field.label ?? props.field.field ?? "",
+);
+
+const inputPlaceholder = computed(
+  () =>
+    props.field.placeholder ||
+    t("editor.searchForm.inputField", { field: fieldDisplayName.value }),
+);
+
+const selectPlaceholder = computed(
+  () =>
+    props.field.placeholder ||
+    t("editor.searchForm.selectField", { field: fieldDisplayName.value }),
+);
 </script>
 
 <template>
   <el-input
     v-if="!field.type || field.type === 'input'"
     v-model="value as string"
-    :placeholder="field.placeholder || `请输入${field.label ?? field.field}`"
+    :placeholder="inputPlaceholder"
     clearable
     v-bind="fieldProps"
   />
@@ -49,7 +68,7 @@ const fieldProps = computed(() => props.field.props ?? {});
   <el-select
     v-else-if="field.type === 'select'"
     v-model="value"
-    :placeholder="field.placeholder || `请选择${field.label ?? field.field}`"
+    :placeholder="selectPlaceholder"
     clearable
     style="width: 100%"
     v-bind="fieldProps"
@@ -86,7 +105,7 @@ const fieldProps = computed(() => props.field.props ?? {});
     v-model="value as string"
     type="date"
     value-format="YYYY-MM-DD"
-    :placeholder="field.placeholder || `请选择${field.label ?? field.field}`"
+    :placeholder="selectPlaceholder"
     style="width: 100%"
     clearable
     v-bind="fieldProps"
@@ -96,9 +115,9 @@ const fieldProps = computed(() => props.field.props ?? {});
     v-model="value as string[]"
     type="daterange"
     value-format="YYYY-MM-DD"
-    range-separator="至"
-    start-placeholder="开始日期"
-    end-placeholder="结束日期"
+    :range-separator="t('editor.searchForm.dateRangeSeparator')"
+    :start-placeholder="t('editor.searchForm.startDate')"
+    :end-placeholder="t('editor.searchForm.endDate')"
     style="width: 100%"
     clearable
     v-bind="fieldProps"

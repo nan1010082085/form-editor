@@ -1,16 +1,17 @@
 <script setup lang="ts">
 /**
- * FgRowContainer - 24 栅格行容器（Flex 画布专用）
+ * FgRowContainer - 24 栅格RowContainer（Flex 画布专用）
  *
  * 职责：
- * - 24 栅格系统，每个子节点按 span（1-24）分配宽度
- * - 子节点横向排列，span 之和超过 24 自动换行
- * - 编辑模式：单个顺序拖放区（前/中/后插入），新子节点默认 span=24
+ * - 24 栅格系统, 每个子节点按 span（1-24）Min配Width
+ * - 子节点横向排Column, span 之和超过 24 自动换Row
+ * - Edit模式：单个顺序拖放区（前/中/后插入）, 新子节点默认 span=24
  * - 预览模式：直接渲染子节点
  *
- * 与 col 容器区别：col 是固定列数等宽；row-container 是任意 span 自由栅格。
+ * 与 col Container区别：col 是Fixed column数等宽；row-container 是任意 span 自由栅格。
  */
 import { inject, computed, ref } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import type { Widget } from "../base/types";
 import SchemaRender from "../../components/WidgetRenderer/SchemaRender.vue";
@@ -20,6 +21,7 @@ import styles from "./style.module.scss";
 
 const props = defineProps<{ editable?: boolean; editorSelectable?: boolean }>();
 
+const { t } = useI18n();
 const widgetData = inject(widgetDataKey)!;
 
 useExposeWidget(() => ({
@@ -31,14 +33,14 @@ useExposeWidget(() => ({
 const gutter = computed(() => (widgetData.value.props?.gutter as number) ?? 12);
 const children = computed(() => (widgetData.value.children ?? []) as Widget[]);
 
-/** 解析子节点 span（1-24），默认 24（满宽独占一行） */
+/** Parse子节点 span（1-24）, 默认 24（满宽独占一Row） */
 function spanOf(child: Widget): number {
   const s = child.span;
   const n = typeof s === "number" ? s : 24;
   return Math.max(1, Math.min(24, n));
 }
 
-/** 单元格 flex-basis：span/24 宽度，扣除 gutter 避免溢出换行计算偏差 */
+/** 单元格 flex-basis：span/24 Width, 扣除 gutter 避免溢出换Row计算偏差 */
 function cellStyle(child: Widget): Record<string, string> {
   const span = spanOf(child);
   const g = gutter.value;
@@ -48,7 +50,7 @@ function cellStyle(child: Widget): Record<string, string> {
   };
 }
 
-// ---- 编辑态拖放（顺序插入，无过滤，无需 allChildren 映射） ----
+// ---- Edit态拖放（顺序插入, 无Filter, 无需 allChildren Map） ----
 const dropRef = ref<HTMLElement | null>(null);
 const dropEnabled = computed(() =>
   Boolean(props.editorSelectable && widgetData.value.id),
@@ -60,14 +62,14 @@ const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
     () => widgetData.value.id ?? null,
     () => children.value,
     () => dropEnabled.value,
-    // 新拖入的子节点默认 span=24（满宽独占一行）
+    // 新拖入的子节点默认 span=24（满宽独占一Row）
     () => ({ span: 24 }),
   );
 </script>
 
 <template>
   <div :class="styles.rowContainer" :style="{ gap: gutter + 'px' }">
-    <!-- 编辑态：拖放区包裹所有子节点 -->
+    <!-- Edit态：拖放区包裹所有子节点 -->
     <div
       v-if="editorSelectable"
       ref="dropRef"
@@ -92,7 +94,7 @@ const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
         </div>
       </div>
       <div v-if="!children.length" :class="styles.dropEmpty">
-        拖入部件到栅格行（默认占满一行，选中后可调整 span）
+        {{ t("editor.canvas.dragWidgetToRow") }}
       </div>
     </div>
 
@@ -109,7 +111,7 @@ const { isDragOver, handleDragOver, handleDragLeave, handleDrop } =
         </div>
       </div>
       <div v-if="editable && !children.length" :class="styles.cellGhost">
-        拖入部件
+        {{ t("editor.canvas.dragWidget") }}
       </div>
     </template>
   </div>

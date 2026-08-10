@@ -1,10 +1,10 @@
 /**
- * useBoardPropertyItems - 画布属性面板配置项构建
+ * useBoardPropertyItems - 画布Property面板Config项构建
  *
- * 从 PropertyPanel 抽出：根据 boardStore.canvas + 布局模式，
- * 组装画布配置面板的属性列表（布局模式/主题/尺寸/背景/缩放/网格）。
+ * 从 PropertyPanel 抽出：根据 boardStore.canvas + Layout模式, 
+ * 组装画布Config面板的PropertyColumn表（Layout模式/Theme/尺寸/Background/缩放/网格）。
  *
- * Free 模式暴露画布尺寸 + 网格配置；Grid 模式隐藏尺寸（恒 100%×100%）+ 暴露 zoom。
+ * Free 模式暴露画布尺寸 + 网格Config；Grid 模式Hide尺寸（恒 100%×100%）+ 暴露 zoom。
  */
 import { computed } from "vue";
 import type { TranslateFn } from "@/components/WidgetRenderer/types";
@@ -106,7 +106,7 @@ export function useBoardPropertyItems(t: TranslateFn) {
         },
       );
     }
-    // 画布尺寸字段仅 free 模式有意义（grid 画布恒 100%×100%，由容器决定）
+    // 画布尺寸Field仅 free 模式有意义（grid 画布恒 100%×100%, 由Container决定）
     if (isFree) {
       items.push(
         {

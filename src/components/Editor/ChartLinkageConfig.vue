@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * ChartLinkageConfig — 图表联动规则配置组件
+ * ChartLinkageConfig — ChartLinkageRuleConfigComponent
  *
- * 支持配置：
- * - 触发方式（click/select/hover）
- * - 目标图表（多选）
- * - 参数映射（源字段 -> 目标字段）
- * - 动作类型（filter/drilldown/highlight）
- * - 钻取字段和标签（drilldown 专用）
+ * 支持Config：
+ * - Trigger方式（click/select/hover）
+ * - 目标Chart（多选）
+ * - ParamsMap（源Field -> 目标Field）
+ * - ActionType（filter/drilldown/highlight）
+ * - 钻取Field和Label（drilldown 专用）
  */
 import { computed } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -35,14 +35,14 @@ const emit = defineEmits<{
 
 const generateId = () => generateComponentId("chart-linkage");
 
-/** 可选的图表 Widget 列表（排除自身） */
+/** 可选的Chart Widget Column表（排除自身） */
 const chartWidgets = computed(() =>
   props.allWidgets.filter(
     (w) => w.id !== props.sourceWidgetId && isChartType(w.type),
   ),
 );
 
-/** 判断是否为图表类型 */
+/** 判断是否为Chart type */
 function isChartType(type: string): boolean {
   const chartTypes = [
     "bar-chart",
@@ -67,7 +67,7 @@ function isChartType(type: string): boolean {
   return chartTypes.includes(type);
 }
 
-/** 触发方式选项 */
+/** Trigger方式Options */
 const triggerOptions = computed<
   { label: string; value: ChartLinkageTrigger }[]
 >(() => [
@@ -76,7 +76,7 @@ const triggerOptions = computed<
   { label: t("editor.chartLinkage.triggerHover"), value: "hover" },
 ]);
 
-/** 动作类型选项 */
+/** ActionTypeOptions */
 const actionOptions = computed<{ label: string; value: ChartLinkageAction }[]>(
   () => [
     { label: t("editor.chartLinkage.actionFilter"), value: "filter" },
@@ -85,7 +85,7 @@ const actionOptions = computed<{ label: string; value: ChartLinkageAction }[]>(
   ],
 );
 
-/** 图表 Widget 选项 */
+/** Chart Widget Options */
 const targetWidgetOptions = computed(() =>
   chartWidgets.value.map((w) => ({
     label: `${w.label ?? w.type} #${w.id.slice(-5)}`,
@@ -121,7 +121,7 @@ function updateRule<K extends keyof ChartLinkageRule>(
   emit("update:rules", updated);
 }
 
-/** 添加参数映射行 */
+/** 添加ParamsMapRow */
 function addParamMapping(index: number) {
   const updated = props.rules.map((item, i) =>
     i === index
@@ -131,7 +131,7 @@ function addParamMapping(index: number) {
   emit("update:rules", updated);
 }
 
-/** 删除参数映射行 */
+/** DeleteParamsMapRow */
 function removeParamMapping(ruleIndex: number, sourceKey: string) {
   const rule = props.rules[ruleIndex];
   const { [sourceKey]: _, ...rest } = rule.paramMapping;
@@ -141,7 +141,7 @@ function removeParamMapping(ruleIndex: number, sourceKey: string) {
   emit("update:rules", updated);
 }
 
-/** 更新参数映射的 key（源字段） */
+/** UpdateParamsMap的 key（源Field） */
 function updateMappingSource(
   ruleIndex: number,
   oldKey: string,
@@ -158,7 +158,7 @@ function updateMappingSource(
   emit("update:rules", updated);
 }
 
-/** 更新参数映射的 value（目标字段） */
+/** UpdateParamsMap的 value（目标Field） */
 function updateMappingTarget(
   ruleIndex: number,
   sourceKey: string,
@@ -175,7 +175,7 @@ function updateMappingTarget(
   emit("update:rules", updated);
 }
 
-/** 获取参数映射条目列表 */
+/** 获取ParamsMap条目Column表 */
 function getMappingEntries(mapping: Record<string, string>) {
   return Object.entries(mapping);
 }
@@ -204,7 +204,7 @@ function getMappingEntries(mapping: Record<string, string>) {
         </el-button>
       </div>
 
-      <!-- 触发方式 -->
+      <!-- Trigger方式 -->
       <div :class="styles['chart-linkage-config__field']">
         <label :class="styles['chart-linkage-config__label']">{{
           t("editor.chartLinkage.triggerType")
@@ -226,7 +226,7 @@ function getMappingEntries(mapping: Record<string, string>) {
         </el-select>
       </div>
 
-      <!-- 目标图表 -->
+      <!-- 目标Chart -->
       <div :class="styles['chart-linkage-config__field']">
         <label :class="styles['chart-linkage-config__label']">{{
           t("editor.chartLinkage.targetChart")
@@ -251,7 +251,7 @@ function getMappingEntries(mapping: Record<string, string>) {
         </el-select>
       </div>
 
-      <!-- 联动动作 -->
+      <!-- LinkageAction -->
       <div :class="styles['chart-linkage-config__field']">
         <label :class="styles['chart-linkage-config__label']">{{
           t("editor.chartLinkage.linkageAction")
@@ -273,7 +273,7 @@ function getMappingEntries(mapping: Record<string, string>) {
         </el-select>
       </div>
 
-      <!-- 钻取字段（drilldown 专用） -->
+      <!-- 钻取Field（drilldown 专用） -->
       <div
         v-if="rule.action === 'drilldown'"
         :class="styles['chart-linkage-config__field']"
@@ -291,7 +291,7 @@ function getMappingEntries(mapping: Record<string, string>) {
         />
       </div>
 
-      <!-- 钻取标签（drilldown 专用） -->
+      <!-- 钻取Label（drilldown 专用） -->
       <div
         v-if="rule.action === 'drilldown'"
         :class="styles['chart-linkage-config__field']"
@@ -309,7 +309,7 @@ function getMappingEntries(mapping: Record<string, string>) {
         />
       </div>
 
-      <!-- 参数映射 -->
+      <!-- ParamsMap -->
       <div :class="styles['chart-linkage-config__field']">
         <label :class="styles['chart-linkage-config__label']">{{
           t("editor.chartLinkage.paramMapping")

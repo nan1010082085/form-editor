@@ -5,9 +5,9 @@ export const roleManagementMock: TableWidgetMock = {
   total: 3,
   rows: [
     {
-      _id: "r001",
-      name: "系统管理员",
-      description: "拥有全部系统权限",
+      id: "r001",
+      name: "System Management员",
+      description: "拥有All系统Permission",
       permissions: ["user:read", "user:write", "role:read", "role:write"],
       data_scope: "all",
       dept_ids: [],
@@ -15,9 +15,9 @@ export const roleManagementMock: TableWidgetMock = {
       updatedAt: "2026-06-15T12:00:00.000Z",
     },
     {
-      _id: "r002",
-      name: "部门主管",
-      description: "管理本部门数据",
+      id: "r002",
+      name: "Department主管",
+      description: "管理本DepartmentData",
       permissions: ["user:read", "dept:read"],
       data_scope: "dept",
       dept_ids: ["dept-rd"],
@@ -25,8 +25,8 @@ export const roleManagementMock: TableWidgetMock = {
       updatedAt: "2026-06-10T15:20:00.000Z",
     },
     {
-      _id: "r003",
-      name: "普通用户",
+      id: "r003",
+      name: "普通User",
       description: "只读访问",
       permissions: ["user:read"],
       data_scope: "self",

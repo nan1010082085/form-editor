@@ -7,9 +7,9 @@ export function createApprovalUserPickerWidget(id?: string): Widget {
     name: "FgApprovalUserPicker",
     type: "approval-user-picker",
     field: "approver",
-    label: "审批人",
+    label: "Approver",
     props: {
-      placeholder: "请选择审批人",
+      placeholder: "Please selectApprover",
       clearable: true,
       multiple: false,
       apiBaseUrl: "",

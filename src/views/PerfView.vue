@@ -2,13 +2,13 @@
 /**
  * PerfView - 真实浏览器 FPS 压测页
  *
- * 挂载 100+ widget 的大屏种子，用 requestAnimationFrame 测量：
- * - 挂载耗时（mount -> first paint）
- * - 持续 FPS（5 秒采样）
- * - 最长帧 / 平均帧
+ * 挂载 100+ widget 的Dashboard种子, 用 requestAnimationFrame 测量：
+ * - Mount time（mount -> first paint）
+ * - 持续 FPS（5 sec采样）
+ * - Longest frame / Average帧
  * - JS 堆内存（若可用）
  *
- * 路由 meta.public=true，无需登录；仅 dev/性能演练用。
+ * Route meta.public=true, 无需登录；仅 dev/性能演练用。
  */
 import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -44,25 +44,25 @@ const virtualMountMs = ref<number | null>(null);
 const virtualTableKey = ref(0);
 const virtualColumns: AdvancedTableColumn[] = [
   { prop: "id", label: "ID", width: 80, render: "text" },
-  { prop: "name", label: "名称", minWidth: 150, render: "text" },
+  { prop: "name", label: "Name", minWidth: 150, render: "text" },
   {
     prop: "status",
-    label: "状态",
+    label: "Status",
     width: 100,
     render: "tag",
     colorMap: { active: "success", inactive: "info" },
     options: [
-      { label: "启用", value: "active" },
-      { label: "禁用", value: "inactive" },
+      { label: "Enable", value: "active" },
+      { label: "Disable", value: "inactive" },
     ],
   },
-  { prop: "amount", label: "金额", width: 120, render: "text" },
+  { prop: "amount", label: "Amount", width: 120, render: "text" },
   {
     prop: "action",
-    label: "操作",
+    label: "Action",
     width: 120,
     render: "buttons",
-    buttons: [{ key: "view", label: "查看" }],
+    buttons: [{ key: "view", label: "View" }],
   },
 ];
 const virtualTableData = ref<Record<string, unknown>[]>([]);
@@ -70,7 +70,7 @@ const virtualTableData = ref<Record<string, unknown>[]>([]);
 function buildVirtualData(count: number) {
   virtualTableData.value = Array.from({ length: count }, (_, i) => ({
     id: i + 1,
-    name: `项目 ${i + 1}`,
+    name: `Item ${i + 1}`,
     status: i % 3 === 0 ? "active" : "inactive",
     amount: Math.round(Math.random() * 10000),
     action: "",
@@ -114,7 +114,7 @@ async function run() {
   );
   mountMs.value = performance.now() - mountStart;
 
-  // 5 秒 FPS 采样
+  // 5 sec FPS 采样
   const frames: number[] = [];
   let lastTs = performance.now();
   let maxFrame = 0;
@@ -156,7 +156,7 @@ async function run() {
 }
 
 onMounted(() => {
-  // 默认不自动跑，等点按钮
+  // Default不自动跑, 等点Button
 });
 
 onBeforeUnmount(() => {

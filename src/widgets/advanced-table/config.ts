@@ -10,10 +10,10 @@ import type {
 } from "@/components/WidgetRenderer/types";
 
 // ============================================================
-// 高级表格类型定义
+// Advanced table type definitions
 // ============================================================
 
-/** 行内按钮事件配置 */
+/** Inline button event config */
 export interface ButtonEventConfig {
   trigger: string;
   condition?: string;
@@ -21,7 +21,7 @@ export interface ButtonEventConfig {
   actions: SchemaEventAction[];
 }
 
-/** 操作按钮（工具栏 / 行内共用） */
+/** Action buttons (toolbar / inline shared) */
 export interface ActionButton {
   key: string;
   label: string;
@@ -34,7 +34,7 @@ export interface ActionButton {
   events?: ButtonEventConfig[];
 }
 
-/** 高级列定义 */
+/** Advanced column definition */
 export interface AdvancedTableColumn {
   prop: string;
   label: string;
@@ -80,22 +80,22 @@ export interface AdvancedTableColumn {
   ) => boolean;
 }
 
-/** 分页配置 */
+/** Pagination config */
 export interface AdvPaginationConfig {
   enabled: boolean;
   pageSize: number;
   pageSizes: number[];
 }
 
-/** 多选配置 */
+/** Multi-select config */
 export interface AdvSelectionConfig {
   enabled: boolean;
 }
 
-/** E-32 列表搜索区字段（与 SearchFieldSchema 对齐） */
+/** E-32 List search area fields (aligned with SearchFieldSchema) */
 export type SearchField = SearchFieldSchema;
 
-/** 搜索区配置 */
+/** Search area config */
 export interface SearchBarConfig {
   enabled?: boolean;
   fields: SearchField[];
@@ -183,7 +183,7 @@ export const advancedTableConfig: WidgetConfig = {
     height: 350,
     sortable: false,
     serverSideFilter: true,
-    /** 虚拟滚动：数据 >100 行时用 el-table-v2 渲染（复杂列特性降级） */
+    /** Virtual scroll: use el-table-v2 when data >100 rows (complex column features degrade) */
     virtual: false,
     pagination: {
       enabled: true,
@@ -210,12 +210,12 @@ export const advancedTableConfig: WidgetConfig = {
     {
       name: "set-data",
       description: "Set Table Data",
-      params: { data: "数据数组" },
+      params: { data: "Data array" },
     },
     {
       name: "set-search-params",
       description: "Set Search Params",
-      params: { params: "参数对象" },
+      params: { params: "Parameter object" },
     },
     { name: "clear-selection", description: "Clear Row Selection" },
   ],
@@ -226,12 +226,12 @@ export const advancedTableConfig: WidgetConfig = {
       { id: "sort-change", label: "Sort Change" },
       { id: "page-change", label: "Page Flip" },
     ];
-    // 工具栏按钮 → eventTarget: toolbar-{key}
+    // Toolbar button → eventTarget: toolbar-{key}
     const toolbar = (widget.props?.toolbar as ActionButton[]) || [];
     for (const btn of toolbar) {
-      targets.push({ id: `toolbar-${btn.key}`, label: `工具栏: ${btn.label}` });
+      targets.push({ id: `toolbar-${btn.key}`, label: `Toolbar: ${btn.label}` });
     }
-    // 行内按钮 → eventTarget: row-{key}
+    // Row button → eventTarget: row-{key}
     const columns = (widget.props?.columns as AdvancedTableColumn[]) || [];
     const seenRowKeys = new Set<string>();
     for (const col of columns) {
@@ -241,13 +241,13 @@ export const advancedTableConfig: WidgetConfig = {
             seenRowKeys.add(btn.key);
             targets.push({
               id: `row-${btn.key}`,
-              label: `行按钮: ${btn.label}`,
+              label: `Row button: ${btn.label}`,
             });
           }
         }
       }
       if (col.render === "link" && col.linkEvent) {
-        targets.push({ id: `link-${col.prop}`, label: `链接: ${col.label}` });
+        targets.push({ id: `link-${col.prop}`, label: `Link: ${col.label}` });
       }
     }
     return targets;
@@ -263,12 +263,12 @@ export const advancedTableConfig: WidgetConfig = {
       { key: "selection.enabled", label: "Row Select", type: "switch" },
       { key: "stripe", label: "Stripe", type: "switch" },
       { key: "border", label: "Border", type: "switch" },
-      { key: "height", label: "表格高度", type: "number" },
+      { key: "height", label: "Table height", type: "number" },
       {
         key: "virtual",
         label: "Virtual Scroll",
         type: "switch",
-        desc: "数据 >100 行时启用，大幅提升大列表性能",
+        desc: "Enable when data >100 rows, significantly improves large table performance",
       },
       { key: "sortable", label: "Global Sort", type: "switch" },
       { key: "pagination.enabled", label: "Pagination", type: "switch" },

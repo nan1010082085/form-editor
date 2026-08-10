@@ -1,5 +1,5 @@
 /**
- * useBoardLayout — 画布布局模式 derived state
+ * useBoardLayout — 画布Layout模式 derived state
  */
 import { computed, type ComputedRef } from "vue";
 import type { CanvasConfig } from "@/widgets/base/types";

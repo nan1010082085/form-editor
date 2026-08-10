@@ -60,9 +60,9 @@ const BLOCKED_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
   { pattern: /\bfor\s*\(/, message: "Blocked loop: for" },
   { pattern: /\bdo\s*\{/, message: "Blocked loop: do" },
   // Prototype chain escape (prevent sandbox bypass)
-  { pattern: /\bconstructor\b/, message: "禁止访问原型链: constructor" },
-  { pattern: /\b__proto__\b/, message: "禁止访问原型链: __proto__" },
-  { pattern: /\bprototype\b/, message: "禁止访问原型链: prototype" },
+  { pattern: /\bconstructor\b/, message: "Forbidden prototype access: constructor" },
+  { pattern: /\b__proto__\b/, message: "Forbidden prototype access: __proto__" },
+  { pattern: /\bprototype\b/, message: "Forbidden prototype access: prototype" },
 ];
 
 // ---- LRU Compile Cache ----
@@ -110,7 +110,7 @@ function getOrCompile(expression: string): (formData: FormData) => unknown {
   // This catches patterns like `window.location` in raw expressions
   const securityError = checkSecurity(expression);
   if (securityError) {
-    throw new Error(`表达式安全检查失败: ${securityError}`);
+    throw new Error(`Expression security check failed: ${securityError}`);
   }
 
   // Replace ${field} with formData['field']
@@ -120,7 +120,7 @@ function getOrCompile(expression: string): (formData: FormData) => unknown {
   // This catches patterns injected via field names (unlikely but safe)
   const replacedSecurityError = checkSecurity(replaced);
   if (replacedSecurityError) {
-    throw new Error(`表达式安全检查失败: ${replacedSecurityError}`);
+    throw new Error(`Expression security check failed: ${replacedSecurityError}`);
   }
 
   // Compile
@@ -142,7 +142,7 @@ function getOrCompile(expression: string): (formData: FormData) => unknown {
     return fn;
   } catch (err) {
     throw new Error(
-      `表达式编译失败: ${err instanceof Error ? err.message : String(err)}`,
+      `Expression compilation failed: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 }
@@ -166,12 +166,12 @@ export function evaluateExpression<T = unknown>(
   context: ExpressionContext,
 ): T {
   if (!expression || typeof expression !== "string") {
-    throw new Error("表达式必须是非空字符串");
+    throw new Error("Expression must be a non-empty string");
   }
 
   if (expression.length > MAX_EXPRESSION_LENGTH) {
     throw new Error(
-      `表达式长度超过限制 (${expression.length} > ${MAX_EXPRESSION_LENGTH} 字符)`,
+      `Expression length exceeds limit (${expression.length} > ${MAX_EXPRESSION_LENGTH} chars)`,
     );
   }
 
@@ -183,7 +183,7 @@ export function evaluateExpression<T = unknown>(
 
   if (elapsed > EXECUTION_TIMEOUT_MS) {
     throw new Error(
-      `表达式执行超时 (${elapsed.toFixed(1)}ms > ${EXECUTION_TIMEOUT_MS}ms)`,
+      `Expression execution timeout (${elapsed.toFixed(1)}ms > ${EXECUTION_TIMEOUT_MS}ms)`,
     );
   }
 
@@ -210,13 +210,13 @@ export function validateExpression(
   expression: string,
 ): ExpressionValidationResult {
   if (!expression || typeof expression !== "string") {
-    return { valid: false, error: "表达式必须是非空字符串" };
+    return { valid: false, error: "Expression must be a non-empty string" };
   }
 
   if (expression.length > MAX_EXPRESSION_LENGTH) {
     return {
       valid: false,
-      error: `表达式长度超过限制 (${expression.length} > ${MAX_EXPRESSION_LENGTH} 字符)`,
+      error: `Expression length exceeds limit (${expression.length} > ${MAX_EXPRESSION_LENGTH} chars)`,
     };
   }
 
@@ -234,7 +234,7 @@ export function validateExpression(
   } catch (err) {
     return {
       valid: false,
-      error: `表达式语法错误: ${err instanceof Error ? err.message : String(err)}`,
+      error: `Expression syntax error: ${err instanceof Error ? err.message : String(err)}`,
     };
   }
 }

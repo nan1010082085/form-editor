@@ -9,11 +9,11 @@ export const rankListConfig: WidgetConfig = {
   defaultProps: {
     title: "Ranking",
     items: [
-      { name: "张三", value: 9800, trend: 2 },
-      { name: "李四", value: 8500, trend: -1 },
-      { name: "王五", value: 7200, trend: 0 },
-      { name: "赵六", value: 6100, trend: 3 },
-      { name: "钱七", value: 5400, trend: -2 },
+      { name: "Zhang San", value: 9800, trend: 2 },
+      { name: "Li Si", value: 8500, trend: -1 },
+      { name: "Wang Wu", value: 7200, trend: 0 },
+      { name: "Zhao Liu", value: 6100, trend: 3 },
+      { name: "Qian Qi", value: 5400, trend: -2 },
     ] as Array<Record<string, unknown>>,
     nameKey: "name",
     valueKey: "value",

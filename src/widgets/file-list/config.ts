@@ -10,21 +10,21 @@ export const fileListConfig: WidgetConfig = {
   exposedValues: [{ key: "value", type: "array", description: "File List Data" }],
   configPanels: ["events", "api", "variables"],
   defaultProps: {
-    title: "附件",
+    title: "Attachments",
     allowDelete: true,
     allowPreview: false,
-    buttonText: "选择文件",
+    buttonText: "Select File",
   },
   propertyPanel: {
     basic: ["label"],
     style: [],
     props: [
-      { key: "title", label: "Title", type: "input", default: "附件" },
+      { key: "title", label: "Title", type: "input", default: "Attachments" },
       {
         key: "buttonText",
         label: "Button Text",
         type: "input",
-        default: "选择文件",
+        default: "Select File",
       },
       { key: "allowDelete", label: "Allow Delete", type: "switch", default: true },
       {

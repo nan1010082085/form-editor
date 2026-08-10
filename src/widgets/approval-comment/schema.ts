@@ -7,9 +7,9 @@ export function createApprovalCommentWidget(id?: string): Widget {
     name: "FgApprovalComment",
     type: "approval-comment",
     field: "approvalComment",
-    label: "审批意见",
+    label: "Approval Comment",
     props: {
-      placeholder: "请输入审批意见",
+      placeholder: "Please enterApproval Comment",
       rows: 4,
       maxlength: 1000,
       showWordLimit: true,

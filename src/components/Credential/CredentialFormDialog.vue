@@ -7,6 +7,7 @@
  */
 import { ref, watch, computed } from "vue";
 import { ElMessage } from "element-plus";
+import { useI18n } from "@schema-platform/platform-shared";
 import { useCredentialStore } from "@/stores/credential";
 import type {
   CredentialDetail,
@@ -15,9 +16,9 @@ import type {
   CredentialUpdatePayload,
 } from "@/types/credential";
 import {
-  CREDENTIAL_TYPE_LABELS,
   CREDENTIAL_TYPE_FIELDS,
-  CREDENTIAL_TYPE_FIELD_LABELS,
+  getCredentialTypeLabel,
+  getCredentialFieldLabel,
 } from "@/types/credential";
 import styles from "./CredentialFormDialog.module.scss";
 
@@ -32,10 +33,13 @@ const emit = defineEmits<{
 }>();
 
 const credentialStore = useCredentialStore();
+const { t } = useI18n();
 
 const isEditing = computed(() => !!props.initialData);
 const dialogTitle = computed(() =>
-  isEditing.value ? "Edit Credential" : "Create Credential",
+  isEditing.value
+    ? t("editor.credential.editTitle")
+    : t("editor.credential.createTitle"),
 );
 const submitting = ref(false);
 
@@ -45,10 +49,16 @@ const form = ref({
   data: {} as Record<string, string>,
 });
 
+const credentialTypes: CredentialType[] = [
+  "api_key",
+  "basic_auth",
+  "bearer_token",
+];
+
 const typeOptions = computed(() =>
-  Object.entries(CREDENTIAL_TYPE_LABELS).map(([value, label]) => ({
+  credentialTypes.map((value) => ({
     value,
-    label,
+    label: getCredentialTypeLabel(value, t),
   })),
 );
 
@@ -92,24 +102,24 @@ watch(
   },
 );
 
-function getFieldLabel(field: string): string {
-  return CREDENTIAL_TYPE_FIELD_LABELS[field] ?? field;
-}
-
 function isPasswordField(field: string): boolean {
   return field === "password" || field === "token" || field === "apiKey";
 }
 
 async function handleSubmit() {
   if (!form.value.name.trim()) {
-    ElMessage.warning("Please enter a credential name");
+    ElMessage.warning(t("editor.credential.nameRequired"));
     return;
   }
 
   // Validate all fields are filled
   for (const field of currentFields.value) {
     if (!form.value.data[field]?.trim()) {
-      ElMessage.warning(`Please fill in ${getFieldLabel(field)}`);
+      ElMessage.warning(
+        t("editor.credential.fieldRequired", {
+          field: getCredentialFieldLabel(field, t),
+        }),
+      );
       return;
     }
   }
@@ -127,11 +137,13 @@ async function handleSubmit() {
         payload,
       );
       if (result) {
-        ElMessage.success("Credential updated");
+        ElMessage.success(t("editor.credential.updateSuccess"));
         emit("update:visible", false);
         emit("saved");
       } else {
-        ElMessage.error(credentialStore.error || "Update failed");
+        ElMessage.error(
+          credentialStore.error || t("editor.credential.updateFailed"),
+        );
       }
     } else {
       const payload: CredentialCreatePayload = {
@@ -141,11 +153,13 @@ async function handleSubmit() {
       };
       const result = await credentialStore.createCredential(payload);
       if (result) {
-        ElMessage.success("Credential created");
+        ElMessage.success(t("editor.credential.createSuccess"));
         emit("update:visible", false);
         emit("saved");
       } else {
-        ElMessage.error(credentialStore.error || "Creation failed");
+        ElMessage.error(
+          credentialStore.error || t("editor.credential.createFailed"),
+        );
       }
     }
   } finally {
@@ -169,16 +183,16 @@ function handleClose() {
     @close="handleClose"
   >
     <el-form label-position="top" @submit.prevent="handleSubmit">
-      <el-form-item label="Name" required>
+      <el-form-item :label="t('editor.credential.fieldName')" required>
         <el-input
           v-model="form.name"
-          placeholder="e.g. Production API Key"
+          :placeholder="t('editor.credential.namePlaceholder')"
           maxlength="100"
           show-word-limit
         />
       </el-form-item>
 
-      <el-form-item label="Type" required>
+      <el-form-item :label="t('editor.credential.fieldType')" required>
         <el-select
           v-model="form.type"
           :class="styles.fullWidth"
@@ -194,11 +208,18 @@ function handleClose() {
       </el-form-item>
 
       <template v-for="field in currentFields" :key="field">
-        <el-form-item :label="getFieldLabel(field)" required>
+        <el-form-item
+          :label="getCredentialFieldLabel(field, t)"
+          required
+        >
           <el-input
             v-model="form.data[field]"
             :type="isPasswordField(field) ? 'password' : 'text'"
-            :placeholder="`Enter ${getFieldLabel(field)}`"
+            :placeholder="
+              t('editor.credential.enterField', {
+                field: getCredentialFieldLabel(field, t),
+              })
+            "
           />
         </el-form-item>
       </template>
@@ -206,9 +227,15 @@ function handleClose() {
 
     <template #footer>
       <div :class="styles.footer">
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="handleClose">{{
+          t("editor.common.cancel")
+        }}</el-button>
         <el-button type="primary" :loading="submitting" @click="handleSubmit">
-          {{ isEditing ? "保存" : "创建" }}
+          {{
+            isEditing
+              ? t("editor.common.save")
+              : t("editor.credential.create")
+          }}
         </el-button>
       </div>
     </template>

@@ -1,15 +1,15 @@
 /**
- * useApiStore — Schema API CRUD 状态管理
+ * useApiStore — Schema API CRUD Status管理
  *
  * 职责：
- * - Schema 清单的获取、分页、搜索
- * - Schema 详情的加载、创建、更新、删除
- * - 发布操作
+ * - Schema 清单的获取、Min页、Search
+ * - Schema Details的加载、创建、Update、Delete
+ * - 发布Action
  *
  * 设计原则：
- * - 纯 API 层，不持有画布状态
- * - 异步操作用 loading/error 模式管理
- * - 分页状态与搜索词独立管理，互不干扰
+ * - 纯 API 层, 不持有画布Status
+ * - AsyncAction用 loading/error 模式管理
+ * - Min页Status与Search词独立管理, 互不干扰
  * - 与 apiClient 解耦：依赖 configureApiClient() 完成初始化
  */
 import { defineStore } from "pinia";
@@ -23,7 +23,7 @@ import type {
   SchemaUpdatePayload,
 } from "@/types/api";
 import type { PartialWidget } from "@/components/WidgetRenderer/types";
-import { ApiError } from "@/utils/apiClient";
+import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import { reportTelemetry } from "@/api/telemetryApi";
 import {
   fetchSchemas as apiFetchSchemas,
@@ -36,30 +36,30 @@ import {
   fetchPublishedByPublishId as apiFetchPublishedByPublishId,
 } from "@/utils/apiClient";
 
-/** 默认分页大小 */
+/** 默认Min页大小 */
 const DEFAULT_PAGE_SIZE = 20;
 
 export const useApiStore = defineStore("schema", () => {
   // ================================================================
-  // 状态
+  // Status
   // ================================================================
 
-  /** Schema 清单（分页列表） */
+  /** Schema 清单（Min页Column表） */
   const schemas = ref<SchemaListItem[]>([]);
 
-  /** 当前查看/编辑的单个 Schema 详情 */
+  /** 当前View/Edit的单个 Schema Details */
   const currentSchema = ref<SchemaListItem | null>(null);
 
-  /** 加载中标志 */
+  /** Loading标志 */
   const loading = ref(false);
 
-  /** 最近一次错误信息 */
+  /** 最近一次ErrorInfo */
   const error = ref("");
 
-  /** 搜索关键词 */
+  /** Search关键词 */
   const searchQuery = ref("");
 
-  /** 分页状态 */
+  /** Min页Status */
   const pagination = reactive({
     page: 1,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -68,70 +68,38 @@ export const useApiStore = defineStore("schema", () => {
   });
 
   // ================================================================
-  // 计算属性
+  // 计算Property
   // ================================================================
 
   /** 是否有已加载的清单 */
   const hasSchemas = computed(() => schemas.value.length > 0);
 
-  /** 清单是否为空（加载完成且无数据） */
+  /** 清单是否为空（加载完成且无Data） */
   const isEmpty = computed(() => !loading.value && schemas.value.length === 0);
 
-  /** 是否有错误 */
+  /** 是否有Error */
   const hasError = computed(() => error.value !== "");
 
   // ================================================================
   // 内部工具
   // ================================================================
 
-  /** 设置错误并重置 loading */
+  /** SettingsError并Reset loading */
   function setError(message: string): void {
     error.value = message;
     loading.value = false;
   }
 
-  /** 清除错误 */
+  /** 清除Error */
   function clearError(): void {
     error.value = "";
   }
 
-  /** 将 ApiError 的 code / details 拼进可读文案 */
-  function formatApiError(e: ApiError): string {
-    const raw = e.details as
-      | {
-          details?: Array<{ path?: string; message?: string }>;
-          message?: string;
-          code?: string;
-        }
-      | Array<{ path?: string; message?: string }>
-      | undefined;
-    const issues = Array.isArray(raw) ? raw : raw?.details;
-    const code = !Array.isArray(raw) && raw?.code ? `[${raw.code}] ` : "";
-    if (Array.isArray(issues) && issues.length > 0) {
-      const parts = issues
-        .map((item) =>
-          item.path
-            ? `${item.path}: ${item.message ?? ""}`
-            : (item.message ?? ""),
-        )
-        .filter(Boolean)
-        .join("; ");
-      return parts ? `${code}${e.message} (${parts})` : `${code}${e.message}`;
-    }
-    return `${code}${e.message}`;
-  }
-
-  function resolveErrorMessage(e: unknown): string {
-    if (e instanceof ApiError) return formatApiError(e);
-    if (e instanceof Error) return e.message;
-    return "An unexpected error occurred";
-  }
-
   /**
-   * 安全包装异步操作：统一管理 loading/error 状态。
+   * 安全包装AsyncAction：统一管理 loading/error Status。
    *
-   * @param fn - 要执行的异步函数
-   * @returns 函数的返回值，失败时返回 null
+   * @param fn - 要执Row的Async函数
+   * @returns 函数的返回Value, FailedHrs返回 null
    */
   async function withLoading<T>(fn: () => Promise<T>): Promise<T | null> {
     loading.value = true;
@@ -139,7 +107,7 @@ export const useApiStore = defineStore("schema", () => {
     try {
       return await fn();
     } catch (e: unknown) {
-      setError(resolveErrorMessage(e));
+      setError(resolveApiErrorMessage(e));
       return null;
     } finally {
       loading.value = false;
@@ -147,27 +115,27 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 安全包装异步操作：不设置全局 loading，仅捕获错误。
-   * 用于静默操作（如后台刷新）。
+   * 安全包装AsyncAction：不Settings全局 loading, 仅捕获Error。
+   * 用于静默Action（如后台Refresh）。
    */
   async function withErrorHandling<T>(fn: () => Promise<T>): Promise<T | null> {
     clearError();
     try {
       return await fn();
     } catch (e: unknown) {
-      setError(resolveErrorMessage(e));
+      setError(resolveApiErrorMessage(e));
       return null;
     }
   }
 
   // ================================================================
-  // Schema 清单操作
+  // Schema 清单Action
   // ================================================================
 
   /**
-   * 获取 Schema 分页列表。
+   * 获取 Schema Min页Column表。
    *
-   * @param params - 可覆盖当前 pagination/searchQuery 状态
+   * @param params - 可覆盖当前 pagination/searchQuery Status
    */
   async function fetchSchemas(params?: {
     page?: number;
@@ -194,7 +162,7 @@ export const useApiStore = defineStore("schema", () => {
       pagination.page = result.page;
       pagination.pageSize = result.pageSize;
       pagination.totalPages = result.totalPages;
-      // 同步搜索词回 store
+      // SyncSearch词回 store
       if (params?.search !== undefined) {
         searchQuery.value = params.search;
       }
@@ -219,7 +187,7 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 按关键词搜索并重置到首页。
+   * 按关键词Search并Reset到首页。
    */
   async function search(search: string): Promise<void> {
     searchQuery.value = search;
@@ -227,7 +195,7 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 清除搜索并重新加载。
+   * 清除Search并重新加载。
    */
   async function clearSearch(): Promise<void> {
     searchQuery.value = "";
@@ -235,11 +203,11 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   // ================================================================
-  // 单 Schema 操作
+  // 单 Schema Action
   // ================================================================
 
   /**
-   * 根据 ID 获取 Schema 详情（含完整 JSON）。
+   * 根据 ID 获取 Schema Details（含完整 JSON）。
    */
   async function fetchSchemaById(id: string): Promise<SchemaDetail | null> {
     const result = await withLoading(() => apiFetchSchemaById(id));
@@ -250,9 +218,9 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 创建新 Schema（单次 POST，json 可为 Widget[] 或 { widgets, board }）。
+   * 创建新 Schema（单次 POST, json 可为 Widget[] 或 { widgets, board }）。
    *
-   * @returns 创建成功的 Schema，失败返回 null
+   * @returns 创建Success的 Schema, Failed返回 null
    */
   async function createSchema(
     payload: SchemaCreatePayload,
@@ -270,11 +238,11 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 更新 Schema。
+   * Update Schema。
    *
    * @param id      - Schema ID
-   * @param payload - 要更新的字段
-   * @returns 更新后的 Schema，失败返回 null
+   * @param payload - 要Update的Field
+   * @returns Update后的 Schema, Failed返回 null
    */
   async function updateSchema(
     id: string,
@@ -283,7 +251,7 @@ export const useApiStore = defineStore("schema", () => {
     const result = await withLoading(() => apiUpdateSchema(id, payload));
     if (result) {
       currentSchema.value = result;
-      // 同步更新清单中的同名项
+      // SyncUpdate清单中的同名项
       const idx = schemas.value.findIndex((s) => s.id === id);
       if (idx >= 0) {
         schemas.value[idx] = result;
@@ -293,9 +261,9 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 删除 Schema。
+   * Delete Schema。
    *
-   * @returns 是否成功删除
+   * @returns 是否SuccessDelete
    */
   async function deleteSchema(id: string): Promise<boolean> {
     await withErrorHandling(() => apiDeleteSchema(id));
@@ -305,13 +273,13 @@ export const useApiStore = defineStore("schema", () => {
       if (currentSchema.value?.id === id) {
         currentSchema.value = null;
       }
-      // 更新分页计数
+      // UpdateMin页Count
       pagination.total = Math.max(0, pagination.total - 1);
       pagination.totalPages = Math.max(
         1,
         Math.ceil(pagination.total / pagination.pageSize),
       );
-      // 若当前页无数据且非首页，回退一页
+      // 若当前页无Data且非首页, 回退一页
       if (schemas.value.length === 0 && pagination.page > 1) {
         await goToPage(pagination.page - 1);
       }
@@ -322,14 +290,14 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 保存 schema 到后端。
+   * Save schema 到后端。
    *
-   * @param schema   - 要保存的 PartialWidget 数组
-   * @param name     - Schema 名称
-   * @param schemaId - 可选：要更新的 Schema ID
+   * @param schema   - 要Save的 PartialWidget 数组
+   * @param name     - Schema Name
+   * @param schemaId - 可选：要Update的 Schema ID
    * @param thumbnail - 可选：缩略图
-   * @param boardConfig - 可选：画布配置（canvas, variables, events）
-   * @returns 保存后的 Schema，失败返回 null
+   * @param boardConfig - 可选：画布Config（canvas, variables, events）
+   * @returns Save后的 Schema, Failed返回 null
    */
   async function saveSchema(
     schema: PartialWidget[],
@@ -342,7 +310,7 @@ export const useApiStore = defineStore("schema", () => {
       events?: unknown[];
     },
   ): Promise<SchemaListItem | null> {
-    // 将 board 配置嵌入到 json 字段中
+    // 将 board Config嵌入到 json Field中
     const jsonPayload = boardConfig
       ? { widgets: schema, board: boardConfig }
       : schema;
@@ -360,7 +328,7 @@ export const useApiStore = defineStore("schema", () => {
         });
       return result;
     } else {
-      // 新建时按画布配置推断类型：Grid 列表模板 -> search_list，其余 -> form
+      // 新建Hrs按画布Config推断Type：Grid Column表Template -> search_list, 其余 -> form
       const gridTemplate = (boardConfig?.canvas?.gridTemplate ??
         (boardConfig?.canvas as { flexTemplate?: string } | undefined)
           ?.flexTemplate) as string | undefined;
@@ -382,24 +350,24 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 从后端加载 Schema 详情。
+   * 从后端加载 Schema Details。
    *
    * @param id - Schema ID
-   * @returns Schema 详情，失败返回 null
+   * @returns Schema Details, Failed返回 null
    */
   async function loadSchema(id: string): Promise<SchemaDetail | null> {
     return fetchSchemaById(id);
   }
 
   // ================================================================
-  // 发布操作
+  // 发布Action
   // ================================================================
 
   /**
    * 发布 Schema — 将当前草稿写入 PublishedSchema 表（upsert）。
    *
    * @param id - FormSchema ID
-   * @returns 发布后的 PublishedSchema，失败返回 null
+   * @returns 发布后的 PublishedSchema, Failed返回 null
    */
   async function publishSchema(
     id: string,
@@ -410,11 +378,11 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   /**
-   * 获取已发布的 Schema（按源 FormSchema ID 查询）。
-   * 未发布返回 null，不设置全局 error。
+   * 获取已发布的 Schema（按源 FormSchema ID Query）。
+   * 未发布返回 null, 不Settings全局 error。
    *
    * @param sourceId - FormSchema ID
-   * @returns PublishedSchema，未发布返回 null
+   * @returns PublishedSchema, 未发布返回 null
    */
   async function fetchPublishedSchema(
     sourceId: string,
@@ -438,18 +406,18 @@ export const useApiStore = defineStore("schema", () => {
   }
 
   return {
-    // 状态
+    // Status
     schemas,
     currentSchema,
     loading,
     error,
     searchQuery,
     pagination,
-    // 计算属性
+    // 计算Property
     hasSchemas,
     isEmpty,
     hasError,
-    // 清单操作
+    // 清单Action
     fetchSchemas,
     goToPage,
     setPageSize,
@@ -460,14 +428,14 @@ export const useApiStore = defineStore("schema", () => {
     createSchema,
     updateSchema,
     deleteSchema,
-    // Schema 保存/加载
+    // Schema Save/加载
     saveSchema,
     loadSchema,
-    // 发布操作
+    // 发布Action
     publishSchema,
     fetchPublishedSchema,
     fetchPublishedByPublishId,
-    // 错误管理
+    // Error管理
     clearError,
   };
 });

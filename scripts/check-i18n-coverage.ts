@@ -144,3 +144,16 @@ const topFiles = results
 for (const f of topFiles) {
   console.log(`  ${f.chineseLines.length.toString().padStart(4)} lines  ${f.relativePath}`)
 }
+
+// --- Coverage Gate ---
+const lineCoverage = totalTranslatedLines > 0
+  ? (totalTranslatedLines / (totalTranslatedLines + totalChineseLines)) * 100
+  : 0
+const GATE_THRESHOLD = 80
+
+if (lineCoverage < GATE_THRESHOLD) {
+  console.error(`\n❌ i18n 覆盖率 ${lineCoverage.toFixed(1)}% 低于门禁 ${GATE_THRESHOLD}%`)
+  process.exit(1)
+} else {
+  console.log(`\n✅ i18n 覆盖率 ${lineCoverage.toFixed(1)}% 达到门禁 ${GATE_THRESHOLD}%`)
+}

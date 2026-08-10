@@ -2,12 +2,12 @@ import type { WidgetConfig } from "../base/types";
 
 export const userSelectorConfig: WidgetConfig = {
   name: "FgUserSelector",
-  displayName: "用户选择",
-  description: "用户选择器，支持搜索和多选用户",
+  displayName: "User Selector",
+  description: "User selector with search and multi-select",
   author: "yangdongnan",
   defaultStyle: { width: "240px", height: "40px", fontSize: "14px" },
   defaultProps: {
-    placeholder: "请选择用户",
+    placeholder: "Please selectUser",
     clearable: true,
     disabled: false,
     multiple: false,
@@ -26,7 +26,7 @@ export const userSelectorConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择用户",
+        default: "Please selectUser",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },

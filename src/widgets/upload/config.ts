@@ -14,7 +14,7 @@ export const uploadConfig: WidgetConfig = {
     multiple: false,
     maxSize: 10,
     limit: 5,
-    buttonText: "点击上传",
+    buttonText: "Click to Upload",
     listType: "text",
   },
   exposedValues: [
@@ -39,11 +39,11 @@ export const uploadConfig: WidgetConfig = {
         key: "buttonText",
         label: "Button Text",
         type: "input",
-        default: "点击上传",
+        default: "Click to Upload",
       },
       {
         key: "listType",
-        label: "列表样式",
+        label: "List Style",
         type: "select",
         default: "text",
         options: [

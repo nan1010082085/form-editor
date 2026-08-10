@@ -14,26 +14,26 @@ const widgetData = inject(widgetDataKey)!;
 const { isDisabled } = useWidgetRenderState();
 const { controlStyle: dynamicStyle } = useWidgetControlSize(32);
 
-// 暴露 value 给联动系统
+// 暴露 value 给Linkage系统
 useExposeWidget((wd) => ({
   get value() {
     return wd.value.defaultValue;
   },
 }));
 
-// 动态选项加载（api 配置存在时生效，支持 childrenKey 树形结构）
+// 动态Options加载（api Config存在Hrs生效, 支持 childrenKey 树形结构）
 const { options: dynamicOptions, loading } = useDynamicOptions(
   computed(() => widgetData.value.api),
 );
 
-// 合并：动态选项优先，降级到静态 options
+// 合并：动态Options优先, 降级到静态 options
 const resolvedData = computed(() =>
   dynamicOptions.value.length
     ? dynamicOptions.value
     : (widgetData.value.options ?? []),
 );
 
-// el-tree-select 的 props 映射（DictItem 结构天然匹配）
+// el-tree-select 的 props Map（DictItem 结构day然匹配）
 const treeProps = computed(() => ({
   label: "label",
   value: "value",

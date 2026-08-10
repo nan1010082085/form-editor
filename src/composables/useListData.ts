@@ -2,7 +2,7 @@
  * List data composable for search-list component
  * Manages list data lifecycle: fetching, pagination, search, sort, selection
  *
- * 内部委托 useWidgetData 获取数据，自动获得重试（指数退避）/ SWR / 去重能力。
+ * 内部委托 useWidgetData 获取Data, 自动获得Retry（指数退避）/ SWR / 去重能力。
  * Consumer（advanced-table / table）零改动。
  */
 import { ref, reactive, computed, onMounted } from "vue";
@@ -42,7 +42,7 @@ export interface UseListDataReturn {
 export function useListData(options: UseListDataOptions): UseListDataReturn {
   const { listApi, pageSize: defaultPageSize = 10, autoLoad = true } = options;
 
-  // ---- UI 状态（分页/排序/搜索/选择） ----
+  // ---- UI Status（Min页/Sort/Search/选择） ----
   const tableData = ref<Record<string, unknown>[]>([]) as Ref<
     Record<string, unknown>[]
   >;
@@ -57,7 +57,7 @@ export function useListData(options: UseListDataOptions): UseListDataReturn {
     Record<string, unknown>[]
   >;
 
-  // ---- useWidgetData 委托（重试/SWR/去重） ----
+  // ---- useWidgetData 委托（Retry/SWR/去重） ----
   const dataKey = computed(() => listApi.url || "__empty__");
 
   const {
@@ -76,13 +76,13 @@ export function useListData(options: UseListDataOptions): UseListDataReturn {
         sortOrder: sortState.order || undefined,
       }),
     enabled: computed(() => !!listApi.url),
-    autoLoad: false, // 手动控制 autoLoad（分页参数准备好后再 fetch）
-    swr: false, // 列表场景不适用 SWR（每次分页/搜索都要新数据）
-    retry: options.enableRetry ? (options.retryCount ?? 3) : 0, // 默认不重试（向后兼容），HA widget 显式传 enableRetry: true
-    cacheTtl: 0, // 列表数据不缓存（分页参数频繁变化）
+    autoLoad: false, // Manual autoLoad control (fetch after pagination params ready)
+    swr: false, // SWR not applicable for list (each pagination/search needs fresh data)
+    retry: options.enableRetry ? (options.retryCount ?? 3) : 0, // No retry by default (backward compatible), HA widget passes enableRetry: true explicitly
+    cacheTtl: 0, // Do not cache list data (pagination params change frequently)
   });
 
-  // ---- 核心 fetch：调用 useWidgetData reload（强制刷新） ----
+  // ---- 核心 fetch：调用 useWidgetData reload（强制Refresh） ----
   async function fetchData(): Promise<void> {
     if (!listApi.url) return;
     loading.value = true;
@@ -92,7 +92,7 @@ export function useListData(options: UseListDataOptions): UseListDataReturn {
       tableData.value = rawResponse.value.data ?? [];
       total.value = rawResponse.value.total ?? 0;
     }
-    // error 清空 tableData（SWR 模式下保留 stale，但列表页显示 stale 无意义）
+    // error 清空 tableData（SWR 模式下保留 stale, 但Column表页Show stale 无意义）
     if (wError.value) {
       error.value = wError.value;
       tableData.value = [];
@@ -101,8 +101,8 @@ export function useListData(options: UseListDataOptions): UseListDataReturn {
     loading.value = false;
   }
 
-  // ---- 同步 useWidgetData 的 loading/error 到本地 ref ----
-  // useWidgetData 的 loading/error 在 reload() 完成后才更新，fetchData 手动管理本地状态即可
+  // ---- Sync useWidgetData 的 loading/error 到本地 ref ----
+  // useWidgetData 的 loading/error 在 reload() 完成后才Update, fetchData 手动管理本地Status即可
 
   function handleSearch(): void {
     if (listApi.resetOnSearch !== false) {

@@ -30,7 +30,7 @@ export const roleManagementConfig: WidgetConfig = {
         key: "tableColumns",
         label: "Show Columns",
         type: "json",
-        desc: "数组格式，可选值: name / permissions / data_scope / createdAt",
+        desc: "Array format, optional values: name / permissions / data_scope / createdAt",
         default: ["name", "permissions", "data_scope", "createdAt"],
       },
       { key: "pageSize", label: "Page Size", type: "number", default: 20 },

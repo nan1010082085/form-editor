@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * ConditionBuilder — 结构化条件表达式构建器
+ * ConditionBuilder — 结构化Condition表达式构建器
  *
- * 支持三类引用：表单字段、变量、组件暴露值
+ * 支持三类引用：FormField、变量、Component暴露Value
  * 支持 AND / OR 逻辑组合
- * 双向同步表达式字符串
+ * 双向Sync表达式字符串
  */
 import { ref, computed, watch } from "vue";
 import { useConditionReferences } from "@/composables/useConditionReferences";
@@ -28,11 +28,11 @@ const emit = defineEmits<{
   "update:modelValue": [value: string];
 }>();
 
-// ---- 引用选项（字段 + 变量 + 暴露值） ----
+// ---- 引用Options（Field + 变量 + 暴露Value） ----
 const { fieldRefs, variableRefs, exposedRefs } = useConditionReferences();
 const { t } = useI18n();
 
-// ---- 运算符选项 ----
+// ---- 运算符Options ----
 const operatorOptions = computed(() => [
   { label: t("editor.conditionUi.opEqual"), value: "==", needsValue: true },
   { label: t("editor.conditionUi.opNotEqual"), value: "!=", needsValue: true },
@@ -57,14 +57,14 @@ const operatorOptions = computed(() => [
   { label: t("editor.conditionUi.opFalsy"), value: "falsy", needsValue: false },
 ]);
 
-// ---- 条件子句列表 ----
+// ---- Condition子句Column表 ----
 const clauses = ref<ConditionClause[]>([]);
 
-/** 从表达式字符串解析子句 */
+/** 从表达式字符串Parse子句 */
 function parseExpression(expr: string): ConditionClause[] {
   if (!expr?.trim()) return [];
 
-  // 按 || 分割为 OR 组，每组内部按 && 分割
+  // 按 || Min割为 OR 组, 每组内部按 && Min割
   const orGroups = expr
     .split("||")
     .map((s) => s.trim())
@@ -141,7 +141,7 @@ function parseExpression(expr: string): ConditionClause[] {
   return result;
 }
 
-/** 从子句列表生成表达式字符串 */
+/** 从子句Column表生成表达式字符串 */
 function buildExpression(cls: ConditionClause[]): string {
   const parts: string[] = [];
   for (const c of cls) {
@@ -170,7 +170,7 @@ function buildExpression(cls: ConditionClause[]): string {
   return parts.join("");
 }
 
-// ---- 同步：外部表达式 → 内部子句 ----
+// ---- Sync：外部表达式 → 内部子句 ----
 watch(
   () => props.modelValue,
   (expr) => {
@@ -183,7 +183,7 @@ watch(
   { immediate: true },
 );
 
-// ---- 同步：内部子句 → 外部表达式 ----
+// ---- Sync：内部子句 → 外部表达式 ----
 function syncToExpression() {
   const expr = buildExpression(clauses.value);
   emit("update:modelValue", expr);
@@ -226,7 +226,7 @@ function needsValue(operator: string): boolean {
         <el-option :label="t('editor.conditionUi.logicOr')" value="||" />
       </el-select>
 
-      <!-- 字段选择（分组） -->
+      <!-- Field选择（Group） -->
       <el-select
         :model-value="clause.field"
         filterable
@@ -283,7 +283,7 @@ function needsValue(operator: string): boolean {
         />
       </el-select>
 
-      <!-- 值输入 -->
+      <!-- ValueInput -->
       <el-input
         v-if="needsValue(clause.operator)"
         :model-value="clause.value"
@@ -292,13 +292,13 @@ function needsValue(operator: string): boolean {
         @update:model-value="updateClause(ci, 'value', $event)"
       />
 
-      <!-- 删除 -->
+      <!-- Delete -->
       <el-button type="danger" size="small" text @click="removeClause(ci)">
         <AppIcon name="delete" />
       </el-button>
     </div>
 
-    <!-- 空状态 -->
+    <!-- 空Status -->
     <div v-if="clauses.length === 0" :class="styles.empty">
       {{
         required
@@ -307,7 +307,7 @@ function needsValue(operator: string): boolean {
       }}
     </div>
 
-    <!-- 添加条件 -->
+    <!-- 添加Condition -->
     <el-button type="primary" size="small" text @click="addClause">
       <AppIcon name="plus" />
       {{ t("editor.conditionUi.addCondition") }}

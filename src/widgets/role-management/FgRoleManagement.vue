@@ -16,6 +16,7 @@ import {
   type PermissionItem,
   type CreateRolePayload,
 } from "../../api/roleApi";
+import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import { WIDGET_SURFACE_KEY, getTableRowsFromMock } from "../base/widgetMock";
 import styles from "./style.module.scss";
 
@@ -157,8 +158,8 @@ async function loadData() {
       page: currentPage.value,
       pageSize: String(pageSize.value),
     });
-    tableData.value = res.data.items;
-    total.value = res.data.total;
+    tableData.value = res.items;
+    total.value = res.total;
   } catch (err) {
     if (surface === "editor") {
       const mock = getTableRowsFromMock("role-management");
@@ -168,7 +169,7 @@ async function loadData() {
         return;
       }
     }
-    ElMessage.error(t("editor.roleManagement.loadRoleListFailed"));
+    ElMessage.error(resolveApiErrorMessage(err));
   } finally {
     loading.value = false;
   }
@@ -176,10 +177,9 @@ async function loadData() {
 
 async function loadPermissions() {
   try {
-    const res = await fetchPermissions();
-    permissions.value = res.data;
-  } catch {
-    ElMessage.error(t("editor.roleManagement.loadPermissionsFailed"));
+    permissions.value = await fetchPermissions();
+  } catch (err) {
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 
@@ -226,7 +226,7 @@ function openAddDialog() {
 
 function openEditDialog(row: RoleItem) {
   dialogMode.value = "edit";
-  editingRoleId.value = row._id;
+  editingRoleId.value = row.id;
   Object.assign(formData, {
     name: row.name,
     description: row.description ?? "",
@@ -255,11 +255,7 @@ async function submitForm() {
     dialogVisible.value = false;
     loadData();
   } catch (err) {
-    ElMessage.error(
-      dialogMode.value === "add"
-        ? t("editor.common.failed")
-        : t("editor.roleManagement.updateFailed"),
-    );
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 
@@ -275,17 +271,18 @@ async function handleDelete(row: RoleItem) {
         type: "warning",
       },
     );
-    await deleteRole(row._id);
+    await deleteRole(row.id);
     ElMessage.success(t("editor.common.success"));
     loadData();
-  } catch {
-    // user cancelled
+  } catch (err) {
+    if (err === "cancel" || err === "close") return;
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 
 // ---- Assign Permissions ----
 function openPermDialog(row: RoleItem) {
-  permRoleId.value = row._id;
+  permRoleId.value = row.id;
   permRoleName.value = row.name;
   checkedPermissions.value = [...row.permissions];
   permDialogVisible.value = true;
@@ -299,8 +296,8 @@ async function submitPermissions() {
     ElMessage.success(t("editor.roleManagement.permAssignSuccess"));
     permDialogVisible.value = false;
     loadData();
-  } catch {
-    ElMessage.error(t("editor.roleManagement.permAssignFailed"));
+  } catch (err) {
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 

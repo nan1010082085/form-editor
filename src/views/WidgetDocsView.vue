@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * WidgetDocsView -- 部件文档查看器（占位）
+ * WidgetDocsView -- Widget文档View器（占位）
  *
- * 后续补充部件文档时再实现。
+ * 后续补充Widget文档Hrs再实现。
  */
 import { useI18n } from "@schema-platform/platform-shared";
 

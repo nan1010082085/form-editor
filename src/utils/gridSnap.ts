@@ -1,7 +1,7 @@
 /**
  * gridSnap — 网格吸附工具
  *
- * 提供单轴和矩形吸附功能，用于自由布局模式下的拖拽和缩放。
+ * 提供单轴和矩形吸附功能, 用于自由Layout模式下的拖拽和缩放。
  */
 
 /** 单轴网格吸附 */
@@ -33,7 +33,7 @@ export function snapRectToGrid(
   };
 }
 
-/** 从 boardStore canvas 配置计算网格参数 */
+/** 从 boardStore canvas Config计算网格Params */
 export function getGridParams(
   freeLayout?: {
     snapToGrid?: boolean;

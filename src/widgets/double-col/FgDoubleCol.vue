@@ -1,8 +1,9 @@
 <script setup lang="ts">
 /**
- * FgDoubleCol — 双列布局容器
+ * FgDoubleCol — 双ColumnLayoutContainer
  */
 import { inject, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import type { Widget } from "../base/types";
 import SchemaRender from "../../components/WidgetRenderer/SchemaRender.vue";
@@ -10,6 +11,8 @@ import GridColDropZone from "../../components/Editor/GridColDropZone.vue";
 import styles from "./style.module.scss";
 
 defineProps<{ editable?: boolean; editorSelectable?: boolean }>();
+
+const { t } = useI18n();
 
 const widgetData = inject(widgetDataKey)!;
 
@@ -61,7 +64,7 @@ function colStyle(idx: number): Record<string, string> {
             v-if="editable && getChildrenByCol(col - 1).length === 0"
             :class="styles.colGhost"
           >
-            拖入部件
+            {{ t("editor.canvas.dragWidget") }}
           </div>
         </template>
       </div>

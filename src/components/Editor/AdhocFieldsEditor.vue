@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import type { AdhocQueryField } from "@/widgets/adhoc-query/config";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 import styles from "./SearchFieldsEditor.module.scss";
@@ -11,10 +13,12 @@ const emit = defineEmits<{
   "update:fields": [fields: AdhocQueryField[]];
 }>();
 
-const typeOptions = [
-  { label: "输入框", value: "input" as const },
-  { label: "下拉选择", value: "select" as const },
-];
+const { t } = useI18n();
+
+const typeOptions = computed(() => [
+  { label: t("editor.adhocFieldsEditor.typeInput"), value: "input" as const },
+  { label: t("editor.adhocFieldsEditor.typeSelect"), value: "select" as const },
+]);
 
 function addField() {
   emit("update:fields", [
@@ -88,7 +92,7 @@ function optionsToText(
       v-if="fields.length === 0"
       :class="styles['search-fields-editor__empty']"
     >
-      未配置可选字段。
+      {{ t('editor.adhocFieldsEditor.empty') }}
     </div>
 
     <div
@@ -97,9 +101,9 @@ function optionsToText(
       :class="styles['search-fields-editor__item']"
     >
       <div :class="styles['search-fields-editor__item-header']">
-        <span :class="styles['search-fields-editor__item-title']"
-          >字段 {{ idx + 1 }}</span
-        >
+        <span :class="styles['search-fields-editor__item-title']">
+          {{ t('editor.adhocFieldsEditor.fieldTitle', { index: idx + 1 }) }}
+        </span>
         <div :class="styles['search-fields-editor__item-actions']">
           <el-button
             size="small"
@@ -124,7 +128,9 @@ function optionsToText(
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">类型</label>
+        <label :class="styles['search-fields-editor__label']">
+          {{ t('editor.adhocFieldsEditor.type') }}
+        </label>
         <el-select
           :model-value="field.type ?? 'input'"
           size="small"
@@ -141,21 +147,25 @@ function optionsToText(
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">字段</label>
+        <label :class="styles['search-fields-editor__label']">
+          {{ t('editor.adhocFieldsEditor.fieldName') }}
+        </label>
         <el-input
           :model-value="field.field"
           size="small"
-          placeholder="字段名"
+          :placeholder="t('editor.adhocFieldsEditor.fieldNamePlaceholder')"
           @update:model-value="updateField(idx, 'field', $event)"
         />
       </div>
 
       <div :class="styles['search-fields-editor__field']">
-        <label :class="styles['search-fields-editor__label']">标签</label>
+        <label :class="styles['search-fields-editor__label']">
+          {{ t('editor.adhocFieldsEditor.label') }}
+        </label>
         <el-input
           :model-value="field.label"
           size="small"
-          placeholder="显示标签"
+          :placeholder="t('editor.adhocFieldsEditor.labelPlaceholder')"
           @update:model-value="updateField(idx, 'label', $event)"
         />
       </div>
@@ -164,14 +174,14 @@ function optionsToText(
         v-if="field.type === 'select'"
         :class="styles['search-fields-editor__field']"
       >
-        <label :class="styles['search-fields-editor__label']"
-          >选项 (label=value, 每行一个)</label
-        >
+        <label :class="styles['search-fields-editor__label']">
+          {{ t('editor.adhocFieldsEditor.optionsLabel') }}
+        </label>
         <el-input
           type="textarea"
           :model-value="optionsToText(field.options)"
           :rows="3"
-          placeholder="选项A=opt_a"
+          :placeholder="t('editor.adhocFieldsEditor.optionsPlaceholder')"
           @update:model-value="
             updateField(idx, 'options', parseOptionsText($event))
           "
@@ -186,7 +196,7 @@ function optionsToText(
       @click="addField"
     >
       <AppIcon name="plus" style="margin-right: 4px" />
-      添加字段
+      {{ t('editor.adhocFieldsEditor.addField') }}
     </el-button>
   </div>
 </template>

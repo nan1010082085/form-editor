@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
- * GenericArrayEditor -- 通用数组 CRUD 编辑器
+ * GenericArrayEditor -- 通用数组 CRUD Edit器
  *
- * 根据 fields 声明动态渲染每个数组项的字段。
- * 支持 text / select / number / switch 四种字段类型。
+ * 根据 fields 声明动态渲染每个数组项的Field。
+ * 支持 text / select / number / switch 四种FieldType。
  */
 import type { ArrayFieldSchema } from "../../widgets/base/types";
+import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./GenericArrayEditor.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
@@ -20,6 +21,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   update: [value: unknown[]];
 }>();
+
+const { t } = useI18n();
 
 function createItem(): Record<string, unknown> {
   const item: Record<string, unknown> = {};
@@ -77,7 +80,7 @@ function getItemTitle(item: unknown, index: number): string {
 
 <template>
   <div :class="styles.editor">
-    <div v-if="value.length === 0" :class="styles.empty">暂无数据</div>
+    <div v-if="value.length === 0" :class="styles.empty">{{ t('editor.common.noData') }}</div>
 
     <div v-for="(item, idx) in value" :key="idx" :class="styles.item">
       <div :class="styles.itemHeader">
@@ -157,7 +160,7 @@ function getItemTitle(item: unknown, index: number): string {
       @click="addItem"
     >
       <AppIcon name="plus" />
-      添加
+      {{ t('editor.common.add') }}
     </el-button>
   </div>
 </template>

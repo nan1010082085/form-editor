@@ -194,7 +194,7 @@ describe("expression engine", () => {
 
   describe("edge cases", () => {
     it("throws on empty string", () => {
-      expect(() => evaluateExpression("", ctx())).toThrow("非空字符串");
+      expect(() => evaluateExpression("", ctx())).toThrow("non-empty string");
     });
 
     it("evaluates plain text string", () => {
@@ -205,13 +205,13 @@ describe("expression engine", () => {
     it("throws on expression exceeding 500 chars", () => {
       const longExpr = "${a} + " + "1 + ".repeat(200) + "1";
       expect(() => evaluateExpression(longExpr, ctx({ a: 1 }))).toThrow(
-        "长度超过限制",
+        "length exceeds limit",
       );
     });
 
     it("throws on syntax error", () => {
       expect(() => evaluateExpression("???invalid{{{", ctx())).toThrow(
-        "编译失败",
+        "compilation failed",
       );
     });
   });
@@ -267,7 +267,7 @@ describe("expression engine", () => {
     it("returns invalid for syntax error", () => {
       const result = validateExpression("???{{{");
       expect(result.valid).toBe(false);
-      expect(result.error).toContain("语法错误");
+      expect(result.error).toContain("syntax error");
     });
 
     it("returns invalid for empty string", () => {
@@ -279,7 +279,7 @@ describe("expression engine", () => {
       const longExpr = "a".repeat(501);
       const result = validateExpression(longExpr);
       expect(result.valid).toBe(false);
-      expect(result.error).toContain("长度超过限制");
+      expect(result.error).toContain("length exceeds limit");
     });
   });
 });

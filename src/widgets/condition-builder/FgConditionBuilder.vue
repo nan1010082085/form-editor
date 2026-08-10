@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * FgConditionBuilder — 条件构建器
+ * FgConditionBuilder — Condition构建器
  *
- * 可视化条件表达式编辑器，支持多条件组合（AND/OR）。
- * 替代手动写表达式，降低配置门槛。
+ * 可视化Condition表达式Edit器, 支持多Condition组合（AND/OR）。
+ * 替代手动写表达式, 降低Config门槛。
  */
 import { inject, ref, computed } from "vue";
 import { widgetDataKey, widgetStyleKey } from "../base/types";

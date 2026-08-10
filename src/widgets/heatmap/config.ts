@@ -3,7 +3,7 @@ import type { WidgetConfig } from "../base/types";
 export const heatmapConfig: WidgetConfig = {
   name: "FgHeatmap",
   displayName: "Heatmap Chart",
-  description: "热力图组件，用于展示二维数据密度",
+  description: "Heatmap chart for 2D data density",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "400px" },
   defaultProps: {
@@ -60,13 +60,13 @@ export const heatmapConfig: WidgetConfig = {
           { key: "value", label: "Value", type: "number" },
         ],
       },
-      { key: "xField", label: "X Axis Field", type: "text", placeholder: "如: x" },
-      { key: "yField", label: "Y Axis Field", type: "text", placeholder: "如: y" },
+      { key: "xField", label: "X Axis Field", type: "text", placeholder: "e.g. x" },
+      { key: "yField", label: "Y Axis Field", type: "text", placeholder: "e.g. y" },
       {
         key: "valueField",
         label: "Value Field",
         type: "text",
-        placeholder: "如: value",
+        placeholder: "e.g. value",
       },
       { key: "title", label: "Chart Title", type: "text" },
       { key: "showLabel", label: "Show Label", type: "switch", default: false },
@@ -75,9 +75,9 @@ export const heatmapConfig: WidgetConfig = {
         label: "Color Scheme",
         type: "select",
         options: [
-          { label: "默认", value: "default" },
-          { label: "暗色", value: "dark" },
-          { label: "浅色", value: "light" },
+          { label: "Default", value: "default" },
+          { label: "Dark", value: "dark" },
+          { label: "Light", value: "light" },
         ],
       },
       { key: "rawOption", label: "Advanced Option (JSON)", type: "json" },

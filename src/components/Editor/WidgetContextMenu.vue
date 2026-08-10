@@ -2,10 +2,12 @@
 import { computed } from "vue";
 import { getWidget, getWidgetDisplayName } from "@/widgets/registry";
 import type { Widget, ConfigPanelType } from "@/widgets/base/types";
+import { useBoardStore } from "@/stores/board";
 import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./WidgetContextMenu.module.scss";
 
 const { t } = useI18n();
+const boardStore = useBoardStore();
 
 const props = defineProps<{
   visible: boolean;
@@ -30,6 +32,9 @@ const emit = defineEmits<{
   openChartLinkage: [widget: Widget];
   savePreview: [widget: Widget];
 }>();
+
+/** Free Layout才有 z 序语义；Grid 流式用拖动手柄调序 */
+const showZOrderActions = computed(() => boardStore.layoutMode === "free");
 
 const widgetConfig = computed(() => {
   if (!props.widget) return null;
@@ -110,12 +115,14 @@ function handleAction(action: string) {
       <div :class="styles.item" @click="handleAction('copyId')">
         {{ t("editor.contextMenu.copyId") }}
       </div>
-      <div :class="styles.item" @click="handleAction('bringToFront')">
-        {{ t("editor.contextMenu.bringToFront") }}
-      </div>
-      <div :class="styles.item" @click="handleAction('sendToBack')">
-        {{ t("editor.contextMenu.sendToBack") }}
-      </div>
+      <template v-if="showZOrderActions">
+        <div :class="styles.item" @click="handleAction('bringToFront')">
+          {{ t("editor.contextMenu.bringToFront") }}
+        </div>
+        <div :class="styles.item" @click="handleAction('sendToBack')">
+          {{ t("editor.contextMenu.sendToBack") }}
+        </div>
+      </template>
       <div :class="styles.item" @click="handleAction('toggleLock')">
         {{
           widget.locked

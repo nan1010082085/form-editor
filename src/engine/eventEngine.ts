@@ -1,8 +1,8 @@
 /**
- * eventEngine — 事件引擎
+ * eventEngine — Event引擎
  *
- * 解析 WidgetEvent，执行 SchemaEventAction。
- * 纯逻辑层，不依赖 Vue 组件或 Store，通过 EventExecutionContext 注入运行时能力。
+ * Parse WidgetEvent, Execute SchemaEventAction。
+ * 纯逻辑层, 不依赖 Vue Componentor Store, passed EventExecutionContext 注入运RowHrs能力。
  */
 import type {
   Widget,
@@ -17,7 +17,7 @@ import { startFlow, terminateFlow } from "@/api/dataApi";
 
 const logger = useLogger("EventEngine");
 
-/** 格式化部件名：按钮 #abc123 */
+/** Format widget name: button #abc123 */
 function formatWidget(widget: Widget): string {
   const reg = getWidget(widget.type);
   const name = reg?.displayName ?? widget.type;
@@ -29,8 +29,8 @@ function formatTarget(targetId: string, ctx: EventExecutionContext): string {
   return w ? formatWidget(w) : `#${targetId}`;
 }
 
-/** i18n key 映射：trigger → editor.eventEngine.* */
-const TRIGGER_I18N_KEYS: Record<string, string> = {
+/** i18n key mapping: trigger -> editor.eventEngine.* (shared between config dialog and engine) */
+export const EVENT_TRIGGER_I18N_KEYS: Record<string, string> = {
   click: "editor.eventEngine.triggerClick",
   change: "editor.eventEngine.triggerChange",
   "chart-click": "editor.eventEngine.triggerChartClick",
@@ -47,10 +47,13 @@ const TRIGGER_I18N_KEYS: Record<string, string> = {
   mounted: "editor.eventEngine.triggerMounted",
 };
 
-/** 外部注入的翻译函数（由 Vue 层通过 setTriggerLabelProvider 设置） */
+/** @deprecated Use EVENT_TRIGGER_I18N_KEYS */
+const TRIGGER_I18N_KEYS = EVENT_TRIGGER_I18N_KEYS;
+
+/** Externally injected translation function (set by Vue layer via setTriggerLabelProvider) */
 let _t: ((key: string) => string) | undefined;
 
-/** 设置触发器标签翻译提供者（编辑器初始化时调用） */
+/** Set trigger label translation provider (called during editor initialization) */
 export function setTriggerLabelProvider(t: (key: string) => string): void {
   _t = t;
 }
@@ -61,45 +64,45 @@ function getTriggerLabel(trigger: string): string {
   return trigger;
 }
 
-/** 事件执行上下文 — 由编辑器或运行时提供 */
+/** Event execution context — provided by editor or runtime */
 export interface EventExecutionContext {
-  /** 查找 widget（编辑器用 widgetStore.findWidget，运行时用 schema 树查找） */
+  /** Find widget (editor uses widgetStore.findWidget, runtime uses schema tree) */
   findWidget: (id: string) => Widget | undefined;
-  /** 更新 widget 属性 */
+  /** Update widget property */
   updateWidget: (id: string, patch: Partial<Widget>) => void;
-  /** 打开弹窗 */
+  /** Open dialog */
   openDialog: (target: string) => void;
-  /** 关闭弹窗 */
+  /** Close dialog */
   closeDialog: () => void;
-  /** 提交表单 */
+  /** Submit form */
   submitForm: () => void;
-  /** 校验表单（可选，运行时提供） */
+  /** Validate form (optional, provided by runtime) */
   validateForm?: () => Promise<boolean>;
-  /** 重置表单 */
+  /** Reset form */
   resetForm: () => void;
-  /** 获取表单数据 */
+  /** Get form data */
   getFormData: () => Record<string, unknown>;
-  /** 自定义事件 emit */
+  /** Custom event emit */
   emit: (eventName: string, payload?: unknown) => void;
-  /** 确认对话框（返回 Promise，reject 表示取消） */
+  /** Confirm dialog (returns Promise, reject means cancel) */
   confirm?: (message: string) => Promise<void>;
-  /** 变量上下文 */
+  /** Variable context */
   variables?: Record<string, unknown>;
-  /** 设置变量值 */
+  /** Set variable value */
   setVariable?: (name: string, value: unknown) => void;
-  /** 获取变量值 */
+  /** Get variable value */
   getVariable?: (name: string) => unknown;
-  /** 组件暴露值上下文 */
+  /** Widget exposed values context */
   exposed?: Record<string, Record<string, unknown>>;
-  /** 触发目标组件的指定事件 */
+  /** Trigger specified event on target widget */
   triggerEvent?: (targetId: string, eventName: string) => void;
-  /** 表格行上下文（高级表格行按钮/链接事件） */
+  /** Table row context (advanced table row button/link events) */
   row?: Record<string, unknown>;
   rowIndex?: number;
   selectedRows?: Record<string, unknown>[];
   selectedCount?: number;
   tableData?: Record<string, unknown>[];
-  /** 图表点击事件上下文 */
+  /** Chart click event context */
   chartEvent?: {
     dataIndex: number;
     name: string;
@@ -107,7 +110,7 @@ export interface EventExecutionContext {
     seriesName: string;
     data: Record<string, unknown>;
   };
-  /** 图表联动处理回调（由运行时注入，供 chart-linkage action 调用） */
+  /** Chart linkage handler callback (injected by runtime, called by chart-linkage action) */
   handleChartLinkage?: (
     sourceWidgetId: string,
     chartEvent: {
@@ -122,7 +125,7 @@ export interface EventExecutionContext {
 }
 
 /**
- * 从对象按点路径读取值
+ * 从对象按点路径读取Value
  */
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   if (!path) return undefined;
@@ -136,7 +139,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 /**
- * 解析单个 {{...}} 模板段
+ * Parse单个 {{...}} Template段
  */
 function resolveTemplateSegment(
   path: string,
@@ -163,7 +166,7 @@ function resolveTemplateSegment(
 }
 
 /**
- * 解析事件参数中的上下文引用：formData.xxx、row.xxx、{{row.xxx}}、URL 内联 {{variables.xxx}}
+ * ParseEventParams中的上下文引用：formData.xxx、row.xxx、{{row.xxx}}、URL 内联 {{variables.xxx}}
  */
 function resolveContextString(
   text: string,
@@ -189,12 +192,12 @@ function resolveContextString(
 }
 
 /**
- * 解析上下文引用并保留原值类型（供 post-message 等结构化消息使用）。
+ * Parse上下文引用并保留原ValueType（供 post-message 等结构化Message使用）。
  *
- * 规则：
- * - 整体形如 "formData.xxx" / "row.xxx" / "variables.xxx" / "{{xxx}}" -> 返回原始值（number/object/...）
- * - 含内联 {{...}} 的文本 -> 按文本模板替换（输出 string）
- * - 普通文本 -> 原样返回
+ * Rule：
+ * - 整体形如 "formData.xxx" / "row.xxx" / "variables.xxx" / "{{xxx}}" -> Back原始Value（number/object/...）
+ * - 含内联 {{...}} 的文本 -> 按文本Template替换（Output string）
+ * - 普通文本 -> 原样Back
  */
 function resolveContextValue(
   text: string,
@@ -235,10 +238,10 @@ function resolveStringRecord(
 }
 
 /**
- * 执行单个事件动作。
+ * Execute单个EventAction。
  *
- * @param action - 事件动作定义
- * @param ctx - 执行上下文
+ * @param action - EventAction定义
+ * @param ctx - Execute上下文
  */
 export async function executeEventAction(
   action: SchemaEventAction,
@@ -336,8 +339,8 @@ export async function executeEventAction(
     case "post-message": {
       if (action.message) {
         const data = resolveMessageData(action.message, ctx);
-        // 安全考虑：使用当前页面的 origin 而非 '*'
-        // 如果需要跨域通信，应配置具体的 targetOrigin
+        // 安全考虑：使用当前Page的 origin 而非 '*'
+        // 如果需要跨域通信, 应Config具体的 targetOrigin
         window.parent.postMessage(data, window.location.origin);
         logger.event("Send message:", data);
       }
@@ -366,9 +369,9 @@ export async function executeEventAction(
     case "api": {
       if (action.apiUrl) {
         const method = action.apiMethod ?? "post";
-        // apiParams='formData' 时把整个表单数据作为请求体/查询参数；
-        // 与 actionExecutor、server 通用 data 路由（直接取 body）保持一致，
-        // 不再额外包 { data: ... }，否则下游收到 { data: { ... } } 与契约不符。
+        // apiParams='formData' Hrs把整个FormData作为请求体/QueryParams；
+        // 与 actionExecutor、server 通用 data Route（直接取 body）保持一致, 
+        // 不再额外包 { data: ... }, 否则下游收到 { data: { ... } } 与契约不符。
         const params: unknown =
           action.apiParams === "formData"
             ? ctx.getFormData()
@@ -429,7 +432,7 @@ export async function executeEventAction(
     }
     case "navigate": {
       if (action.navigatePath) {
-        logger.event(`跳转: ${action.navigatePath}`);
+        logger.event(`Navigate: ${action.navigatePath}`);
         ctx.emit("navigate", {
           path: action.navigatePath,
           query: action.navigateQuery
@@ -441,19 +444,19 @@ export async function executeEventAction(
     }
     case "startFlow": {
       if (!action.definitionId) break;
-      logger.api(`发起流程: definitionId=${action.definitionId}`);
+      logger.api(`Start workflow: definitionId=${action.definitionId}`);
       try {
         const response = await startFlow(
           action.definitionId,
           action.variables ?? {},
         );
-        logger.api("流程发起成功", response);
+        logger.api("Workflow started successfully", response);
         ctx.emit("flow-started", {
           definitionId: action.definitionId,
           response,
         });
       } catch (err) {
-        logger.warn(`流程发起失败: definitionId=${action.definitionId}`, err);
+        logger.warn(`Workflow start failed: definitionId=${action.definitionId}`, err);
         ctx.emit("flow-error", {
           action: "startFlow",
           definitionId: action.definitionId,
@@ -464,13 +467,13 @@ export async function executeEventAction(
     }
     case "endFlow": {
       if (!action.instanceId) break;
-      logger.api(`结束流程: instanceId=${action.instanceId}`);
+      logger.api(`End workflow: instanceId=${action.instanceId}`);
       try {
         const response = await terminateFlow(action.instanceId, action.reason);
-        logger.api("流程结束成功", response);
+        logger.api("Workflow ended successfully", response);
         ctx.emit("flow-ended", { instanceId: action.instanceId, response });
       } catch (err) {
-        logger.warn(`流程结束失败: instanceId=${action.instanceId}`, err);
+        logger.warn(`Workflow end failed: instanceId=${action.instanceId}`, err);
         ctx.emit("flow-error", {
           action: "endFlow",
           instanceId: action.instanceId,
@@ -481,35 +484,35 @@ export async function executeEventAction(
     }
     case "exportData": {
       if (!action.apiUrl) {
-        logger.warn("exportData: 缺少 apiUrl");
+        logger.warn("exportData: missing apiUrl");
         break;
       }
       const url = resolveContextString(action.apiUrl, ctx);
       const method = action.apiMethod ?? "get";
-      logger.api(`导出: ${method} ${url}`);
+      logger.api(`Export: ${method} ${url}`);
       try {
         await triggerFileDownload(url, method, action.exportFileName);
-        logger.api(`导出成功: ${url}`);
+        logger.api(`Export successful: ${url}`);
         ctx.emit("export-success", { url });
       } catch (err) {
-        logger.warn(`导出失败: ${url}`, err);
+        logger.warn(`Export failed: ${url}`, err);
         ctx.emit("export-error", { url, error: String(err) });
       }
       break;
     }
     case "chart-linkage": {
       if (ctx.chartEvent && ctx.handleChartLinkage) {
-        // 从事件上下文中获取源 widget ID
-        // chart-linkage action 的 target 字段存储源 widget ID
+        // 从Event上下文中获取源 widget ID
+        // chart-linkage action 的 target Field存储源 widget ID
         const sourceWidgetId = action.target ?? "";
         ctx.handleChartLinkage(
           sourceWidgetId,
           ctx.chartEvent,
           action.chartLinkageRuleId,
         );
-        logger.event(`图表联动: #${sourceWidgetId}`);
+        logger.event(`Chart linkage: #${sourceWidgetId}`);
       } else if (!ctx.handleChartLinkage) {
-        logger.warn("chart-linkage: handleChartLinkage 回调未注入");
+        logger.warn("chart-linkage: handleChartLinkage callback not injected");
       }
       break;
     }
@@ -517,11 +520,11 @@ export async function executeEventAction(
 }
 
 /**
- * 解析消息数据中的 formData.xxx / row.xxx / variables.xxx 引用。
+ * ParseMessageData中的 formData.xxx / row.xxx / variables.xxx 引用。
  *
- * 与 resolveContextString（文本模板，输出 string）不同，本函数保留原值类型：
- * 字符串若整体是一个上下文引用（如 "formData.id"），解析后还原为原始值
- * （number/boolean/object 等），否则按文本模板替换内联 {{...}} 段。
+ * 与 resolveContextString（文本Template, Output string）不同, 本函数保留原ValueType：
+ * 字符串若整体是一个上下文引用（如 "formData.id"）, Parse后还原为原始Value
+ * （number/boolean/object 等）, 否则按文本Template替换内联 {{...}} 段。
  */
 function resolveMessageData(
   message: Record<string, unknown>,
@@ -539,7 +542,7 @@ function resolveMessageData(
 }
 
 /**
- * 解析文本中的 formData.xxx / row.xxx 引用
+ * Parse文本中的 formData.xxx / row.xxx 引用
  */
 function resolveTextValue(text: string, ctx: EventExecutionContext): string {
   return resolveContextString(text, ctx);
@@ -592,11 +595,11 @@ async function triggerFileDownload(
 }
 
 /**
- * 触发 Widget 上匹配的事件，并依次执行其动作链。
+ * Trigger Widget 上匹配的Event, 并依次Execute其Action链。
  *
  * @param widget - 目标 Widget
- * @param trigger - 触发事件名（click / change / close 等）
- * @param ctx - 执行上下文
+ * @param trigger - TriggerEvent名（click / change / close 等）
+ * @param ctx - Execute上下文
  */
 export async function triggerWidgetEvent(
   widget: Widget,
@@ -607,7 +610,7 @@ export async function triggerWidgetEvent(
   if (!widget.events?.length) return;
   const widgetLabel = formatWidget(widget);
   const triggerLabel = getTriggerLabel(trigger);
-  logger.event(`触发: ${widgetLabel} [${triggerLabel}]`);
+  logger.event(`Trigger: ${widgetLabel} [${triggerLabel}]`);
 
   // 构建完整的表达式上下文
   const context: Record<string, unknown> = {
@@ -622,17 +625,17 @@ export async function triggerWidgetEvent(
 
   for (const event of widget.events) {
     if (event.trigger !== trigger) continue;
-    // 匹配事件目标：事件未指定 target 则匹配所有，指定了则必须一致
+    // 匹配Event目标：Event未指定 target 则匹配所有, 指定了则必须一致
     if (event.eventTarget && event.eventTarget !== eventTarget) continue;
 
-    // 条件判断
+    // Condition判断
     if (event.condition) {
       const result = evaluateCondition(event.condition, context, ctx.exposed);
-      logger.rule(`条件: "${event.condition}" → ${result ? "通过" : "不通过"}`);
+      logger.rule(`Condition: "${event.condition}" → ${result ? "passed" : "failed"}`);
       if (!result) continue;
     }
 
-    // 确认提示（使用 UI 库的 confirm，而非浏览器原生）
+    // Confirm提示（使用 UI 库的 confirm, 而非浏览器原生）
     if (event.confirm) {
       if (!ctx.confirm) {
         logger.warn("confirm dialog requested but ctx.confirm is not provided");
@@ -641,12 +644,12 @@ export async function triggerWidgetEvent(
       try {
         await ctx.confirm(event.confirm);
       } catch {
-        // 用户取消
+        // UserCancel
         continue;
       }
     }
 
-    // 执行动作链
+    // ExecuteAction链
     for (const action of event.actions) {
       try {
         await executeEventAction(action, ctx);
@@ -658,15 +661,15 @@ export async function triggerWidgetEvent(
 }
 
 /**
- * 条件表达式求值 — 委托给 expression.ts 安全引擎。
+ * Condition表达式求Value — 委托给 expression.ts 安全引擎。
  *
- * 复用 utils/expression 的安全检查（blocklist + 长度限制），
+ * 复用 utils/expression 的安全检查（blocklist + 长度限制）, 
  * 保持原有 API：context 的 key 作为形参、expression 作为函数体。
  *
- * @param expression - 条件表达式字符串
- * @param context - 变量上下文（formData + variables 展平）
- * @param exposed - 组件暴露值上下文
- * @returns 表达式求值结果
+ * @param expression - Condition表达式字符串
+ * @param context - Variable context（formData + variables 展平）
+ * @param exposed - Widget exposed values context
+ * @returns 表达式求Value结果
  */
 export function evaluateCondition(
   expression: string,
@@ -683,8 +686,8 @@ export function evaluateCondition(
   }
 
   try {
-    // 使用 with(env) 让表达式可以直接引用表单字段名（如 status、lock），
-    // 同时支持 values.xxx、variables.xxx、exposed.xxx 命名空间访问。
+    // 使用 with(env) 让表达式可以直接引用FormField name（如 status、lock）, 
+    // 同Hrs支持 values.xxx、variables.xxx、exposed.xxx 命名空间访问。
     const env = {
       ...context,
       values: context,

@@ -11,9 +11,10 @@ import FgTransfer from "../FgTransfer.vue";
 import { transferConfig } from "../config";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 describe("FgTransfer", () => {
   let store: ReturnType<typeof useWidgetStore>;
@@ -73,8 +74,8 @@ describe("FgTransfer", () => {
   describe("标题属性", () => {
     it("默认标题为待选/已选", () => {
       const wrapper = mountWidget();
-      expect(wrapper.text()).toContain("待选");
-      expect(wrapper.text()).toContain("已选");
+      expect(wrapper.text()).toContain("Available");
+      expect(wrapper.text()).toContain("Selected");
     });
 
     it("自定义标题", () => {

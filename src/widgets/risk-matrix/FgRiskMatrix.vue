@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, inject } from "vue";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 
 const riskTypeField = computed(() => (widgetData.value.props?.riskTypeField as string) ?? "type");
 const severityField = computed(() => (widgetData.value.props?.severityField as string) ?? "severity");
@@ -41,7 +39,7 @@ const matrixRows = computed(() => {
 });
 
 const legendItems = computed(() =>
-  levels.value.map((l, i) => ({
+  levels.value.map((l) => ({
     level: l,
     color: SEVERITY_COLORS[l.toLowerCase()] ?? "#ccc",
   }))

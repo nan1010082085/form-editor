@@ -1,11 +1,11 @@
 /**
- * useChartLinkage — 图表联动 composable
+ * useChartLinkage — ChartLinkage composable
  *
- * 实现图表间钻取/筛选/高亮联动：
- * 1. 监听图表点击事件（通过事件引擎 chart-click 触发）
- * 2. 按 paramMapping 映射参数到目标图表
- * 3. 执行 filter/drilldown/highlight 动作
- * 4. 维护钻取历史栈，支持面包屑回退
+ * Implement drilldown/filter/highlight linkage between charts:
+ * 1. Listen for chart click events (via event engine chart-click trigger)
+ * 2. Map params to target chart by paramMapping
+ * 3. Execute filter/drilldown/highlight action
+ * 4. Maintain drilldown history stack, support breadcrumb back
  */
 import { ref, computed, type Ref } from "vue";
 import type {
@@ -17,36 +17,36 @@ import { useLogger } from "@/composables/useLogger";
 
 const logger = useLogger("ChartLinkage");
 
-/** 钻取状态 */
+/** Drilldown status */
 export interface DrilldownState {
-  /** 当前活跃的钻取层级（widgetId -> 历史栈） */
+  /** Current active drilldown level (widgetId -> history stack) */
   history: Map<string, DrilldownHistoryEntry[]>;
-  /** 当前筛选条件（widgetId -> 筛选参数） */
+  /** Current filter condition (widgetId -> filter params) */
   activeFilters: Map<string, Record<string, unknown>>;
-  /** 当前高亮项（widgetId -> 高亮的 dataIndex 集合） */
+  /** Current highlight item (widgetId -> highlighted dataIndex set) */
   highlights: Map<string, Set<number>>;
 }
 
 export interface UseChartLinkageOptions {
-  /** 当前画布所有 Widget 列表 */
+  /** All widgets on current canvas */
   widgets: Ref<Widget[]>;
-  /** 更新 Widget 属性的回调 */
+  /** Callback to update widget property */
   updateWidget: (id: string, patch: Partial<Widget>) => void;
-  /** 获取图表数据的回调 */
+  /** Callback to get chart data */
   getChartData?: (widgetId: string) => Record<string, unknown>[];
 }
 
 export function useChartLinkage(options: UseChartLinkageOptions) {
   const { widgets, getChartData } = options;
 
-  // ---- 钻取状态 ----
+  // ---- Drilldown status ----
   const drilldownState = ref<DrilldownState>({
     history: new Map(),
     activeFilters: new Map(),
     highlights: new Map(),
   });
 
-  // ---- 收集所有图表联动规则 ----
+  // ---- Collect all chart linkage rules ----
   const allRules = computed<ChartLinkageRule[]>(() => {
     const rules: ChartLinkageRule[] = [];
     for (const widget of widgets.value) {
@@ -58,10 +58,10 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
   });
 
   /**
-   * 从图表点击事件数据中提取参数值
-   * @param data - 图表点击的原始数据行
-   * @param paramMapping - 源字段 -> 目标字段的映射
-   * @returns 映射后的参数对象
+   * Extract param values from chart click event data
+   * @param data - Original data row from chart click
+   * @param paramMapping - Source field -> target field mapping
+   * @returns Mapped params object
    */
   function extractParams(
     data: Record<string, unknown>,
@@ -77,7 +77,7 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
   }
 
   /**
-   * 执行筛选动作：为目标图表设置筛选条件
+   * Execute filter action: set filter condition for target chart
    */
   function applyFilter(
     targetWidgetId: string,
@@ -87,11 +87,11 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
       drilldownState.value.activeFilters.get(targetWidgetId) ?? {};
     const merged = { ...current, ...filters };
     drilldownState.value.activeFilters.set(targetWidgetId, merged);
-    logger.event(`筛选: #${targetWidgetId}`, merged);
+    logger.event(`Filter: #${targetWidgetId}`, merged);
   }
 
   /**
-   * 执行钻取动作：压入历史栈，设置筛选条件
+   * Execute drilldown action: push to history stack, set filter condition
    */
   function applyDrilldown(
     sourceWidgetId: string,
@@ -101,10 +101,10 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
     label: string,
     filters: Record<string, unknown>,
   ) {
-    // 获取或初始化历史栈
+    // Get or initialize history stack
     const history = drilldownState.value.history.get(sourceWidgetId) ?? [];
 
-    // 压入当前层级
+    // Push current level
     const entry: DrilldownHistoryEntry = {
       value,
       field,
@@ -114,9 +114,9 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
     history.push(entry);
     drilldownState.value.history.set(sourceWidgetId, [...history]);
 
-    // 同时应用筛选
+    // Apply filter at the same time
     applyFilter(targetWidgetId, filters);
-    logger.event(`钻取: #${sourceWidgetId} → #${targetWidgetId}`, {
+    logger.event(`Drilldown: #${sourceWidgetId} → #${targetWidgetId}`, {
       value,
       field,
       label,
@@ -124,15 +124,15 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
   }
 
   /**
-   * 执行高亮动作：标记目标图表的高亮数据项
+   * Execute highlight action: mark highlighted data items in target chart
    */
   function applyHighlight(targetWidgetId: string, dataIndices: number[]) {
     drilldownState.value.highlights.set(targetWidgetId, new Set(dataIndices));
-    logger.event(`高亮: #${targetWidgetId}`, dataIndices);
+    logger.event(`Highlight: #${targetWidgetId}`, dataIndices);
   }
 
   /**
-   * 清除目标图表的所有联动状态
+   * Clear all linkage status for target chart
    */
   function clearLinkageState(targetWidgetId: string) {
     drilldownState.value.activeFilters.delete(targetWidgetId);
@@ -140,10 +140,10 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
   }
 
   /**
-   * 处理图表点击事件，查找匹配的联动规则并执行
+   * Handle chart click event, find matching linkage rule and execute
    *
-   * @param sourceWidgetId - 触发点击的图表 Widget ID
-   * @param chartEvent - 图表点击事件数据
+   * @param sourceWidgetId - Chart widget ID that triggered the click
+   * @param chartEvent - Chart click event data
    */
   function handleChartClick(
     sourceWidgetId: string,
@@ -155,7 +155,7 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
       data: Record<string, unknown>;
     },
   ) {
-    // 查找所有以当前图表为源的 click 触发规则
+    // Find all click trigger rules with current chart as source
     const matchingRules = allRules.value.filter(
       (rule) =>
         rule.sourceWidgetId === sourceWidgetId && rule.trigger === "click",
@@ -163,7 +163,7 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
 
     if (matchingRules.length === 0) return;
 
-    logger.event(`处理图表点击: #${sourceWidgetId}`, {
+    logger.event(`Handle chart click: #${sourceWidgetId}`, {
       name: chartEvent.name,
       dataIndex: chartEvent.dataIndex,
     });
@@ -189,7 +189,7 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
             break;
 
           case "highlight": {
-            // 高亮与点击数据相同类别的所有数据项
+            // Highlight all data items in the same category as clicked data
             const chartData = getChartData?.(targetId) ?? [];
             const targetField = Object.values(rule.paramMapping)[0] ?? "";
             const sourceValue =
@@ -208,10 +208,10 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
   }
 
   /**
-   * 钻取回退：从历史栈中弹出一层
+   * Drilldown back: pop one level from history stack
    *
-   * @param sourceWidgetId - 钻取源图表 ID
-   * @param level - 回退到的层级（-1 = 回退一层，0 = 回到顶层）
+   * @param sourceWidgetId - Drilldown source chart ID
+   * @param level - Level to go back to (-1 = go back one level, 0 = go to top)
    */
   function drilldownBack(sourceWidgetId: string, level?: number) {
     const history = drilldownState.value.history.get(sourceWidgetId);
@@ -220,9 +220,9 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
     const targetLevel = level ?? history.length - 2;
 
     if (targetLevel < 0) {
-      // 回到顶层，清除所有状态
+      // Go to top level, clear all status
       drilldownState.value.history.set(sourceWidgetId, []);
-      // 清除所有目标图表的筛选
+      // Clear all target chart filters
       const rules = allRules.value.filter(
         (r) => r.sourceWidgetId === sourceWidgetId,
       );
@@ -231,12 +231,12 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
           clearLinkageState(targetId);
         }
       }
-      logger.event(`钻取回退: #${sourceWidgetId} → 顶层`);
+      logger.event(`Drilldown back: #${sourceWidgetId} → top level`);
     } else {
-      // 回退到指定层级
+      // Go back to specified level
       const newHistory = history.slice(0, targetLevel + 1);
       drilldownState.value.history.set(sourceWidgetId, newHistory);
-      // 恢复该层级的筛选条件
+      // Restore filter condition for that level
       const entry = newHistory[targetLevel];
       const rules = allRules.value.filter(
         (r) => r.sourceWidgetId === sourceWidgetId,
@@ -247,33 +247,33 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
           applyFilter(targetId, entry.filters);
         }
       }
-      logger.event(`钻取回退: #${sourceWidgetId} → 层级 ${targetLevel}`);
+      logger.event(`Drilldown back: #${sourceWidgetId} → level ${targetLevel}`);
     }
   }
 
   /**
-   * 获取指定图表的钻取面包屑路径
+   * Get drilldown breadcrumb path for specified chart
    */
   function getBreadcrumbs(sourceWidgetId: string): DrilldownHistoryEntry[] {
     return drilldownState.value.history.get(sourceWidgetId) ?? [];
   }
 
   /**
-   * 获取指定图表的当前筛选条件
+   * Get current filter condition for specified chart
    */
   function getActiveFilters(widgetId: string): Record<string, unknown> {
     return drilldownState.value.activeFilters.get(widgetId) ?? {};
   }
 
   /**
-   * 获取指定图表的高亮索引集合
+   * Get highlight index set for specified chart
    */
   function getHighlights(widgetId: string): Set<number> {
     return drilldownState.value.highlights.get(widgetId) ?? new Set();
   }
 
   /**
-   * 判断指定图表是否有活跃的钻取状态
+   * Check if specified chart has active drilldown status
    */
   function hasDrilldown(sourceWidgetId: string): boolean {
     const history = drilldownState.value.history.get(sourceWidgetId);
@@ -281,7 +281,7 @@ export function useChartLinkage(options: UseChartLinkageOptions) {
   }
 
   /**
-   * 重置所有联动状态
+   * Reset all linkage status
    */
   function resetAll() {
     drilldownState.value = {

@@ -1,7 +1,7 @@
 import type { WidgetConfig } from "../base/types";
 export const spacerConfig: WidgetConfig = {
   name: "FgSpacer",
-  displayName: "间距",
+  displayName: "Spacer",
   description: "Spacer for controlling element gap",
   author: "yangdongnan",
   defaultStyle: {

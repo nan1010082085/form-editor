@@ -30,7 +30,7 @@ export function resolveColumnColorMap(
   return Object.keys(map).length > 0 ? map : undefined;
 }
 
-/** 合并 dictCode 解析结果，供渲染与筛选使用 */
+/** 合并 dictCode Parse结果, 供渲染与Filter使用 */
 export function resolveEffectiveColumn(
   col: AdvancedTableColumn,
   dictMap?: Record<string, DictItem[]>,

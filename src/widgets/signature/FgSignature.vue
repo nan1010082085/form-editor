@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, inject, onMounted, onUnmounted } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
+
+const { t } = useI18n();
 
 const widgetData = inject(widgetDataKey)!;
 const { isDisabled } = useWidgetRenderState();
@@ -18,8 +21,14 @@ const penWidth = computed(() => (widgetData.value.props?.penWidth as number) ?? 
 const penColor = computed(() => (widgetData.value.props?.penColor as string) ?? "#000000");
 const backgroundColor = computed(() => (widgetData.value.props?.backgroundColor as string) ?? "#ffffff");
 const showClear = computed(() => (widgetData.value.props?.showClear as boolean) ?? true);
-const clearText = computed(() => (widgetData.value.props?.clearText as string) ?? "Clear");
-const placeholder = computed(() => (widgetData.value.props?.placeholder as string) ?? "Sign here");
+const clearText = computed(
+  () => (widgetData.value.props?.clearText as string) ?? t("editor.signature.clear"),
+);
+const placeholder = computed(
+  () =>
+    (widgetData.value.props?.placeholder as string) ??
+    t("editor.signature.placeholder"),
+);
 const outputFormat = computed(() => (widgetData.value.props?.outputFormat as string) ?? "png");
 
 function initCanvas() {
@@ -85,7 +94,7 @@ function getDataUrl(): string {
   return canvasRef.value.toDataURL(mime);
 }
 
-useExposeWidget((wd) => ({
+useExposeWidget((_wd) => ({
   get value() {
     return getDataUrl();
   },
@@ -105,7 +114,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div :class="$style.wrapper" :style="{ height: widgetData.style?.height || '200px' }">
+  <div :class="$style.wrapper" :style="{ height: String(widgetData.style?.height || '200px') }">
     <div :class="$style.canvasWrap">
       <canvas
         ref="canvasRef"

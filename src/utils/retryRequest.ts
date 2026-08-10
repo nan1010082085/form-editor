@@ -1,8 +1,8 @@
 /**
- * 重试请求工具
+ * Retry请求工具
  *
- * 根据 SchemaApiConfig.enableRetry 配置决定是否重试
- * 默认重试 3 次，最高 5 次
+ * 根据 SchemaApiConfig.enableRetry Config决定是否Retry
+ * 默认Retry 3 次, 最高 5 次
  */
 
 const DEFAULT_RETRY_COUNT = 3;
@@ -16,9 +16,9 @@ export interface RetryOptions {
 }
 
 /**
- * 带重试的请求执行器
- * enableRetry 为 false 时直接执行，失败直接抛出
- * enableRetry 为 true 时重试最多 maxRetries 次，全部失败后抛出最后一个错误
+ * 带Retry的请求执Row器
+ * enableRetry 为 false Hrs直接执Row, Failed直接抛出
+ * enableRetry 为 true HrsRetry最多 maxRetries 次, AllFailed后抛出最后一个Error
  */
 export async function executeWithRetry<T>(
   fn: () => Promise<T>,

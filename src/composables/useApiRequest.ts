@@ -1,8 +1,8 @@
 /**
  * useApiRequest -- 通用 API 请求 composable
  *
- * 封装 fetch 请求，支持自定义 URL、方法、Headers。
- * 返回解析后的 JSON 数据。
+ * 封装 fetch 请求, 支持自定义 URL、方法、Headers。
+ * 返回Parse后的 JSON Data。
  */
 import { genericFetchApi } from "@/api/requestApi";
 

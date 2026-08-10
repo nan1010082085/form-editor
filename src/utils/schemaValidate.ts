@@ -1,8 +1,8 @@
 /**
- * schemaValidate — Schema 结构校验 + 引用完整性校验
+ * schemaValidate — Schema 结构Validate + 引用完整性Validate
  *
- * Layer 1: 静态结构校验（type、field、position、options 等）
- * Layer 2: 引用完整性校验（watchFields、event target、formId 等）
+ * Layer 1: 静态结构Validate（type、field、position、options 等）
+ * Layer 2: 引用完整性Validate（watchFields、event target、formId 等）
  */
 import { getComponentMap } from "@/widgets/registry";
 import type { PartialWidget } from "@/widgets/base/types";
@@ -13,7 +13,7 @@ import type { PartialWidget } from "@/widgets/base/types";
  * Must be kept in sync with widgets/index.ts registrations.
  */
 const FALLBACK_SCHEMA_TYPES = new Set([
-  // 容器
+  // Container
   "form",
   "card",
   "tabs",
@@ -23,7 +23,7 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   "double-col",
   "triple-col",
   "quad-col",
-  // 基础组件
+  // BasicComponent
   "input",
   "select",
   "number",
@@ -57,9 +57,9 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   "crud-list-page",
   "tree-table",
   "statistic",
-  // 布局
+  // Layout
   "tree-layout",
-  // 嵌入容器
+  // 嵌入Container
   "iframe",
   "micro-app",
   "bar-chart",
@@ -79,7 +79,7 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   "funnel",
   "compare-funnel",
   "candlestick",
-  // 业务组件
+  // BusinessComponent
   "approval-user-picker",
   "approval-role-picker",
   "approval-comment",
@@ -94,7 +94,7 @@ const FALLBACK_SCHEMA_TYPES = new Set([
   "notification",
   "auto-refresh",
   "compliance-checklist",
-  // 扩展表单
+  // 扩展Form
   "icon-picker",
   "tree-select",
   "dynamic-detail-table",
@@ -398,7 +398,7 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
                 path: [...itemPath, j],
                 type: "nesting-violation",
                 severity: "error",
-                message: `${parentCategory === "basic" ? "基础" : "业务"}组件 "${item.type}" 不允许嵌套${childCategory === "basic" ? "基础" : "业务"}组件 "${child.type}"`,
+                message: `${parentCategory === "basic" ? "Basic" : "Business"}Component "${item.type}"  does not allow nesting ${childCategory === "basic" ? "Basic" : "Business"}Component "${child.type}"`,
               });
             }
           }
@@ -453,7 +453,7 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
         }
       }
 
-      // 9. position 校验
+      // 9. position Validate
       if (item.position) {
         if (
           typeof item.position.w !== "number" ||
@@ -472,7 +472,7 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
         }
       }
 
-      // 10. options 格式校验
+      // 10. options 格式Validate
       if (item.options?.length) {
         for (let oi = 0; oi < item.options.length; oi++) {
           const opt = item.options[oi];
@@ -493,7 +493,7 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
         }
       }
 
-      // 11. defaultValue 类型检查（number 组件不应有字符串默认值）
+      // 11. defaultValue Type检查（number Component不应有字符串Default value）
       if (
         item.type === "number" &&
         item.defaultValue !== undefined &&
@@ -515,7 +515,7 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
         }
       }
 
-      // 12. lifecycle 字符串表达式警告
+      // 12. lifecycle 字符串表达式Warning
       if (item.lifecycle) {
         for (const [hookName, hook] of Object.entries(item.lifecycle)) {
           if (typeof hook === "string") {
@@ -582,9 +582,9 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
     });
   }
 
-  // ── Layer 2: 引用完整性校验 ──
+  // ── Layer 2: 引用完整性Validate ──
 
-  // 构建全局索引
+  // 构建全局Index
   const allIds = new Set<string>();
   const allFields = new Set<string>();
   const formContainerIds = new Set<string>();
@@ -617,13 +617,13 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
   }
   collectGlobals(schema, []);
 
-  // 引用校验遍历
+  // 引用Validate遍历
   function checkRefs(items: PartialWidget[], path: number[]) {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const itemPath = [...path, i];
 
-      // watchFields 引用校验
+      // watchFields 引用Validate
       if (item.linkages?.length) {
         for (const linkage of item.linkages) {
           for (const wf of linkage.watchFields) {
@@ -641,11 +641,11 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
         }
       }
 
-      // events 引用校验
+      // events 引用Validate
       if (item.events?.length) {
         for (const evt of item.events) {
           for (const action of evt.actions) {
-            // 需要 target 的动作
+            // 需要 target 的Action
             const needsTarget = [
               "show",
               "hide",
@@ -699,7 +699,7 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
         }
       }
 
-      // formId 引用校验
+      // formId 引用Validate
       if (item.formId && !formContainerIds.has(item.formId)) {
         errors.push({
           path: itemPath,
@@ -711,9 +711,9 @@ export function validateSchema(schema: PartialWidget[]): ValidationResult {
         });
       }
 
-      // tabKey 引用校验
+      // tabKey 引用Validate
       if (item.tabKey) {
-        // 找到包含此 tabKey 的 tabs 容器
+        // 找到包含此 tabKey 的 tabs Container
         let found = false;
         for (const [_tabsId, keys] of tabKeysMap) {
           if (keys.has(item.tabKey)) {

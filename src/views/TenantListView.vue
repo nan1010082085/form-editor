@@ -2,7 +2,7 @@
 /**
  * TenantListView — 租户管理页
  *
- * 表格展示所有租户，支持搜索、状态筛选、分页、创建/编辑/启停用/删除。
+ * 表格展示所有租户, 支持Search、StatusFilter、Min页、创建/Edit/启Disabled/Delete。
  */
 import { onMounted, ref, computed, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -28,11 +28,11 @@ const statusOptions = computed(() => [
 
 const activeStatus = ref<TenantStatus | "">("");
 
-// ── 弹窗状态 ──
+// ── DialogStatus ──
 const formDialogVisible = ref(false);
 const editingTenant = ref<TenantItem | null>(null);
 
-// ── 数据加载 ──
+// ── Data加载 ──
 onMounted(() => {
   tenantStore.fetchTenants();
 });
@@ -65,7 +65,7 @@ function handlePageChange(page: number) {
   });
 }
 
-// ── CRUD 操作 ──
+// ── CRUD Action ──
 function openCreateDialog() {
   editingTenant.value = null;
   formDialogVisible.value = true;
@@ -92,7 +92,7 @@ async function handleDelete(tenant: TenantItem) {
     else
       ElMessage.error(tenantStore.error || t("editor.tenantView.deleteFailed"));
   } catch {
-    // 用户取消
+    // UserCancel
   }
 }
 
@@ -127,7 +127,7 @@ async function handleToggleStatus(tenant: TenantItem) {
           t("editor.tenantView.toggleFailed", { action: actionLabel }),
       );
   } catch {
-    // 用户取消
+    // UserCancel
   }
 }
 

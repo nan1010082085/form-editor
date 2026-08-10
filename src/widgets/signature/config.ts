@@ -1,8 +1,8 @@
 /**
- * 签名板 Widget - Canvas 2D 签名绘制
+ * Signature Pad Widget - Canvas 2D Sign绘制
  *
- * 适用场景：审批签字、合同签名、确认签署
- * 输出：base64 PNG 图片
+ * 适用场景：审批签字、合同Sign、Confirm签署
+ * Output：base64 PNG 图片
  * 支持鼠标和触控设备
  */
 

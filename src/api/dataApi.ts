@@ -1,7 +1,7 @@
 /**
- * Data API — 数据/实例/凭据/租户相关接口
+ * Data API — Data/实例/凭据/租户相关接口
  *
- * 聚合表单数据、提交记录、凭据管理、租户管理等接口。
+ * AggregateFormData、Submit记录、凭据管理、租户管理等接口。
  * 底层委托 utils/apiClient。
  */
 import { apiClient } from "@/utils/apiClient";
@@ -22,7 +22,7 @@ import type {
   TenantUpdatePayload,
 } from "@/types/tenant";
 
-// ---- 数据/提交记录 ----
+// ---- Data/Submit记录 ----
 
 export {
   fetchDataList,
@@ -135,34 +135,34 @@ export async function deleteTenant(id: string): Promise<null> {
   return apiClient.delete<null>(`/tenants/${encodeURIComponent(id)}`);
 }
 
-// ---- 通用列表查询 ----
+// ---- 通用Column表Query ----
 
-/** 通用列表查询参数 */
+/** 通用Column表QueryParams */
 export interface GenericListParams {
   /** 当前页码 */
   page: number;
   /** 每页条数 */
   pageSize: number;
-  /** 搜索参数 */
+  /** SearchParams */
   searchParams?: Record<string, unknown>;
-  /** 额外固定参数 */
+  /** 额外固定Params */
   extraParams?: Record<string, unknown>;
-  /** 排序字段 */
+  /** SortField */
   sortField?: string;
-  /** 排序方向 */
+  /** Sort方向 */
   sortOrder?: string;
 }
 
-/** 通用列表查询结果 */
+/** 通用Column表Query结果 */
 export interface GenericListResult {
   data: Record<string, unknown>[];
   total: number;
 }
 
 /**
- * 通用列表查询 — 封装 requestUrl + normalizeListResponse + 重试
+ * 通用Column表Query — 封装 requestUrl + normalizeListResponse + Retry
  *
- * 供 useListData 等 composable 调用，遵循 API 聚合规则。
+ * 供 useListData 等 composable 调用, 遵循 API AggregateRule。
  */
 export async function fetchGenericList(
   listApi: ListApiConfig,
@@ -187,12 +187,12 @@ export async function fetchGenericList(
   );
 
   return normalizeListResponse(response, {
-    dataPath: listApi.dataPath ?? "data",
+    dataPath: listApi.dataPath,
     totalPath: listApi.totalPath ?? "total",
   });
 }
 
-/** 过滤空值参数 */
+/** Filter空ValueParams */
 function filterEmptyParams(
   params: Record<string, unknown>,
 ): Record<string, unknown> {
@@ -295,7 +295,7 @@ export async function fetchKeyUsageStatsByWorkflow(params?: {
   );
 }
 
-// ---- 流程操作 ----
+// ---- 流程Action ----
 
 /**
  * 发起流程实例

@@ -1,29 +1,29 @@
 import type { WidgetConfig } from "../base/types";
 import { descriptionsMock } from "./mock";
 
-/** 描述列表单项的值类型 */
+/** DescriptionColumnFormitems的ValueType */
 export type DescriptionItemType = "text" | "tag" | "link" | "image" | "date";
 
-/** 描述列表单项配置 */
+/** DescriptionColumnFormitemsConfig */
 export interface DescriptionItemConfig {
   label: string;
   field: string;
   type: DescriptionItemType;
-  /** 值前缀（如 ¥） */
+  /** Value前缀（e.g. ¥） */
   prefix?: string;
-  /** 值后缀 */
+  /** Value后缀 */
   suffix?: string;
-  /** tag 类型时的选项映射 */
+  /** tag TypeHrs的OptionsMap */
   options?: { label: string; value: string | number; color?: string }[];
-  /** link 类型时的点击行为 */
+  /** link TypeHrs的ClickRow为 */
   href?: string;
-  /** image 类型时的宽度 */
+  /** image TypeHrs的Width */
   imageWidth?: number;
-  /** image 类型时的高度 */
+  /** image TypeHrs的Height */
   imageHeight?: number;
-  /** date 类型时的格式化 */
+  /** date TypeHrs的Format */
   format?: string;
-  /** 跨列数 */
+  /** 跨Column数 */
   span?: number;
 }
 
@@ -39,7 +39,7 @@ export const descriptionsConfig: WidgetConfig = {
   ],
   configPanels: ["events", "api", "variables"],
   defaultProps: {
-    title: "详情",
+    title: "Details",
     column: 2,
     border: true,
     staticData: descriptionsMock.staticData,
@@ -52,7 +52,7 @@ export const descriptionsConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "Title", type: "input", default: "详情" },
+      { key: "title", label: "Title", type: "input", default: "Details" },
       {
         key: "column",
         label: "Col Count",
@@ -76,13 +76,13 @@ export const descriptionsConfig: WidgetConfig = {
             key: "label",
             label: "Label",
             type: "text",
-            placeholder: "显示名称",
+            placeholder: "ShowName",
           },
           {
             key: "field",
             label: "Field",
             type: "text",
-            placeholder: "数据字段名",
+            placeholder: "DataField name",
           },
           {
             key: "type",
@@ -97,8 +97,8 @@ export const descriptionsConfig: WidgetConfig = {
               { label: "Date", value: "date" },
             ],
           },
-          { key: "prefix", label: "Prefix", type: "text", placeholder: "如 ¥" },
-          { key: "suffix", label: "Suffix", type: "text", placeholder: "如 元" },
+          { key: "prefix", label: "Prefix", type: "text", placeholder: "e.g. ¥" },
+          { key: "suffix", label: "Suffix", type: "text", placeholder: "e.g. yuan" },
           { key: "span", label: "Span", type: "number", default: 1 },
         ],
       },

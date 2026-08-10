@@ -10,9 +10,10 @@ import ElementPlus from "element-plus";
 import FgAdvancedTableVirtual from "@/widgets/advanced-table/FgAdvancedTableVirtual.vue";
 import type { AdvancedTableColumn } from "@/widgets/advanced-table/config";
 
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 function mountVirtual(
   columns: AdvancedTableColumn[],

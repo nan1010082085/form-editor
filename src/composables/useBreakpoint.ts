@@ -1,17 +1,24 @@
 /**
  * useBreakpoint — 响应式断点检测 composable
  *
- * 使用 matchMedia API（非 resize 事件）监听视口宽度变化。
+ * 使用 matchMedia API（非 resize Event）监听视口Width变化。
  * 断点定义与 Element Plus 保持一致（mobile-first）。
  * SSR 安全：在非浏览器环境下默认返回 'xxl'。
  */
 import { ref, computed, onUnmounted, type ComputedRef } from "vue";
 import type { ResponsiveSpan } from "@/components/WidgetRenderer/types";
 
-/** 断点名称，从小到大排列 */
+/** 断点Name, 从小到大排Column */
 export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl" | "xxl";
 
-/** 断点像素阈值（mobile-first，值为该断点的 min-width） */
+/** 将视口WidthMap为 PreviewBreakpoint（desktop/tablet/mobile） */
+export function mapWidthToBreakpoint(width: number): "mobile" | "tablet" | "desktop" {
+  if (width < 768) return "mobile";
+  if (width < 992) return "tablet";
+  return "desktop";
+}
+
+/** 断点像素阈Value（mobile-first, Value为该断点的 min-width） */
 const BREAKPOINTS: Record<Breakpoint, number> = {
   xs: 0,
   sm: 576,
@@ -41,7 +48,7 @@ export function useBreakpoint(): {
   const handlers: Array<(e: MediaQueryListEvent) => void> = [];
 
   if (isBrowser) {
-    // 从大到小创建 matchMedia 查询，第一个匹配的即为当前断点
+    // 从大到小创建 matchMedia Query, 第一个匹配的即为当前断点
     for (const bp of BREAKPOINT_ORDER) {
       const minWidth = BREAKPOINTS[bp];
       const mql = window.matchMedia(`(min-width: ${minWidth}px)`);
@@ -74,7 +81,7 @@ export function useBreakpoint(): {
     }
   }
 
-  // 组件卸载时自动清理监听器
+  // Component卸载Hrs自动清理监听器
   onUnmounted(() => {
     for (let i = 0; i < mqlList.length; i++) {
       mqlList[i].removeEventListener("change", handlers[i]);
@@ -84,10 +91,10 @@ export function useBreakpoint(): {
   const breakpoint = computed(() => currentBreakpoint.value);
 
   /**
-   * 解析响应式 span 值
-   * - span 为 number 时直接返回
-   * - span 为 ResponsiveSpan 时，从当前断点向上查找最近的定义值
-   * - 无匹配时默认返回 24
+   * Parse响应式 span Value
+   * - span 为 number Hrs直接返回
+   * - span 为 ResponsiveSpan Hrs, 从当前断点向上查找最近的定义Value
+   * - 无匹配Hrs默认返回 24
    */
   function resolveSpan(span: number | ResponsiveSpan): number {
     if (typeof span === "number") return span;

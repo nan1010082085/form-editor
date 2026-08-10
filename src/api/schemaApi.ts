@@ -1,7 +1,7 @@
 /**
- * Schema API — 表单 Schema 相关接口
+ * Schema API — Form Schema 相关接口
  *
- * 聚合 schema CRUD、版本管理、导入、模板等接口。
+ * Aggregate schema CRUD、Version管理、Import、Template等接口。
  * 底层委托 utils/apiClient。
  */
 export {

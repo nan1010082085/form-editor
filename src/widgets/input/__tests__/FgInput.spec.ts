@@ -11,9 +11,10 @@ import { widgetDataKey, widgetStyleKey } from "../../base/types";
 import FgInput from "../FgInput.vue";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 describe("FgInput", () => {
   let store: ReturnType<typeof useWidgetStore>;

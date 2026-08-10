@@ -96,11 +96,11 @@ defineExpose({
         <div :class="styles.searchActions">
           <el-button type="primary" @click="handleSearch">
             <AppIcon name="search" :class="styles.toolbarBtnIcon" />
-            查询
+            Query
           </el-button>
           <el-button @click="handleReset">
             <AppIcon name="refresh-left" :class="styles.toolbarBtnIcon" />
-            重置
+            Reset
           </el-button>
           <el-button
             v-if="canCollapse"
@@ -108,7 +108,7 @@ defineExpose({
             type="primary"
             @click="toggleCollapse"
           >
-            {{ collapsed ? "展开" : "收起" }}
+            {{ collapsed ? "Expand" : "Collapse" }}
             <AppIcon :name="collapsed ? 'arrow-down' : 'arrow-up'" />
           </el-button>
         </div>

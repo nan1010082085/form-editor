@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, ref, onMounted } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import "./style.module.scss";
 import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
@@ -9,6 +10,7 @@ import { WIDGET_SURFACE_KEY, type WidgetSurface } from "../base/widgetMock";
 
 import { useWidgetControlSize } from "../../composables/useWidgetControlSize";
 
+const { t } = useI18n();
 const widgetData = inject(widgetDataKey)!;
 const surface = inject(WIDGET_SURFACE_KEY, "runtime" as WidgetSurface);
 const { isDisabled } = useWidgetRenderState();
@@ -24,9 +26,9 @@ const options = ref<UserItem[]>([]);
 const loading = ref(false);
 
 const EDITOR_MOCK_USERS: UserItem[] = [
-  { _id: "mock-u1", username: "zhangsan", displayName: "张三" },
-  { _id: "mock-u2", username: "lisi", displayName: "李四" },
-  { _id: "mock-u3", username: "wangwu", displayName: "王五" },
+  { _id: "mock-u1", username: "zhangsan", displayName: "Zhang San" },
+  { _id: "mock-u2", username: "lisi", displayName: "Li Si" },
+  { _id: "mock-u3", username: "wangwu", displayName: "Wang Wu" },
 ];
 
 onMounted(() => {
@@ -98,7 +100,7 @@ function getUserLabel(user: UserItem): string {
     ref="selectRef"
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
-    :placeholder="(widgetData.props?.placeholder as string) || '请选择用户'"
+    :placeholder="(widgetData.props?.placeholder as string) || t('editor.userSelector.defaultPlaceholder')"
     :disabled="isDisabled"
     :clearable="(widgetData.props?.clearable as boolean) ?? true"
     :multiple="(widgetData.props?.multiple as boolean) || false"

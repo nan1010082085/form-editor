@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * ApiConfig -- API 数据源配置组件（左右分栏）
+ * ApiConfig -- API Data源ConfigComponent（左右Min栏）
  *
- * 左侧：分组卡片表单（请求配置 / 数据映射 / 加载策略）
- * 右侧：测试连接面板（独立区域，不跟随表单滚动）
+ * 左侧：Group卡片Form（请求Config / DataMap / 加载策略）
+ * 右侧：测试连接面板（独立Region, 不跟随Form滚动）
  */
 import { ref, computed } from "vue";
 import { requestExternalUrl } from "@/api/requestApi";
@@ -283,18 +283,18 @@ defineExpose({ testConnection, testing });
 
 <template>
   <div :class="styles.root">
-    <!-- 未配置时的入口 -->
+    <!-- 未ConfigHrs的入口 -->
     <div v-if="!hasApi" :class="styles.toggle">
       <el-button type="primary" plain @click="enableApi">{{
         t("editor.api.configApi")
       }}</el-button>
     </div>
 
-    <!-- 左右分栏 -->
+    <!-- 左右Min栏 -->
     <div v-else :class="styles.layout">
-      <!-- 左侧表单 -->
+      <!-- 左侧Form -->
       <div :class="styles.form">
-        <!-- 移除配置 -->
+        <!-- 移除Config -->
         <div :class="styles.removeRow">
           <el-button
             type="danger"
@@ -306,7 +306,7 @@ defineExpose({ testConnection, testing });
           </el-button>
         </div>
 
-        <!-- 分组 1：请求配置 -->
+        <!-- Group 1：请求Config -->
         <div :class="styles.card">
           <div :class="styles.cardTitle">
             {{ t("editor.api.requestConfig") }}
@@ -314,7 +314,8 @@ defineExpose({ testConnection, testing });
           <!-- URL -->
           <div :class="styles.row">
             <label :class="styles.label"
-              >URL <span :class="styles.required">*</span></label
+              >{{ t("editor.api.requestUrl") }}
+              <span :class="styles.required">*</span></label
             >
             <el-input
               :model-value="api?.url ?? ''"
@@ -324,7 +325,7 @@ defineExpose({ testConnection, testing });
             />
           </div>
 
-          <!-- 请求方法 + 超时并排 -->
+          <!-- 请求方法 + 超Hrs并排 -->
           <div :class="styles.row">
             <label :class="styles.label">{{ t("editor.api.method") }}</label>
             <el-select
@@ -350,7 +351,7 @@ defineExpose({ testConnection, testing });
             />
           </div>
 
-          <!-- 查询参数 -->
+          <!-- QueryParams -->
           <div :class="styles.row">
             <label :class="styles.label">{{ t("editor.api.params") }}</label>
             <div
@@ -381,7 +382,7 @@ defineExpose({ testConnection, testing });
               >
                 <el-input
                   :model-value="row.key"
-                  placeholder="Header-Name"
+                  :placeholder="t('editor.api.headerName')"
                   @update:model-value="
                     (v: string) => handleHeaderKeyChange(idx, v)
                   "
@@ -405,7 +406,7 @@ defineExpose({ testConnection, testing });
 
           <!-- 请求体 Body（仅 POST） -->
           <div v-if="isPost" :class="styles.row">
-            <label :class="styles.label">Body</label>
+            <label :class="styles.label">{{ t("editor.api.body") }}</label>
             <div
               style="flex: 1; display: flex; flex-direction: column; gap: 4px"
             >
@@ -422,7 +423,7 @@ defineExpose({ testConnection, testing });
           </div>
         </div>
 
-        <!-- 分组 2：数据映射 -->
+        <!-- Group 2：DataMap -->
         <div :class="styles.card">
           <div :class="styles.cardTitle">{{ t("editor.api.dataMapping") }}</div>
           <div :class="styles.row">
@@ -463,7 +464,7 @@ defineExpose({ testConnection, testing });
           </div>
         </div>
 
-        <!-- 分组 3：加载策略 -->
+        <!-- Group 3：加载策略 -->
         <div :class="styles.card">
           <div :class="styles.cardTitle">
             {{ t("editor.api.loadStrategy") }}
@@ -542,7 +543,7 @@ defineExpose({ testConnection, testing });
             }}
           </el-button>
 
-          <!-- 成功结果 -->
+          <!-- Success结果 -->
           <template v-if="testResult?.success">
             <div :class="styles.testSuccess">
               <AppIcon name="circle-check-filled" />
@@ -562,7 +563,7 @@ defineExpose({ testConnection, testing });
               }}</pre>
             </div>
 
-            <!-- 解析预览 -->
+            <!-- Parse预览 -->
             <div
               v-if="
                 testResult.parsedOptions && testResult.parsedOptions.length > 0
@@ -584,7 +585,7 @@ defineExpose({ testConnection, testing });
               </div>
             </div>
 
-            <!-- 建议数据路径 -->
+            <!-- 建议Data路径 -->
             <div v-if="testResult.suggestedDataPath" :class="styles.suggestion">
               <span
                 >{{ t("editor.api.suggestedPath") }}
@@ -600,7 +601,7 @@ defineExpose({ testConnection, testing });
               </el-button>
             </div>
 
-            <!-- 分析按钮 -->
+            <!-- AnalysisButton -->
             <el-button
               type="success"
               plain
@@ -611,7 +612,7 @@ defineExpose({ testConnection, testing });
             </el-button>
           </template>
 
-          <!-- 失败结果 -->
+          <!-- Failed结果 -->
           <template v-else-if="testResult">
             <div :class="styles.testError">
               <AppIcon name="circle-close-filled" />

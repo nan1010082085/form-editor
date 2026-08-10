@@ -1,25 +1,32 @@
 <script setup lang="ts">
+/**
+ * WidgetMarketView — Component市场浏览页
+ */
 import { ref, computed } from "vue";
-import { getAllWidgets } from "@/widgets/registry";
+import { useI18n } from "@schema-platform/platform-shared";
+import {
+  getAllWidgets,
+  getWidgetDisplayName,
+  getWidgetDescription,
+} from "@/widgets/registry";
 import type { WidgetRegistryItem } from "@/widgets/registry";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
+const { t } = useI18n();
 const searchQuery = ref("");
 const activeGroup = ref<string>("all");
 
 const allWidgets = computed<WidgetRegistryItem[]>(() => getAllWidgets());
 
-const GROUP_LABELS: Record<string, string> = {
-  all: "All",
-  form: "Form",
-  chart: "Chart",
-  business: "Business",
-  layout: "Layout",
-  container: "Container",
-  table: "Table",
-  action: "Action",
-  static: "Static",
-};
+/**
+ * @param group - Group key
+ */
+function groupLabel(group: string): string {
+  const key = `editor.componentPanel.group${group.charAt(0).toUpperCase()}${group.slice(1)}`;
+  if (group === "all") return t("editor.widgetMarket.groupAll");
+  const translated = t(key);
+  return translated === key ? group : translated;
+}
 
 const groups = computed(() => {
   const set = new Set(allWidgets.value.map((w) => w.group));
@@ -41,12 +48,15 @@ const filteredWidgets = computed(() => {
   }
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase();
-    list = list.filter(
-      (w) =>
-        w.displayName.toLowerCase().includes(q) ||
+    list = list.filter((w) => {
+      const name = getWidgetDisplayName(w.type, t).toLowerCase();
+      const desc = getWidgetDescription(w.type, t).toLowerCase();
+      return (
+        name.includes(q) ||
         w.type.toLowerCase().includes(q) ||
-        (w.config?.description ?? "").toLowerCase().includes(q),
-    );
+        desc.includes(q)
+      );
+    });
   }
   return list;
 });
@@ -55,9 +65,9 @@ const filteredWidgets = computed(() => {
 <template>
   <div :class="$style.page">
     <header :class="$style.header">
-      <h1 :class="$style.title">Widget Market</h1>
+      <h1 :class="$style.title">{{ t("editor.widgetMarket.title") }}</h1>
       <p :class="$style.subtitle">
-        Browse all registered widgets, {{ allWidgets.length }} total
+        {{ t("editor.widgetMarket.subtitle", { count: allWidgets.length }) }}
       </p>
     </header>
 
@@ -65,7 +75,7 @@ const filteredWidgets = computed(() => {
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Search by name / type / description..."
+        :placeholder="t('editor.widgetMarket.searchPlaceholder')"
         :class="$style.search"
       />
       <div :class="$style.groupTabs">
@@ -75,8 +85,10 @@ const filteredWidgets = computed(() => {
           :class="[$style.groupTab, activeGroup === g && $style.groupTabActive]"
           @click="activeGroup = g"
         >
-          {{ GROUP_LABELS[g] ?? g }}
-          <span v-if="g !== 'all'" :class="$style.groupCount">{{ groupStats[g] ?? 0 }}</span>
+          {{ groupLabel(g) }}
+          <span v-if="g !== 'all'" :class="$style.groupCount">{{
+            groupStats[g] ?? 0
+          }}</span>
         </button>
       </div>
     </div>
@@ -84,11 +96,19 @@ const filteredWidgets = computed(() => {
     <div :class="$style.grid">
       <div v-for="w in filteredWidgets" :key="w.type" :class="$style.card">
         <div :class="$style.cardHeader">
-          <AppIcon :name="w.config?.icon ?? 'setting'" :size="20" :class="$style.cardIcon" />
-          <span :class="$style.cardName">{{ w.displayName }}</span>
-          <span :class="$style.cardTag">{{ GROUP_LABELS[w.group] ?? w.group }}</span>
+          <AppIcon
+            :name="w.config?.icon ?? 'setting'"
+            :size="20"
+            :class="$style.cardIcon"
+          />
+          <span :class="$style.cardName">{{
+            getWidgetDisplayName(w.type, t)
+          }}</span>
+          <span :class="$style.cardTag">{{ groupLabel(w.group) }}</span>
         </div>
-        <p :class="$style.cardDesc">{{ w.config?.description ?? "—" }}</p>
+        <p :class="$style.cardDesc">
+          {{ getWidgetDescription(w.type, t) || "—" }}
+        </p>
         <div :class="$style.cardMeta">
           <span :class="$style.metaType">{{ w.type }}</span>
           <span :class="$style.metaComponent">{{ w.name }}</span>
@@ -97,144 +117,165 @@ const filteredWidgets = computed(() => {
     </div>
 
     <div v-if="!filteredWidgets.length" :class="$style.empty">
-      No matching widgets found
+      {{ t("editor.widgetMarket.empty") }}
     </div>
   </div>
 </template>
 
 <style module lang="scss">
 .page {
+  padding: 24px 32px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
 }
+
 .header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
+
 .title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
-  color: var(--el-text-color-primary, #303133);
-  margin: 0 0 4px;
+  color: var(--text-color-title);
+  margin: 0 0 6px;
 }
+
 .subtitle {
-  font-size: 14px;
-  color: var(--el-text-color-secondary, #909399);
+  font-size: 13px;
+  color: var(--text-color-secondary);
   margin: 0;
 }
+
 .toolbar {
   display: flex;
-  gap: 16px;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
-  flex-wrap: wrap;
 }
+
 .search {
-  flex: 1;
-  min-width: 240px;
-  padding: 8px 12px;
-  border: 1px solid var(--el-border-color, #dcdfe6);
+  width: 100%;
+  max-width: 360px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color-base);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
-  transition: border-color 0.2s;
+
   &:focus {
-    border-color: var(--el-color-primary, #409eff);
+    border-color: var(--color-primary);
   }
 }
+
 .groupTabs {
   display: flex;
-  gap: 4px;
   flex-wrap: wrap;
+  gap: 6px;
 }
+
 .groupTab {
-  padding: 6px 12px;
-  border: 1px solid var(--el-border-color, #dcdfe6);
-  border-radius: 16px;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color-light);
+  border-radius: 14px;
+  background: var(--bg-color-white);
+  font-size: 12px;
+  color: var(--text-color-regular);
   cursor: pointer;
-  font-size: 13px;
-  color: var(--el-text-color-regular, #606266);
-  transition: all 0.2s;
+
   &:hover {
-    border-color: var(--el-color-primary, #409eff);
-    color: var(--el-color-primary, #409eff);
+    border-color: var(--color-primary-lighter);
+    color: var(--color-primary);
   }
 }
+
 .groupTabActive {
-  background: var(--el-color-primary, #409eff);
-  border-color: var(--el-color-primary, #409eff);
-  color: #fff;
+  background: var(--color-primary-lighter);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 500;
 }
+
 .groupCount {
-  margin-left: 4px;
   font-size: 11px;
   opacity: 0.7;
 }
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
 }
+
 .card {
-  padding: 16px;
-  border: 1px solid var(--el-border-color-lighter, #e4e7ed);
+  padding: 14px;
+  border: 1px solid var(--border-color-lighter);
   border-radius: 8px;
-  background: var(--el-bg-color, #fff);
-  transition: box-shadow 0.2s;
-  &:hover {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  }
+  background: var(--bg-color-white);
 }
+
 .cardHeader {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
 }
+
 .cardIcon {
-  color: var(--el-color-primary, #409eff);
+  color: var(--color-primary);
   flex-shrink: 0;
 }
+
 .cardName {
-  font-weight: 500;
-  font-size: 15px;
-  color: var(--el-text-color-primary, #303133);
   flex: 1;
-}
-.cardTag {
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: var(--el-fill-color-light, #f5f7fa);
-  font-size: 12px;
-  color: var(--el-text-color-secondary, #909399);
-}
-.cardDesc {
-  font-size: 13px;
-  color: var(--el-text-color-secondary, #909399);
-  line-height: 1.5;
-  margin: 0 0 10px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color-title);
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.cardTag {
+  font-size: 11px;
+  color: var(--text-color-secondary);
+  background: var(--bg-color-gray);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.cardDesc {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  margin: 0 0 10px;
+  line-height: 1.5;
+  min-height: 36px;
+}
+
 .cardMeta {
   display: flex;
+  justify-content: space-between;
   gap: 8px;
-  font-size: 12px;
-  font-family: monospace;
+  font-size: 11px;
+  color: var(--text-color-placeholder);
 }
-.metaType {
-  color: var(--el-color-primary, #409eff);
-}
+
+.metaType,
 .metaComponent {
-  color: var(--el-text-color-secondary, #909399);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
 .empty {
   text-align: center;
-  padding: 60px 0;
-  color: var(--el-text-color-secondary, #909399);
-  font-size: 14px;
+  padding: 48px 16px;
+  color: var(--text-color-secondary);
+  font-size: 13px;
 }
 </style>

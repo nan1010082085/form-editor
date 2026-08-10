@@ -24,7 +24,7 @@ export interface SelectionConfig {
 
 export const tableConfig: WidgetConfig = {
   name: "FgTable",
-  displayName: "表格",
+  displayName: "Table",
   description: "Data table with columns/pagination/sort/filter/selection",
   author: "yangdongnan",
   defaultStyle: {
@@ -61,12 +61,12 @@ export const tableConfig: WidgetConfig = {
     {
       name: "set-data",
       description: "Set Table Data",
-      params: { data: "数据数组" },
+      params: { data: "Data array" },
     },
     {
       name: "set-search-params",
       description: "Set Search Params",
-      params: { params: "参数对象" },
+      params: { params: "Parameter object" },
     },
   ],
   propertyPanel: {
@@ -76,7 +76,7 @@ export const tableConfig: WidgetConfig = {
       { key: "columns", label: "Column Config", type: "columns" },
       { key: "stripe", label: "Stripe", type: "switch" },
       { key: "border", label: "Border", type: "switch" },
-      { key: "height", label: "表格高度", type: "number" },
+      { key: "height", label: "TableHeight", type: "number" },
       { key: "sortable", label: "Global Sort", type: "switch" },
       { key: "filterable", label: "Global Filter", type: "switch" },
       { key: "selection.enabled", label: "Row Select", type: "switch" },

@@ -1,8 +1,8 @@
 /**
  * useWidgetAnimation — Widget 入场动画 composable
  *
- * 从 widget.style 读取动画配置，返回可绑定的 CSS style。
- * 仅在 preview/publish 模式下生效，编辑模式下不应用动画。
+ * 从 widget.style 读取动画Config, 返回可绑定的 CSS style。
+ * 仅在 preview/publish 模式下生效, Edit模式下不应用动画。
  */
 import { computed, type ComputedRef } from "vue";
 import { getAnimationStyle } from "@/utils/widgetAnimations";
@@ -15,7 +15,7 @@ interface WidgetAnimationConfig {
 
 /**
  * @param widgetStyle widget.style 的响应式引用
- * @param isPreviewOrPublish 是否处于预览/发布模式（非编辑模式）
+ * @param isPreviewOrPublish 是否处于预览/发布模式（非Edit模式）
  */
 export function useWidgetAnimation(
   widgetStyle: ComputedRef<Record<string, unknown>>,

@@ -66,6 +66,11 @@ import {
   createConditionBuilderWidget,
 } from "./condition-builder";
 import { FgTreemap, treemapConfig, createTreemapWidget } from "./treemap";
+import { FgCountDown, countDownConfig, createCountDownWidget } from "./count-down";
+import { FgCarousel, carouselConfig, createCarouselWidget } from "./carousel";
+import { FgSankey, sankeyConfig, createSankeyWidget } from "./sankey";
+import { FgParallel, parallelConfig, createParallelWidget } from "./parallel";
+import { FgApprovalProcess, approvalProcessConfig, createApprovalProcessWidget } from "./approval-process";
 import { FgTable, createTableWidget, tableConfig } from "./table";
 import { FgRichtext, createRichtextWidget, richtextConfig } from "./richtext";
 import { FgUpload, createUploadWidget, uploadConfig } from "./upload";
@@ -138,7 +143,7 @@ import {
   createCandlestickWidget,
   candlestickConfig,
 } from "./candlestick";
-// 图表变体
+// Chart变体
 import {
   FgStackedBarChart,
   createStackedBarChartWidget,
@@ -367,7 +372,7 @@ import {
 import { FgMap, createMapWidget, mapConfig } from "./map";
 
 export function registerAllWidgets() {
-  // Layout widgets (结构布局)
+  // Layout widgets (结构Layout)
   registerWidget({
     name: cardConfig.name,
     displayName: cardConfig.displayName,
@@ -458,7 +463,7 @@ export function registerAllWidgets() {
     config: spacerConfig,
   });
 
-  // Container widgets (容器)
+  // Container widgets (Container)
   registerWidget({
     name: formConfig.name,
     displayName: formConfig.displayName,
@@ -496,7 +501,7 @@ export function registerAllWidgets() {
     config: microAppContainerConfig,
   });
 
-  // Form widgets (表单控件)
+  // Form widgets (Form控件)
   registerWidget({
     name: inputConfig.name,
     displayName: inputConfig.displayName,
@@ -706,7 +711,7 @@ export function registerAllWidgets() {
     config: statisticConfig,
   });
 
-  // Action widgets (操作按钮)
+  // Action widgets (ActionButton)
   registerWidget({
     name: toolbarButtonsConfig.name,
     displayName: toolbarButtonsConfig.displayName,
@@ -837,7 +842,7 @@ export function registerAllWidgets() {
     config: treemapConfig,
   });
 
-  // Business widgets (业务组件)
+  // Business widgets (业务Component)
   registerWidget({
     name: treeLayoutConfig.name,
     displayName: treeLayoutConfig.displayName,
@@ -1059,7 +1064,7 @@ export function registerAllWidgets() {
     config: treeTableConfig,
   });
 
-  // Chart widgets (图表)
+  // Chart widgets (Chart)
   registerWidget({
     name: barChartConfig.name,
     displayName: barChartConfig.displayName,
@@ -1223,7 +1228,7 @@ export function registerAllWidgets() {
     config: mapConfig,
   });
 
-  // Extended business widgets (扩展业务组件)
+  // Extended business widgets (扩展业务Component)
   registerWidget({
     name: iconPickerConfig.name,
     displayName: iconPickerConfig.displayName,
@@ -1402,5 +1407,50 @@ export function registerAllWidgets() {
     component: FgUserSelector,
     create: createUserSelectorWidget,
     config: userSelectorConfig,
+  });
+  registerWidget({
+    name: countDownConfig.name,
+    displayName: countDownConfig.displayName,
+    type: "count-down",
+    group: "static",
+    component: FgCountDown,
+    create: createCountDownWidget,
+    config: countDownConfig,
+  });
+  registerWidget({
+    name: carouselConfig.name,
+    displayName: carouselConfig.displayName,
+    type: "carousel",
+    group: "layout",
+    component: FgCarousel,
+    create: createCarouselWidget,
+    config: carouselConfig,
+  });
+  registerWidget({
+    name: sankeyConfig.name,
+    displayName: sankeyConfig.displayName,
+    type: "sankey",
+    group: "chart",
+    component: FgSankey,
+    create: createSankeyWidget,
+    config: sankeyConfig,
+  });
+  registerWidget({
+    name: parallelConfig.name,
+    displayName: parallelConfig.displayName,
+    type: "parallel",
+    group: "chart",
+    component: FgParallel,
+    create: createParallelWidget,
+    config: parallelConfig,
+  });
+  registerWidget({
+    name: approvalProcessConfig.name,
+    displayName: approvalProcessConfig.displayName,
+    type: "approval-process",
+    group: "business",
+    component: FgApprovalProcess,
+    create: createApprovalProcessWidget,
+    config: approvalProcessConfig,
   });
 }

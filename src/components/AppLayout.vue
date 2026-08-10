@@ -1,38 +1,60 @@
 <script setup lang="ts">
 /**
- * AppLayout — 全局布局壳
+ * AppLayout — 全局Layout壳
  *
- * 侧边栏导航 + 主内容区。编辑器/预览/发布页不使用此布局。
+ * SidebarNavigation + 主内容区。Edit器/预览/发布页不使用此Layout。
  */
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./AppLayout.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 import { useQiankunShell } from "@schema-platform/platform-shared/qiankun";
+import { useAppLocale } from "@/composables/useAppLocale";
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
+const { locale, toggleLocale } = useAppLocale();
 const { isQiankunSubApp, shouldHideSubAppMenu, goToShellHome } =
   useQiankunShell();
 
-const navItems = [
-  { path: "/instances", label: "实例管理", icon: "odometer" },
-  { path: "/templates", label: "模板库", icon: "grid" },
-  { path: "/widget-market", label: "组件市场", icon: "goods" },
-];
+const navItems = computed(() => [
+  {
+    path: "/instances",
+    label: t("editor.appLayout.instances"),
+    icon: "odometer",
+  },
+  {
+    path: "/templates",
+    label: t("editor.appLayout.templates"),
+    icon: "grid",
+  },
+  {
+    path: "/widget-market",
+    label: t("editor.appLayout.widgetMarket"),
+    icon: "goods",
+  },
+]);
 
 const activeNav = computed(() => {
   if (route.path.startsWith("/templates")) return "/templates";
   return route.path;
 });
+
+const langButtonLabel = computed(() =>
+  locale.value === "zh-CN"
+    ? t("editor.toolbar.langEn")
+    : t("editor.toolbar.langZh"),
+);
 </script>
 
 <template>
   <div :class="[styles.layout, shouldHideSubAppMenu && styles.layoutEmbedded]">
-    <!-- 侧边栏 -->
+    <!-- Sidebar -->
     <aside v-if="!shouldHideSubAppMenu" :class="styles.sidebar">
       <div :class="styles.logo" @click="router.push('/instances')">
-        <span :class="styles.logoText">可视化编辑器</span>
+        <span :class="styles.logoText">{{ t("editor.appLayout.brand") }}</span>
       </div>
 
       <nav :class="styles.nav">
@@ -50,18 +72,25 @@ const activeNav = computed(() => {
         </router-link>
       </nav>
 
-      <div
-        v-if="isQiankunSubApp && !shouldHideSubAppMenu"
-        :class="styles.sidebarFooter"
-      >
+      <div :class="styles.sidebarFooter">
         <button
           type="button"
+          :class="[styles.navItem, styles.footerItem, styles.langBtn]"
+          :title="t('editor.appLayout.language')"
+          @click="toggleLocale"
+        >
+          <span :class="styles.langBadge">{{ langButtonLabel }}</span>
+          <span>{{ t("editor.appLayout.language") }}</span>
+        </button>
+        <button
+          v-if="isQiankunSubApp && !shouldHideSubAppMenu"
+          type="button"
           :class="[styles.navItem, styles.footerItem]"
-          title="返回主应用首页"
+          :title="t('editor.appLayout.backHomeTitle')"
           @click="goToShellHome"
         >
           <AppIcon name="home-filled" :size="18" />
-          <span>返回 Home</span>
+          <span>{{ t("editor.appLayout.backHome") }}</span>
         </button>
       </div>
     </aside>

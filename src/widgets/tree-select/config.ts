@@ -11,7 +11,7 @@ export const treeSelectConfig: WidgetConfig = {
     fontSize: "14px",
   },
   defaultProps: {
-    placeholder: "请选择",
+    placeholder: "Please select",
     clearable: true,
     disabled: false,
     multiple: false,
@@ -31,7 +31,7 @@ export const treeSelectConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择",
+        default: "Please select",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },

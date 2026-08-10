@@ -3,10 +3,10 @@
  * SchemaRender — Widget 递归渲染引擎
  *
  * 两条渲染路径：
- * 1. widgets prop → SchemaNode（绝对定位，编辑器画布）
- * 2. schema prop → WidgetNode（流式布局，WidgetRenderer 预览/发布/运行时）
+ * 1. widgets prop → SchemaNode（绝对定位, Edit器画布）
+ * 2. schema prop → WidgetNode（流式Layout, WidgetRenderer 预览/发布/运RowHrs）
  *
- * 自由布局编辑模式下启用视口剔除（仅 DOM 层，不影响交互命中）。
+ * 自由LayoutEdit模式下Enable视口剔除（仅 DOM 层, 不影响交互命中）。
  */
 import { computed, inject, type Ref } from "vue";
 import type { Widget, PartialWidget } from "../../widgets/base/types";
@@ -31,7 +31,7 @@ const props = defineProps<{
   readonly?: boolean;
   path?: number[];
   editorSelectable?: boolean;
-  /** 画布绝对坐标偏移（嵌套容器内子部件剔除用） */
+  /** 画布绝对坐标偏移（嵌套Container内子Widget剔除用） */
   canvasOffsetX?: number;
   canvasOffsetY?: number;
 }>();

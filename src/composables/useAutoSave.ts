@@ -1,19 +1,19 @@
 /**
- * useAutoSave — 自动保存 composable
+ * useAutoSave — 自动Save composable
  *
- * 当编辑器有未保存的更改时，自动定时保存。
- * 使用防抖机制：检测到脏数据后启动倒计时，倒计时内再次变脏则重置计时器。
- * 仅在编辑模式下生效。
+ * 当Edit器有未Save的更改Hrs, 自动定HrsSave。
+ * 使用防抖机制：检测到脏Data后启动Countdown, Countdown内再次变脏则Reset计Hrs器。
+ * 仅在Edit模式下生效。
  */
 import { watch, onUnmounted, ref, type Ref } from "vue";
 import { useEditorStore } from "@/stores/editor";
 
 export interface AutoSaveOptions {
-  /** 自动保存间隔（毫秒），默认 60000（60 秒） */
+  /** 自动Save间隔（毫sec）, 默认 60000（60 sec） */
   delayMs?: number;
-  /** 是否启用自动保存（支持响应式 Ref） */
+  /** 是否Enable自动Save（支持响应式 Ref） */
   enabled?: boolean | Ref<boolean>;
-  /** 实际执行保存的回调函数 */
+  /** 实际执RowSave的回调函数 */
   onSave: () => Promise<void>;
 }
 
@@ -53,7 +53,7 @@ export function useAutoSave(options: AutoSaveOptions) {
     }, delayMs);
   }
 
-  // 监听脏标记：变脏时启动自动保存倒计时，变干净时取消
+  // 监听脏标记：变脏Hrs启动自动SaveCountdown, 变干净HrsCancel
   const stopDirtyWatch = watch(
     () => editorStore.isDirty,
     (dirty) => {
@@ -66,7 +66,7 @@ export function useAutoSave(options: AutoSaveOptions) {
     { immediate: true },
   );
 
-  // 监听 enabled 变化：关闭时取消定时器，开启时如果脏则重新调度
+  // 监听 enabled 变化：CloseHrsCancel定Hrs器, 开启Hrs如果脏则重新调度
   const stopEnabledWatch = watch(enabledRef, (val) => {
     if (!val) {
       clearTimer();

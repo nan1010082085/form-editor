@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * InstancesView — Schema 实例管理页
+ * InstancesView — Schema Instances页
  *
- * 卡片网格展示所有 Schema 实例。支持搜索、筛选标签、排序、批量删除。
- * 使用 Element Plus 组件库。
+ * 卡片网格展示所有 Schema 实例。支持Search、FilterLabel、Sort、批量Delete。
+ * 使用 Element Plus Component库。
  */
 import { onMounted, ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -32,7 +32,7 @@ const router = useRouter();
 const store = useApiStore();
 const { t } = useI18n();
 
-/** 获取 JSON 中的组件数量 */
+/** 获取 JSON 中的Component数量 */
 function getJsonLength(json: SchemaListItem["json"]): number {
   if (Array.isArray(json)) return json.length;
   if (json && typeof json === "object" && "widgets" in json)
@@ -209,7 +209,7 @@ function handleSearch(val: string) {
 function buildFilter(): { type?: string } {
   const filter: { type?: string } = {};
   if (activeTab.value !== "all") {
-    // 前端 search-list → 后端 search_list，其他类型名称一致
+    // 前端 search-list → 后端 search_list, 其他TypeName一致
     filter.type =
       activeTab.value === "search-list" ? "search_list" : activeTab.value;
   }
@@ -265,16 +265,16 @@ function handleDelete(item: SchemaListItem) {
 }
 
 function handleDesigner(id: string) {
-  // 跳转到设计器（原编辑按钮行为）
+  // 跳转到设计器（原EditButtonRow为）
   router.push({ path: "/editor", query: { id } });
 }
 
 function handlePreview(item: SchemaListItem) {
   if (item.publishId) {
-    // 预览发布版本
+    // 预览发布Version
     router.push({ path: "/view", query: { id: item.publishId } });
   } else {
-    // 未发布则预览编辑版本
+    // 未发布则预览EditVersion
     router.push({ path: "/editor", query: { id: item.id, mode: "preview" } });
   }
 }
@@ -292,7 +292,7 @@ async function handlePublish(item: SchemaListItem) {
       },
     );
   } catch {
-    return; // 用户取消，不做任何操作
+    return; // User cancelled, no action taken
   }
 
   try {
@@ -342,7 +342,7 @@ async function handleBulkDelete() {
       },
     );
   } catch {
-    return; // 用户取消
+    return; // UserCancel
   }
 
   try {
@@ -372,7 +372,7 @@ async function handleBulkDelete() {
 
 // ---- Export/Import ----
 function handleExport(item: SchemaListItem) {
-  // 需要完整的 schema 数据才能导出
+  // 需要完整的 schema Data才能Export
   store.fetchSchemaById(item.id).then((detail) => {
     if (detail) {
       downloadSchemaJson(detail as SchemaDetail);
@@ -518,7 +518,7 @@ function handleShowVersions(item: SchemaListItem) {
 }
 
 function handleLoadVersion(version: string) {
-  // 加载特定版本后跳转到编辑器
+  // 加载特定Version后跳转到Edit器
   if (versionDialogEditId.value) {
     router.push({
       path: "/editor",

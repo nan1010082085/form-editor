@@ -1,8 +1,8 @@
 /**
- * useAdvancedTableEvents - advanced-table 事件分发
+ * useAdvancedTableEvents - advanced-table EventMin发
  *
  * 从 FgAdvancedTable 抽出：sort/selection/filter/page/row-click/toolbar/row-button/
- * link-click 等事件处理，统一走 clickIntercept + triggerWidgetEvent。
+ * link-click 等Event处理, 统一走 clickIntercept + triggerWidgetEvent。
  */
 import type { ComputedRef, Ref } from "vue";
 import type { Widget } from "../base/types";
@@ -106,7 +106,7 @@ export function useAdvancedTableEvents(
       );
   }
 
-  /** 返回是否已处理（服务端过滤场景由调用方据返回值决定是否阻止默认） */
+  /** 返回是否已处理（服务端Filter场景由调用方据返回Value决定是否阻止默认） */
   function onFilterChange(filters: Record<string, unknown>): boolean {
     if (!serverSideFilter.value) return false;
     setSearchParams(buildServerFilterParams(filters, columns.value));

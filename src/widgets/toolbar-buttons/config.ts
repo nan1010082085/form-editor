@@ -16,8 +16,8 @@ export const toolbarButtonsConfig: WidgetConfig = {
   },
   defaultProps: {
     buttons: [
-      { text: "查询", type: "primary" },
-      { text: "重置", type: "" },
+      { text: "Query", type: "primary" },
+      { text: "Reset", type: "" },
     ] as ToolbarButtonItem[],
     disabled: false,
   },
@@ -26,7 +26,7 @@ export const toolbarButtonsConfig: WidgetConfig = {
     const btns = (widget.props?.buttons as ToolbarButtonItem[]) || [];
     return btns.map((btn, idx) => ({
       id: `btn-${idx}`,
-      label: btn.text || `按钮 ${idx + 1}`,
+      label: btn.text || `Button ${idx + 1}`,
     }));
   },
   propertyPanel: {

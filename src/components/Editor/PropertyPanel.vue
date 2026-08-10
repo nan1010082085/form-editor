@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * PropertyPanel -- 属性面板（Widget 驱动，手风琴折叠分区）
+ * PropertyPanel -- Property面板（Widget 驱动, 手风琴折叠Min区）
  *
  * 设计原则：
- * - 手风琴分区：基础属性、位置、样式、组件属性各自折叠
- * - 动态组件：每个属性由 PropertyField 根据 type 渲染不同输入
- * - 每行一个属性：label + value 水平排列
+ * - 手风琴Min区：基础Property、位置、Style、ComponentProperty各自折叠
+ * - 动态Component：每个Property由 PropertyField 根据 type 渲染不同Input
+ * - 每Row一个Property：label + value 水平排Column
  */
 import { computed, ref } from "vue";
 import { useEditorStore } from "../../stores/editor";
@@ -37,7 +37,7 @@ const boardStore = useBoardStore();
 const { t } = useI18n();
 const { copy } = useClipboard();
 
-/** 复制当前选中 Widget 的 ID 到剪贴板 */
+/** Copy当前选中 Widget 的 ID 到剪贴板 */
 async function copyWidgetId() {
   if (editorStore.selectedId) {
     await copy(editorStore.selectedId);
@@ -51,7 +51,7 @@ const selectedWidget = computed(() => {
   return widgetStore.findWidget(editorStore.selectedId);
 });
 
-// ---- Widget 注册配置 ----
+// ---- Widget 注册Config ----
 
 const widgetConfig = computed(() => {
   if (!selectedWidget.value) return null;
@@ -60,26 +60,26 @@ const widgetConfig = computed(() => {
   return { ...regItem, config: regItem.config as WidgetConfig };
 });
 
-/** 翻译后的 Widget 显示名称 */
+/** 翻译后的 Widget ShowName */
 const widgetDisplayName = computed(() => {
   if (!selectedWidget.value) return "";
   return getWidgetDisplayName(selectedWidget.value.type, t);
 });
 
-/** 翻译后的 Widget 描述 */
+/** 翻译后的 Widget Description */
 const widgetDescription = computed(() => {
   if (!selectedWidget.value) return "";
   return getWidgetDescription(selectedWidget.value.type, t);
 });
 
-// ---- 属性面板声明 ----
+// ---- Property面板声明 ----
 
 const panelDeclaration = computed(() => {
   if (!widgetConfig.value) return undefined;
   return widgetConfig.value.config.propertyPanel ?? undefined;
 });
 
-// ---- 事件目标（支持动态函数） ----
+// ---- Event目标（支持动态函数） ----
 
 const resolvedEventTargets = computed(() => {
   const et = widgetConfig.value?.config.eventTargets;
@@ -88,7 +88,7 @@ const resolvedEventTargets = computed(() => {
   return et;
 });
 
-// ---- 属性列表项类型 ----
+// ---- PropertyColumn表项Type ----
 
 // PropertyItem / PropertySection / propertySections 构建逻辑已抽到 usePropertySections composable
 import { usePropertySections } from "../../composables/usePropertySections";
@@ -101,12 +101,12 @@ const { propertySections } = usePropertySections(
   t,
 );
 
-// ---- visibleOn 条件求值 ----
+// ---- visibleOn Condition求Value ----
 
 const { updateProperty, updateStylePatch, isItemVisible } =
   usePropertyPanelLogic(selectedWidget, widgetStore);
 
-// 过滤可见项的 section
+// Filter可见项的 section
 const visibleSections = computed(() =>
   propertySections.value
     .map((section) => ({
@@ -116,10 +116,10 @@ const visibleSections = computed(() =>
     .filter((section) => section.items.length > 0),
 );
 
-// ---- 手风琴展开状态 ----
+// ---- 手风琴ExpandStatus ----
 
 const expandedSections = ref<Set<string>>(
-  new Set(["basic", "position", "style", "props"]),
+  new Set(["basic", "position", "grid-layout", "style", "props"]),
 );
 
 function toggleSection(key: string) {
@@ -137,12 +137,12 @@ const configPanels = computed<ConfigPanelType[]>(() => {
   return widgetConfig.value.config.configPanels ?? [];
 });
 
-/** 根据 configPanels 自动生成配置说明 */
+/** 根据 configPanels 自动生成Config说明 */
 const configHelpText = computed(() =>
   buildConfigHelpText(configPanels.value, t),
 );
 
-// ---- 事件/规则/API/变量 弹框 ----
+// ---- Event/Rule/API/变量 弹框 ----
 
 const {
   eventDialogVisible,
@@ -168,7 +168,7 @@ const {
   boardStore,
 );
 
-// ---- 画布配置（未选中部件时显示） ----
+// ---- 画布Config（未选中WidgetHrsShow） ----
 
 const canvasExpanded = ref(true);
 
@@ -185,7 +185,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore);
   <div :class="[styles.panel, 'editor-ui']">
     <div :class="styles.header">{{ t("editor.property.title") }}</div>
 
-    <!-- 未选中部件时：显示画布配置 -->
+    <!-- 未选中WidgetHrs：Show画布Config -->
     <template v-if="!selectedWidget">
       <div :class="styles.scroll" style="overflow: auto; height: 100%">
         <div :class="styles.section">
@@ -263,7 +263,7 @@ const { updateBoardProperty } = useBoardPropertyUpdater(boardStore);
         </el-popover>
       </div>
 
-      <!-- 动态配置入口 -->
+      <!-- 动态Config入口 -->
       <PropertyPanelConfigBar
         v-if="configPanels.length"
         :config-panels="configPanels"

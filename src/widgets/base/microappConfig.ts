@@ -1,91 +1,91 @@
 /**
- * 微应用配置模块 — 被 micro-app-container 和 dialog 两个 Widget 共用
+ * 微应用Config模块 — 被 micro-app-container 和 dialog 两个 Widget 共用
  *
- * 提供统一的属性面板配置项和默认值。
+ * 提供统一的Property面板Configitems和DefaultValue。
  */
 import type { PropertyPanelItem } from "./types";
 
-/** 微应用默认 props */
+/** 微应用Default props */
 export const microappDefaults = {
   microappName: "",
   microappEntry: "",
   microappSandbox: true,
   microappStyleIsolation: "experimental" as const,
   microappTimeout: 10000,
-  microappFallback: "子应用加载失败",
+  microappFallback: "Micro-app load failed",
   microappRouteBase: "",
   microappRoute: "",
 };
 
-/** 微应用属性面板配置项（带 visibleOn 条件） */
+/** 微应用Property面板Configitems（带 visibleOn Condition） */
 export function createMicroappPropertyItems(
   visibleOn: string,
 ): PropertyPanelItem[] {
   return [
     {
       key: "microappName",
-      label: "子应用名称",
+      label: "Micro-app name",
       type: "input",
       default: "",
-      placeholder: "例：approval-flow",
+      placeholder: "e.g. approval-flow",
       visibleOn,
     },
     {
       key: "microappEntry",
-      label: "入口地址",
+      label: "Entry URL",
       type: "input",
       default: "",
-      placeholder: "例：http://localhost:6000",
+      placeholder: "e.g. http://localhost:6000",
       visibleOn,
     },
     {
       key: "microappRoute",
-      label: "加载路由",
+      label: "Load route",
       type: "input",
       default: "",
-      placeholder: "例：/approval/123（SPA 路由路径）",
+      placeholder: "e.g. /approval/123 (SPA route path)",
       visibleOn,
     },
     {
       key: "microappRouteBase",
-      label: "路由前缀",
+      label: "Route Prefix",
       type: "input",
       default: "",
-      placeholder: "留空自动匹配",
+      placeholder: "Leave empty for auto-match",
       visibleOn,
     },
     {
       key: "microappSandbox",
-      label: "启用沙箱",
+      label: "Enable Sandbox",
       type: "switch",
       default: true,
       visibleOn,
     },
     {
       key: "microappStyleIsolation",
-      label: "CSS 隔离",
+      label: "CSS Isolation",
       type: "select",
       options: [
-        { label: "实验性隔离", value: "experimental" },
-        { label: "严格隔离", value: "strict" },
-        { label: "关闭", value: "none" },
+        { label: "Experimental Isolation", value: "experimental" },
+        { label: "Strict Isolation", value: "strict" },
+        { label: "Close", value: "none" },
       ],
       default: "experimental",
       visibleOn,
     },
     {
       key: "microappTimeout",
-      label: "加载超时（ms）",
+      label: "Load timeout（ms）",
       type: "number",
       default: 10000,
       visibleOn,
     },
     {
       key: "microappFallback",
-      label: "加载失败文案",
+      label: "Load Failed Text",
       type: "input",
-      default: "子应用加载失败",
-      placeholder: "加载失败时显示的文案",
+      default: "Micro-app load failed",
+      placeholder: "Text shown when load fails",
       visibleOn,
     },
   ];

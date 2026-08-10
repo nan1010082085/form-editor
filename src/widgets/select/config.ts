@@ -10,14 +10,14 @@ export const selectConfig: WidgetConfig = {
     fontSize: "14px",
   },
   defaultProps: {
-    placeholder: "请选择",
+    placeholder: "Please select",
     clearable: true,
     disabled: false,
     multiple: false,
     filterable: false,
   },
   exposedValues: [
-    { key: "value", type: "string", description: "当前字段值", example: "" },
+    { key: "value", type: "string", description: "Current field value", example: "" },
   ],
   configPanels: ["events", "linkages", "api", "variables"],
   propertyPanel: {
@@ -28,7 +28,7 @@ export const selectConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请选择",
+        default: "Please select",
       },
       { key: "clearable", label: "Clearable", type: "switch", default: true },
       { key: "disabled", label: "Disabled", type: "switch", default: false },

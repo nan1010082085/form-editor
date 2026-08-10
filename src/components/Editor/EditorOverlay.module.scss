@@ -15,6 +15,16 @@
   pointer-events: auto;
 }
 
+.hitAreaLocked {
+  cursor: not-allowed;
+}
+
+.hitAreaHidden {
+  outline: 1px dashed var(--el-text-color-secondary, #909399);
+  outline-offset: -1px;
+  opacity: 0.55;
+}
+
 .resizeHandle {
   position: absolute;
   width: 8px;

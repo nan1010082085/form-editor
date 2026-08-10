@@ -2,11 +2,9 @@
 import { ref, computed, inject, watch, onMounted, onUnmounted } from "vue";
 import * as echarts from "echarts";
 import { widgetDataKey } from "../base/types";
-import { useWidgetRenderState } from "../../composables/useWidgetRenderState";
 import { useExposeWidget } from "../../composables/useExposeWidget";
 
 const widgetData = inject(widgetDataKey)!;
-const { isDisabled } = useWidgetRenderState();
 
 const chartRef = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
@@ -19,7 +17,7 @@ const progressField = computed(() => (widgetData.value.props?.progressField as s
 const showProgress = computed(() => (widgetData.value.props?.showProgress as boolean) ?? true);
 const showStatus = computed(() => (widgetData.value.props?.showStatus as boolean) ?? true);
 const title = computed(() => (widgetData.value.props?.title as string) ?? "");
-const rowHeight = computed(() => (widgetData.value.props?.rowHeight as number) ?? 32);
+// const rowHeight = computed(() => (widgetData.value.props?.rowHeight as number) ?? 32);
 const colorScheme = computed(() => (widgetData.value.props?.colorScheme as string) ?? "default");
 
 const staticData = computed(() => {
@@ -50,7 +48,7 @@ function buildOption() {
   const progresses = data.map(d => (d[progressField.value] as number) ?? 0);
 
   // custom series for Gantt bars
-  const barData = data.map((d, i) => ({
+  const barData = data.map((_d, i) => ({
     value: [i, startTimes[i], endTimes[i]],
     status: statuses[i],
     progress: progresses[i],
@@ -159,7 +157,7 @@ useExposeWidget(() => ({
 </script>
 
 <template>
-  <div :class="$style.wrapper" :style="{ height: widgetData.style?.height || '400px' }">
+  <div :class="$style.wrapper" :style="{ height: String(widgetData.style?.height || '400px') }">
     <div ref="chartRef" :class="$style.chart" />
   </div>
 </template>

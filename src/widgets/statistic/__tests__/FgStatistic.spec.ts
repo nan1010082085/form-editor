@@ -10,9 +10,10 @@ import { widgetDataKey, widgetStyleKey } from "../../base/types";
 import FgStatistic from "../FgStatistic.vue";
 
 // Mock useI18n
-vi.mock("@schema-platform/platform-shared", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
+vi.mock("@schema-platform/platform-shared", async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
+});
 
 // Mock useApiRequest to avoid real API calls
 vi.mock("@/composables/useApiRequest", () => ({
@@ -88,7 +89,7 @@ describe("FgStatistic", () => {
     it("默认 title 为 总用户数", () => {
       const widget = createWidget("statistic", "test_statistic")!;
       store.addWidget(widget);
-      expect(widget.props?.title).toBe("总用户数");
+      expect(widget.props?.title).toBe("总User数");
     });
 
     it("默认 value 为 12345", () => {

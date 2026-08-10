@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** E-06 - Kanban 看板：列拖拽 + 状态 API 更新 */
+/** E-06 - Kanban Kanban：Column拖拽 + Status API Update */
 import { inject, computed, ref, onMounted } from "vue";
 import { widgetDataKey } from "../base/types";
 import { useExposeWidget } from "../../composables/useExposeWidget";
@@ -17,7 +17,7 @@ import styles from "./style.module.scss";
 const widgetData = inject(widgetDataKey)!;
 const surface = inject(WIDGET_SURFACE_KEY, "runtime");
 
-// ---- 配置项（来自 widget.props） ----
+// ---- Config项（来自 widget.props） ----
 const columns = computed<KanbanColumn[]>(() => {
   const raw = widgetData.value.props?.columns;
   return Array.isArray(raw) ? (raw as KanbanColumn[]) : [];
@@ -36,7 +36,7 @@ const updateMethod = computed(() =>
   String(widgetData.value.props?.updateMethod ?? "put"),
 );
 
-// ---- useWidgetData（重试/SWR/去重） ----
+// ---- useWidgetData（Retry/SWR/去重） ----
 const api = computed(() => widgetData.value.api);
 const apiUrl = computed(() =>
   api.value?.url
@@ -74,12 +74,12 @@ const {
 
 const cards = computed(() => rawData.value ?? []);
 
-// 按状态分列
+// 按StatusMinColumn
 const grouped = computed(() =>
   groupCardsByStatus(cards.value, columns.value, statusField.value),
 );
 
-// 暴露 cards / loading 到条件表达式
+// 暴露 cards / loading 到Condition表达式
 useExposeWidget(() => ({
   get cards() {
     return cards.value;
@@ -93,7 +93,7 @@ useExposeWidget(() => ({
 function loadCards() {
   const hasApi = Boolean(api.value?.url);
   if (shouldUseWidgetMock(surface, hasApi)) {
-    // mock 场景：直接注入，不走 useWidgetData
+    // mock 场景：直接注入, 不走 useWidgetData
     rawData.value = kanbanMockRows;
     return;
   }
@@ -130,7 +130,7 @@ async function moveCard(card: Record<string, unknown>, col: KanbanColumn) {
   }
 
   const body = { [statusField.value]: col.status, status: col.status };
-  // apiClient 仅提供 put/post，无 patch；updateMethod==='post' 走 post，否则 put
+  // apiClient 仅提供 put/post, 无 patch；updateMethod==='post' 走 post, 否则 put
   if (updateMethod.value === "post") {
     await apiClient.post(url, body);
   } else {

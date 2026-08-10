@@ -13,7 +13,7 @@ export const treeLayoutConfig: WidgetConfig = {
     title: "Sidebar Panel",
     showHeader: true,
     showSearch: true,
-    searchPlaceholder: "搜索",
+    searchPlaceholder: "Search",
   },
   propertyPanel: {
     basic: ["label"],
@@ -26,7 +26,7 @@ export const treeLayoutConfig: WidgetConfig = {
         key: "searchPlaceholder",
         label: "Search Placeholder",
         type: "input",
-        default: "搜索",
+        default: "Search",
       },
     ],
   },

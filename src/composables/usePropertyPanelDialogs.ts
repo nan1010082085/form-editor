@@ -1,12 +1,14 @@
 /**
- * usePropertyPanelDialogs - 属性面板四类配置弹框的状态与处理
+ * usePropertyPanelDialogs - Property面板四类Config弹框的Status与处理
  *
  * 从 PropertyPanel 抽出：
  * - events / linkages / api / variables 四类弹框的 visible ref 与 open 函数
- * - 监听 editorStore.configDialogTrigger（右键菜单触发弹框）
- * - 各弹框保存时写入 widgetStore / boardStore
+ * - 监听 editorStore.configDialogTrigger（右键MenuTrigger弹框）
+ * - 各弹框SaveHrs写入 widgetStore / boardStore
  */
 import { ref, watch, type ComputedRef } from "vue";
+import { ElMessage } from "element-plus";
+import { tt } from "@/locales";
 import type {
   Widget,
   WidgetEvent,
@@ -32,6 +34,10 @@ export function usePropertyPanelDialogs(
   const boardVariableDialogVisible = ref(false);
   const chartLinkageDialogVisible = ref(false);
 
+  function notifyConfigSaved() {
+    ElMessage.success(tt("editor.property.configSaved"));
+  }
+
   function openEventDialog() {
     eventDialogVisible.value = true;
   }
@@ -48,7 +54,7 @@ export function usePropertyPanelDialogs(
     chartLinkageDialogVisible.value = true;
   }
 
-  // ---- 监听右键菜单触发的弹框打开 ----
+  // ---- 监听右键MenuTrigger的弹框Open ----
   watch(
     () => editorStore.configDialogTrigger,
     (trigger) => {
@@ -66,30 +72,41 @@ export function usePropertyPanelDialogs(
   function handleEventSave(events: WidgetEvent[]) {
     if (!selectedWidget.value) return;
     widgetStore.updateWidget(selectedWidget.value.id, { events });
+    editorStore.pushHistory([...widgetStore.widgets]);
+    notifyConfigSaved();
   }
 
   function handleLinkageSave(linkages: SchemaLinkage[]) {
     if (!selectedWidget.value) return;
     widgetStore.updateWidget(selectedWidget.value.id, { linkages });
+    editorStore.pushHistory([...widgetStore.widgets]);
+    notifyConfigSaved();
   }
 
   function handleApiSave(api: SchemaApiConfig | undefined) {
     if (!selectedWidget.value) return;
     widgetStore.updateWidget(selectedWidget.value.id, { api });
+    editorStore.pushHistory([...widgetStore.widgets]);
+    notifyConfigSaved();
   }
 
   function handleVariableSave(variables: WidgetVariable[]) {
     if (!selectedWidget.value) return;
     widgetStore.updateWidget(selectedWidget.value.id, { variables });
+    editorStore.pushHistory([...widgetStore.widgets]);
+    notifyConfigSaved();
   }
 
   function handleBoardVariableSave(variables: WidgetVariable[]) {
     boardStore.variables = variables as typeof boardStore.variables;
+    notifyConfigSaved();
   }
 
   function handleChartLinkageSave(rules: ChartLinkageRule[]) {
     if (!selectedWidget.value) return;
     widgetStore.updateWidget(selectedWidget.value.id, { chartLinkages: rules });
+    editorStore.pushHistory([...widgetStore.widgets]);
+    notifyConfigSaved();
   }
 
   return {

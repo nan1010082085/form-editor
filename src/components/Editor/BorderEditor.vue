@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * BorderEditor -- 边框样式可视化编辑器
+ * BorderEditor -- BorderStyle可视化Edit器
  *
  * 设计：
- * - 链接模式（默认）：一组控件（宽度/样式/颜色），四边同步
- * - 解除链接：点击某边选中，控件仅影响该边
- * - 选中某边时显示该边的值，未选中时显示简写值
+ * - 链接模式（默认）：一组控件（Width/Style/颜色）, 四边Sync
+ * - 解除链接：点击某边选中, 控件仅影响该边
+ * - 选中某边HrsShow该边的Value, 未选中HrsShow简写Value
  */
 import { ref, computed } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -22,7 +22,7 @@ const emit = defineEmits<{
   update: [patch: Record<string, string>];
 }>();
 
-// ---- 边框状态 ----
+// ---- BorderStatus ----
 
 type Side = "top" | "right" | "bottom" | "left";
 
@@ -33,11 +33,11 @@ const SIDE_BORDER_MAP: Record<Side, string> = {
   left: "borderLeft",
 };
 
-/** 当前选中的边（单选），null 表示未选中（使用简写） */
+/** 当前选中的边（单选）, null 表示未选中（使用简写） */
 const activeSide = ref<Side | null>(null);
 const linked = ref(true);
 
-// ---- 解析边框属性 ----
+// ---- ParseBorderProperty ----
 
 function parseBorder(shorthand?: string): {
   width: number;
@@ -64,10 +64,10 @@ const currentWidth = computed(() => getActiveBorder().width);
 const currentStyle = computed(() => getActiveBorder().style);
 const currentColor = computed(() => getActiveBorder().color);
 
-// ---- 操作 ----
+// ---- Action ----
 
 function selectSide(side: Side) {
-  // 单选：点击已选中的取消选中，否则选中新边
+  // 单选：点击已选中的Cancel选中, 否则选中新边
   activeSide.value = activeSide.value === side ? null : side;
 }
 
@@ -82,7 +82,7 @@ function applyChange(width?: number, style?: string, color?: string) {
   const borderVal = buildBorderValue(w, s, c);
 
   if (linked.value) {
-    // 链接模式：简写，清除所有单边
+    // 链接模式：简写, 清除所有单边
     emit("update", {
       border: borderVal,
       borderTop: "",
@@ -91,7 +91,7 @@ function applyChange(width?: number, style?: string, color?: string) {
       borderLeft: "",
     });
   } else if (activeSide.value) {
-    // 选中了某边：仅修改该边，清除简写
+    // 选中了某边：仅修改该边, 清除简写
     emit("update", {
       border: "",
       [SIDE_BORDER_MAP[activeSide.value]]: borderVal,
@@ -126,12 +126,12 @@ function toggleLinked() {
   linked.value = !linked.value;
   if (linked.value) {
     activeSide.value = null;
-    // 切回链接模式：用当前值统一四边
+    // 切回链接模式：用当前Value统一四边
     applyChange();
   }
 }
 
-// ---- 预览边框样式 ----
+// ---- 预览BorderStyle ----
 
 function getSideStyle(side: Side): Record<string, string> {
   const v = props.value ?? {};
@@ -154,7 +154,7 @@ const borderStyleOptions = computed(() => [
 
 <template>
   <div :class="styles.editor">
-    <!-- 视觉预览区域 -->
+    <!-- 视觉预览Region -->
     <div :class="styles.preview">
       <div :class="styles.box">
         <!-- Top -->
@@ -239,7 +239,7 @@ const borderStyleOptions = computed(() => [
       <template v-else>{{ t("editor.borderEditor.clickSideHint") }}</template>
     </div>
 
-    <!-- 编辑控件 -->
+    <!-- Edit控件 -->
     <div :class="styles.controls">
       <div :class="styles.controlRow">
         <label :class="styles.controlLabel">{{

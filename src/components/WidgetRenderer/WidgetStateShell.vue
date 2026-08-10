@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
- * WidgetStateShell - widget 统一状态壳
+ * WidgetStateShell - widget 统一Status壳
  *
- * 包裹数据型 widget，统一渲染 loading / empty / error 三态，避免每个 widget 各写一套。
+ * 包裹Data型 widget, 统一渲染 loading / empty / error 三态, 避免每个 widget 各写一套。
  * - loading: skeleton（默认）或 spinner
  * - empty: 空态插画 + 文案
- * - error: 错误信息 + 重试按钮
- * 三态都不命中时渲染 default slot。
+ * - error: ErrorInfo + RetryButton
+ * 三态都不命中Hrs渲染 default slot。
  *
  * 用法：
  *   <WidgetStateShell :loading="loading" :error="error" :empty="tableData.length === 0" @retry="fetchData">
@@ -22,11 +22,11 @@ const props = withDefaults(
     loading?: boolean;
     error?: string;
     empty?: boolean;
-    /** loading 时用 skeleton（默认）还是 spinner */
+    /** loading Hrs用 skeleton（默认）还是 spinner */
     skeleton?: boolean;
-    /** skeleton 行数 */
+    /** skeleton Row数 */
     skeletonRows?: number;
-    /** 空态最小高度 */
+    /** 空态MinHeight */
     minHeight?: string;
   }>(),
   {

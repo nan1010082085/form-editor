@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * PropertyField -- 单个属性字段（动态组件渲染）
+ * PropertyField -- 单个PropertyField（动态Component渲染）
  *
- * 根据 type prop 渲染不同的 Element Plus 输入组件。
- * 所有输入事件统一通过 'update' emit 向上传递。
+ * 根据 type prop 渲染不同的 Element Plus InputComponent。
+ * 所有InputEvent统一passed 'update' emit 向上传递。
  */
 import { ref, computed, watch, onMounted } from "vue";
 import { fetchRemoteOptions as apiFetchRemoteOptions } from "@/api/widgetApi";
@@ -33,6 +33,8 @@ const props = defineProps<{
   remoteUrl?: string;
   labelField?: string;
   valueField?: string;
+  min?: number;
+  max?: number;
 }>();
 
 const emit = defineEmits<{
@@ -70,7 +72,7 @@ function removeColorArrayItem(index: number) {
   emit("update", arr);
 }
 
-// ---- Remote Select 状态 ----
+// ---- Remote Select Status ----
 const remoteOptions = ref<RemoteOption[]>([]);
 const remoteLoading = ref(false);
 
@@ -96,7 +98,7 @@ onMounted(() => {
   }
 });
 
-// ---- JSON 编辑器状态 ----
+// ---- JSON Edit器Status ----
 
 const jsonText = ref("");
 const jsonError = ref("");
@@ -106,7 +108,7 @@ function formatJsonValue(val: unknown): string {
   return JSON.stringify(val, null, 2);
 }
 
-// 初始化 & 同步外部值变化
+// 初始化 & Sync外部Value变化
 watch(
   () => props.value,
   (val) => {
@@ -147,7 +149,7 @@ function onJsonBlur() {
       }}</label>
     </el-tooltip>
     <div :class="styles.control">
-      <!-- 文本输入 -->
+      <!-- 文本Input -->
       <el-input
         v-if="type === 'text'"
         :model-value="String(value ?? '')"
@@ -155,12 +157,14 @@ function onJsonBlur() {
         @update:model-value="handleUpdate"
       />
 
-      <!-- 数字输入 -->
+      <!-- 数字Input -->
       <el-input-number
         v-else-if="type === 'number'"
         :model-value="(value as number) ?? 0"
         size="small"
         controls-position="right"
+        :min="min"
+        :max="max"
         @update:model-value="handleUpdate"
       />
 
@@ -216,7 +220,7 @@ function onJsonBlur() {
         />
       </el-select>
 
-      <!-- JSON 编辑器 -->
+      <!-- JSON Edit器 -->
       <div v-else-if="type === 'json'" :class="styles.jsonWrap">
         <el-input
           v-model="jsonText"
@@ -268,7 +272,7 @@ function onJsonBlur() {
         </div>
       </div>
 
-      <!-- 兜底：文本输入 -->
+      <!-- 兜底：文本Input -->
       <el-input
         v-else
         :model-value="String(value ?? '')"

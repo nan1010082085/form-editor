@@ -1,5 +1,5 @@
 /**
- * 后端 API 类型定义
+ * 后端 API Type定义
  *
  * 与 packages/server 的 REST API 契约对齐
  * 参考：../docs/server/api.md
@@ -16,14 +16,14 @@ export interface ApiResponse<T = unknown> {
   error?: ApiErrorDetail;
 }
 
-/** API 错误详情（与 server 错误信封对齐：code + message + 可选 details） */
+/** API ErrorDetails（与 server Error信封对齐：code + message + 可选 details） */
 export interface ApiErrorDetail {
   message: string;
   code?: string;
   details?: Array<{ path: string; message: string }>;
 }
 
-// ---- Schema 资源类型 ----
+// ---- Schema 资源Type ----
 
 export type SchemaTypeValue =
   | "form"
@@ -36,7 +36,7 @@ export type SchemaTypeValue =
   | "other";
 export type SchemaStatusValue = "draft";
 
-/** Schema 列表项（编辑表 — 仅草稿） */
+/** Schema Column表项（Edit表 — 仅草稿） */
 export interface SchemaListItem {
   id: string;
   editId: string;
@@ -53,7 +53,7 @@ export interface SchemaListItem {
   updatedAt: string;
 }
 
-/** Schema 详情（含完整 JSON schema 定义） */
+/** Schema Details（含完整 JSON schema 定义） */
 export interface SchemaDetail extends SchemaListItem {
   json:
     | PartialWidget[]
@@ -95,7 +95,7 @@ export interface SchemaCreatePayload {
   thumbnail?: string;
 }
 
-/** Schema 更新请求体（至少一个字段） */
+/** Schema Update请求体（至少一个Field） */
 export interface SchemaUpdatePayload {
   name?: string;
   json?:
@@ -105,9 +105,9 @@ export interface SchemaUpdatePayload {
   thumbnail?: string;
 }
 
-// ---- 分页格式 ----
+// ---- Min页格式 ----
 
-/** 分页查询参数 */
+/** Min页QueryParams */
 export interface PaginationParams {
   page?: number;
   pageSize?: number;
@@ -115,7 +115,7 @@ export interface PaginationParams {
   type?: SchemaTypeValue;
 }
 
-/** 分页响应 */
+/** Min页响应 */
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -124,9 +124,9 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-// ---- 版本管理 ----
+// ---- Version管理 ----
 
-/** 版本列表项 */
+/** VersionColumn表项 */
 export interface VersionEntry {
   id: string;
   version: string;
@@ -134,15 +134,15 @@ export interface VersionEntry {
   published: boolean;
 }
 
-/** 版本列表响应 */
+/** VersionColumn表响应 */
 export interface VersionListResponse {
   items: VersionEntry[];
   total: number;
 }
 
-// ---- 导入 ----
+// ---- Import ----
 
-/** Schema 导入请求体 */
+/** Schema Import请求体 */
 export interface SchemaImportPayload {
   name: string;
   type: SchemaTypeValue;
@@ -150,9 +150,9 @@ export interface SchemaImportPayload {
   thumbnail?: string;
 }
 
-// ---- 缓存与预取 ----
+// ---- Cache与预取 ----
 
-/** 缓存条目 */
+/** Cache条目 */
 export interface CacheEntry {
   data: unknown;
   timestamp: number;

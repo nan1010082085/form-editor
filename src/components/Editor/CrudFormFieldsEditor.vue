@@ -253,8 +253,20 @@ function optionsToText(
         <label :class="styles['search-fields-editor__label']">{{
           t("editor.crudFormFieldsEditor.defaultValue")
         }}</label>
+        <el-input-number
+          v-if="field.type === 'number'"
+          :model-value="
+            typeof field.defaultValue === 'number'
+              ? field.defaultValue
+              : undefined
+          "
+          controls-position="right"
+          size="small"
+          style="width: 100%"
+          @update:model-value="updateField(idx, 'defaultValue', $event)"
+        />
         <el-input
-          v-if="field.type !== 'switch'"
+          v-else-if="field.type !== 'switch'"
           :model-value="String(field.defaultValue ?? '')"
           size="small"
           :placeholder="

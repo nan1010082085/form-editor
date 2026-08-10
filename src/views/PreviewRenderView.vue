@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * PreviewRenderView — 编辑器预览渲染器
+ * PreviewRenderView — Edit器预览渲染器
  *
- * 通过 route.query.id 加载 Schema（草稿状态也可以预览），
- * 使用 FormGrid 渲染，供编辑器预览使用。
+ * passed route.query.id 加载 Schema（草稿Status也可以预览）, 
+ * 使用 FormGrid 渲染, 供Edit器预览使用。
  */
 import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";

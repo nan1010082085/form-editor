@@ -7,7 +7,7 @@ export const marqueeTextConfig: WidgetConfig = {
   author: "yangdongnan",
   defaultStyle: { width: "100%" },
   defaultProps: {
-    text: "这是一条滚动公告，支持自定义内容和滚动速度",
+    text: "This is a scrolling announcement, supports custom content and speed",
     speed: 50,
     direction: "left",
     pauseOnHover: true,
@@ -19,7 +19,7 @@ export const marqueeTextConfig: WidgetConfig = {
     {
       name: "set-text",
       description: "Set Scroll Text",
-      params: { text: "文本内容" },
+      params: { text: "Text Content" },
     },
     { name: "pause", description: "Pause Scroll" },
     { name: "resume", description: "Resume Scroll" },
@@ -34,7 +34,7 @@ export const marqueeTextConfig: WidgetConfig = {
         label: "Scroll Speed",
         type: "number",
         default: 50,
-        desc: "越大越快",
+        desc: "Larger is faster",
       },
       {
         key: "direction",

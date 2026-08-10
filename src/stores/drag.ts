@@ -1,21 +1,21 @@
 /**
- * useDragStore — 拖拽状态管理
+ * useDragStore — 拖拽Status管理
  *
  * 职责：
- * - 拖拽状态（是否拖拽中、拖拽来源、拖拽目标 ID/类型）
+ * - 拖拽Status（是否拖拽中、拖拽来源、拖拽目标 ID/Type）
  * - 拖拽位置（当前坐标、增量）
- * - 碰撞状态（悬停的容器 ID、是否在容器内）
+ * - 碰撞Status（悬停的Container ID、是否在Container内）
  * - 辅助线（对齐参考线、吸附坐标）
  * - 放置预览线（指示插入位置）
- * - 原始位置快照（取消拖拽时恢复）
+ * - 原始位置快照（Cancel拖拽HrsRestore）
  *
- * 变化频率最高，独立管理，与 Widget 数据和编辑器状态解耦。
+ * 变化频率最高, 独立管理, 与 Widget Data和Edit器Status解耦。
  */
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
 // ================================================================
-// 类型定义
+// Type定义
 // ================================================================
 
 interface GuideLine {
@@ -25,7 +25,7 @@ interface GuideLine {
   end: number;
 }
 
-/** 放置预览线 — 指示新组件将被插入的位置 */
+/** 放置预览线 — 指示新Component将被插入的位置 */
 export interface DropPreviewLine {
   /** 预览线方向 */
   orientation: "horizontal" | "vertical";
@@ -35,7 +35,7 @@ export interface DropPreviewLine {
   start: number;
   /** 预览线结束点 */
   end: number;
-  /** 目标容器 ID（null 表示根级） */
+  /** 目标Container ID（null 表示根级） */
   targetContainerId: string | null;
 }
 
@@ -43,7 +43,7 @@ export type { GuideLine };
 
 export const useDragStore = defineStore("drag", () => {
   // ================================================================
-  // 拖拽状态
+  // 拖拽Status
   // ================================================================
 
   const isDragging = ref(false);
@@ -60,14 +60,14 @@ export const useDragStore = defineStore("drag", () => {
   const dragDeltaX = ref(0);
   const dragDeltaY = ref(0);
 
-  // 拖拽起点（用于 delta 计算，实现实时跟随）
+  // 拖拽起点（用于 delta 计算, 实现实Hrs跟随）
   const initialCursorX = ref(0);
   const initialCursorY = ref(0);
   const initialWidgetX = ref(0);
   const initialWidgetY = ref(0);
 
   // ================================================================
-  // 碰撞状态
+  // 碰撞Status
   // ================================================================
 
   const hoveredContainerId = ref<string | null>(null);
@@ -88,7 +88,7 @@ export const useDragStore = defineStore("drag", () => {
   const dropPreviewLine = ref<DropPreviewLine | null>(null);
 
   // ================================================================
-  // 原始位置快照（取消拖拽时恢复）
+  // 原始位置快照（Cancel拖拽HrsRestore）
   // ================================================================
 
   const originalPosition = ref<{
@@ -104,9 +104,9 @@ export const useDragStore = defineStore("drag", () => {
   /**
    * 开始拖拽。
    *
-   * @param source - 拖拽来源：'panel'（组件面板拖入）或 'canvas'（画布内拖动）
-   * @param id     - 被拖拽的 Widget ID（canvas 拖动时必传）
-   * @param type   - 组件类型（panel 拖入时必传）
+   * @param source - 拖拽来源：'panel'（Component面板拖入）或 'canvas'（画布内拖动）
+   * @param id     - 被拖拽的 Widget ID（canvas 拖动Hrs必传）
+   * @param type   - ComponentType（panel 拖入Hrs必传）
    */
   function startDrag(
     source: "panel" | "canvas",
@@ -151,7 +151,7 @@ export const useDragStore = defineStore("drag", () => {
   }
 
   /**
-   * 更新拖拽位置。
+   * Update拖拽位置。
    *
    * @param x - 当前鼠标 X 坐标
    * @param y - 当前鼠标 Y 坐标
@@ -164,9 +164,9 @@ export const useDragStore = defineStore("drag", () => {
   }
 
   /**
-   * 更新碰撞状态。
+   * Update碰撞Status。
    *
-   * @param containerId - 鼠标悬停的容器 ID，不在容器内时传 null
+   * @param containerId - 鼠标悬停的Container ID, 不在Container内Hrs传 null
    */
   function updateCollision(containerId: string | null): void {
     hoveredContainerId.value = containerId;
@@ -174,17 +174,17 @@ export const useDragStore = defineStore("drag", () => {
   }
 
   /**
-   * 更新辅助线。
+   * Update辅助线。
    */
   function updateGuideLines(lines: GuideLine[]): void {
     guideLines.value = lines;
   }
 
   /**
-   * 更新吸附坐标。
+   * Update吸附坐标。
    *
-   * @param x - 吸附 X 坐标，不吸附时传 null
-   * @param y - 吸附 Y 坐标，不吸附时传 null
+   * @param x - 吸附 X 坐标, 不吸附Hrs传 null
+   * @param y - 吸附 Y 坐标, 不吸附Hrs传 null
    */
   function updateSnap(x: number | null, y: number | null): void {
     snapX.value = x;
@@ -192,14 +192,14 @@ export const useDragStore = defineStore("drag", () => {
   }
 
   /**
-   * 更新放置预览线。
+   * Update放置预览线。
    */
   function updateDropPreviewLine(line: DropPreviewLine | null): void {
     dropPreviewLine.value = line;
   }
 
   /**
-   * 结束拖拽，重置所有状态。
+   * 结束拖拽, Reset所有Status。
    */
   function endDrag(): void {
     isDragging.value = false;
@@ -224,11 +224,11 @@ export const useDragStore = defineStore("drag", () => {
   }
 
   // ================================================================
-  // 导出
+  // Export
   // ================================================================
 
   return {
-    // 拖拽状态
+    // 拖拽Status
     isDragging,
     dragSource,
     dragWidgetId,
@@ -243,7 +243,7 @@ export const useDragStore = defineStore("drag", () => {
     initialCursorY,
     initialWidgetX,
     initialWidgetY,
-    // 碰撞状态
+    // 碰撞Status
     hoveredContainerId,
     isInContainer,
     // 辅助线

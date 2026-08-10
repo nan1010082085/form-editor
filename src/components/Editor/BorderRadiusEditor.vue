@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * BorderRadiusEditor -- 圆角样式可视化编辑器
+ * BorderRadiusEditor -- Border radiusStyle可视化Edit器
  *
  * 设计：
- * - 链接模式（默认）：单个输入，四角同步
- * - 解除链接：4 个独立输入（左上/右上/右下/左下），可分别设置
- * - 中央矩形实时预览圆角效果
+ * - 链接模式（默认）：单个Input, 四角Sync
+ * - 解除链接：4 个独立Input（左上/右上/右下/左下）, 可Min别Settings
+ * - 中央矩形实Hrs预览Border radius效果
  */
 import { ref, computed } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -35,7 +35,7 @@ const CORNER_RADIUS_MAP: Record<Corner, string> = {
   bottomLeft: "borderBottomLeftRadius",
 };
 
-// ---- 解析值 ----
+// ---- ParseValue ----
 
 function parseRadius(val?: string): number {
   if (!val) return 0;
@@ -56,7 +56,7 @@ const trVal = computed(() => getCornerVal("topRight"));
 const brVal = computed(() => getCornerVal("bottomRight"));
 const blVal = computed(() => getCornerVal("bottomLeft"));
 
-// ---- 操作 ----
+// ---- Action ----
 
 function applyLinked(val: number | undefined) {
   const v = `${val ?? 0}px`;
@@ -99,7 +99,7 @@ const previewStyle = computed(() => {
 
 <template>
   <div :class="styles.editor">
-    <!-- 视觉预览区域 -->
+    <!-- 视觉预览Region -->
     <div :class="styles.preview">
       <div :class="styles.boxWrapper">
         <div :class="styles.box" :style="previewStyle">
@@ -130,7 +130,7 @@ const previewStyle = computed(() => {
       </el-tooltip>
     </div>
 
-    <!-- 链接模式：单个输入 -->
+    <!-- 链接模式：单个Input -->
     <div v-if="linked" :class="styles.controls">
       <div :class="styles.controlRow">
         <label :class="styles.controlLabel">{{
@@ -148,7 +148,7 @@ const previewStyle = computed(() => {
       </div>
     </div>
 
-    <!-- 解除链接：4 个独立输入 -->
+    <!-- 解除链接：4 个独立Input -->
     <div v-else :class="styles.controlsGrid">
       <div :class="styles.gridCell">
         <label :class="styles.gridLabel">{{

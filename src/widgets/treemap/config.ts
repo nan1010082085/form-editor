@@ -46,7 +46,7 @@ export const treemapConfig: WidgetConfig = {
           { label: "Cool", value: "cool" },
         ],
       },
-      { key: "rawOption", label: "高级配置 (JSON)", type: "json" },
+      { key: "rawOption", label: "Advanced Config (JSON)", type: "json" },
     ],
   },
 };

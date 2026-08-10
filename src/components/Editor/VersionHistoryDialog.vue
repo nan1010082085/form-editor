@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * VersionHistoryDialog — 版本历史弹窗
+ * VersionHistoryDialog — Version历史Dialog
  *
- * 展示 Schema 的历史版本列表，标记发布版本，支持加载和发布特定版本。
+ * 展示 Schema 的历史VersionColumn表, 标记发布Version, 支持加载和发布特定Version。
  */
 import { ref, watch } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -17,9 +17,9 @@ const { t, locale } = useI18n();
 
 const props = defineProps<{
   visible: boolean;
-  /** Schema 的 MongoDB ObjectId（用于 publish/delete 等写操作） */
+  /** Schema 的 MongoDB ObjectId（用于 publish/delete 等写Action） */
   id: string | null;
-  /** Schema 的 editId（用于版本查询等读操作） */
+  /** Schema 的 editId（用于VersionQuery等读Action） */
   editId: string | null;
   currentVersion?: string;
   schemaName?: string;

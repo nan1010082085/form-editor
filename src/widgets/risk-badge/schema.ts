@@ -7,7 +7,7 @@ export function createRiskBadgeWidget(id?: string): Widget {
     name: "FgRiskBadge",
     type: "risk-badge",
     field: "riskBadge",
-    label: "风险标签",
+    label: "Risk Label",
     props: {
       level: "medium",
       description: "",

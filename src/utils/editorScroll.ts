@@ -1,4 +1,4 @@
-/** 将画布上指定部件滚动到可见区域 */
+/** 将画布上指定Widget滚动到可见Region */
 export function scrollToWidget(id: string): void {
   const el = document.querySelector(
     `[data-widget-id="${id}"]`,
@@ -6,7 +6,7 @@ export function scrollToWidget(id: string): void {
   el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
-/** 将结构树当前节点滚动到可见区域 */
+/** 将结构树当前节点滚动到可见Region */
 export function scrollTreeNodeIntoView(
   treeRoot: HTMLElement | undefined,
   nodeId: string,

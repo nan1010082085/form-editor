@@ -2,11 +2,11 @@
  * useLocale — 国际化翻译 composable
  *
  * 根据 FormGridLocale 返回翻译函数 t(key, params?)。
- * 支持参数插值：t('confirmDelete', { name: '张三' }) -> '确认删除张三？'
+ * 支持Params插Value：t('confirmDelete', { name: 'Zhang San' }) -> 'ConfirmDeleteZhang San？'
  *
- * 插值格式：{paramName}，与 vue-i18n 保持一致。
+ * 插Value格式：{paramName}, 与 vue-i18n 保持一致。
  *
- * 接受 MaybeRef<FormGridLocale>，locale 变化时 t 函数自动切换语言包。
+ * 接受 MaybeRef<FormGridLocale>, locale 变化Hrs t 函数自动切换Language包。
  */
 import { computed, toValue, type MaybeRef } from "vue";
 import type {
@@ -16,7 +16,7 @@ import type {
 import zhCN from "@/locales/zh-CN";
 import enUS from "@/locales/en-US";
 
-/** 语言包映射 */
+/** Language包Map */
 const localeMessages: Record<FormGridLocale, Record<string, string>> = {
   "zh-CN": zhCN,
   "en-US": enUS,
@@ -25,8 +25,8 @@ const localeMessages: Record<FormGridLocale, Record<string, string>> = {
 /**
  * 创建翻译函数
  *
- * @param locale - 当前语言（支持 ref / getter / 原始值）
- * @returns t 翻译函数（响应式：locale 变化时自动切换）
+ * @param locale - 当前Language（支持 ref / getter / 原始Value）
+ * @returns t 翻译函数（响应式：locale 变化Hrs自动切换）
  */
 export function useLocale(locale: MaybeRef<FormGridLocale>): {
   t: TranslateFn;
@@ -35,9 +35,9 @@ export function useLocale(locale: MaybeRef<FormGridLocale>): {
 
   /**
    * 翻译函数
-   * @param key - 消息 key（如 'table.emptyText'）
-   * @param params - 插值参数（如 { label: '名称' }）
-   * @returns 翻译后的字符串，找不到 key 时返回 key 本身
+   * @param key - Message key（如 'table.emptyText'）
+   * @param params - 插ValueParams（如 { label: 'Name' }）
+   * @returns 翻译后的字符串, 找不到 key Hrs返回 key 本身
    */
   const t: TranslateFn = (
     key: string,

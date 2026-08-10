@@ -8,7 +8,7 @@ const COLORS = {
   api: "color: #26A036; font-weight: bold",
 } as const;
 
-// 日志收集器 — 供 UI 面板消费
+// Log收集器 — 供 UI 面板消费
 type LogCollector = (
   scope: string,
   level: "event" | "rule" | "api",

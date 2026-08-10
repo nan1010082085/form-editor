@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
- * ChartLinkageDialog — 图表联动配置对话框
+ * ChartLinkageDialog — ChartLinkageConfig对话框
  *
- * 写入 widget.chartLinkages，运行时由 useChartLinkage 消费。
+ * 写入 widget.chartLinkages, 运RowHrs由 useChartLinkage 消费。
  */
 import { ref, watch, computed } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import type { ChartLinkageRule, Widget } from "@/widgets/base/types";
 import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
 import ChartLinkageConfig from "./ChartLinkageConfig.vue";
@@ -20,6 +21,8 @@ const emit = defineEmits<{
   "update:visible": [val: boolean];
   save: [rules: ChartLinkageRule[]];
 }>();
+
+const { t } = useI18n();
 
 const widgetStore = useWidgetStore();
 
@@ -49,7 +52,7 @@ function handleClose() {
 <template>
   <AppDialog
     :model-value="visible"
-    title="图表联动配置"
+    :title="t('editor.configDialog.chartLinkage')"
     width="640px"
     destroy-on-close
     @update:model-value="handleClose"
@@ -61,8 +64,8 @@ function handleClose() {
       @update:rules="localRules = $event"
     />
     <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleSave">保存</el-button>
+      <el-button @click="handleClose">{{ t('editor.common.cancel') }}</el-button>
+      <el-button type="primary" @click="handleSave">{{ t('editor.common.save') }}</el-button>
     </template>
   </AppDialog>
 </template>

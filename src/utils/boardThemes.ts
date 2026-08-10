@@ -1,7 +1,7 @@
 /**
- * boardThemes — 大屏主题预设
+ * boardThemes — DashboardTheme预设
  *
- * 深色主题 + 动画配置，供画布属性面板与模板使用。
+ * 深色Theme + 动画Config, 供画布Property面板与Template使用。
  */
 import type { CanvasConfig } from "@/widgets/base/types";
 
@@ -15,14 +15,14 @@ export interface BoardThemePreset {
 export const BOARD_THEME_PRESETS: BoardThemePreset[] = [
   {
     id: "default-light",
-    label: "默认浅色",
+    label: "DefaultLight",
     canvas: {
       backgroundColor: "var(--bg-color-page)",
     },
   },
   {
     id: "dashboard-dark",
-    label: "大屏深色",
+    label: "Dashboard Dark",
     canvas: {
       backgroundColor: "#0a1628",
     },
@@ -33,7 +33,7 @@ export const BOARD_THEME_PRESETS: BoardThemePreset[] = [
   },
   {
     id: "dashboard-blue",
-    label: "科技蓝",
+    label: "Tech Blue",
     canvas: {
       backgroundColor: "#0d1b2a",
     },

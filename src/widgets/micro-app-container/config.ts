@@ -24,7 +24,7 @@ export const microAppContainerConfig: WidgetConfig = {
         label: "Container Height",
         type: "input",
         default: "100%",
-        placeholder: "例：400px 或 100%",
+        placeholder: "e.g. 400px or 100%",
       },
     ],
     style: [],

@@ -4,7 +4,7 @@ import { mapChartMock } from "./mock";
 export const mapConfig: WidgetConfig = {
   name: "FgMap",
   displayName: "Map Chart",
-  description: "地图组件，支持中国/世界地图，区域着色与散点标注，点击下钻",
+  description: "Map widget with China/world map, region coloring and drill-down",
   author: "yangdongnan",
   defaultStyle: { width: "100%", height: "500px" },
   defaultProps: {
@@ -35,13 +35,13 @@ export const mapConfig: WidgetConfig = {
   ],
   configPanels: ["api", "variables", "events", "chart-linkages"],
   eventTargets: [
-    { id: "chart-click", label: "地图点击", description: "点击地图区域时触发" },
+    { id: "chart-click", label: "Map click", description: "Triggered when clicking map area" },
   ],
   receivableEvents: [
     { name: "refresh", description: "Reload data" },
     {
       name: "set-data",
-      description: "设置地图数据",
+      description: "Set map data",
       params: { data: "Data array" },
     },
   ],
@@ -54,7 +54,7 @@ export const mapConfig: WidgetConfig = {
         label: "Static Data",
         type: "array-editor",
         fields: [
-          { key: "name", label: "区域名称", type: "text" },
+          { key: "name", label: "Region name", type: "text" },
           { key: "value", label: "Value", type: "number" },
         ],
       },
@@ -64,21 +64,21 @@ export const mapConfig: WidgetConfig = {
         type: "select",
         default: "china",
         options: [
-          { label: "中国", value: "china" },
-          { label: "世界", value: "world" },
+          { label: "China", value: "china" },
+          { label: "World", value: "world" },
         ],
       },
       {
         key: "nameField",
         label: "Name Field",
         type: "text",
-        placeholder: "如: name",
+        placeholder: "e.g. name",
       },
       {
         key: "valueField",
         label: "Value Field",
         type: "text",
-        placeholder: "如: value",
+        placeholder: "e.g. value",
       },
       { key: "title", label: "Chart Title", type: "text" },
       { key: "showLabel", label: "Show Label", type: "switch", default: true },
@@ -101,9 +101,9 @@ export const mapConfig: WidgetConfig = {
         label: "Color Scheme",
         type: "select",
         options: [
-          { label: "默认", value: "default" },
-          { label: "暗色", value: "dark" },
-          { label: "浅色", value: "light" },
+          { label: "Default", value: "default" },
+          { label: "Dark", value: "dark" },
+          { label: "Light", value: "light" },
         ],
       },
       { key: "customColors", label: "Custom Colors", type: "color-array" },
@@ -114,7 +114,7 @@ export const mapConfig: WidgetConfig = {
         label: "Auto Refresh (s)",
         type: "number",
         default: 0,
-        placeholder: "0=关闭",
+        placeholder: "0=Close",
       },
     ],
   },

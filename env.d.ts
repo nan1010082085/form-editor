@@ -27,3 +27,13 @@ interface MemoryInfo {
 interface Performance {
   memory?: MemoryInfo
 }
+
+declare module '*.mjs' {
+  const value: Record<string, unknown>
+  export default value
+  export const createDevApiProxy: (target: string) => Record<string, unknown>
+}
+
+declare module "../scripts/vite-dev-proxy.mjs" {
+  export function createDevApiProxy(target: string): Record<string, unknown>
+}

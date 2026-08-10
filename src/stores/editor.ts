@@ -1,12 +1,12 @@
 /**
- * useEditorStore — 编辑器交互状态
+ * useEditorStore — Edit器交互Status
  *
  * 职责：
- * - 选中状态（单选/多选）
- * - 编辑器模式（edit/preview/publish-interactive/publish-readonly）
- * - 撤销/重做历史（immer patches，主画布 + 弹窗编辑器）
+ * - 选中Status（单选/多选）
+ * - Edit器模式（edit/preview/publish-interactive/publish-readonly）
+ * - Undo/Redo历史（immer patches, 主画布 + DialogEdit器）
  * - 剪贴板
- * - 弹窗编辑器状态
+ * - DialogEdit器Status
  */
 import { defineStore } from "pinia";
 import { ref, computed, shallowRef, toRaw } from "vue";
@@ -19,10 +19,32 @@ import { reportTelemetry } from "../api/telemetryApi";
 
 enablePatches();
 
+/**
+ * 深解包 Vue reactive/proxy, 得到与响应式系统断开的纯对象树。
+ * 浅 toRaw 不够：children / style / props 等嵌套 proxy 仍会指向 live store。
+ */
+function deepToRaw<T>(value: T): T {
+  const raw = toRaw(value as object) as T;
+  if (Array.isArray(raw)) {
+    return raw.map((item) => deepToRaw(item)) as T;
+  }
+  if (raw !== null && typeof raw === "object") {
+    const out: Record<string, unknown> = {};
+    for (const key of Object.keys(raw as object)) {
+      out[key] = deepToRaw((raw as Record<string, unknown>)[key]);
+    }
+    return out as T;
+  }
+  return raw;
+}
+
+/**
+ * 深拷贝 Widget 树, 与 live store 无共享引用。
+ * 禁止 `produce(live, () => liveWidgets)`：immer autoFreeze 会就地冻结画布对象, 
+ * 导致后续 children.splice / Object.assign 抛出 "object is not extensible"。
+ */
 function cloneWidgets(widgets: Widget[]): Widget[] {
-  // toRaw 解包 Vue 响应式 proxy，避免 immer produce 冻结 proxy 时报错
-  const raw = widgets.map((w) => toRaw(w) as Widget);
-  return produce(raw, () => {}) as Widget[];
+  return structuredClone(deepToRaw(widgets));
 }
 
 const MAX_HISTORY = MAX_HISTORY_SIZE;
@@ -74,13 +96,23 @@ export const useEditorStore = defineStore("editor", () => {
     savedHistoryIndex.value = historyIndex.value;
   }
 
-  type ConfigDialogType = "events" | "linkages" | "api" | "variables";
+  type ConfigDialogType =
+    | "events"
+    | "linkages"
+    | "api"
+    | "variables"
+    | "chart-linkages";
   const configDialogTrigger = ref<{
     widget: Widget;
     type: ConfigDialogType;
   } | null>(null);
 
+  /**
+   * OpenConfig弹框（右键Menu等入口）。
+   * 先选中目标 widget, 避免多选/错位Hrs写回Error对象。
+   */
   function openConfigDialog(widget: Widget, type: ConfigDialogType) {
+    select(widget.id);
     configDialogTrigger.value = { widget, type };
   }
 
@@ -144,9 +176,10 @@ export const useEditorStore = defineStore("editor", () => {
     );
 
     let entry: HistoryEntry = { patches: [], inversePatches: [] };
+    // 必须返回深拷贝：直接返回 live widgets 会被 immer 冻结, 污染画布可变性
     produce(
       current,
-      () => widgets,
+      () => cloneWidgets(widgets),
       (patches, inversePatches) => {
         entry = { patches, inversePatches };
       },
@@ -187,7 +220,8 @@ export const useEditorStore = defineStore("editor", () => {
     historyIndex.value--;
     isDirty.value = historyIndex.value !== savedHistoryIndex.value;
     void reportTelemetry("undo");
-    return applyPatches(current, entry.inversePatches);
+    // applyPatches 结果默认被 immer 冻结, 写回 store 前再拷一份可变树
+    return cloneWidgets(applyPatches(current, entry.inversePatches));
   }
 
   function redo(): Widget[] | null {
@@ -240,7 +274,7 @@ export const useEditorStore = defineStore("editor", () => {
     let entry: HistoryEntry = { patches: [], inversePatches: [] };
     produce(
       current,
-      () => widgets,
+      () => cloneWidgets(widgets),
       (patches, inversePatches) => {
         entry = { patches, inversePatches };
       },
@@ -283,7 +317,7 @@ export const useEditorStore = defineStore("editor", () => {
     );
     const entry = dialogHistory.value[dialogHistoryIndex.value];
     dialogHistoryIndex.value--;
-    return applyPatches(current, entry.inversePatches);
+    return cloneWidgets(applyPatches(current, entry.inversePatches));
   }
 
   function redoDialog(): Widget[] | null {
@@ -334,11 +368,11 @@ export const useEditorStore = defineStore("editor", () => {
   }
 
   /**
-   * 键盘上下移：在同级 siblings 内前移/后移选中部件（grid 流式重排，free 也可用）。
-   * 仅对单选生效；多选时不操作（避免乱序）。
+   * 键盘上Move down：在同级 siblings 内前移/后移选中Widget（grid 流式重排, free 也可用）。
+   * 仅对单选生效；多选Hrs不Action（避免乱序）。
    *
-   * moveWidgetToIndex 的 toIndex 语义为「原数组目标位置」，同父后移时内部会 -1 补偿提取位移，
-   * 故 down 传 curIdx+2（-1 后落到 curIdx+1），up 传 curIdx-1（fromIdx>target 不触发 -1）。
+   * moveWidgetToIndex 的 toIndex 语义为「原数组目标位置」, 同父后移Hrs内部会 -1 补偿提取位移, 
+   * 故 down 传 curIdx+2（-1 后落到 curIdx+1）, up 传 curIdx-1（fromIdx>target 不Trigger -1）。
    */
   function performMoveSelected(direction: "up" | "down"): void {
     if (selectedIds.value.length !== 1) return;

@@ -20,8 +20,8 @@ useExposeWidget((wd) => ({
 
 const inputRef = ref<{ $el?: HTMLElement }>();
 
-/** el-input 的 change/input 是 Vue 组件事件，不冒泡为原生 DOM 事件。
- *  手动派发原生 change 事件，让 SchemaNode 的 @change 能拦截到。 */
+/** el-input 的 change/input 是 Vue ComponentEvent, 不冒泡为原生 DOM Event。
+ *  手动派发原生 change Event, 让 SchemaNode 的 @change 能拦截到。 */
 function forwardNativeChange() {
   inputRef.value?.$el?.dispatchEvent(new Event("change", { bubbles: true }));
 }

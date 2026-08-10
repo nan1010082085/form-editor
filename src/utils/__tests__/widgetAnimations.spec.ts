@@ -24,7 +24,7 @@ describe("widgetAnimations", () => {
 
     it("none preset should have empty css", () => {
       expect(ANIMATION_PRESETS.none.css).toBe("");
-      expect(ANIMATION_PRESETS.none.label).toBe("无");
+      expect(ANIMATION_PRESETS.none.label).toBe("None");
     });
 
     it("non-none presets should have non-empty css", () => {
@@ -59,7 +59,7 @@ describe("widgetAnimations", () => {
 
     it('should have "none" as first option', () => {
       expect(ANIMATION_OPTIONS[0].value).toBe("none");
-      expect(ANIMATION_OPTIONS[0].label).toBe("无");
+      expect(ANIMATION_OPTIONS[0].label).toBe("None");
     });
   });
 

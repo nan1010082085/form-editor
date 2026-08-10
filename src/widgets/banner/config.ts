@@ -8,7 +8,7 @@ export const bannerConfig: WidgetConfig = {
   defaultStyle: { width: "100%" },
   configPanels: ["events"],
   defaultProps: {
-    text: "提示信息",
+    text: "Notice Info",
     type: "info" as const,
     closable: true,
   },
@@ -16,7 +16,7 @@ export const bannerConfig: WidgetConfig = {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "text", label: "Hint", type: "input", default: "提示信息" },
+      { key: "text", label: "Hint", type: "input", default: "Notice Info" },
       {
         key: "type",
         label: "Type",

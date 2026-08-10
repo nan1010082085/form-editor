@@ -4,7 +4,7 @@
  *
  * Table display with search, type filter, pagination, create/edit/delete.
  */
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useCredentialStore } from "@/stores/credential";
 import CredentialFormDialog from "@/components/Credential/CredentialFormDialog.vue";
@@ -13,24 +13,32 @@ import type {
   CredentialDetail,
   CredentialType,
 } from "@/types/credential";
-import { CREDENTIAL_TYPE_LABELS } from "@/types/credential";
+import {
+  getCredentialTypeLabel,
+} from "@/types/credential";
 import styles from "./CredentialListView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 
 const credentialStore = useCredentialStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const searchInput = ref("");
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
-const typeOptions = [
-  { label: "All Types", value: "" },
-  ...Object.entries(CREDENTIAL_TYPE_LABELS).map(([value, label]) => ({
-    label,
+const credentialTypes: CredentialType[] = [
+  "api_key",
+  "basic_auth",
+  "bearer_token",
+];
+
+const typeOptions = computed(() => [
+  { label: t("editor.credential.allTypes"), value: "" as const },
+  ...credentialTypes.map((value) => ({
+    label: getCredentialTypeLabel(value, t),
     value,
   })),
-];
+]);
 
 const activeType = ref<CredentialType | "">("");
 
@@ -84,7 +92,7 @@ async function openEditDialog(credential: CredentialItem) {
     formDialogVisible.value = true;
   } else {
     ElMessage.error(
-      credentialStore.error || "Failed to fetch credential details",
+      credentialStore.error || t("editor.credential.fetchDetailFailed"),
     );
   }
 }
@@ -92,17 +100,20 @@ async function openEditDialog(credential: CredentialItem) {
 async function handleDelete(credential: CredentialItem) {
   try {
     await ElMessageBox.confirm(
-      `Delete credential "${credential.name}"? This cannot be undone.`,
-      "Confirm Delete",
+      t("editor.credential.deleteConfirm", { name: credential.name }),
+      t("editor.credential.deleteConfirmTitle"),
       {
-        confirmButtonText: "Delete",
-        cancelButtonText: "Cancel",
+        confirmButtonText: t("editor.common.delete"),
+        cancelButtonText: t("editor.common.cancel"),
         type: "warning",
       },
     );
     const ok = await credentialStore.deleteCredential(credential.id);
-    if (ok) ElMessage.success("Credential deleted");
-    else ElMessage.error(credentialStore.error || "Delete failed");
+    if (ok) ElMessage.success(t("editor.credential.deleteSuccess"));
+    else
+      ElMessage.error(
+        credentialStore.error || t("editor.credential.deleteFailed"),
+      );
   } catch {
     // user cancelled
   }
@@ -115,13 +126,15 @@ function handleSaved() {
   });
 }
 
-// Helpers
+/** Format date string using current i18n locale. */
 function formatDate(d: string): string {
-  return new Date(d).toLocaleString("zh-CN");
+  return new Date(d).toLocaleString(
+    locale.value === "zh-CN" ? "zh-CN" : "en-US",
+  );
 }
 
 function typeLabel(type: CredentialType): string {
-  return CREDENTIAL_TYPE_LABELS[type] ?? type;
+  return getCredentialTypeLabel(type, t);
 }
 
 function typeTagType(
@@ -143,15 +156,15 @@ function typeTagType(
       <div :class="styles.header">
         <div :class="styles.titleRow">
           <div>
-            <h1 :class="styles.title">Credentials</h1>
+            <h1 :class="styles.title">{{ t("editor.credential.title") }}</h1>
             <p :class="styles.subtitle">
-              Manage API keys, tokens, and authentication credentials
+              {{ t("editor.credential.subtitle") }}
             </p>
           </div>
           <div :class="styles.headerActions">
             <el-button type="primary" @click="openCreateDialog">
               <AppIcon name="plus" />
-              Create Credential
+              {{ t("editor.credential.create") }}
             </el-button>
           </div>
         </div>
@@ -161,7 +174,7 @@ function typeTagType(
           <div :class="styles.toolbarLeft">
             <el-input
               v-model="searchInput"
-              placeholder="Search by name..."
+              :placeholder="t('editor.credential.searchPlaceholder')"
               clearable
               :class="styles.searchInput"
               @input="handleSearch"
@@ -194,13 +207,15 @@ function typeTagType(
         <div :class="styles.emptyIcon">
           <AppIcon name="key" :size="64" />
         </div>
-        <h2 :class="styles.emptyTitle">No credentials yet</h2>
+        <h2 :class="styles.emptyTitle">
+          {{ t("editor.credential.emptyTitle") }}
+        </h2>
         <p :class="styles.emptyDesc">
-          Create your first credential to get started
+          {{ t("editor.credential.emptyDesc") }}
         </p>
         <el-button type="primary" @click="openCreateDialog">
           <AppIcon name="plus" />
-          Create Credential
+          {{ t("editor.credential.create") }}
         </el-button>
       </div>
 
@@ -214,29 +229,41 @@ function typeTagType(
         >
           <el-table-column
             prop="name"
-            label="Name"
+            :label="t('editor.credential.colName')"
             min-width="200"
             show-overflow-tooltip
           />
-          <el-table-column prop="type" label="Type" width="140">
+          <el-table-column
+            prop="type"
+            :label="t('editor.credential.colType')"
+            width="140"
+          >
             <template #default="{ row }">
               <el-tag :type="typeTagType(row.type)" size="small">{{
                 typeLabel(row.type)
               }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="createdAt" label="Created" width="170">
+          <el-table-column
+            prop="createdAt"
+            :label="t('editor.credential.colCreated')"
+            width="170"
+          >
             <template #default="{ row }">
               {{ formatDate(row.createdAt) }}
             </template>
           </el-table-column>
-          <el-table-column prop="updatedAt" label="Updated" width="170">
+          <el-table-column
+            prop="updatedAt"
+            :label="t('editor.credential.colUpdated')"
+            width="170"
+          >
             <template #default="{ row }">
               {{ formatDate(row.updatedAt) }}
             </template>
           </el-table-column>
           <el-table-column
-            label="Actions"
+            :label="t('editor.credential.colActions')"
             width="150"
             fixed="right"
             align="center"

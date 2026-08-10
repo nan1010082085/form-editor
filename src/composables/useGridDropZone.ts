@@ -1,5 +1,6 @@
 import { ref, type Ref } from "vue";
 import { ElMessage } from "element-plus";
+import { tt } from "@/locales";
 import { createWidget, generateWidgetId } from "@/widgets/registry";
 import type { SchemaType, Widget } from "@/widgets/base/types";
 import { useWidgetStore } from "@/stores/widget";
@@ -7,6 +8,7 @@ import { useEditorStore } from "@/stores/editor";
 import {
   parseSchemaDragData,
   resolveGridInsertIndex,
+  resolveSchemaDragDropEffect,
   mapFilteredIndexToFull,
   renderGridInsertIndicator,
   clearGridInsertIndicator,
@@ -19,19 +21,19 @@ export function useGridDropZone(
   enabled: () => boolean,
   insertMeta?: () => Partial<Widget> | null,
   /**
-   * 未过滤的全量子节点（用于 tabs 按 activeKey / col 按 colIndex 过滤场景）。
-   * 传入时，拖放落点索引会从"过滤后列表"映射回"全量列表"，避免多 tab / 多 col 错位。
-   * 根级拖放 siblings 即全量，无需传入。
+   * 未Filter的全量子节点（用于 tabs 按 activeKey / col 按 colIndex Filter场景）。
+   * 传入Hrs, 拖放落点Index会从"Filter后Column表"Map回"全量Column表", 避免多 tab / 多 col 错位。
+   * 根级拖放 siblings 即全量, 无需传入。
    */
   allChildren?: () => Widget[],
 ) {
   const widgetStore = useWidgetStore();
   const editorStore = useEditorStore();
   const isDragOver = ref(false);
-  /** 当前拖拽落点对应的插入索引（-1 表示未拖拽） */
+  /** 当前拖拽落点对应的插入Index（-1 表示未拖拽） */
   const insertIndex = ref(-1);
 
-  /** 将过滤后索引映射为全量索引（无 allChildren 时原样返回） */
+  /** 将Filter后IndexMap为全量Index（无 allChildren Hrs原样返回） */
   function resolveFullIndex(filteredIdx: number): number {
     if (!allChildren) return filteredIdx;
     return mapFilteredIndexToFull(siblings(), allChildren(), filteredIdx);
@@ -46,9 +48,9 @@ export function useGridDropZone(
     if (!allowed) return;
     event.preventDefault();
     event.stopPropagation();
-    event.dataTransfer!.dropEffect = "copy";
+    event.dataTransfer!.dropEffect = resolveSchemaDragDropEffect(types);
     isDragOver.value = true;
-    // 实时计算插入索引，并渲染指示线
+    // 实Hrs计算插入Index, 并渲染指示线
     const container = containerRef.value;
     if (container) {
       const idx = resolveGridInsertIndex(container, event.clientY, siblings());
@@ -102,7 +104,7 @@ export function useGridDropZone(
 
     const widget = createWidget(schemaType, generateWidgetId(schemaType));
     if (!widget) {
-      ElMessage.error(`未知部件类型: ${schemaType}`);
+      ElMessage.error(tt("editor.canvas.unknownWidgetType", { type: schemaType }));
       return;
     }
 

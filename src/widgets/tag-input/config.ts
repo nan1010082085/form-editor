@@ -10,7 +10,7 @@ export const tagInputConfig: WidgetConfig = {
     height: "40px",
   },
   defaultProps: {
-    placeholder: "请输入标签",
+    placeholder: "Please enterLabel",
     disabled: false,
     maxlength: 20,
     maxTags: 10,
@@ -28,7 +28,7 @@ export const tagInputConfig: WidgetConfig = {
         key: "placeholder",
         label: "Placeholder",
         type: "input",
-        default: "请输入标签",
+        default: "Please enterLabel",
       },
       { key: "disabled", label: "Disabled", type: "switch", default: false },
       { key: "maxlength", label: "Max Label Length", type: "number", default: 20 },

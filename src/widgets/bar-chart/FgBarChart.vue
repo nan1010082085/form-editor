@@ -128,11 +128,11 @@ const chartRef = ref<HTMLDivElement>();
 const chartInstanceRef = ref<EChartsType | null>(null);
 let chartInstance: EChartsType | null = null;
 
-// 绑定图表点击事件到事件引擎
+// 绑定Chart点击Event到Event引擎
 useChartEvents(chartInstanceRef, widgetData, chartData);
 let resizeObserver: ResizeObserver | null = null;
 
-// 懒加载：仅当容器进入视口后才初始化图表
+// 懒加载：仅当Container进入视口后才初始化Chart
 const { isVisible } = useChartLazyInit(chartRef);
 
 function initChart() {
@@ -148,7 +148,7 @@ function handleResize() {
   chartInstance?.resize();
 }
 
-// 容器可见后初始化图表
+// Container可见后初始化Chart
 watch(isVisible, (visible) => {
   if (visible) {
     nextTick(() => initChart());
@@ -167,7 +167,7 @@ watch(chartOption, async (option) => {
 });
 
 onMounted(() => {
-  // 如果 IntersectionObserver 还没触发（首屏即可见），直接初始化
+  // 如果 IntersectionObserver 还没Trigger（首屏即可见）, 直接初始化
   if (isVisible.value) {
     initChart();
   }

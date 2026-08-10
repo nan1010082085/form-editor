@@ -5,7 +5,7 @@ import { tt } from "@/locales";
 import { useAuthStore } from "@schema-platform/platform-shared/utils/stores/authStore";
 import { guardAuthenticatedRoute } from "@schema-platform/platform-shared/utils/authSession";
 
-// qiankun 模式下使用 memory history，避免子应用路由篡改宿主 URL
+// qiankun 模式下使用 memory history, 避免子应用Route篡改宿主 URL
 const isQiankunSubApp = () => !!window.__POWERED_BY_QIANKUN__;
 
 const routes = [
@@ -16,7 +16,7 @@ const routes = [
     component: () =>
       import("@schema-platform/platform-shared/components/auth/LoginView.vue"),
     props: {
-      title: "表单设计器",
+      title: "Form Designer",
       subtitle: "Schema Form Platform",
     },
     meta: { public: true },
@@ -38,7 +38,7 @@ const routes = [
       `/view?id=${to.query.id || ""}`,
   },
 
-  // ---- 带全局布局的管理页面 ----
+  // ---- 带全局Layout的管理Page ----
   {
     path: "/",
     component: () => import("@/components/AppLayout.vue"),
@@ -86,7 +86,7 @@ const routes = [
     ],
   },
 
-  // ---- 全屏页面（无布局壳）----
+  // ---- 全屏Page（无Layout壳）----
   {
     path: "/editor",
     name: "editor",
@@ -130,8 +130,8 @@ const routes = [
 ];
 
 /**
- * 从浏览器 URL 自动推导子应用的路由 base。
- * qiankun 模式下 shell 通过 getRouteBase() 下发；独立运行时从 URL 推导。
+ * 从浏览器 URL 自动推导子应用的Route base。
+ * qiankun 模式下 shell passed getRouteBase() 下发；独立运RowHrs从 URL 推导。
  */
 function inferRouteBase(): string {
   const p = window.location.pathname;
@@ -158,7 +158,7 @@ export function createEditorRouter(routeBase?: string) {
     routes,
   });
 
-  // 路由守卫：独立访问时检查登录状态
+  // Route守卫：独立访问Hrs检查登录Status
   router.beforeEach(async (to) => {
     if (
       to.name === "forbidden" ||
@@ -183,7 +183,7 @@ export function createEditorRouter(routeBase?: string) {
     return guardAuthenticatedRoute(to);
   });
 
-  // 路由守卫：编辑器未保存时拦截离开
+  // Route守卫：Edit器未SaveHrs拦截离开
   let allowEditorLeave = false;
 
   router.beforeEach((to, from) => {
@@ -195,7 +195,7 @@ export function createEditorRouter(routeBase?: string) {
     if (from.name === "editor") {
       const editorStore = useEditorStore();
       if (editorStore.isDirty) {
-        // 弹框确认（异步），先阻止导航
+        // 弹框Confirm（Async）, 先阻止Navigation
         ElMessageBox.confirm(
           tt("editor.common.unsavedChanges"),
           tt("editor.common.info"),
@@ -210,7 +210,7 @@ export function createEditorRouter(routeBase?: string) {
             router.push(to.fullPath);
           })
           .catch(() => {
-            // 用户取消：恢复浏览器 URL 到当前路由（仅非微前端模式）
+            // UserCancel：Restore浏览器 URL 到当前Route（仅非微前端模式）
             if (!isQiankunSubApp()) {
               window.history.pushState(
                 null,

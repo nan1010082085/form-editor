@@ -7,13 +7,13 @@ export const dateTimeSlotConfig: WidgetConfig = {
   author: "yangdongnan",
   defaultStyle: { width: "400px", height: "40px" },
   defaultProps: {
-    startPlaceholder: "开始时间",
-    endPlaceholder: "结束时间",
+    startPlaceholder: "Start time",
+    endPlaceholder: "End time",
     format: "YYYY-MM-DD HH:mm:ss",
-    rangeSeparator: "至",
+    rangeSeparator: "to",
   },
   exposedValues: [
-    { key: "value", type: "string", description: "当前字段值", example: "" },
+    { key: "value", type: "string", description: "Current field value", example: "" },
   ],
   configPanels: ["events", "linkages", "variables"] as const,
   propertyPanel: {
@@ -22,15 +22,15 @@ export const dateTimeSlotConfig: WidgetConfig = {
     props: [
       {
         key: "startPlaceholder",
-        label: "开始占位",
+        label: "Start Placeholder",
         type: "input",
-        default: "开始时间",
+        default: "Start time",
       },
       {
         key: "endPlaceholder",
-        label: "结束占位",
+        label: "End Placeholder",
         type: "input",
-        default: "结束时间",
+        default: "End time",
       },
       {
         key: "format",
@@ -38,7 +38,7 @@ export const dateTimeSlotConfig: WidgetConfig = {
         type: "input",
         default: "YYYY-MM-DD HH:mm:ss",
       },
-      { key: "rangeSeparator", label: "Separator", type: "input", default: "至" },
+      { key: "rangeSeparator", label: "Separator", type: "input", default: "to" },
     ],
   },
 };

@@ -17,14 +17,14 @@ export const calendarConfig: WidgetConfig = {
   ],
   configPanels: ["events", "variables"],
   defaultProps: {
-    title: "日程日历",
+    title: "Schedule Calendar",
     staticData: calendarMock.staticData.events,
   },
   propertyPanel: {
     basic: ["label"],
     style: ["margin", "padding"],
     props: [
-      { key: "title", label: "Title", type: "input", default: "日程日历" },
+      { key: "title", label: "Title", type: "input", default: "Schedule Calendar" },
     ],
   },
 };

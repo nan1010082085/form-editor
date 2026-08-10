@@ -21,7 +21,7 @@ export const filterBarConfig: WidgetConfig = {
       { key: "dateRange", label: "Date", type: "date-range" },
     ] as Array<Record<string, unknown>>,
     showSearch: true,
-    searchPlaceholder: "请输入关键词",
+    searchPlaceholder: "Please enter keyword",
   },
   exposedValues: [
     { key: "filterData", type: "object", description: "Current Filter" },
@@ -56,7 +56,7 @@ export const filterBarConfig: WidgetConfig = {
               { label: "Text", value: "text" },
               { label: "Select", value: "select" },
               { label: "Date", value: "date" },
-              { label: "日期范围", value: "date-range" },
+              { label: "Date Range", value: "date-range" },
             ],
           },
         ],

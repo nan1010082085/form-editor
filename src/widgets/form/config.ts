@@ -19,7 +19,7 @@ export const formConfig: WidgetConfig = {
         label: "Label Width",
         type: "input",
         default: "100px",
-        desc: "表单标签的宽度",
+        desc: "Width of form label",
       },
       {
         key: "labelPosition",
@@ -31,7 +31,7 @@ export const formConfig: WidgetConfig = {
           { label: "Top", value: "top" },
         ],
         default: "right",
-        desc: "表单标签的对齐位置",
+        desc: "Alignment of form label",
       },
     ],
     style: ["padding", "backgroundColor"],

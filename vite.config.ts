@@ -48,7 +48,7 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       cors: true,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      proxy: createDevApiProxy(proxyTarget),
+      proxy: createDevApiProxy(proxyTarget) as Record<string, any>,
     },
   }
 })

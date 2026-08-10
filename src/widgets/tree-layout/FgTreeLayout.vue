@@ -1,5 +1,9 @@
 <script setup lang="ts">
+/**
+ * FgTreeLayout — 侧栏面板Container（带标题与Search）
+ */
 import { inject, computed, ref } from "vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import { widgetDataKey } from "../base/types";
 import type { Widget } from "../base/types";
 import SchemaRender from "../../components/WidgetRenderer/SchemaRender.vue";
@@ -7,6 +11,7 @@ import styles from "./style.module.scss";
 
 const props = defineProps<{ editable?: boolean }>();
 
+const { t } = useI18n();
 const widgetData = inject(widgetDataKey)!;
 const searchKeyword = ref("");
 
@@ -15,6 +20,18 @@ const hasChildren = computed(
 );
 const showHeader = computed(() => widgetData.value.props?.showHeader !== false);
 const showSearch = computed(() => widgetData.value.props?.showSearch !== false);
+
+const headerTitle = computed(
+  () =>
+    (widgetData.value.props?.title as string) ||
+    t("editor.treeLayout.defaultTitle"),
+);
+
+const searchPlaceholder = computed(
+  () =>
+    (widgetData.value.props?.searchPlaceholder as string) ||
+    t("editor.treeLayout.defaultSearchPlaceholder"),
+);
 
 const filteredChildren = computed(() => {
   const children = widgetData.value.children ?? [];
@@ -29,12 +46,12 @@ const filteredChildren = computed(() => {
 <template>
   <div :class="styles.container">
     <div v-if="showHeader" :class="styles.header">
-      {{ (widgetData.props?.title as string) || "Sidebar Panel" }}
+      {{ headerTitle }}
     </div>
     <div v-if="showSearch" :class="styles.search">
       <el-input
         v-model="searchKeyword"
-        :placeholder="(widgetData.props?.searchPlaceholder as string) || '搜索'"
+        :placeholder="searchPlaceholder"
         size="small"
         clearable
       />
@@ -48,13 +65,13 @@ const filteredChildren = computed(() => {
         v-else-if="props.editable && searchKeyword && hasChildren"
         :class="styles.placeholder"
       >
-        无匹配子部件
+        {{ t("editor.treeLayout.noMatchChildren") }}
       </div>
       <div
         v-else-if="props.editable && !hasChildren"
         :class="styles.placeholder"
       >
-        拖入部件
+        {{ t("editor.canvas.dragWidget") }}
       </div>
     </div>
   </div>

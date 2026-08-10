@@ -1,8 +1,8 @@
 /**
- * useDataSource — Widget 数据源消费 composable
+ * useDataSource — Widget Data源消费 composable
  *
- * 当 widget 的 api 配置包含 dataSourceId 时，委托给 DataSourceStore；
- * 否则返回 null，由调用方走原有 legacy 路径。
+ * 当 widget 的 api Config包含 dataSourceId Hrs, 委托给 DataSourceStore；
+ * 否则返回 null, 由调用方走原有 legacy 路径。
  */
 import {
   ref,
@@ -20,7 +20,7 @@ export interface UseDataSourceReturn {
   loading: Ref<boolean>;
   error: Ref<string>;
   reload: () => Promise<void>;
-  /** 是否使用了全局数据源（false 表示应走 legacy 路径） */
+  /** 是否使用了全局Data源（false 表示应走 legacy 路径） */
   isGlobal: Ref<boolean>;
 }
 

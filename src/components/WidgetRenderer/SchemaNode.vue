@@ -3,17 +3,17 @@
  * SchemaNode — 单个 Widget 渲染节点
  *
  * SchemaRender 的内部实现细节。每个 SchemaNode 实例
- * 独立调用 provide，确保 Vue provide 作用域正确隔离。
+ * 独立调用 provide, 确保 Vue provide 作用域正确隔离。
  *
  * 职责：
- * - provide 当前 Widget 的 data 和 style 给子组件
- * - 判断是否容器组件，渲染组件 + 递归 children
- * - 位置通过 position: absolute + left/top 定位
+ * - provide 当前 Widget 的 data 和 style 给子Component
+ * - 判断是否ContainerComponent, 渲染Component + 递归 children
+ * - 位置passed position: absolute + left/top 定位
  *
  * 性能优化：
- * - 注入共享的 linkageStateMap（由 EditorCanvas/WidgetRenderer 提供），
+ * - 注入共享的 linkageStateMap（由 EditorCanvas/WidgetRenderer 提供）, 
  *   避免每个 SchemaNode 独立创建 useLinkage 实例
- * - 使用缓存的组件映射表
+ * - 使用Cache的ComponentMap表
  */
 import {
   computed,
@@ -69,21 +69,21 @@ const props = defineProps<{
   canvasOffsetY?: number;
 }>();
 
-/** 组件映射表 — 缓存版本，避免每次 mount 创建新对象 */
+/** ComponentMap表 — CacheVersion, 避免每次 mount 创建新对象 */
 const compMap = getComponentMap();
 
 import { useAllContainerTypes } from "../../composables/useConstant";
 
-/** 获取容器组件类型集合（动态） */
+/** 获取ContainerComponentType集合（动态） */
 function getContainerTypes() {
   return useAllContainerTypes();
 }
 
 /**
- * 自渲染容器：组件内部自己渲染 children（通过 SchemaRender + inject），
- * SchemaNode 不需要再渲染 childrenLayer，否则子组件会重复出现。
+ * 自渲染Container：Component内部自己渲染 children（passed SchemaRender + inject）, 
+ * SchemaNode 不需要再渲染 childrenLayer, 否则子Component会重复出现。
  *
- * 所有容器统一由 childrenLayer（absolute 定位）渲染子组件，
+ * 所有Container统一由 childrenLayer（absolute 定位）渲染子Component, 
  * 保证 overlay 坐标系与渲染坐标系一致。
  */
 const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
@@ -95,18 +95,18 @@ const SELF_RENDERING_CONTAINERS: ReadonlySet<SchemaType> = new Set([
 ]);
 
 /**
- * 交互式容器：内部有可交互 UI（tab headers、dialog body），
+ * 交互式Container：内部有可交互 UI（tab headers、dialog body）, 
  * 需要 pointer-events:auto 让点击穿透 hitArea 到达实际 UI。
- * 选中逻辑由 wrapper @click 处理，而非 hitArea。
+ * 选中逻辑由 wrapper @click 处理, 而非 hitArea。
  */
 const INTERACTIVE_CONTAINER_TYPES: ReadonlySet<SchemaType> = new Set([
   "tabs",
   "dialog",
 ]);
 
-// ---- 组件类型集合 ----
+// ---- ComponentType集合 ----
 
-/** 表单类组件（支持 change 事件） */
+/** Form类Component（支持 change Event） */
 const FORM_COMPONENT_TYPES: ReadonlySet<SchemaType> = new Set([
   "input",
   "select",
@@ -126,7 +126,7 @@ const FORM_COMPONENT_TYPES: ReadonlySet<SchemaType> = new Set([
   "time-picker",
 ]);
 
-/** 输入类组件（支持 focus/blur 事件） */
+/** Input类Component（支持 focus/blur Event） */
 const INPUT_COMPONENT_TYPES: ReadonlySet<SchemaType> = new Set([
   "input",
   "select",
@@ -135,7 +135,7 @@ const INPUT_COMPONENT_TYPES: ReadonlySet<SchemaType> = new Set([
   "richtext",
 ]);
 
-/** 可点击组件（支持 click 事件） */
+/** 可点击Component（支持 click Event） */
 const CLICKABLE_TYPES: ReadonlySet<SchemaType> = new Set([
   "button",
   "title",
@@ -148,36 +148,36 @@ const logger = useLogger("SchemaNode");
 
 // ---- Provide/Inject ----
 
-/** Provide 当前 Widget 数据给子组件 */
+/** Provide 当前 Widget Data给子Component */
 const widgetData = computed(() => props.widget);
 provide(widgetDataKey, widgetData as ComputedRef<Widget>);
 
-/** Provide 当前 Widget 样式配置 */
+/** Provide 当前 Widget StyleConfig */
 const widgetStyle = computed(() => props.widget.style ?? {});
 provide(widgetStyleKey, widgetStyle as ComputedRef<Record<string, unknown>>);
 
 // ---- 渲染逻辑 ----
 
-/** 是否编辑模式 */
+/** 是否Edit模式 */
 const isEditMode = computed(() => props.mode === "edit");
 
-/** 是否容器组件 */
+/** 是否ContainerComponent */
 const isContainer = computed(() => getContainerTypes().has(props.widget.type));
 
-/** 是否自渲染容器（内部已渲染 children，无需 childrenLayer） */
+/** 是否自渲染Container（内部已渲染 children, 无需 childrenLayer） */
 const isSelfRendering = computed(() =>
   SELF_RENDERING_CONTAINERS.has(props.widget.type),
 );
 
-/** 解析组件 */
+/** ParseComponent */
 const resolvedComponent = computed(() => compMap[props.widget.type]);
 
 // ---- Tabs activeKey 支持 ----
 
-/** tabs 容器组件 ref，用于读取 activeKey */
+/** tabs ContainerComponent ref, 用于读取 activeKey */
 const containerRef = ref<ComponentPublicInstance | null>(null);
 
-/** 当前 tabs 容器的 activeKey（仅 tabs 容器有效） */
+/** 当前 tabs Container的 activeKey（仅 tabs ContainerValid） */
 const activeTabKey = computed(() => {
   if (props.widget.type !== "tabs") return null;
   const instance = containerRef.value as Record<string, unknown> | null;
@@ -188,7 +188,7 @@ const activeTabKey = computed(() => {
   );
 });
 
-/** 过滤后的子部件列表：tabs 容器按 tabKey 过滤，其他容器全量 */
+/** Filter后的子WidgetColumn表：tabs Container按 tabKey Filter, 其他Container全量 */
 const filteredChildren = computed(() => {
   if (!props.widget.children?.length) return [];
   if (props.widget.type !== "tabs" || activeTabKey.value === null)
@@ -198,13 +198,13 @@ const filteredChildren = computed(() => {
   );
 });
 
-// ---- 规则引擎 ----
+// ---- Rule引擎 ----
 
 const widgetStore = useWidgetStore();
 const editorStore = useEditorStore();
 const boardStore = useBoardStore();
 
-/** 父容器像素尺寸（嵌套部件 % 换算基准，根级默认为画布） */
+/** 父Container像素尺寸（嵌套Widget % 换算基准, 根级默认为画布） */
 const parentBounds = inject(
   parentBoundsKey,
   computed<WidgetBounds>(() => ({
@@ -213,7 +213,7 @@ const parentBounds = inject(
   })),
 );
 
-/** 当前部件解析尺寸 — 与 EditorOverlay hitArea 算法一致 */
+/** 当前WidgetParse尺寸 — 与 EditorOverlay hitArea 算法一致 */
 const resolvedBounds = computed<WidgetBounds>(() => {
   const pos = resolvedPosition.value;
   const parentW = parentBounds.value.widthPx;
@@ -226,17 +226,17 @@ const resolvedBounds = computed<WidgetBounds>(() => {
 provide(widgetBoundsKey, resolvedBounds);
 provide(parentBoundsKey, resolvedBounds);
 
-/** 交互式容器空白区域点击 → 选中容器 */
+/** 交互式Container空白Region点击 → 选中Container */
 function handleInteractiveContainerClick() {
   editorStore.select(props.widget.id);
 }
 
-// ---- 预览模式：弹窗注册 + 事件拦截 ----
+// ---- 预览模式：Dialog注册 + Event拦截 ----
 
-/** 弹窗注册表（从 EditorCanvas 或 WidgetRenderer 注入） */
+/** Dialog注册表（从 EditorCanvas 或 WidgetRenderer 注入） */
 const dialogRegistry = inject(DIALOG_REGISTRY_KEY, null);
 
-/** dialog 类型的可见性（预览模式下默认隐藏，通过事件打开） */
+/** dialog Type的可见性（预览模式下默认Hide, passedEventOpen） */
 const dialogVisible = ref(false);
 
 /** 注册/注销 dialog 到注册表 */
@@ -266,7 +266,7 @@ onUnmounted(() => {
 /** 翻译函数（从 WidgetRenderer 注入） */
 const t = inject(FORM_GRID_T_KEY, (key: string) => key);
 
-/** 事件执行上下文（预览模式从 EditorCanvas/WidgetRenderer 注入） */
+/** Event执Row上下文（预览模式从 EditorCanvas/WidgetRenderer 注入） */
 const eventCtx = inject(EVENT_CONTEXT_KEY, null);
 
 /** 响应式断点（预览/发布模式从 EditorCanvas 注入） */
@@ -275,7 +275,7 @@ const previewBreakpoint = inject(
   ref<PreviewBreakpoint>("desktop"),
 );
 
-/** 响应式位置解析 */
+/** 响应式位置Parse */
 const widgetRef = computed(() => props.widget);
 const { resolvedPosition } = useResponsivePosition({
   widget: widgetRef,
@@ -283,10 +283,10 @@ const { resolvedPosition } = useResponsivePosition({
   isPreviewMode: computed(() => !isEditMode.value),
 });
 
-/** 顶层 formData（absolute 布局联动/提交聚合） */
+/** 顶层 formData（absolute LayoutLinkage/SubmitAggregate） */
 const formGridData = inject(FORM_GRID_FORM_KEY, null);
 
-/** 预览模式统一事件触发 */
+/** 预览模式统一EventTrigger */
 async function handlePreviewEvent(trigger: string, _value?: unknown) {
   if (trigger === "change" && props.widget.field && formGridData) {
     formGridData[props.widget.field] = props.widget
@@ -296,7 +296,7 @@ async function handlePreviewEvent(trigger: string, _value?: unknown) {
   await triggerWidgetEvent(props.widget, trigger, eventCtx);
 }
 
-/** 构建编辑器模式的事件执行上下文（编辑器仅做配置验证，不实际执行复杂逻辑） */
+/** 构建Edit器模式的Event执Row上下文（Edit器仅做Config验证, 不实际执Row复杂逻辑） */
 function buildEditorEventContext(): EventExecutionContext {
   return {
     findWidget: (id: string) =>
@@ -333,15 +333,15 @@ function buildEditorEventContext(): EventExecutionContext {
   };
 }
 
-/** 统一事件触发：由 SchemaNode 拦截并分发，部件无需自行调用 */
+/** 统一EventTrigger：由 SchemaNode 拦截并Min发, Widget无需自Row调用 */
 async function handleWidgetEvent(trigger: string, _value?: unknown) {
   logger.debug(`trigger=${trigger}`, props.widget.id);
   await triggerWidgetEvent(props.widget, trigger, buildEditorEventContext());
 }
 
 /**
- * 当前表单上下文的值集合（编辑模式仅用于事件引擎调试日志）。
- * 延迟计算：仅在事件触发时按需收集，避免每次渲染都 O(n) 遍历。
+ * 当前Form上下文的Value集合（Edit模式仅用于Event引擎DebugLog）。
+ * 延迟计算：仅在EventTriggerHrs按需收集, 避免每次渲染都 O(n) 遍历。
  */
 const formData = computed<FormData>(() => {
   const formId = props.widget.formId;
@@ -349,15 +349,15 @@ const formData = computed<FormData>(() => {
   return widgetStore.collectFormValues(formId) as FormData;
 });
 
-// formData 在编辑模式下仅供 buildEditorEventContext 使用，
-// 通过 lazy computed 避免在 render 路径中触发
+// formData 在Edit模式下仅供 buildEditorEventContext 使用, 
+// passed lazy computed 避免在 render 路径中Trigger
 
 /**
- * 规则引擎输出：visible / disabled / required。
+ * Rule引擎Output：visible / disabled / required。
  *
- * 性能优化：从父级注入共享的 linkageStateMap（由 EditorCanvas 或 WidgetRenderer 提供），
+ * 性能优化：从父级注入共享的 linkageStateMap（由 EditorCanvas 或 WidgetRenderer 提供）, 
  * 而非每个 SchemaNode 独立创建 useLinkage 实例。
- * widget.hidden / widget.disabled 作为静态属性覆盖（优先于联动状态）。
+ * widget.hidden / widget.disabled 作为静态Property覆盖（优先于LinkageStatus）。
  */
 const DEFAULT_LINKAGE_STATE: LinkageState = {
   visible: true,
@@ -370,15 +370,15 @@ const renderState = computed(() => {
   const field = props.widget.field;
   const linkageState = field ? linkageStateMap?.value.get(field) : undefined;
   const base = linkageState ?? DEFAULT_LINKAGE_STATE;
-  // hidden 静态属性覆盖：hidden=true 时强制不可见
+  // hidden 静态Property覆盖：hidden=true Hrs强制不可见
   if (props.widget.hidden) {
     return { ...base, visible: false };
   }
-  // 响应式断点隐藏：当前断点配置了 hidden=true
+  // 响应式断点Hide：当前断点Config了 hidden=true
   if (resolvedPosition.value.hidden) {
     return { ...base, visible: false };
   }
-  // disabled 属性覆盖（规则引擎动态设置）
+  // disabled Property覆盖（Rule引擎动态Settings）
   if (props.widget.disabled) {
     return { ...base, disabled: true };
   }
@@ -387,12 +387,12 @@ const renderState = computed(() => {
 
 provide(widgetRenderStateKey, renderState);
 
-// ---- 表单校验 ----
+// ---- FormValidate ----
 
-/** 注入表单上下文（仅在 FgForm 内部时有值） */
+/** 注入Form上下文（仅在 FgForm 内部Hrs有Value） */
 const formCtx = inject(formContextKey, null);
 
-/** 当前 base 组件是否需要包裹 el-form-item（有 field + validationRules 且在表单内） */
+/** 当前 base Component是否需要包裹 el-form-item（有 field + validationRules 且在Form内） */
 const needsFormItem = computed(() => {
   if (!formCtx) return false;
   if (!props.widget.field) return false;
@@ -400,8 +400,8 @@ const needsFormItem = computed(() => {
 });
 
 /**
- * 位置样式：position: absolute + left/top（不用 transform）
- * 合并 widget.style 中的 CSS 属性（边框、圆角、内外边距、背景色、对齐等）
+ * 位置Style：position: absolute + left/top（不用 transform）
+ * 合并 widget.style 中的 CSS Property（Border、Border radius、内Margin、Background、对齐等）
  */
 const CSS_STYLE_KEYS: ReadonlySet<string> = new Set([
   "margin",
@@ -452,7 +452,7 @@ const wrapperStyle = computed(() => {
   if (pos.zIndex !== undefined) {
     style.zIndex = pos.zIndex;
   }
-  // 合并 widget.style 中的 CSS 属性到 wrapper
+  // 合并 widget.style 中的 CSS Property到 wrapper
   const ws = props.widget.style;
   if (ws) {
     for (const key of CSS_STYLE_KEYS) {
@@ -467,11 +467,11 @@ const wrapperStyle = computed(() => {
 </script>
 
 <template>
-  <!-- 规则引擎控制可见性 -->
+  <!-- Rule引擎控制可见性 -->
   <template v-if="renderState.visible">
-    <!-- Dialog 容器：编辑模式=shell+childrenLayer，预览模式=EnhancedDialog -->
+    <!-- Dialog Container：Edit模式=shell+childrenLayer, 预览模式=EnhancedDialog -->
     <template v-if="widget.type === 'dialog'">
-      <!-- 编辑模式：容器 shell + 子部件层 -->
+      <!-- Edit模式：Container shell + 子Widget层 -->
       <div
         v-if="isEditMode"
         :data-widget-id="widget.id"
@@ -505,7 +505,7 @@ const wrapperStyle = computed(() => {
         </div>
       </div>
 
-      <!-- 预览模式：EnhancedDialog（默认隐藏，通过事件打开） -->
+      <!-- 预览模式：EnhancedDialog（默认Hide, passedEventOpen） -->
       <AppDialog
         v-else
         v-model="dialogVisible"
@@ -520,7 +520,7 @@ const wrapperStyle = computed(() => {
         :destroy-on-close="widget.props?.destroyOnClose !== false"
         :close-on-click-modal="widget.props?.closeOnClickModal === true"
       >
-        <!-- 流式布局渲染子部件（与 WidgetNode 一致） -->
+        <!-- 流式Layout渲染子Widget（与 WidgetNode 一致） -->
         <template v-if="filteredChildren.length">
           <SchemaRender
             v-for="(child, ci) in filteredChildren"
@@ -539,7 +539,7 @@ const wrapperStyle = computed(() => {
       </AppDialog>
     </template>
 
-    <!-- 其他容器组件：容器渲染 + 独立子部件层 -->
+    <!-- 其他ContainerComponent：Container渲染 + 独立子Widget层 -->
     <div
       v-else-if="isContainer"
       :data-widget-id="widget.id"
@@ -559,7 +559,7 @@ const wrapperStyle = computed(() => {
         handleInteractiveContainerClick()
       "
     >
-      <!-- 容器组件自身渲染（卡片标题、表单包裹等） -->
+      <!-- ContainerComponent自身渲染（Card Title、Form包裹等） -->
       <WidgetErrorBoundary
         v-if="resolvedComponent"
         :widget-type="widget.type"
@@ -575,7 +575,7 @@ const wrapperStyle = computed(() => {
           :widget="widget"
           :editable="isEditMode"
         >
-          <!-- form 容器：子部件必须在 el-form 内才能参与校验 -->
+          <!-- form Container：子Widget必须在 el-form 内才能参与Validate -->
           <div
             v-if="widget.type === 'form' && filteredChildren.length"
             :class="styles.childrenLayer"
@@ -587,7 +587,7 @@ const wrapperStyle = computed(() => {
               :canvas-offset-y="(canvasOffsetY ?? 0) + resolvedPosition.y"
             />
           </div>
-          <!-- flex-zone: Flex 流式渲染 children（Free canvas 内的 Flex 子区域） -->
+          <!-- flex-zone: Flex 流式渲染 children（Free canvas 内的 Flex 子Region） -->
           <template v-if="widget.type === 'flex-zone' && filteredChildren.length">
             <SchemaRender
               v-for="(child, ci) in filteredChildren"
@@ -597,7 +597,7 @@ const wrapperStyle = computed(() => {
           </template>
         </component>
       </WidgetErrorBoundary>
-      <!-- 非 form 容器：子部件层绝对定位（排除 flex-zone，已在上方 Flex 渲染） -->
+      <!-- 非 form Container：子Widget层绝对定位（排除 flex-zone, 已在上方 Flex 渲染） -->
       <div
         v-if="
           filteredChildren.length && !isSelfRendering && widget.type !== 'form' && widget.type !== 'flex-zone'
@@ -608,9 +608,9 @@ const wrapperStyle = computed(() => {
       </div>
     </div>
 
-    <!-- 基础组件：直接渲染 -->
-    <!-- 编辑模式：SchemaNode 拦截所有 DOM 事件分发到事件引擎 -->
-    <!-- 预览模式：change/focus/blur 仍由 wrapper 拦截（表单组件不自行触发），click 由组件自行处理（避免与 FgButton 内部 handler 重复） -->
+    <!-- 基础Component：直接渲染 -->
+    <!-- Edit模式：SchemaNode 拦截所有 DOM EventMin发到Event引擎 -->
+    <!-- 预览模式：change/focus/blur 仍由 wrapper 拦截（FormComponent不自RowTrigger）, click 由Component自Row处理（避免与 FgButton 内部 handler 重复） -->
     <div
       v-else
       :data-widget-id="widget.id"
@@ -640,7 +640,7 @@ const wrapperStyle = computed(() => {
         handleWidgetEvent('click')
       "
     >
-      <!-- 表单校验：有 field + validationRules 时包裹 el-form-item -->
+      <!-- FormValidate：有 field + validationRules Hrs包裹 el-form-item -->
       <el-form-item
         v-if="needsFormItem"
         :label="widget.label"

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * SubmissionListView — 表单提交数据查看页
+ * SubmissionListView — FormSubmitDataView页
  *
- * 选择表单 → 查看该表单的所有提交数据，支持状态筛选、分页、删除、导出 CSV/Excel。
+ * 选择Form → View该Form的所有SubmitData, 支持StatusFilter、Min页、Delete、Export CSV/Excel。
  */
 import { onMounted, ref, computed, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -18,24 +18,25 @@ import {
   type SubmissionItem,
   type ExportFormat,
 } from "@/api/dataApi";
+import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import type { PaginatedResponse, SchemaListItem } from "@/types/api";
 import styles from "./SubmissionListView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
 
 const { t } = useI18n();
 
-// ── 表单列表 ──
+// ── FormColumn表 ──
 const schemas = ref<SchemaListItem[]>([]);
 const selectedSchemaId = ref("");
 
-// ── 提交数据 ──
+// ── SubmitData ──
 const submissions = ref<SubmissionItem[]>([]);
 const total = ref(0);
 const page = ref(1);
 const pageSize = ref(20);
 const { loading, withLoading } = useDataLoading({ timeout: 15000 });
 
-// ── 筛选 ──
+// ── Filter ──
 const activeStatus = ref("");
 
 // ── 批量选择 ──
@@ -49,13 +50,13 @@ const statusOptions = computed(() => [
   { label: t("editor.submissionView.statusRejected"), value: "rejected" },
 ]);
 
-// ── 当前选中的 schema 名称 ──
+// ── 当前选中的 schema Name ──
 const selectedSchemaName = computed(() => {
   const s = schemas.value.find((item) => item.id === selectedSchemaId.value);
   return s?.name ?? "";
 });
 
-// ── 加载表单列表 ──
+// ── 加载FormColumn表 ──
 async function loadSchemas() {
   const res: PaginatedResponse<SchemaListItem> = await fetchSchemas({
     pageSize: 200,
@@ -66,7 +67,7 @@ async function loadSchemas() {
   }
 }
 
-// ── 加载提交数据 ──
+// ── 加载SubmitData ──
 async function loadSubmissions() {
   if (!selectedSchemaId.value) {
     submissions.value = [];
@@ -96,7 +97,7 @@ onMounted(async () => {
   }
 });
 
-// ── 表单切换时重新加载 ──
+// ── Form切换Hrs重新加载 ──
 watch(selectedSchemaId, () => {
   page.value = 1;
   loadSubmissions();
@@ -107,13 +108,13 @@ watch(activeStatus, () => {
   loadSubmissions();
 });
 
-// ── 分页 ──
+// ── Min页 ──
 function handlePageChange(p: number) {
   page.value = p;
   loadSubmissions();
 }
 
-// ── 删除 ──
+// ── Delete ──
 async function handleDelete(item: SubmissionItem) {
   try {
     await ElMessageBox.confirm(
@@ -128,12 +129,13 @@ async function handleDelete(item: SubmissionItem) {
     await deleteSubmission(selectedSchemaId.value, item.id);
     ElMessage.success(t("editor.submissionView.deleted"));
     await loadSubmissions();
-  } catch {
-    // 用户取消，不做处理
+  } catch (err) {
+    if (err === "cancel" || err === "close") return;
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 
-// ── 批量删除 ──
+// ── 批量Delete ──
 async function handleBatchDelete() {
   const ids = selectedRows.value.map((r) => r.id);
   try {
@@ -152,8 +154,9 @@ async function handleBatchDelete() {
     );
     selectedRows.value = [];
     await loadSubmissions();
-  } catch {
-    // 用户取消
+  } catch (err) {
+    if (err === "cancel" || err === "close") return;
+    ElMessage.error(resolveApiErrorMessage(err));
   }
 }
 
@@ -181,7 +184,7 @@ async function handleBatchApprove() {
     selectedRows.value = [];
     await loadSubmissions();
   } catch {
-    // 用户取消
+    // UserCancel
   }
 }
 
@@ -190,7 +193,7 @@ function handleSelectionChange(rows: SubmissionItem[]) {
   selectedRows.value = rows;
 }
 
-// ── 导出 ──
+// ── Export ──
 const FORMAT_EXTENSIONS: Record<ExportFormat, string> = {
   csv: "csv",
   xlsx: "xlsx",
@@ -353,7 +356,7 @@ function dataKeys(item: SubmissionItem): string[] {
         </div>
       </div>
 
-      <!-- 未选择表单 -->
+      <!-- 未选择Form -->
       <div v-if="!selectedSchemaId" :class="styles.emptyState">
         <div :class="styles.emptyIcon">
           <AppIcon name="document" :size="64" />

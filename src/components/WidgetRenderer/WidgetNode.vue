@@ -2,16 +2,16 @@
 /**
  * WidgetNode — 单个 Widget 流式渲染节点
  *
- * 与 SchemaNode（绝对定位，编辑器画布）不同，
- * WidgetNode 使用流式布局，用于 WidgetRenderer（预览/发布/运行时）。
+ * 与 SchemaNode（绝对定位, Edit器画布）不同, 
+ * WidgetNode 使用流式Layout, 用于 WidgetRenderer（预览/发布/运RowHrs）。
  *
  * 职责：
- * - 从 registry 解析组件并渲染
- * - 容器组件递归渲染 children
- * - 有 field + validationRules 时包裹 el-form-item
- * - dialog 容器渲染为 EnhancedDialog（默认打开）
- * - 拦截 DOM 事件并路由到事件引擎
- * - 注入联动状态控制 visible/disabled/required
+ * - 从 registry ParseComponent并渲染
+ * - ContainerComponent递归渲染 children
+ * - 有 field + validationRules Hrs包裹 el-form-item
+ * - dialog Container渲染为 EnhancedDialog（DefaultOpen）
+ * - 拦截 DOM Event并Route到Event引擎
+ * - 注入LinkageStatus控制 visible/disabled/required
  */
 import { computed, inject, provide, ref, onMounted, onUnmounted } from "vue";
 import type { ComputedRef, ComponentPublicInstance } from "vue";
@@ -31,6 +31,7 @@ import {
   EVENT_CONTEXT_KEY,
   FORM_GRID_LINKAGE_KEY,
   DIALOG_REGISTRY_KEY,
+  GRID_ENGINE_CONTEXT_KEY,
 } from "./types";
 import { getComponentMap } from "../../widgets/registry";
 import { useAllContainerTypes } from "../../composables/useConstant";
@@ -41,28 +42,31 @@ import { useBoardStore } from "../../stores/board";
 import { EDITOR_CONTEXTMENU_KEY } from "../Editor/editorContextKeys";
 import { useGridDropZone } from "../../composables/useGridDropZone";
 import { useWidgetAnimation } from "../../composables/useWidgetAnimation";
+import { widthToGridSpan } from "../../utils/gridEngine";
 import SchemaRender from "./SchemaRender.vue";
 import WidgetErrorBoundary from "./WidgetErrorBoundary.vue";
 import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./WidgetNode.module.scss";
 
 const props = defineProps<{
   widget: PartialWidget;
   formData?: FormData;
   readonly?: boolean;
-  /** Grid 编辑模式：点击选中部件，禁用内部交互 */
+  /** Grid Edit模式：点击选中Widget, Disable内部交互 */
   editorSelectable?: boolean;
 }>();
 
 const compMap = getComponentMap();
+const { t } = useI18n();
 
-/** 动态获取容器类型集合（与 SchemaNode 保持一致） */
+/** 动态获取ContainerType集合（与 SchemaNode 保持一致） */
 function getContainerTypes(): Set<string> {
   return useAllContainerTypes() as Set<string>;
 }
 
-/** 表单类组件（支持 change 事件） */
+/** Form类Component（支持 change Event） */
 const FORM_COMPONENT_TYPES: ReadonlySet<string> = new Set([
   "input",
   "select",
@@ -84,7 +88,7 @@ const FORM_COMPONENT_TYPES: ReadonlySet<string> = new Set([
   "autocomplete",
 ]);
 
-/** 输入类组件（支持 focus/blur 事件） */
+/** Input类Component（支持 focus/blur Event） */
 const INPUT_COMPONENT_TYPES: ReadonlySet<string> = new Set([
   "input",
   "select",
@@ -93,7 +97,7 @@ const INPUT_COMPONENT_TYPES: ReadonlySet<string> = new Set([
   "richtext",
 ]);
 
-/** 可点击组件（支持 click 事件） */
+/** 可点击Component（支持 click Event） */
 const CLICKABLE_TYPES: ReadonlySet<string> = new Set([
   "button",
   "toolbar-buttons",
@@ -126,8 +130,9 @@ const isSelected = computed(
     editorStore.selectedIds.includes(props.widget.id),
 );
 
-// ---- Grid 模式宽度 resize handle（右边缘拖拽改 style.width） ----
+// ---- Grid 模式Width resize handle（右边缘拖拽 → 反算 gridSpan） ----
 const shellEl = ref<HTMLElement | null>(null);
+const gridEngineCtx = inject(GRID_ENGINE_CONTEXT_KEY, null);
 const isGridResizeEnabled = computed(() =>
   Boolean(
     props.editorSelectable &&
@@ -140,7 +145,7 @@ const isGridResizeEnabled = computed(() =>
 function parseWidthPx(): number {
   const sw = props.widget.style?.width as string | undefined;
   if (sw && sw.endsWith("px")) return parseFloat(sw) || 0;
-  // 百分比或 auto：用实际渲染宽度
+  // 百Min比or auto：用实际渲染Width
   return shellEl.value?.getBoundingClientRect().width ?? 0;
 }
 
@@ -151,14 +156,27 @@ function handleGridResizeStart(event: MouseEvent) {
   const startX = event.clientX;
   const startWidth = parseWidthPx();
   const widgetId = props.widget.id;
+  const columns = gridEngineCtx?.columns.value ?? 12;
+  const columnGap = gridEngineCtx?.columnGap.value ?? 8;
+  const containerWidth =
+    gridEngineCtx?.containerWidth.value ||
+    shellEl.value?.parentElement?.getBoundingClientRect().width ||
+    0;
 
   function onMove(e: MouseEvent) {
     const delta = e.clientX - startX;
     const newWidth = Math.max(40, Math.round(startWidth + delta));
     const w = widgetStore.findWidget(widgetId);
-    if (w) {
-      w.style = { ...(w.style ?? {}), width: `${newWidth}px` };
-    }
+    if (!w) return;
+    const span = widthToGridSpan(
+      newWidth,
+      columns,
+      containerWidth,
+      columnGap,
+    );
+    // 以 gridSpan 驱动Column width；width 置 100% 填满占用格
+    w.gridSpan = span;
+    w.style = { ...(w.style ?? {}), width: "100%" };
   }
   function onUp() {
     document.removeEventListener("mousemove", onMove);
@@ -237,7 +255,7 @@ const needsFormItem = computed(() => {
   return (props.widget.validationRules?.length ?? 0) > 0;
 });
 
-// ---- 联动状态 ----
+// ---- LinkageStatus ----
 const linkageStateMap = inject(FORM_GRID_LINKAGE_KEY, null);
 
 const DEFAULT_LINKAGE_STATE: LinkageState = {
@@ -250,11 +268,11 @@ const renderState = computed(() => {
   const field = props.widget.field;
   const linkageState = field ? linkageStateMap?.value.get(field) : undefined;
   const base = linkageState ?? DEFAULT_LINKAGE_STATE;
-  // hidden 静态属性覆盖：hidden=true 时强制不可见
+  // hidden 静态Property覆盖：hidden=true Hrs强制不可见
   if (props.widget.hidden) {
     return { ...base, visible: false };
   }
-  // disabled 属性覆盖（规则引擎动态设置）
+  // disabled Property覆盖（Rule引擎动态Settings）
   if (props.widget.disabled) {
     return { ...base, disabled: true };
   }
@@ -263,7 +281,7 @@ const renderState = computed(() => {
 
 provide(widgetRenderStateKey, renderState);
 
-// ---- 事件拦截 ----
+// ---- Event拦截 ----
 const eventCtx = inject(EVENT_CONTEXT_KEY, null);
 
 async function handleWidgetEvent(trigger: string, _value?: unknown) {
@@ -271,7 +289,7 @@ async function handleWidgetEvent(trigger: string, _value?: unknown) {
   await triggerWidgetEvent(props.widget as Widget, trigger, eventCtx);
 }
 
-// ---- 弹框确认/取消 ----
+// ---- 弹框Confirm/Cancel ----
 async function handleDialogConfirm() {
   if (eventCtx) {
     await triggerWidgetEvent(
@@ -281,7 +299,7 @@ async function handleDialogConfirm() {
       "confirm",
     );
   }
-  // 如果事件引擎没有关闭弹框（没有 close-dialog 动作），默认关闭
+  // 如果Event引擎没有Close弹框（没有 close-dialog Action）, DefaultClose
   if (dialogVisible.value) {
     dialogVisible.value = false;
   }
@@ -312,10 +330,14 @@ const shellClass = computed(() => {
   if (!props.editorSelectable) return styles.passiveShell;
   return [
     styles.editorShell,
-    styles.editorShellDraggable,
     isSelected.value ? styles.editorShellSelected : "",
   ];
 });
+
+const showDragHandle = computed(
+  () =>
+    Boolean(props.editorSelectable && props.widget.id && !props.widget.locked),
+);
 
 const innerClass = computed(() => {
   if (!props.editorSelectable) return styles.passiveShell;
@@ -339,7 +361,7 @@ const tabsActiveKey = computed(() => {
 
 const gridContainerChildren = computed(() => {
   const children = (props.widget.children ?? []) as Widget[];
-  // tabs 容器：编辑态与预览态都按当前 activeKey 过滤，只渲染当前页签子节点
+  // tabs Container：Edit态与预览态都按当前 activeKey Filter, 只渲染当前页签子节点
   if (props.widget.type === "tabs" && tabsActiveKey.value) {
     const ak = tabsActiveKey.value;
     return children.filter((c) => (c.tabKey ?? ak) === ak);
@@ -347,7 +369,7 @@ const gridContainerChildren = computed(() => {
   return children;
 });
 
-/** tabs 容器按 activeKey 过滤子节点，拖放索引需映射回全量 children */
+/** tabs Container按 activeKey Filter子节点, 拖放Index需Map回全量 children */
 const allContainerChildren = computed(
   () => (props.widget.children ?? []) as Widget[],
 );
@@ -383,17 +405,21 @@ const containerDropClass = computed(() => [
       { [styles.hiddenInEdit]: editorSelectable && props.widget.hidden },
     ]"
     :style="animationStyle || undefined"
-    :draggable="editorSelectable && !props.widget.locked ? true : undefined"
     @click="editorSelectable ? handleEditorSelect($event) : undefined"
     @contextmenu="
       editorSelectable ? handleEditorContextMenu($event) : undefined
     "
-    @dragstart="
-      editorSelectable && !props.widget.locked
-        ? handleEditorDragStart($event)
-        : undefined
-    "
   >
+    <div
+      v-if="showDragHandle"
+      :class="styles.dragHandle"
+      draggable="true"
+      :title="t('editor.canvas.dragReorder')"
+      @click.stop
+      @dragstart.stop="handleEditorDragStart($event)"
+    >
+      <AppIcon name="rank" :size="12" />
+    </div>
     <div
       v-if="isGridResizeEnabled"
       :class="styles.gridResizeHandle"
@@ -401,13 +427,13 @@ const containerDropClass = computed(() => [
     />
     <div :class="innerClass">
       <template v-if="widget.type === 'dialog'">
-        <!-- Grid 编辑模式：可见容器 shell，可选中/拖入子节点。
-             AppDialog 默认 v-model=false 不可见，无法承载编辑交互，故编辑态用静态 shell 替代。 -->
+        <!-- Grid Edit模式：可见Container shell, 可选中/拖入子节点。
+             AppDialog Default v-model=false invisible, cannot support edit interaction, edit mode uses static shell. -->
         <div v-if="editorSelectable" :class="styles.dialogEditShell">
           <div :class="styles.dialogEditHeader">
             <AppIcon name="chat-dot-round" :size="14" />
             <span :class="styles.dialogEditTitle">{{
-              (widget.props?.title as string) || widget.label || "弹窗"
+              (widget.props?.title as string) || widget.label || t('editor.dialog.fallbackTitle')
             }}</span>
           </div>
           <div
@@ -429,15 +455,15 @@ const containerDropClass = computed(() => [
               v-if="!gridContainerChildren.length"
               :class="styles.gridDropEmpty"
             >
-              拖入部件到弹窗
+              {{ t('editor.canvas.dragWidgetToDialog') }}
             </div>
           </div>
         </div>
-        <!-- 预览/运行时：AppDialog 默认隐藏，通过事件 openDialog 打开 -->
+        <!-- 预览/运RowHrs：AppDialog DefaultHide, passedEvent openDialog Open -->
         <AppDialog
           v-else
           v-model="dialogVisible"
-          :title="(widget.props?.title as string) || widget.label || '弹窗'"
+          :title="(widget.props?.title as string) || widget.label || t('editor.dialog.fallbackTitle')"
           :width="(widget.props?.width as string) || '600px'"
           :draggable="widget.props?.draggable !== false"
           :show-fullscreen-btn="widget.props?.showFullscreenBtn !== false"
@@ -456,10 +482,10 @@ const containerDropClass = computed(() => [
           </template>
           <template v-if="widget.props?.showFooter !== false" #footer>
             <el-button @click="handleDialogCancel">
-              {{ (widget.props?.cancelText as string) || "取消" }}
+              {{ (widget.props?.cancelText as string) || t('editor.dialog.cancel') }}
             </el-button>
             <el-button type="primary" @click="handleDialogConfirm">
-              {{ (widget.props?.confirmText as string) || "确定" }}
+              {{ (widget.props?.confirmText as string) || t('editor.dialog.confirm') }}
             </el-button>
           </template>
         </AppDialog>
@@ -502,10 +528,10 @@ const containerDropClass = computed(() => [
               v-if="!gridContainerChildren.length"
               :class="styles.gridDropEmpty"
             >
-              {{ widget.type === "tabs" ? "拖入部件到当前页签" : "拖入部件" }}
+              {{ widget.type === "tabs" ? t('editor.canvas.dragWidgetToTab') : t('editor.canvas.dragWidget') }}
             </div>
           </div>
-          <!-- 自渲染容器（col / row-container）：子节点由组件自身渲染，不向 slot 填充避免重复创建 -->
+          <!-- 自渲染Container（col / row-container）：子节点由Component自身渲染, 不向 slot 填充避免重复创建 -->
           <template
             v-else-if="
               !isSelfRenderingContainer && gridContainerChildren.length
