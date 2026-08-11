@@ -264,6 +264,7 @@ function handleClearCanvas() {
       <button
         :class="styles.iconBtn"
         :title="t('editor.toolbar.backToList')"
+        :aria-label="t('editor.toolbar.backToList')"
         @click="router.push('/instances')"
       >
         <AppIcon name="arrow-left" :size="14" />
@@ -327,6 +328,7 @@ function handleClearCanvas() {
             { [styles.iconBtnActive]: leftPanelVisible },
           ]"
           :title="t('editor.toolbar.widgetPanel')"
+          :aria-label="t('editor.toolbar.widgetPanel')"
           @click="emit('updateLeftPanel')"
         >
           <AppIcon name="grid" :size="14" />
@@ -374,6 +376,7 @@ function handleClearCanvas() {
             { [styles.iconBtnActive]: rightPanelVisible },
           ]"
           :title="t('editor.toolbar.propertyPanel')"
+          :aria-label="t('editor.toolbar.propertyPanel')"
           @click="emit('updateRightPanel')"
         >
           <AppIcon name="setting" :size="14" />
@@ -460,6 +463,7 @@ function handleClearCanvas() {
             { [styles.iconBtnActive]: editorStore.showZoomIndicator },
           ]"
           :title="t('editor.toolbar.zoomControl')"
+          :aria-label="t('editor.toolbar.zoomControl')"
           @click="editorStore.toggleZoomIndicator()"
         >
           <AppIcon name="aim" :size="14" />
@@ -569,6 +573,7 @@ function handleClearCanvas() {
         <button
           :class="styles.iconBtn"
           :title="t('editor.toolbar.preview')"
+          :aria-label="t('editor.toolbar.preview')"
           @click="editorStore.setMode('preview')"
         >
           <AppIcon name="view" :size="14" />
@@ -581,6 +586,7 @@ function handleClearCanvas() {
         <button
           :class="styles.iconBtn"
           :title="t('editor.toolbar.publishInteractive')"
+          :aria-label="t('editor.toolbar.publishInteractive')"
           @click="editorStore.setMode('publish-interactive')"
         >
           <AppIcon name="video-play" :size="14" />
@@ -593,6 +599,7 @@ function handleClearCanvas() {
         <button
           :class="styles.iconBtn"
           :title="t('editor.toolbar.publishReadonly')"
+          :aria-label="t('editor.toolbar.publishReadonly')"
           @click="editorStore.setMode('publish-readonly')"
         >
           <AppIcon name="lock" :size="14" />
@@ -620,6 +627,7 @@ function handleClearCanvas() {
             { [styles.iconBtnActive]: previewBreakpoint === 'desktop' },
           ]"
           :title="t('editor.toolbar.breakpointDesktop')"
+          :aria-label="t('editor.toolbar.breakpointDesktop')"
           @click="emit('updatePreviewBreakpoint', 'desktop')"
         >
           <AppIcon name="monitor" :size="14" />
@@ -630,6 +638,7 @@ function handleClearCanvas() {
             { [styles.iconBtnActive]: previewBreakpoint === 'tablet' },
           ]"
           :title="t('editor.toolbar.breakpointTablet')"
+          :aria-label="t('editor.toolbar.breakpointTablet')"
           @click="emit('updatePreviewBreakpoint', 'tablet')"
         >
           <AppIcon name="iphone" :size="14" />
@@ -640,6 +649,7 @@ function handleClearCanvas() {
             { [styles.iconBtnActive]: previewBreakpoint === 'mobile' },
           ]"
           :title="t('editor.toolbar.breakpointMobile')"
+          :aria-label="t('editor.toolbar.breakpointMobile')"
           @click="emit('updatePreviewBreakpoint', 'mobile')"
         >
           <AppIcon name="cellphone" :size="14" />
@@ -652,6 +662,7 @@ function handleClearCanvas() {
       <button
         :class="[styles.iconBtn, styles.langToggle]"
         :title="t('editor.toolbar.language')"
+        :aria-label="t('editor.toolbar.language')"
         @click="toggleLocale"
       >
         <span :class="styles.langBadge">{{ langButtonLabel }}</span>
@@ -663,6 +674,7 @@ function handleClearCanvas() {
           <button
             :class="styles.iconBtn"
             :title="t('editor.toolbar.canvasSize')"
+            :aria-label="t('editor.toolbar.canvasSize')"
           >
             <AppIcon name="full-screen" :size="14" />
           </button>
@@ -693,6 +705,7 @@ function handleClearCanvas() {
           <button
             :class="styles.iconBtn"
             :title="t('editor.toolbar.scaleModeTitle')"
+            :aria-label="t('editor.toolbar.scaleModeTitle')"
           >
             <AppIcon name="rank" :size="14" />
           </button>
@@ -716,6 +729,7 @@ function handleClearCanvas() {
         <div :class="styles.zoomGroup">
           <button
             :class="styles.iconBtn"
+            :aria-label="t('editor.zoomIndicator.zoomOut')"
             :disabled="boardStore.canvas.zoom <= MIN_ZOOM"
             @click="handleZoomOut"
           >
@@ -724,6 +738,7 @@ function handleClearCanvas() {
           <span :class="styles.zoomValue">{{ boardStore.canvas.zoom }}%</span>
           <button
             :class="styles.iconBtn"
+            :aria-label="t('editor.zoomIndicator.zoomIn')"
             :disabled="boardStore.canvas.zoom >= MAX_ZOOM"
             @click="handleZoomIn"
           >
@@ -830,6 +845,7 @@ function handleClearCanvas() {
             <button
               :class="styles.iconBtn"
               :title="t('editor.toolbar.versionHistory')"
+              :aria-label="t('editor.toolbar.versionHistory')"
             >
               <AppIcon name="clock" :size="14" />
             </button>
@@ -844,6 +860,7 @@ function handleClearCanvas() {
             :class="styles.iconBtn"
             :disabled="!currentEditId"
             :title="t('editor.toolbar.versionCompare')"
+            :aria-label="t('editor.toolbar.versionCompare')"
             @click="emit('openVersionCompare')"
           >
             <AppIcon name="document-copy" :size="14" />
@@ -902,6 +919,7 @@ function handleClearCanvas() {
         <button
           :class="[styles.iconBtn, { [styles.iconBtnActive]: showLogPanel }]"
           :title="t('editor.toolbar.executionLog')"
+          :aria-label="t('editor.toolbar.executionLog')"
           @click="emit('updateLogPanel')"
         >
           <AppIcon name="document" :size="14" />
@@ -909,6 +927,7 @@ function handleClearCanvas() {
         <button
           :class="[styles.iconBtn, { [styles.iconBtnActive]: showCodePanel }]"
           :title="t('editor.toolbar.storeData')"
+          :aria-label="t('editor.toolbar.storeData')"
           @click="emit('updateCodePanel')"
         >
           <AppIcon name="data-line" :size="14" />
@@ -925,6 +944,7 @@ function handleClearCanvas() {
             <button
               :class="styles.iconBtn"
               :title="t('editor.toolbar.schemaValidation')"
+              :aria-label="t('editor.toolbar.schemaValidation')"
             >
               <el-badge
                 v-if="validation.errorCount.value > 0"

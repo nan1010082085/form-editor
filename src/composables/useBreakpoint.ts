@@ -95,10 +95,20 @@ export function useBreakpoint(): {
   const breakpoint = computed(() => currentBreakpoint.value);
 
   /** 视口宽度 < NARROW_THRESHOLD 时为 true */
-  const isNarrow = computed(() => {
-    if (!isBrowser) return false;
-    return window.innerWidth < NARROW_THRESHOLD;
-  });
+  const narrowMql = isBrowser ? window.matchMedia(`(max-width: ${NARROW_THRESHOLD - 1}px)`) : null;
+  const isNarrowRef = ref(narrowMql?.matches ?? false);
+
+  if (narrowMql) {
+    const narrowHandler = (e: MediaQueryListEvent) => {
+      isNarrowRef.value = e.matches;
+    };
+    narrowMql.addEventListener("change", narrowHandler);
+    onUnmounted(() => {
+      narrowMql.removeEventListener("change", narrowHandler);
+    });
+  }
+
+  const isNarrow = computed(() => isNarrowRef.value);
 
   /**
    * Parse响应式 span Value

@@ -17,7 +17,11 @@ defineProps<{
 </script>
 
 <template>
-  <div :class="[styles.left, { [styles.leftClosed]: !visible }]">
+  <div
+    :class="[styles.left, { [styles.leftClosed]: !visible }]"
+    :aria-hidden="!visible"
+    :inert="!visible"
+  >
     <EditorLeftPanel
       :schema-status="schemaStatus"
       :schema-type="schemaType"

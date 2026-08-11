@@ -664,6 +664,10 @@ export default {
         displayName: "Marquee",
         description: "Scrolling announcement",
       },
+      carousel: { displayName: "Carousel", description: "Carousel container for auto/manual switching between child pages" },
+      countdown: { displayName: "Countdown", description: "Countdown timer component" },
+      parallel: { displayName: "Parallel Gateway", description: "Parallel execution gateway" },
+      "approval-process": { displayName: "Approval Process", description: "Approval process component" },
       "single-col": { displayName: "Single Column", description: "Single column layout" },
       "double-col": { displayName: "Double Column", description: "Double column layout" },
       "triple-col": { displayName: "Triple Column", description: "Triple column layout" },
@@ -3657,6 +3661,12 @@ export default {
       empty: "No templates",
       useTemplate: "Use Template",
       save: "Save",
+    },
+    widgetNames: {
+      carousel: "Carousel",
+      countdown: "Countdown",
+      parallel: "Parallel Gateway",
+      approvalProcess: "Approval Process",
     },
   },
 };

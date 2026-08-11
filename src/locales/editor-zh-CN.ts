@@ -596,6 +596,10 @@ export default {
       },
       realtimeClock: { displayName: "实时时钟", description: "实时时钟" },
       marquee: { displayName: "跑马灯", description: "滚动公告" },
+      carousel: { displayName: "轮播图", description: "轮播图容器，支持自动/手动切换子页面" },
+      countdown: { displayName: "倒计时", description: "倒计时组件" },
+      parallel: { displayName: "并行网关", description: "并行执行网关" },
+      "approval-process": { displayName: "审批流程", description: "审批流程组件" },
       // ---- kebab-case SchemaType（部件列表真源；与 camelCase 历史键并存）----
       "single-col": { displayName: "单列布局", description: "单列布局容器，可放置 1 个组件" },
       "double-col": { displayName: "双列布局", description: "双列布局，每列 1 个组件" },
@@ -3537,6 +3541,12 @@ export default {
       empty: "暂无模板",
       useTemplate: "使用模板",
       save: "保存",
+    },
+    widgetNames: {
+      carousel: "轮播图",
+      countdown: "倒计时",
+      parallel: "并行网关",
+      approvalProcess: "审批流程",
     },
   },
 };

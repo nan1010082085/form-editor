@@ -14,7 +14,11 @@ defineProps<{
 </script>
 
 <template>
-  <div :class="[styles.right, { [styles.rightClosed]: !visible }]">
+  <div
+    :class="[styles.right, { [styles.rightClosed]: !visible }]"
+    :aria-hidden="!visible"
+    :inert="!visible"
+  >
     <PropertyPanel />
   </div>
 </template>
