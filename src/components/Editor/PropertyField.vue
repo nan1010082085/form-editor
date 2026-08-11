@@ -144,8 +144,8 @@ function onJsonBlur() {
 <template>
   <div :class="[styles.field, type === 'textarea' && styles.fieldTextarea]">
     <el-tooltip :content="desc || label" placement="top" :show-after="300">
-      <label :class="styles.label">{{
-        label.length > 4 ? label.slice(0, 4) + "…" : label
+      <label :class="styles.label" :title="label">{{
+        label.length > 8 ? label.slice(0, 8) + "…" : label
       }}</label>
     </el-tooltip>
     <div :class="styles.control">

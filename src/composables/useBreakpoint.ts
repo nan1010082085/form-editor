@@ -11,6 +11,9 @@ import type { ResponsiveSpan } from "@/components/WidgetRenderer/types";
 /** 断点Name, 从小到大排Column */
 export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl" | "xxl";
 
+/** Editor 窄屏阈值（px）— 低于此值自动收起侧面板 */
+export const NARROW_THRESHOLD = 1280;
+
 /** 将视口WidthMap为 PreviewBreakpoint（desktop/tablet/mobile） */
 export function mapWidthToBreakpoint(width: number): "mobile" | "tablet" | "desktop" {
   if (width < 768) return "mobile";
@@ -38,6 +41,7 @@ const BREAKPOINT_ORDER: Breakpoint[] = ["xxl", "xl", "lg", "md", "sm", "xs"];
  */
 export function useBreakpoint(): {
   breakpoint: ComputedRef<Breakpoint>;
+  isNarrow: ComputedRef<boolean>;
   resolveSpan: (span: number | ResponsiveSpan) => number;
 } {
   const currentBreakpoint = ref<Breakpoint>("xxl");
@@ -90,6 +94,12 @@ export function useBreakpoint(): {
 
   const breakpoint = computed(() => currentBreakpoint.value);
 
+  /** 视口宽度 < NARROW_THRESHOLD 时为 true */
+  const isNarrow = computed(() => {
+    if (!isBrowser) return false;
+    return window.innerWidth < NARROW_THRESHOLD;
+  });
+
   /**
    * Parse响应式 span Value
    * - span 为 number Hrs直接返回
@@ -118,5 +128,5 @@ export function useBreakpoint(): {
     return 24;
   }
 
-  return { breakpoint, resolveSpan };
+  return { breakpoint, isNarrow, resolveSpan };
 }

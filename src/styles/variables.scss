@@ -643,6 +643,14 @@ $fg-input-radius: 2px;
 $fg-dialog-width: 994px;
 $fg-dialog-padding: 16px;
 
+// ---- z-index 层级 ----
+$z-base: 0;
+$z-dropdown: 10;
+$z-sticky: 50;
+$z-dialog: 1000;
+$z-toast: 2000;
+$z-top: 9999;
+
 // ---- 列表规范 ----
 $fg-table-page-size: 10;
 $fg-table-text-max: 18;

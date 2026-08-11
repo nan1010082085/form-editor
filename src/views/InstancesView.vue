@@ -24,6 +24,7 @@ import FilterTabs from "@schema-platform/platform-shared/components/common/Filte
 import type { SchemaListItem, SchemaDetail } from "@/types/api";
 import type { PartialWidget } from "@/widgets/base/types";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import EmptyState from "@/components/common/EmptyState.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 import { reportTelemetry } from "@/api/telemetryApi";
 import styles from "./InstancesView.module.scss";
@@ -652,34 +653,25 @@ function handleVersionPublished() {
       </div>
 
       <!-- Empty (global) -->
-      <div
+      <EmptyState
         v-else-if="store.isEmpty"
-        :class="styles['fg-instances__state--empty']"
+        icon="document"
+        :title="t('editor.instances.emptyTitle')"
+        :description="t('editor.instances.emptyDesc')"
       >
-        <div :class="styles['fg-instances__empty-icon']">
-          <AppIcon name="document" :size="64" />
-        </div>
-        <h2 :class="styles['fg-instances__empty-title']">
-          {{ t("editor.instances.emptyTitle") }}
-        </h2>
-        <p :class="styles['fg-instances__empty-desc']">
-          {{ t("editor.instances.emptyDesc") }}
-        </p>
-        <div :class="styles['fg-instances__empty-actions']">
-          <el-button type="primary" size="large" @click="openCreateDialog">
-            <AppIcon name="plus" class="el-icon--left" />{{
-              t("editor.instances.createInstance")
-            }}
-          </el-button>
-        </div>
-      </div>
+        <el-button type="primary" size="large" @click="openCreateDialog">
+          <AppIcon name="plus" class="el-icon--left" />{{
+            t("editor.instances.createInstance")
+          }}
+        </el-button>
+      </EmptyState>
 
       <!-- No search results -->
-      <div
+      <EmptyState
         v-else-if="isFiltered && sortedSchemas.length === 0 && !store.loading"
-        :class="styles['fg-instances__state--no-results']"
+        icon="search"
+        :title="t('editor.instances.noMatch')"
       >
-        <p>{{ t("editor.instances.noMatch") }}</p>
         <el-button
           @click="
             activeTab = 'all';
@@ -688,7 +680,7 @@ function handleVersionPublished() {
           "
           >{{ t("editor.instances.clearFilter") }}</el-button
         >
-      </div>
+      </EmptyState>
 
       <!-- Card Grid -->
       <div v-else :class="styles['fg-instances__content']">
@@ -761,6 +753,7 @@ function handleVersionPublished() {
                   size="small"
                   text
                   type="primary"
+                  :aria-label="t('editor.instances.tooltipEdit')"
                   @click="handleEdit(item.id)"
                   ><AppIcon name="edit"
                 /></el-button>
@@ -770,7 +763,7 @@ function handleVersionPublished() {
                 placement="top"
                 :show-after="300"
               >
-                <el-button size="small" text @click="handleDesigner(item.id)"
+                <el-button size="small" text :aria-label="t('editor.instances.tooltipDesigner')" @click="handleDesigner(item.id)"
                   ><AppIcon name="setting"
                 /></el-button>
               </el-tooltip>
@@ -787,6 +780,11 @@ function handleVersionPublished() {
                   size="small"
                   text
                   type="warning"
+                  :aria-label="
+                    item.publishId
+                      ? t('editor.instances.previewPublished')
+                      : t('editor.instances.previewEdit')
+                  "
                   @click="handlePreview(item)"
                   ><AppIcon name="view"
                 /></el-button>
@@ -796,7 +794,7 @@ function handleVersionPublished() {
                 placement="top"
                 :show-after="300"
               >
-                <el-button size="small" text @click="handleShowVersions(item)"
+                <el-button size="small" text :aria-label="t('editor.instances.tooltipVersions')" @click="handleShowVersions(item)"
                   ><AppIcon name="clock"
                 /></el-button>
               </el-tooltip>
@@ -811,6 +809,7 @@ function handleVersionPublished() {
                   type="success"
                   :loading="publishingId === item.id"
                   :disabled="publishingId !== null"
+                  :aria-label="t('editor.instances.actionPublish')"
                   @click="handlePublish(item)"
                   ><AppIcon name="promotion"
                 /></el-button>
@@ -820,7 +819,7 @@ function handleVersionPublished() {
                 placement="top"
                 :show-after="300"
               >
-                <el-button size="small" text @click="handleExport(item)"
+                <el-button size="small" text :aria-label="t('editor.instances.actionExport')" @click="handleExport(item)"
                   ><AppIcon name="download"
                 /></el-button>
               </el-tooltip>
@@ -833,6 +832,7 @@ function handleVersionPublished() {
                   size="small"
                   text
                   type="danger"
+                  :aria-label="t('editor.instances.actionDelete')"
                   @click="handleDelete(item)"
                   ><AppIcon name="delete"
                 /></el-button>

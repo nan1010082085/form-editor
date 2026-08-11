@@ -11,6 +11,7 @@ import {
 } from "@/widgets/registry";
 import type { WidgetRegistryItem } from "@/widgets/registry";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import EmptyState from "@/components/common/EmptyState.vue";
 
 const { t } = useI18n();
 const searchQuery = ref("");
@@ -116,9 +117,11 @@ const filteredWidgets = computed(() => {
       </div>
     </div>
 
-    <div v-if="!filteredWidgets.length" :class="$style.empty">
-      {{ t("editor.widgetMarket.empty") }}
-    </div>
+    <EmptyState
+      v-if="!filteredWidgets.length"
+      icon="search"
+      :title="t('editor.widgetMarket.empty')"
+    />
   </div>
 </template>
 
@@ -165,6 +168,11 @@ const filteredWidgets = computed(() => {
 
   &:focus {
     border-color: var(--color-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 

@@ -73,7 +73,7 @@ describe("row-container grid render", () => {
       global: { plugins: [ElementPlus] },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("拖入Widget");
+    expect(wrapper.text()).toContain("拖入部件到行");
     wrapper.unmount();
   });
 
@@ -99,7 +99,7 @@ describe("row-container grid render", () => {
     expect(errors).toEqual([]);
     expect(wrapper.html()).not.toContain("renderError");
     expect(wrapper.html()).not.toContain("组件渲染异常");
-    expect(wrapper.text()).toContain("拖入Widget");
+    expect(wrapper.text()).toContain("拖入部件到行");
     wrapper.unmount();
   });
 

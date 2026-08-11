@@ -18,6 +18,7 @@ import {
 } from "@/types/credential";
 import styles from "./CredentialListView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import EmptyState from "@/components/common/EmptyState.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 
 const credentialStore = useCredentialStore();
@@ -203,21 +204,17 @@ function typeTagType(
       </div>
 
       <!-- Empty -->
-      <div v-else-if="credentialStore.isEmpty" :class="styles.emptyState">
-        <div :class="styles.emptyIcon">
-          <AppIcon name="key" :size="64" />
-        </div>
-        <h2 :class="styles.emptyTitle">
-          {{ t("editor.credential.emptyTitle") }}
-        </h2>
-        <p :class="styles.emptyDesc">
-          {{ t("editor.credential.emptyDesc") }}
-        </p>
+      <EmptyState
+        v-else-if="credentialStore.isEmpty"
+        icon="key"
+        :title="t('editor.credential.emptyTitle')"
+        :description="t('editor.credential.emptyDesc')"
+      >
         <el-button type="primary" @click="openCreateDialog">
           <AppIcon name="plus" />
           {{ t("editor.credential.create") }}
         </el-button>
-      </div>
+      </EmptyState>
 
       <!-- Table -->
       <div v-else :class="styles.tableWrapper">

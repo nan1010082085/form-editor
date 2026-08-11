@@ -13,10 +13,13 @@ import { Search } from "@element-plus/icons-vue";
 import {
   getWidgetsByGroup,
   getWidgetDisplayName,
+  createWidget,
+  generateWidgetId,
   type WidgetRegistryItem,
 } from "@/widgets/registry";
 import type { SchemaType } from "@/widgets/base/types";
 import { useBoardStore } from "@/stores/board";
+import { useWidgetStore } from "@/stores/widget";
 import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./ComponentPanel.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
@@ -76,7 +79,16 @@ interface ComponentGroup {
 }
 
 const boardStore = useBoardStore();
+const widgetStore = useWidgetStore();
 const { t } = useI18n();
+
+/** 双击组件项 → 直接添加到画布末尾 */
+function handleDoubleClick(type: SchemaType) {
+  const widget = createWidget(type, generateWidgetId(type));
+  if (widget) {
+    widgetStore.addWidget(widget);
+  }
+}
 
 /** 获取翻译后的 Widget ShowName */
 function getDisplayName(item: WidgetRegistryItem): string {
@@ -453,6 +465,7 @@ function isGroupExpanded(groupKey: string): boolean {
               v-else-if="flatItem.type === 'item' && flatItem.item"
               :class="styles.item"
               draggable="true"
+              @dblclick="handleDoubleClick(flatItem.item!.type)"
               @dragstart="
                 handleDragStart(
                   $event,

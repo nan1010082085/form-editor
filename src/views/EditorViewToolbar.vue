@@ -292,6 +292,11 @@ function handleClearCanvas() {
               styles.autoSaveToggle,
               { [styles.autoSaveToggleOn]: autoSaveEnabled },
             ]"
+            :aria-label="
+              autoSaveEnabled
+                ? t('editor.toolbar.autoSaveOff')
+                : t('editor.toolbar.autoSaveOn')
+            "
             @click="emit('toggleAutoSave')"
           >
             <AppIcon name="refresh" :size="14" />
@@ -335,6 +340,7 @@ function handleClearCanvas() {
           <button
             :class="styles.iconBtn"
             :disabled="!editorStore.canUndo"
+            :aria-label="t('editor.toolbar.undoTooltip')"
             @click="handleUndo"
           >
             <AppIcon name="back" :size="14" />
@@ -347,6 +353,7 @@ function handleClearCanvas() {
           <button
             :class="styles.iconBtn"
             :disabled="!editorStore.canRedo"
+            :aria-label="t('editor.toolbar.redoTooltip')"
             @click="handleRedo"
           >
             <AppIcon name="refresh" :size="14" />
@@ -380,6 +387,7 @@ function handleClearCanvas() {
           <button
             :class="styles.iconBtn"
             :disabled="!editorStore.selectedId"
+            :aria-label="t('editor.toolbar.copyWidget')"
             @click="handleCopyWidget"
           >
             <AppIcon name="copy-document" :size="14" />
@@ -392,6 +400,7 @@ function handleClearCanvas() {
           <button
             :class="styles.iconBtn"
             :disabled="!editorStore.selectedId"
+            :aria-label="t('editor.toolbar.deleteWidget')"
             @click="handleDeleteWidget"
           >
             <AppIcon name="delete" :size="14" />
@@ -406,6 +415,7 @@ function handleClearCanvas() {
             styles.aiBtn,
             { [styles.iconBtnActive]: showAiDrawer },
           ]"
+          :aria-label="t('editor.toolbar.aiAssistant')"
           @click="emit('updateAiDrawer')"
         >
           <AppIcon name="magic-stick" :size="14" />
@@ -549,7 +559,7 @@ function handleClearCanvas() {
           </div>
         </div>
         <template #reference>
-          <button :class="styles.iconBtn" :title="t('editor.shortcuts.title')">
+          <button :class="styles.iconBtn" :title="t('editor.shortcuts.title')" :aria-label="t('editor.shortcuts.title')">
             <AppIcon name="question-filled" :size="14" />
           </button>
         </template>

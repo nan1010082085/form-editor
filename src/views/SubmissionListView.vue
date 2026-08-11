@@ -22,6 +22,7 @@ import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import type { PaginatedResponse, SchemaListItem } from "@/types/api";
 import styles from "./SubmissionListView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import EmptyState from "@/components/common/EmptyState.vue";
 
 const { t } = useI18n();
 
@@ -357,17 +358,12 @@ function dataKeys(item: SubmissionItem): string[] {
       </div>
 
       <!-- 未选择Form -->
-      <div v-if="!selectedSchemaId" :class="styles.emptyState">
-        <div :class="styles.emptyIcon">
-          <AppIcon name="document" :size="64" />
-        </div>
-        <h2 :class="styles.emptyTitle">
-          {{ t("editor.submissionView.selectFormTitle") }}
-        </h2>
-        <p :class="styles.emptyDesc">
-          {{ t("editor.submissionView.selectFormDesc") }}
-        </p>
-      </div>
+      <EmptyState
+        v-if="!selectedSchemaId"
+        icon="document"
+        :title="t('editor.submissionView.selectFormTitle')"
+        :description="t('editor.submissionView.selectFormDesc')"
+      />
 
       <!-- Loading -->
       <div
@@ -378,17 +374,12 @@ function dataKeys(item: SubmissionItem): string[] {
       </div>
 
       <!-- Empty -->
-      <div v-else-if="total === 0" :class="styles.emptyState">
-        <div :class="styles.emptyIcon">
-          <AppIcon name="search" :size="64" />
-        </div>
-        <h2 :class="styles.emptyTitle">
-          {{ t("editor.submissionView.emptyTitle") }}
-        </h2>
-        <p :class="styles.emptyDesc">
-          {{ t("editor.submissionView.emptyDesc") }}
-        </p>
-      </div>
+      <EmptyState
+        v-else-if="total === 0"
+        icon="search"
+        :title="t('editor.submissionView.emptyTitle')"
+        :description="t('editor.submissionView.emptyDesc')"
+      />
 
       <!-- Table -->
       <div v-else :class="styles.tableWrapper" v-loading="loading">

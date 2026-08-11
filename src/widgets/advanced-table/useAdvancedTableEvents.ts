@@ -5,6 +5,7 @@
  * link-click 等Event处理, 统一走 clickIntercept + triggerWidgetEvent。
  */
 import type { ComputedRef, Ref } from "vue";
+import { ElMessageBox } from "element-plus";
 import type { Widget } from "../base/types";
 import type { EventExecutionContext } from "../../components/WidgetRenderer/types";
 import type { AdvancedTableColumn, ActionButton } from "./config";
@@ -127,7 +128,7 @@ export function useAdvancedTableEvents(
     }
   }
 
-  function handleToolbarClick(btn: ActionButton) {
+  async function handleToolbarClick(btn: ActionButton) {
     if (!eventCtx) return;
     const ctx = {
       ...eventCtx,
@@ -135,12 +136,18 @@ export function useAdvancedTableEvents(
       selectedCount: selectedRows.value.length,
       tableData: tableData.value,
     };
-    if (btn.confirm && !window.confirm(btn.confirm)) return;
+    if (btn.confirm) {
+      try {
+        await ElMessageBox.confirm(btn.confirm, { type: "warning" });
+      } catch {
+        return; // user cancelled
+      }
+    }
     if (clickIntercept?.onToolbarClick?.(btn, ctx)) return;
     triggerWidgetEvent(widgetData.value, "click", ctx, `toolbar-${btn.key}`);
   }
 
-  function handleRowButtonClick(
+  async function handleRowButtonClick(
     btn: ActionButton,
     row: Record<string, unknown>,
     rowIndex: number,
@@ -154,7 +161,13 @@ export function useAdvancedTableEvents(
       selectedCount: selectedRows.value.length,
       tableData: tableData.value,
     };
-    if (btn.confirm && !window.confirm(btn.confirm)) return;
+    if (btn.confirm) {
+      try {
+        await ElMessageBox.confirm(btn.confirm, { type: "warning" });
+      } catch {
+        return; // user cancelled
+      }
+    }
     if (clickIntercept?.onRowButtonClick?.(btn, row, rowIndex, ctx)) return;
     triggerWidgetEvent(widgetData.value, "click", ctx, `row-${btn.key}`);
   }

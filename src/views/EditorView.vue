@@ -66,6 +66,7 @@ import EditorViewLeftPanel from "./EditorViewLeftPanel.vue";
 import EditorViewRightPanel from "./EditorViewRightPanel.vue";
 import EditorRuler from "@/components/Editor/EditorRuler.vue";
 import { useWidgetAlignment } from "@/composables/useWidgetAlignment";
+import { useBreakpoint } from "@/composables/useBreakpoint";
 import {
   VIEWPORT_CULLING_KEY,
   computeViewportRect,
@@ -151,6 +152,16 @@ function toggleAutoSave() {
 
 const leftPanelVisible = ref(true);
 const rightPanelVisible = ref(true);
+const { isNarrow } = useBreakpoint();
+
+// 窄屏自动收起侧面板
+watch(isNarrow, (narrow) => {
+  if (narrow) {
+    leftPanelVisible.value = false;
+    rightPanelVisible.value = false;
+  }
+}, { immediate: true });
+
 const showLogPanel = ref(false);
 const showCodePanel = ref(false);
 const showAiDrawer = ref(false);
