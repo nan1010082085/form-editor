@@ -42,6 +42,19 @@
   }
 }
 
+/** 读屏可见、视觉隐藏的标题（axe page-has-heading-one） */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 // ================================================================
 // Toolbar
 // ================================================================
@@ -301,7 +314,7 @@
 
 .versionBadge {
   font-size: 11px;
-  color: var(--text-color-muted);
+  color: var(--text-color-regular);
   white-space: nowrap;
   flex-shrink: 0;
   font-family: monospace;

@@ -34,6 +34,20 @@ const resolvedOptions = computed(() =>
 
 const selectRef = ref<{ $el?: HTMLElement }>();
 
+/**
+ * 可访问名称：优先 label / field，避免 el-select 内部 combobox 无 label（axe critical）
+ */
+const accessibleName = computed(() => {
+  const label = widgetData.value.label;
+  const field = widgetData.value.field;
+  if (typeof label === "string" && label.trim()) return label.trim();
+  if (typeof field === "string" && field.trim()) return field.trim();
+  return (
+    (widgetData.value.props?.placeholder as string) ||
+    t("editor.select.placeholder")
+  );
+});
+
 function forwardNativeChange() {
   selectRef.value?.$el?.dispatchEvent(new Event("change", { bubbles: true }));
 }
@@ -44,6 +58,7 @@ function forwardNativeChange() {
     ref="selectRef"
     v-model="widgetData.defaultValue"
     :style="dynamicStyle"
+    :aria-label="accessibleName"
     :placeholder="
       (widgetData.props?.placeholder as string) ||
       t('editor.select.placeholder')

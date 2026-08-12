@@ -697,7 +697,10 @@ function focusCanvas() {
     />
 
     <!-- Body: left panel + canvas + right panel -->
-    <div :class="styles.body">
+    <main :class="styles.body">
+      <h1 :class="styles.srOnly">
+        {{ boardStore.name || t("editor.toolbar.unnamedCanvas") }}
+      </h1>
       <!-- Left panel -->
       <EditorViewLeftPanel
         v-if="mode === 'edit'"
@@ -770,11 +773,13 @@ function focusCanvas() {
         <iframe
           ref="aiIframeRef"
           :class="styles.aiIframe"
+          :title="t('editor.toolbar.aiAssistant')"
+          :aria-label="t('editor.toolbar.aiAssistant')"
           frameborder="0"
           allow="clipboard-read; clipboard-write"
         />
       </div>
-    </div>
+    </main>
 
     <!-- VersionCompare面板 -->
     <el-drawer

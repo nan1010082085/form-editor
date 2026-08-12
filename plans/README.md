@@ -6,7 +6,7 @@ UI/UX 与实现计划索引。走查证据保留在归档文档内，不单独�
 
 | 文档 | 说明 | 状态 |
 |------|------|------|
-| [2026-08-12-ui-ux-path-to-a.md](./2026-08-12-ui-ux-path-to-a.md) | B+ → A（A1–A12） | 🟡 11/12 完成 |
+| [2026-08-12-ui-ux-path-to-a.md](./2026-08-12-ui-ux-path-to-a.md) | B+ → A（A1–A12）；axe 实机 C0/S0 | ✅ 12/12 |
 | [Path to A 看板](/Users/yangdongnan/.cursor/projects/Users-yangdongnan-work-schema-platform-server/canvases/editor-ui-ux-path-to-a.canvas.tsx) | 任务看板 | 🟢 同步计划 |
 
 ## 已关闭（archive/）

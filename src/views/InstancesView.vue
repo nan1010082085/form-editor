@@ -441,17 +441,20 @@ const TYPE_LABEL_MAP = computed<Record<string, string>>(() => ({
   other: t("editor.instances.filterOther"),
 }));
 
-const TYPE_TAG_MAP: Record<string, "info" | "success" | "warning" | "danger"> =
-  {
-    form: "info",
-    search_list: "success",
-    layout: "info",
-    table: "success",
-    chart: "warning",
-    business: "danger",
-    report: "info",
-    other: "info",
-  };
+/** 避免 el-tag--info 默认灰字对比度不达标（axe）；中性类型用默认 tag */
+const TYPE_TAG_MAP: Record<
+  string,
+  "success" | "warning" | "danger" | ""
+> = {
+  form: "",
+  search_list: "success",
+  layout: "",
+  table: "success",
+  chart: "warning",
+  business: "danger",
+  report: "",
+  other: "",
+};
 
 function typeLabel(type: string): string {
   return TYPE_LABEL_MAP.value[type] ?? type;
@@ -459,7 +462,7 @@ function typeLabel(type: string): string {
 
 function typeTagType(
   type: string,
-): "info" | "success" | "warning" | "danger" | "" {
+): "success" | "warning" | "danger" | "" {
   return TYPE_TAG_MAP[type] ?? "";
 }
 
@@ -733,9 +736,9 @@ function handleOverflowCommand(cmd: string, item: SchemaListItem) {
               </div>
             </div>
             <div :class="styles['fg-instances-card__body']">
-              <h3 :class="styles['fg-instances-card__name']">
+              <h2 :class="styles['fg-instances-card__name']">
                 {{ item.name }}
-              </h3>
+              </h2>
               <div :class="styles['fg-instances-card__meta']">
                 <el-tag size="small" :type="typeTagType(item.type)">{{
                   typeLabel(item.type)

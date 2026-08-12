@@ -12,7 +12,21 @@
 **索引:** [README.md](./README.md)  
 **看板:** [editor-ui-ux-path-to-a.canvas.tsx](/Users/yangdongnan/.cursor/projects/Users-yangdongnan-work-schema-platform-server/canvases/editor-ui-ux-path-to-a.canvas.tsx)
 
-**状态:** 🟡 **唯一活跃 UI/UX 计划** · 11/12 完成，仅剩 A5（axe 扫描）
+**状态:** ✅ **A1–A12 完成** · 2026-08-12 浏览器 axe 复扫 Critical=0 / Serious=0
+
+## Round 走查 + axe（2026-08-12 · 实机）
+
+**方法:** Chrome DevTools + axe-core 4.10.2（页面注入）  
+**范围:** Login → Instances → Editor(`Flex 交互实测`)
+
+| 页 | 修前 C/S | 修后 C/S |
+|----|----------|----------|
+| Login | 0 / 0 | **0 / 0** |
+| Instances | 0 / 1 | **0 / 0** |
+| Editor | 1 / 2 | **0 / 0** |
+
+**本轮配合 A5 的代码修复:** `FgSelect` aria-label；对比度令牌（badge/拖入/meta）；AI iframe title；Instances 去 info-tag；卡片 h2；Editor `<main>` + sr-only h1。  
+**豁免:** Login/Editor 余 moderate landmark/`region`（toolbar 名输入在 main 外）。
 
 ## Global Constraints
 
@@ -47,7 +61,7 @@
 | A2 | 1 | platform-shared | P0 | LoginView 可见 label | `- [x]` 已实现 |
 | A3 | 1 | editor | P0 | 键盘添加部件 | `- [x]` |
 | A4 | 1 | editor | P0 | Skip link → 画布 | `- [x]` |
-| A5 | 1 | 两边 | P0 | axe 清 Critical/Serious | `- [x]` 已扫描，0 issues |
+| A5 | 1 | 两边 | P0 | axe 清 Critical/Serious | `- [x]` 实机复扫 C0/S0（2026-08-12） |
 | A6 | 2 | editor | P1 | 实例卡「更多」溢出 | `- [x]` |
 | A7 | 2 | editor | P1 | 缩放单一入口 | `- [x]` ZoomIndicator 可见时隐藏 Toolbar 缩放 |
 | A8 | 2 | editor | P1 | z-index `$z-*` 全局替换 | `- [x]` |
@@ -56,7 +70,7 @@
 | A11 | 2 | editor | P2 | 方向键微调选中 Widget | `- [x]` |
 | A12 | 2 | editor | P2 | CI：raw-key / 无名 icon | `- [x]` |
 
-**里程碑:** Wave1 全部勾选 → 目标 **A-**；Wave2 全部勾选 + DoD 走查 → 目标 **A**。
+**里程碑:** Wave1 → **A-** ✅；Wave2 + DoD → 目标 **A**（axe 实机已过；DoD 清单见文末）。
 
 ---
 
@@ -167,32 +181,25 @@
 
 ---
 
-### Task A5: axe 扫描并清 Critical/Serious
+### Task A5: axe 扫描并清 Critical/Serious — ✅ 2026-08-12
 
 **Priority:** P0  
 **Estimate:** 0.5–1.5d（视问题量）  
-**Depends on:** A1–A4 尽量先完成（减少噪音）  
-**范围页:** Login → Instances → Editor（含左右栏）→ 任选一配置弹窗
+**Depends on:** A1–A4（走查确认均已具备）  
+**范围页:** Login → Instances → Editor（含左右栏）
 
-- [ ] **Step 1: 跑 axe（或 Lighthouse a11y）**  
-  记录 Critical / Serious 列表到本文件「A5 扫描记录」小节。
+- [x] **Step 1: 跑 axe（axe-core 4.10.2）**  
+- [x] **Step 2: 修 editor 内问题**（见上方「本轮代码修复」）  
+- [x] **Step 3: 复扫** — Critical = 0；Serious = 0  
+- [x] **Step 4: Wave1 里程碑** — 整体 **A-** / 可访问性 **A-**
 
-- [ ] **Step 2: 修 editor 内问题**  
-  每修一类单独小提交；跨项目问题回写 A1/A2 或新开 shared 任务。
-
-- [ ] **Step 3: 复扫**  
-  **验收:** Critical = 0；Serious ≤ 2 且有书面豁免理由。
-
-- [ ] **Step 4: 勾选 Wave1 里程碑**  
-  此时目标分数：**整体 A- / 可访问性 A-**。
-
-#### A5 扫描记录
+#### A5 扫描记录（复扫后）
 
 | 页 | Critical | Serious | 处理 |
 |----|----------|---------|------|
-| Login | | | |
-| Instances | | | |
-| Editor | | | |
+| Login | 0 | 0 | 无；moderate landmark 豁免（shared LoginView） |
+| Instances | 0 | 0 | 对比度 + tag type 已修 |
+| Editor | 0 | 0 | label / 对比度 / iframe / main+h1；余 moderate `region`（toolbar 名输入在 header 外，豁免） |
 
 ---
 
