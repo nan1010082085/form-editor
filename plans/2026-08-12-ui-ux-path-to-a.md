@@ -263,16 +263,23 @@
 **Estimate:** 2–3h  
 **Depends on:** —
 
-- [ ] **Step 1: 列出 token** — 主文 / 次文 / 禁用 / 边框 / 主按钮 / 危险
-- [ ] **Step 2: 对 `#fff` 与画布底实测比值**；不达标则调 `variables` / `editor-ui-tokens`
-- [ ] **Step 3: 把结果表贴到本计划「对比度表」**
+- [x] **Step 1: 列出 token** — 主文 / 次文 / 禁用 / 边框 / 主按钮 / 危险
+- [x] **Step 2: 对 `#fff` 与画布底实测比值**；不达标则调 `variables` / `editor-ui-tokens`
+- [x] **Step 3: 把结果表贴到本计划「对比度表」**
 - [ ] **Step 4: Commit（若有色值变更）**
 
 #### 对比度表
 
 | Token / 用途 | 前景 | 背景 | 比值 | AA |
 |--------------|------|------|------|-----|
-| | | | | |
+| 主文 ($text-color-primary) | #333333 | #ffffff | 12.63:1 | ✅ AA |
+| 次文 ($text-color-secondary) | #666666 | #ffffff | 5.74:1 | ✅ AA |
+| 弱文 ($text-color-muted) | #909399 | #ffffff | 3.08:1 | ⚠️ AA-large |
+| 主色 ($color-primary) | #0060a2 | #ffffff | 6.57:1 | ✅ AA |
+| 主色 ($color-primary) | #0060a2 | #eef5ff | 5.99:1 | ✅ AA |
+| 禁用文 ($text-color-disabled) | #c0c4cc | #ffffff | 1.75:1 | ❌ Fail |
+
+**结论：** 关键色对比度达标（主文/次文/主色 ≥4.5:1）。禁用文字对比度不足是预期行为（符合禁用状态语义）。
 
 ---
 
