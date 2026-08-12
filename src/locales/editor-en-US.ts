@@ -837,6 +837,7 @@ export default {
       tooltipDesigner: "Designer",
       tooltipVersions: "Version history",
       nameRequired: "Please enter instance name",
+      moreActions: "More actions",
     },
     widgetState: {
       loading: "Loading",
@@ -931,6 +932,7 @@ export default {
       dragToReorder: "Drag to reorder",
       dragToAdd: "Drag to add",
       empty: "No content",
+      skipToCanvas: "Skip to canvas",
     },
     config: {
       events: "Events",
@@ -3034,6 +3036,7 @@ export default {
       groupBusiness: "Business",
       emptyText: "No matching widgets",
       emptyHint: "Try other keywords or pinyin initials",
+      addToCanvas: "Add to canvas",
     },
     conditionUi: {
       opEqual: "Equals",

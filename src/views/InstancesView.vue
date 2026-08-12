@@ -531,6 +531,24 @@ function handleLoadVersion(version: string) {
 function handleVersionPublished() {
   store.fetchSchemas();
 }
+
+/** 溢出菜单命令分发 */
+function handleOverflowCommand(cmd: string, item: SchemaListItem) {
+  switch (cmd) {
+    case "preview":
+      handlePreview(item);
+      break;
+    case "versions":
+      handleShowVersions(item);
+      break;
+    case "publish":
+      handlePublish(item);
+      break;
+    case "export":
+      handleExport(item);
+      break;
+  }
+}
 </script>
 
 <template>
@@ -744,6 +762,7 @@ function handleVersionPublished() {
               </div>
             </div>
             <div :class="styles['fg-instances-card__actions']">
+              <!-- 主操作：编辑 / 设计器 / 删除 -->
               <el-tooltip
                 :content="t('editor.instances.tooltipEdit')"
                 placement="top"
@@ -768,62 +787,6 @@ function handleVersionPublished() {
                 /></el-button>
               </el-tooltip>
               <el-tooltip
-                :content="
-                  item.publishId
-                    ? t('editor.instances.previewPublished')
-                    : t('editor.instances.previewEdit')
-                "
-                placement="top"
-                :show-after="300"
-              >
-                <el-button
-                  size="small"
-                  text
-                  type="warning"
-                  :aria-label="
-                    item.publishId
-                      ? t('editor.instances.previewPublished')
-                      : t('editor.instances.previewEdit')
-                  "
-                  @click="handlePreview(item)"
-                  ><AppIcon name="view"
-                /></el-button>
-              </el-tooltip>
-              <el-tooltip
-                :content="t('editor.instances.tooltipVersions')"
-                placement="top"
-                :show-after="300"
-              >
-                <el-button size="small" text :aria-label="t('editor.instances.tooltipVersions')" @click="handleShowVersions(item)"
-                  ><AppIcon name="clock"
-                /></el-button>
-              </el-tooltip>
-              <el-tooltip
-                :content="t('editor.instances.actionPublish')"
-                placement="top"
-                :show-after="300"
-              >
-                <el-button
-                  size="small"
-                  text
-                  type="success"
-                  :loading="publishingId === item.id"
-                  :disabled="publishingId !== null"
-                  :aria-label="t('editor.instances.actionPublish')"
-                  @click="handlePublish(item)"
-                  ><AppIcon name="promotion"
-                /></el-button>
-              </el-tooltip>
-              <el-tooltip
-                :content="t('editor.instances.actionExport')"
-                placement="top"
-                :show-after="300"
-              >
-                <el-button size="small" text :aria-label="t('editor.instances.actionExport')" @click="handleExport(item)"
-                  ><AppIcon name="download"
-                /></el-button>
-              </el-tooltip>
-              <el-tooltip
                 :content="t('editor.instances.actionDelete')"
                 placement="top"
                 :show-after="300"
@@ -837,6 +800,32 @@ function handleVersionPublished() {
                   ><AppIcon name="delete"
                 /></el-button>
               </el-tooltip>
+              <!-- 溢出菜单：更多操作 -->
+              <el-dropdown trigger="click" @command="(cmd: string) => handleOverflowCommand(cmd, item)">
+                <el-button size="small" text :aria-label="t('editor.instances.moreActions')">
+                  <AppIcon name="more-filled" />
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="preview">
+                      <AppIcon name="view" :size="14" />
+                      {{ item.publishId ? t('editor.instances.previewPublished') : t('editor.instances.previewEdit') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="versions">
+                      <AppIcon name="clock" :size="14" />
+                      {{ t('editor.instances.tooltipVersions') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="publish">
+                      <AppIcon name="promotion" :size="14" />
+                      {{ t('editor.instances.actionPublish') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item command="export">
+                      <AppIcon name="download" :size="14" />
+                      {{ t('editor.instances.actionExport') }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </div>
           </div>
         </div>

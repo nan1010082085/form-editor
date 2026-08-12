@@ -464,8 +464,13 @@ function isGroupExpanded(groupKey: string): boolean {
             <div
               v-else-if="flatItem.type === 'item' && flatItem.item"
               :class="styles.item"
+              role="button"
+              tabindex="0"
+              :aria-label="getDisplayName(flatItem.item!) + ' — ' + t('editor.componentPanel.addToCanvas')"
               draggable="true"
               @dblclick="handleDoubleClick(flatItem.item!.type)"
+              @keydown.enter.prevent="handleDoubleClick(flatItem.item!.type)"
+              @keydown.space.prevent="handleDoubleClick(flatItem.item!.type)"
               @dragstart="
                 handleDragStart(
                   $event,

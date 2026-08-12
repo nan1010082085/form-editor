@@ -769,6 +769,7 @@ export default {
       tooltipDesigner: "设计器",
       tooltipVersions: "版本历史",
       nameRequired: "请输入实例名称",
+      moreActions: "更多操作",
     },
     widgetState: {
       loading: "加载中",
@@ -863,6 +864,7 @@ export default {
       dragToReorder: "拖拽排序",
       dragToAdd: "拖拽添加",
       empty: "暂无内容",
+      skipToCanvas: "跳到画布",
     },
     config: {
       events: "事件配置",
@@ -2926,6 +2928,7 @@ export default {
       groupBusiness: "业务部件",
       emptyText: "未找到匹配的部件",
       emptyHint: "试试其他关键词或拼音首字母",
+      addToCanvas: "添加到画布",
     },
     conditionUi: {
       opEqual: "等于",

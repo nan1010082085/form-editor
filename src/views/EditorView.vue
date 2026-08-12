@@ -372,6 +372,30 @@ function handleKeyDown(e: KeyboardEvent) {
     }
   }
 
+  // 方向键微调选中 Widget（仅自由布局，锁定 Widget 不响应）
+  if (boardStore.layoutMode === "free" && editorStore.selectedId && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const widget = widgetStore.findWidget(editorStore.selectedId);
+    if (widget && !widget.locked) {
+      const step = e.shiftKey ? 10 : 1;
+      let dx = 0, dy = 0;
+      if (e.key === "ArrowUp") { dy = -step; }
+      if (e.key === "ArrowDown") { dy = step; }
+      if (e.key === "ArrowLeft") { dx = -step; }
+      if (e.key === "ArrowRight") { dx = step; }
+      if (dx !== 0 || dy !== 0) {
+        e.preventDefault();
+        const pos = widget.position || {};
+        widgetStore.updateWidget(editorStore.selectedId, {
+          position: {
+            ...pos,
+            x: (pos.x ?? 0) + dx,
+            y: (pos.y ?? 0) + dy,
+          },
+        });
+      }
+    }
+  }
+
   // 对齐/Min布依赖绝对坐标, 仅在自由Layout下生效；Grid 流式Layout无意义且会污染 position Data
   if (e.altKey && e.shiftKey && boardStore.layoutMode === "free") {
     const key = e.key.toLowerCase();
@@ -626,10 +650,23 @@ function handleVersionLoaded(version: string) {
 function handleVersionLoadedFromToolbar(version: string) {
   currentVersion.value = version;
 }
+
+/** Skip link: 将焦点移到画布主区域 */
+function focusCanvas() {
+  const el = document.getElementById("editor-canvas-main");
+  if (el) {
+    el.focus();
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
 </script>
 
 <template>
   <div :class="styles.editorView" @keydown="handleKeyDown">
+    <!-- Skip link: Tab 首个焦点，跳过工具栏直达画布 -->
+    <a :class="styles.skipLink" href="#editor-canvas-main" @click.prevent="focusCanvas">
+      {{ t("editor.common.skipToCanvas") }}
+    </a>
     <!-- Top toolbar -->
     <EditorViewToolbar
       :mode="mode"
@@ -677,7 +714,7 @@ function handleVersionLoadedFromToolbar(version: string) {
           v-if="mode === 'edit' && boardStore.layoutMode === 'free'"
           :scroll-container="canvasScrollRef"
         />
-        <div ref="canvasScrollRef" :class="styles.canvasScroll">
+        <div id="editor-canvas-main" ref="canvasScrollRef" :class="styles.canvasScroll" tabindex="-1">
           <EditorCanvas
             ref="editorCanvasRef"
             :preview-breakpoint="previewBreakpoint"
