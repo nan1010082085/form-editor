@@ -156,6 +156,7 @@ watch(totalFiltered, (total) => {
 
       <EmptyState
         v-else
+        :class="$style.emptyWrap"
         icon="search"
         :title="t('editor.widgetMarket.empty')"
       />
@@ -278,23 +279,57 @@ watch(totalFiltered, (total) => {
   opacity: 0.7;
 }
 
-/** 一屏内滚动的列表区 */
+/** 一屏内铺满的列表区（分页后不再靠滚动撑高度） */
 .listScroll {
   flex: 1;
   min-height: 0;
-  overflow: auto;
-  padding-right: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
+.emptyWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * 固定行列铺满视口：
+ * 宽屏 4×3、中屏 3×4、窄屏 2×6，与 PAGE_SIZE=12 对齐
+ */
 .grid {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  padding-bottom: 8px;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+  }
 }
 
 .card {
-  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  padding: 14px 16px;
   border: 1px solid var(--border-color-lighter);
   border-radius: 8px;
   background: var(--bg-color-white);
@@ -305,6 +340,7 @@ watch(totalFiltered, (total) => {
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .cardIcon {
@@ -332,13 +368,14 @@ watch(totalFiltered, (total) => {
 }
 
 .cardDesc {
+  flex: 1;
+  min-height: 0;
   font-size: 12px;
   color: var(--text-color-regular, #606266);
   margin: 0 0 10px;
   line-height: 1.5;
-  min-height: 36px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -349,6 +386,8 @@ watch(totalFiltered, (total) => {
   gap: 8px;
   font-size: 11px;
   color: var(--text-color-regular, #606266);
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .metaType,
