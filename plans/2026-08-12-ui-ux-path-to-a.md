@@ -12,7 +12,7 @@
 **索引:** [README.md](./README.md)  
 **看板:** [editor-ui-ux-path-to-a.canvas.tsx](/Users/yangdongnan/.cursor/projects/Users-yangdongnan-work-schema-platform-server/canvases/editor-ui-ux-path-to-a.canvas.tsx)
 
-**状态:** 🟢 **唯一活跃 UI/UX 计划** · 未开工
+**状态:** 🟡 **唯一活跃 UI/UX 计划** · 11/12 完成，仅剩 A5（axe 扫描）
 
 ## Global Constraints
 
@@ -43,8 +43,8 @@
 
 | ID | Wave | 仓 | 优先级 | 标题 | 状态 |
 |----|------|-----|--------|------|------|
-| A1 | 1 | platform-shared | P0 | authPaths standalone → `/login` | `- [ ]` |
-| A2 | 1 | platform-shared | P0 | LoginView 可见 label | `- [ ]` |
+| A1 | 1 | platform-shared | P0 | authPaths standalone → `/login` | `- [x]` 已实现 |
+| A2 | 1 | platform-shared | P0 | LoginView 可见 label | `- [x]` 已实现 |
 | A3 | 1 | editor | P0 | 键盘添加部件 | `- [x]` |
 | A4 | 1 | editor | P0 | Skip link → 画布 | `- [x]` |
 | A5 | 1 | 两边 | P0 | axe 清 Critical/Serious | `- [ ]` |
