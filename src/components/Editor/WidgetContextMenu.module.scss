@@ -1,12 +1,14 @@
+@use "@/styles/variables" as *;
+
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 9998;
+  z-index: $z-top - 1;
 }
 
 .menu {
   position: fixed;
-  z-index: 9999;
+  z-index: $z-top;
   background: var(--bg-color-white);
   border: 1px solid var(--bg-color-gray-dark);
   border-radius: 4px;

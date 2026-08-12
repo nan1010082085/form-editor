@@ -19,6 +19,7 @@ import FlowPreview from "@/components/Editor/FlowPreview.vue";
 import type { FlowItem } from "@/components/Editor/FlowPreview.vue";
 import styles from "./LinkageConfigDialog.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import EmptyState from "@/components/common/EmptyState.vue";
 
 const { t } = useI18n();
 
@@ -203,9 +204,11 @@ const flowItems = computed<FlowItem[]>(() =>
       <!-- 左侧：ConfigForm -->
       <div :class="styles.form">
         <!-- 空Status -->
-        <div v-if="localRules.length === 0" :class="styles.empty">
-          {{ t("editor.linkageDialog.emptyHint") }}
-        </div>
+        <EmptyState
+          v-if="localRules.length === 0"
+          icon="connection"
+          :title="t('editor.linkageDialog.emptyHint')"
+        />
 
         <!-- RuleColumn表 -->
         <div v-for="(rule, ri) in localRules" :key="ri" :class="styles.card">

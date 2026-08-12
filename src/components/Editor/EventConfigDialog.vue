@@ -28,6 +28,7 @@ import type { FlowItem } from "@/components/Editor/FlowPreview.vue";
 import { EVENT_TRIGGER_I18N_KEYS } from "@/engine";
 import styles from "./EventConfigDialog.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import EmptyState from "@/components/common/EmptyState.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 
 const { t } = useI18n();
@@ -203,9 +204,11 @@ const flowItems = computed<FlowItem[]>(() =>
       <!-- 左侧：ConfigForm -->
       <div :class="styles.form">
         <!-- 空Status -->
-        <div v-if="localEvents.length === 0" :class="styles.empty">
-          {{ t("editor.eventDialog.emptyHint") }}
-        </div>
+        <EmptyState
+          v-if="localEvents.length === 0"
+          icon="lightning"
+          :title="t('editor.eventDialog.emptyHint')"
+        />
 
         <!-- EventColumn表 -->
         <div v-for="(evt, ei) in localEvents" :key="ei" :class="styles.card">

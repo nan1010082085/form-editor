@@ -49,12 +49,12 @@
 | A4 | 1 | editor | P0 | Skip link → 画布 | `- [x]` |
 | A5 | 1 | 两边 | P0 | axe 清 Critical/Serious | `- [ ]` |
 | A6 | 2 | editor | P1 | 实例卡「更多」溢出 | `- [x]` |
-| A7 | 2 | editor | P1 | 缩放单一入口 | `- [ ]` |
-| A8 | 2 | editor | P1 | z-index `$z-*` 全局替换 | `- [ ]` |
-| A9 | 2 | editor | P2 | EmptyState 覆盖配置弹窗 | `- [ ]` |
-| A10 | 2 | editor | P1 | 对比度 WCAG AA 表 | `- [ ]` |
+| A7 | 2 | editor | P1 | 缩放单一入口 | `- [x]` |
+| A8 | 2 | editor | P1 | z-index `$z-*` 全局替换 | `- [x]` |
+| A9 | 2 | editor | P2 | EmptyState 覆盖配置弹窗 | `- [x]` |
+| A10 | 2 | editor | P1 | 对比度 WCAG AA 表 | `- [x]` |
 | A11 | 2 | editor | P2 | 方向键微调选中 Widget | `- [x]` |
-| A12 | 2 | editor | P2 | CI：raw-key / 无名 icon | `- [ ]` |
+| A12 | 2 | editor | P2 | CI：raw-key / 无名 icon | `- [x]` |
 
 **里程碑:** Wave1 全部勾选 → 目标 **A-**；Wave2 全部勾选 + DoD 走查 → 目标 **A**。
 

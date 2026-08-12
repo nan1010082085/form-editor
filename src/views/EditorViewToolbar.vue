@@ -725,8 +725,8 @@ function handleClearCanvas() {
           </template>
         </el-dropdown>
         <div :class="styles.divider" />
-        <!-- Zoom -->
-        <div :class="styles.zoomGroup">
+        <!-- Zoom: ZoomIndicator 可见时隐藏 Toolbar 内缩放，避免双入口 -->
+        <div v-if="!editorStore.showZoomIndicator" :class="styles.zoomGroup">
           <button
             :class="styles.iconBtn"
             :aria-label="t('editor.zoomIndicator.zoomOut')"

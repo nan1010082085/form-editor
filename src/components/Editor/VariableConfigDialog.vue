@@ -10,6 +10,7 @@ import type { WidgetVariable } from "../../widgets/base/types";
 import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
 import styles from "./VariableConfigDialog.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import EmptyState from "@/components/common/EmptyState.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 
 const { t } = useI18n();
@@ -112,9 +113,11 @@ function handleClose() {
   >
     <div :class="styles.body">
       <!-- 空Status -->
-      <div v-if="localVariables.length === 0" :class="styles.empty">
-        {{ t("editor.variableConfig.emptyHint") }}
-      </div>
+      <EmptyState
+        v-if="localVariables.length === 0"
+        icon="setting"
+        :title="t('editor.variableConfig.emptyHint')"
+      />
 
       <!-- 变量Column表 -->
       <div v-for="(v, i) in localVariables" :key="i" :class="styles.card">
