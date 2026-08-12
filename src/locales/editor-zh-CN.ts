@@ -122,6 +122,7 @@ export default {
     widgetMarket: {
       title: "部件市场",
       subtitle: "共 {count} 个部件",
+      filteredCount: "筛选 {count} 个",
       searchPlaceholder: "搜索部件...",
       groupAll: "全部",
       empty: "未找到匹配的部件",

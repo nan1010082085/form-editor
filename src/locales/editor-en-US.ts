@@ -122,6 +122,7 @@ export default {
     widgetMarket: {
       title: "Widget Market",
       subtitle: "{count} widgets total",
+      filteredCount: "{count} matched",
       searchPlaceholder: "Search widgets...",
       groupAll: "All",
       empty: "No matching widgets found",

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 /**
- * WidgetMarketView — Component市场浏览页
+ * WidgetMarketView — 部件市场浏览页
+ *
+ * 一屏布局：顶栏固定 + 列表区内滚动 + 底部分页，避免整页无限拉长。
  */
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
 import {
   getAllWidgets,
@@ -16,11 +18,15 @@ import EmptyState from "@/components/common/EmptyState.vue";
 const { t } = useI18n();
 const searchQuery = ref("");
 const activeGroup = ref<string>("all");
+/** 当前页（从 1 开始） */
+const currentPage = ref(1);
+/** 每页卡片数：约一屏网格容量 */
+const PAGE_SIZE = 12;
 
 const allWidgets = computed<WidgetRegistryItem[]>(() => getAllWidgets());
 
 /**
- * @param group - Group key
+ * @param group - 分组 key
  */
 function groupLabel(group: string): string {
   const key = `editor.componentPanel.group${group.charAt(0).toUpperCase()}${group.slice(1)}`;
@@ -61,6 +67,22 @@ const filteredWidgets = computed(() => {
   }
   return list;
 });
+
+const totalFiltered = computed(() => filteredWidgets.value.length);
+
+const pagedWidgets = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return filteredWidgets.value.slice(start, start + PAGE_SIZE);
+});
+
+watch([searchQuery, activeGroup], () => {
+  currentPage.value = 1;
+});
+
+watch(totalFiltered, (total) => {
+  const maxPage = Math.max(1, Math.ceil(total / PAGE_SIZE) || 1);
+  if (currentPage.value > maxPage) currentPage.value = maxPage;
+});
 </script>
 
 <template>
@@ -69,6 +91,12 @@ const filteredWidgets = computed(() => {
       <h1 :class="$style.title">{{ t("editor.widgetMarket.title") }}</h1>
       <p :class="$style.subtitle">
         {{ t("editor.widgetMarket.subtitle", { count: allWidgets.length }) }}
+        <template v-if="totalFiltered !== allWidgets.length">
+          ·
+          {{
+            t("editor.widgetMarket.filteredCount", { count: totalFiltered })
+          }}
+        </template>
       </p>
     </header>
 
@@ -78,11 +106,19 @@ const filteredWidgets = computed(() => {
         type="text"
         :placeholder="t('editor.widgetMarket.searchPlaceholder')"
         :class="$style.search"
+        :aria-label="t('editor.widgetMarket.searchPlaceholder')"
       />
-      <div :class="$style.groupTabs">
+      <div
+        :class="$style.groupTabs"
+        role="tablist"
+        :aria-label="t('editor.widgetMarket.groupAll')"
+      >
         <button
           v-for="g in groups"
           :key="g"
+          type="button"
+          role="tab"
+          :aria-selected="activeGroup === g"
           :class="[$style.groupTab, activeGroup === g && $style.groupTabActive]"
           @click="activeGroup = g"
         >
@@ -94,46 +130,68 @@ const filteredWidgets = computed(() => {
       </div>
     </div>
 
-    <div :class="$style.grid">
-      <div v-for="w in filteredWidgets" :key="w.type" :class="$style.card">
-        <div :class="$style.cardHeader">
-          <AppIcon
-            :name="w.config?.icon ?? 'setting'"
-            :size="20"
-            :class="$style.cardIcon"
-          />
-          <span :class="$style.cardName">{{
-            getWidgetDisplayName(w.type, t)
-          }}</span>
-          <span :class="$style.cardTag">{{ groupLabel(w.group) }}</span>
-        </div>
-        <p :class="$style.cardDesc">
-          {{ getWidgetDescription(w.type, t) || "—" }}
-        </p>
-        <div :class="$style.cardMeta">
-          <span :class="$style.metaType">{{ w.type }}</span>
-          <span :class="$style.metaComponent">{{ w.name }}</span>
+    <div :class="$style.listScroll">
+      <div v-if="pagedWidgets.length" :class="$style.grid">
+        <div v-for="w in pagedWidgets" :key="w.type" :class="$style.card">
+          <div :class="$style.cardHeader">
+            <AppIcon
+              :name="w.config?.icon ?? 'setting'"
+              :size="20"
+              :class="$style.cardIcon"
+            />
+            <span :class="$style.cardName">{{
+              getWidgetDisplayName(w.type, t)
+            }}</span>
+            <span :class="$style.cardTag">{{ groupLabel(w.group) }}</span>
+          </div>
+          <p :class="$style.cardDesc">
+            {{ getWidgetDescription(w.type, t) || "—" }}
+          </p>
+          <div :class="$style.cardMeta">
+            <span :class="$style.metaType">{{ w.type }}</span>
+            <span :class="$style.metaComponent">{{ w.name }}</span>
+          </div>
         </div>
       </div>
+
+      <EmptyState
+        v-else
+        icon="search"
+        :title="t('editor.widgetMarket.empty')"
+      />
     </div>
 
-    <EmptyState
-      v-if="!filteredWidgets.length"
-      icon="search"
-      :title="t('editor.widgetMarket.empty')"
-    />
+    <footer v-if="totalFiltered > 0" :class="$style.pagination">
+      <el-pagination
+        v-model:current-page="currentPage"
+        :page-size="PAGE_SIZE"
+        :total="totalFiltered"
+        layout="total, prev, pager, next"
+        background
+      />
+    </footer>
   </div>
 </template>
 
 <style module lang="scss">
 .page {
-  padding: 24px 32px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  padding: 24px 32px 16px;
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .header {
-  margin-bottom: 24px;
+  flex-shrink: 0;
+  margin-bottom: 16px;
 }
 
 .title {
@@ -145,15 +203,16 @@ const filteredWidgets = computed(() => {
 
 .subtitle {
   font-size: 13px;
-  color: var(--text-color-secondary);
+  color: var(--text-color-regular, #606266);
   margin: 0;
 }
 
 .toolbar {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .search {
@@ -165,6 +224,7 @@ const filteredWidgets = computed(() => {
   border-radius: 6px;
   font-size: 13px;
   outline: none;
+  background: var(--bg-color-white);
 
   &:focus {
     border-color: var(--color-primary);
@@ -199,6 +259,11 @@ const filteredWidgets = computed(() => {
     border-color: var(--color-primary-lighter);
     color: var(--color-primary);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
 .groupTabActive {
@@ -213,10 +278,19 @@ const filteredWidgets = computed(() => {
   opacity: 0.7;
 }
 
+/** 一屏内滚动的列表区 */
+.listScroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
+  padding-bottom: 8px;
 }
 
 .card {
@@ -250,7 +324,7 @@ const filteredWidgets = computed(() => {
 
 .cardTag {
   font-size: 11px;
-  color: var(--text-color-secondary);
+  color: var(--text-color-regular, #606266);
   background: var(--bg-color-gray);
   padding: 2px 6px;
   border-radius: 4px;
@@ -259,10 +333,14 @@ const filteredWidgets = computed(() => {
 
 .cardDesc {
   font-size: 12px;
-  color: var(--text-color-secondary);
+  color: var(--text-color-regular, #606266);
   margin: 0 0 10px;
   line-height: 1.5;
   min-height: 36px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .cardMeta {
@@ -270,7 +348,7 @@ const filteredWidgets = computed(() => {
   justify-content: space-between;
   gap: 8px;
   font-size: 11px;
-  color: var(--text-color-placeholder);
+  color: var(--text-color-regular, #606266);
 }
 
 .metaType,
@@ -280,10 +358,12 @@ const filteredWidgets = computed(() => {
   white-space: nowrap;
 }
 
-.empty {
-  text-align: center;
-  padding: 48px 16px;
-  color: var(--text-color-secondary);
-  font-size: 13px;
+.pagination {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color-lighter);
+  margin-top: 8px;
 }
 </style>
