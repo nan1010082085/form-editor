@@ -213,15 +213,15 @@
 
 // ---- 弹窗 z-index ----
 .t-popup {
-  z-index: 3000 !important;
+  z-index: $z-toast !important;
 }
 
 .t-dialog__wrap {
-  z-index: 2000 !important;
+  z-index: $z-dialog !important;
 }
 
 .t-message {
-  z-index: 9999 !important;
+  z-index: $z-top !important;
 }
 
 // ---- Link / Text 按钮重置 ----

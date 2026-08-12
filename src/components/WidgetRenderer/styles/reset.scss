@@ -115,18 +115,18 @@
 
   // 弹窗层
   &-dialog {
-    z-index: 2000;
+    z-index: $z-dialog;
   }
 
   // 下拉层
   .el-popper,
   .el-select-dropdown,
   .el-picker-panel {
-    z-index: 3000;
+    z-index: $z-toast;
   }
 
   // 消息提示层
   .el-message {
-    z-index: 9999;
+    z-index: $z-top;
   }
 }
