@@ -47,9 +47,9 @@
 | A2 | 1 | platform-shared | P0 | LoginView 可见 label | `- [x]` 已实现 |
 | A3 | 1 | editor | P0 | 键盘添加部件 | `- [x]` |
 | A4 | 1 | editor | P0 | Skip link → 画布 | `- [x]` |
-| A5 | 1 | 两边 | P0 | axe 清 Critical/Serious | `- [ ]` |
+| A5 | 1 | 两边 | P0 | axe 清 Critical/Serious | `- [x]` 已扫描，0 issues |
 | A6 | 2 | editor | P1 | 实例卡「更多」溢出 | `- [x]` |
-| A7 | 2 | editor | P1 | 缩放单一入口 | `- [x]` |
+| A7 | 2 | editor | P1 | 缩放单一入口 | `- [x]` ZoomIndicator 可见时隐藏 Toolbar 缩放 |
 | A8 | 2 | editor | P1 | z-index `$z-*` 全局替换 | `- [x]` |
 | A9 | 2 | editor | P2 | EmptyState 覆盖配置弹窗 | `- [x]` |
 | A10 | 2 | editor | P1 | 对比度 WCAG AA 表 | `- [x]` |
