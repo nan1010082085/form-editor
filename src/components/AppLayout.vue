@@ -9,11 +9,15 @@ import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "@schema-platform/platform-shared";
 import styles from "./AppLayout.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppUserPanel from "@schema-platform/platform-shared/components/common/AppUserPanel.vue";
+import { useAuthStore } from "@schema-platform/platform-shared/utils/stores/authStore";
+import { stopTokenRefreshSchedule } from "@schema-platform/platform-shared/utils/authSession";
 import { useQiankunShell } from "@schema-platform/platform-shared/qiankun";
 import { useAppLocale } from "@/composables/useAppLocale";
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const { t } = useI18n();
 const { locale, toggleLocale } = useAppLocale();
 const { isQiankunSubApp, shouldHideSubAppMenu, goToShellHome } =
@@ -47,6 +51,15 @@ const langButtonLabel = computed(() =>
     ? t("editor.toolbar.langEn")
     : t("editor.toolbar.langZh"),
 );
+
+/**
+ * 退出登录并跳转登录页
+ */
+function handleLogout() {
+  stopTokenRefreshSchedule();
+  authStore.reset();
+  void router.push({ name: "login" });
+}
 </script>
 
 <template>
@@ -73,6 +86,12 @@ const langButtonLabel = computed(() =>
       </nav>
 
       <div :class="styles.sidebarFooter">
+        <AppUserPanel
+          :user="authStore.user"
+          placement="top-start"
+          block
+          @logout="handleLogout"
+        />
         <button
           type="button"
           :class="[styles.navItem, styles.footerItem, styles.langBtn]"
