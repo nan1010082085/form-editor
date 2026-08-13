@@ -16,7 +16,7 @@ const routes = [
     component: () =>
       import("@schema-platform/platform-shared/components/auth/LoginView.vue"),
     props: {
-      title: "Form Designer",
+      title: "表单设计器",
       subtitle: "Schema Form Platform",
     },
     meta: { public: true },
