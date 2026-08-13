@@ -524,6 +524,7 @@ describe("SchemaVersionCompare", () => {
     const wrapper = createWrapper();
     await flushPromises();
 
+    expect(wrapper.find('[data-testid="app-pagination"]').exists()).toBe(true);
     expect(wrapper.find(".el-pagination").exists()).toBe(true);
   });
 });

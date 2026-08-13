@@ -102,7 +102,7 @@ function createMockTemplateStore(overrides: Record<string, unknown> = {}) {
     searchKeyword: "",
     selectedCategory: "",
     page: 1,
-    pageSize: 20,
+    pageSize: 10,
     totalPages: 1,
     hasMore: false,
     loadTemplates: vi.fn().mockResolvedValue(undefined),

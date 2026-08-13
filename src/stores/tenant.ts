@@ -21,8 +21,7 @@ import {
   updateTenant as apiUpdateTenant,
   deleteTenant as apiDeleteTenant,
 } from "@/api/dataApi";
-
-const DEFAULT_PAGE_SIZE = 20;
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 
 export const useTenantStore = defineStore("tenant", () => {
   // ── Status ──

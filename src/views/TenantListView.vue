@@ -12,6 +12,7 @@ import TenantFormDialog from "@/components/System/TenantFormDialog.vue";
 import type { TenantItem, TenantStatus } from "@/types/tenant";
 import styles from "./TenantListView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 
 const { t } = useI18n();
 const tenantStore = useTenantStore();
@@ -62,6 +63,18 @@ function handlePageChange(page: number) {
     search: searchInput.value || undefined,
     status: activeStatus.value,
     page,
+  });
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number) {
+  tenantStore.fetchTenants({
+    search: searchInput.value || undefined,
+    status: activeStatus.value,
+    page: 1,
+    pageSize: size,
   });
 }
 
@@ -348,15 +361,13 @@ function statusTagType(status: TenantStatus): "success" | "info" | "warning" {
         </el-table>
 
         <!-- Pagination -->
-        <div v-if="tenantStore.pagination.total > 0" :class="styles.pagination">
-          <el-pagination
-            v-model:current-page="tenantStore.pagination.page"
-            :page-size="tenantStore.pagination.pageSize"
-            :total="tenantStore.pagination.total"
-            layout="prev, pager, next"
-            @current-change="handlePageChange"
-          />
-        </div>
+        <AppPagination
+          v-model:current-page="tenantStore.pagination.page"
+          v-model:page-size="tenantStore.pagination.pageSize"
+          :total="tenantStore.pagination.total"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
       </div>
     </div>
 

@@ -20,7 +20,9 @@ import { registerAllWidgets } from "@/widgets";
 import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
 import styles from "./TemplatePanel.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import { useI18n } from "@schema-platform/platform-shared";
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 
 const { t } = useI18n();
 
@@ -47,7 +49,7 @@ const loading = ref(false);
 const items = ref<WidgetTemplateItem[]>([]);
 const total = ref(0);
 const page = ref(1);
-const pageSize = ref(20);
+const pageSize = ref(DEFAULT_PAGE_SIZE);
 const previewVisible = ref(false);
 const previewTemplate = ref<WidgetTemplateItem | null>(null);
 const previewSchema = ref<PartialWidget[]>([]);
@@ -153,6 +155,15 @@ async function handleApplyFromPreview() {
 
 function handlePageChange(newPage: number) {
   page.value = newPage;
+  loadTemplates();
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number) {
+  pageSize.value = size;
+  page.value = 1;
   loadTemplates();
 }
 
@@ -284,15 +295,14 @@ defineExpose({ loadTemplates });
     </div>
 
     <!-- Min页 -->
-    <div v-if="totalPages > 1" :class="styles.pagination">
-      <el-pagination
-        small
-        :total="total"
-        :page-size="pageSize"
-        :current-page="page"
-        @current-change="handlePageChange"
-      />
-    </div>
+    <AppPagination
+      size="small"
+      :total="total"
+      :page-size="pageSize"
+      :current-page="page"
+      @current-change="handlePageChange"
+      @size-change="handleSizeChange"
+    />
 
     <AppDialog
       v-model="previewVisible"

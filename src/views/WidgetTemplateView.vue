@@ -11,6 +11,7 @@ import { WidgetRenderer } from "@/components/WidgetRenderer";
 import { registerAllWidgets } from "@/widgets";
 import FilterTabs from "@schema-platform/platform-shared/components/common/FilterTabs.vue";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import type { TemplateItem } from "@/api/schemaApi";
 import type { PartialWidget } from "@/widgets/base/types";
 import { useI18n } from "@schema-platform/platform-shared";
@@ -56,6 +57,14 @@ function handleCategoryChange(category: string) {
 // ---- Min页 ----
 function handlePageChange(page: number) {
   templateStore.setPage(page);
+  templateStore.loadTemplates();
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number) {
+  templateStore.setPageSize(size);
   templateStore.loadTemplates();
 }
 
@@ -314,15 +323,13 @@ onMounted(() => {
     </div>
 
     <!-- Pagination -->
-    <div v-if="templateStore.totalPages > 1" :class="styles.pagination">
-      <el-pagination
-        :current-page="templateStore.page"
-        :page-size="templateStore.pageSize"
-        :total="templateStore.total"
-        layout="prev, pager, next"
-        @current-change="handlePageChange"
-      />
-    </div>
+    <AppPagination
+      :current-page="templateStore.page"
+      :page-size="templateStore.pageSize"
+      :total="templateStore.total"
+      @current-change="handlePageChange"
+      @size-change="handleSizeChange"
+    />
 
     <!-- Details预览Drawer -->
     <el-drawer

@@ -24,6 +24,7 @@ import FilterTabs from "@schema-platform/platform-shared/components/common/Filte
 import type { SchemaListItem, SchemaDetail } from "@/types/api";
 import type { PartialWidget } from "@/widgets/base/types";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import EmptyState from "@/components/common/EmptyState.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 import { reportTelemetry } from "@/api/telemetryApi";
@@ -231,6 +232,19 @@ function handlePageChange(page: number) {
   store.fetchSchemas({
     search: searchInput.value || undefined,
     page,
+    ...filter,
+  });
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number) {
+  const filter = buildFilter();
+  store.fetchSchemas({
+    search: searchInput.value || undefined,
+    page: 1,
+    pageSize: size,
     ...filter,
   });
 }
@@ -834,18 +848,13 @@ function handleOverflowCommand(cmd: string, item: SchemaListItem) {
         </div>
 
         <!-- Pagination -->
-        <div
-          v-if="store.pagination.total > 0"
-          :class="styles['fg-instances__pagination']"
-        >
-          <el-pagination
-            v-model:current-page="store.pagination.page"
-            :page-size="store.pagination.pageSize"
-            :total="store.pagination.total"
-            layout="total, prev, pager, next"
-            @current-change="handlePageChange"
-          />
-        </div>
+        <AppPagination
+          v-model:current-page="store.pagination.page"
+          v-model:page-size="store.pagination.pageSize"
+          :total="store.pagination.total"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
       </div>
     </div>
 

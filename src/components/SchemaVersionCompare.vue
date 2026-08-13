@@ -19,6 +19,7 @@ import { useSchemaVersionStore } from "@/stores/schemaVersion";
 import { useSchemaLoader } from "@/composables/useSchemaLoader";
 import type { VersionEntry } from "@/types/api";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 
 const { t } = useI18n();
@@ -449,19 +450,14 @@ function formatChangeValue(val: unknown): string {
         </div>
 
         <!-- Min页 -->
-        <div
-          v-if="versionStore.total > versionStore.pageSize"
-          :class="$style.versionPagination"
-        >
-          <el-pagination
-            :current-page="versionStore.page"
-            :page-size="versionStore.pageSize"
-            :total="versionStore.total"
-            small
-            layout="prev, pager, next"
-            @current-change="(p: number) => versionStore.goToPage(p)"
-          />
-        </div>
+        <AppPagination
+          :current-page="versionStore.page"
+          :page-size="versionStore.pageSize"
+          :total="versionStore.total"
+          size="small"
+          @current-change="(p: number) => versionStore.goToPage(p)"
+          @size-change="(s: number) => versionStore.setPageSize(s)"
+        />
       </div>
     </template>
 

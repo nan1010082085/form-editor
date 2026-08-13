@@ -17,6 +17,7 @@ import type { TemplateCategory } from "@/api/schemaApi";
 import type { Widget } from "@/widgets/base/types";
 import styles from "./WidgetTemplatePanel.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 
 const { t } = useI18n();
@@ -78,6 +79,14 @@ function handleCategoryChange(category: string) {
 
 function handlePageChange(newPage: number) {
   templateStore.setPage(newPage);
+  templateStore.loadTemplates();
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number) {
+  templateStore.setPageSize(size);
   templateStore.loadTemplates();
 }
 
@@ -342,19 +351,14 @@ onMounted(() => {
     </div>
 
     <!-- Pagination -->
-    <div
-      v-if="templateStore.total > templateStore.pageSize"
-      :class="styles.pagination"
-    >
-      <el-pagination
-        :current-page="templateStore.page"
-        :page-size="templateStore.pageSize"
-        :total="templateStore.total"
-        layout="prev, pager, next"
-        size="small"
-        @current-change="handlePageChange"
-      />
-    </div>
+    <AppPagination
+      :current-page="templateStore.page"
+      :page-size="templateStore.pageSize"
+      :total="templateStore.total"
+      size="small"
+      @current-change="handlePageChange"
+      @size-change="handleSizeChange"
+    />
 
     <!-- Save template dialog -->
     <el-dialog

@@ -6,10 +6,12 @@
  */
 import { ref, watch } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { fetchVersions, publishSchema, deleteVersion } from "@/api/schemaApi";
 import type { VersionEntry } from "@/types/api";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import AppDialog from "@schema-platform/platform-shared/components/common/AppDialog.vue";
 import styles from "./VersionHistoryDialog.module.scss";
 
@@ -36,7 +38,7 @@ const loading = ref(false);
 const publishingVersion = ref<string | null>(null);
 const deletingVersion = ref<string | null>(null);
 const currentPage = ref(1);
-const pageSize = 10;
+const pageSize = ref(DEFAULT_PAGE_SIZE);
 const total = ref(0);
 
 async function loadVersions(page = 1) {
@@ -44,7 +46,7 @@ async function loadVersions(page = 1) {
   loading.value = true;
   currentPage.value = page;
   try {
-    const res = await fetchVersions(props.editId, page, pageSize);
+    const res = await fetchVersions(props.editId, page, pageSize.value);
     versions.value = res.items ?? [];
     total.value = res.total ?? 0;
   } catch {
@@ -63,6 +65,14 @@ watch(
 
 function handlePageChange(page: number) {
   loadVersions(page);
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number) {
+  pageSize.value = size;
+  loadVersions(1);
 }
 
 function handleLoadVersion(version: string) {
@@ -261,16 +271,14 @@ function tableRowClassName({ row }: { row: VersionEntry }) {
         </el-table-column>
       </el-table>
 
-      <div v-if="total > 0" :class="styles['version-history__pagination']">
-        <el-pagination
-          v-model:current-page="currentPage"
-          :page-size="pageSize"
-          :total="total"
-          size="small"
-          layout="prev, pager, next"
-          @current-change="handlePageChange"
-        />
-      </div>
+      <AppPagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        size="small"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </template>
 
     <template #footer>

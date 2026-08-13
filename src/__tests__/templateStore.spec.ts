@@ -68,7 +68,7 @@ describe("useTemplateStore", () => {
     expect(store.searchKeyword).toBe("");
     expect(store.selectedCategory).toBe("");
     expect(store.page).toBe(1);
-    expect(store.pageSize).toBe(20);
+    expect(store.pageSize).toBe(10);
   });
 
   // ------------------------------------------------------------------
@@ -84,7 +84,7 @@ describe("useTemplateStore", () => {
       items,
       total: 2,
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
       totalPages: 1,
     });
 
@@ -99,7 +99,7 @@ describe("useTemplateStore", () => {
       search: undefined,
       category: undefined,
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
     });
   });
 
@@ -120,7 +120,7 @@ describe("useTemplateStore", () => {
       items: [],
       total: 0,
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
       totalPages: 0,
     });
 
@@ -133,7 +133,7 @@ describe("useTemplateStore", () => {
       search: "login",
       category: "form",
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
     });
   });
 
@@ -181,7 +181,7 @@ describe("useTemplateStore", () => {
   it("computes totalPages correctly", () => {
     const store = useTemplateStore();
     store.total = 45;
-    expect(store.totalPages).toBe(3); // ceil(45/20)
+    expect(store.totalPages).toBe(5); // ceil(45/10)
   });
 
   it("computes hasMore correctly", () => {
@@ -189,7 +189,7 @@ describe("useTemplateStore", () => {
     store.total = 45;
     store.page = 2;
     expect(store.hasMore).toBe(true);
-    store.page = 3;
+    store.page = 5;
     expect(store.hasMore).toBe(false);
   });
 
@@ -204,7 +204,7 @@ describe("useTemplateStore", () => {
       items: [],
       total: 0,
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
       totalPages: 0,
     });
 
@@ -228,7 +228,7 @@ describe("useTemplateStore", () => {
       items: [newTemplate],
       total: 1,
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
       totalPages: 1,
     });
 
@@ -258,7 +258,7 @@ describe("useTemplateStore", () => {
       items: [],
       total: 0,
       page: 1,
-      pageSize: 20,
+      pageSize: 10,
       totalPages: 0,
     });
 

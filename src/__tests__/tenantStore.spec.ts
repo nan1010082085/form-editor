@@ -56,8 +56,8 @@ function makePaginated(items: TenantItem[], total = items.length) {
     items,
     total,
     page: 1,
-    pageSize: 20,
-    totalPages: Math.ceil(total / 20),
+    pageSize: 10,
+    totalPages: Math.ceil(total / 10),
   };
 }
 
@@ -79,7 +79,7 @@ describe("useTenantStore", () => {
     expect(store.searchQuery).toBe("");
     expect(store.statusFilter).toBe("");
     expect(store.pagination.page).toBe(1);
-    expect(store.pagination.pageSize).toBe(20);
+    expect(store.pagination.pageSize).toBe(10);
     expect(store.pagination.total).toBe(0);
     expect(store.hasTenants).toBe(false);
     expect(store.isEmpty).toBe(true);
@@ -102,7 +102,7 @@ describe("useTenantStore", () => {
 
     expect(mockGet).toHaveBeenCalledWith(
       "/tenants",
-      expect.objectContaining({ page: "1", pageSize: "20" }),
+      expect.objectContaining({ page: "1", pageSize: "10" }),
     );
     expect(store.tenants).toHaveLength(2);
     expect(store.pagination.total).toBe(2);

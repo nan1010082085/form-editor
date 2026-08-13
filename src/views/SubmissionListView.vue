@@ -8,6 +8,7 @@ import { onMounted, ref, computed, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useI18n } from "@schema-platform/platform-shared";
 import { useDataLoading } from "@schema-platform/platform-shared/utils/useDataLoading";
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 import { fetchSchemas } from "@/api/schemaApi";
 import {
   fetchSubmissions,
@@ -22,6 +23,7 @@ import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import type { PaginatedResponse, SchemaListItem } from "@/types/api";
 import styles from "./SubmissionListView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import EmptyState from "@/components/common/EmptyState.vue";
 
 const { t } = useI18n();
@@ -34,7 +36,7 @@ const selectedSchemaId = ref("");
 const submissions = ref<SubmissionItem[]>([]);
 const total = ref(0);
 const page = ref(1);
-const pageSize = ref(20);
+const pageSize = ref(DEFAULT_PAGE_SIZE);
 const { loading, withLoading } = useDataLoading({ timeout: 15000 });
 
 // ── Filter ──
@@ -112,6 +114,15 @@ watch(activeStatus, () => {
 // ── Min页 ──
 function handlePageChange(p: number) {
   page.value = p;
+  loadSubmissions();
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number) {
+  pageSize.value = size;
+  page.value = 1;
   loadSubmissions();
 }
 
@@ -478,15 +489,13 @@ function dataKeys(item: SubmissionItem): string[] {
         </el-table>
 
         <!-- Pagination -->
-        <div v-if="total > 0" :class="styles.pagination">
-          <el-pagination
-            v-model:current-page="page"
-            :page-size="pageSize"
-            :total="total"
-            layout="prev, pager, next"
-            @current-change="handlePageChange"
-          />
-        </div>
+        <AppPagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
       </div>
     </div>
   </div>

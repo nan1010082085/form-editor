@@ -18,6 +18,7 @@ import {
 } from "@/types/credential";
 import styles from "./CredentialListView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import EmptyState from "@/components/common/EmptyState.vue";
 import { useI18n } from "@schema-platform/platform-shared";
 
@@ -77,6 +78,18 @@ function handlePageChange(page: number) {
     search: searchInput.value || undefined,
     type: activeType.value,
     page,
+  });
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number) {
+  credentialStore.fetchCredentials({
+    search: searchInput.value || undefined,
+    type: activeType.value,
+    page: 1,
+    pageSize: size,
   });
 }
 
@@ -277,18 +290,13 @@ function typeTagType(
         </el-table>
 
         <!-- Pagination -->
-        <div
-          v-if="credentialStore.pagination.total > 0"
-          :class="styles.pagination"
-        >
-          <el-pagination
-            v-model:current-page="credentialStore.pagination.page"
-            :page-size="credentialStore.pagination.pageSize"
-            :total="credentialStore.pagination.total"
-            layout="prev, pager, next"
-            @current-change="handlePageChange"
-          />
-        </div>
+        <AppPagination
+          v-model:current-page="credentialStore.pagination.page"
+          v-model:page-size="credentialStore.pagination.pageSize"
+          :total="credentialStore.pagination.total"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
       </div>
     </div>
 

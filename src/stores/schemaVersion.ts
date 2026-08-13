@@ -24,6 +24,7 @@ import {
 } from "@/utils/apiClient";
 import { diffSchema, getDiffSummary } from "@/utils/schemaDiff";
 import { parseSchemaJson } from "@/utils/parseSchemaJson";
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 
 export const useSchemaVersionStore = defineStore("schemaVersion", () => {
   // ================================================================
@@ -47,7 +48,7 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
 
   /** Min页 */
   const page = ref(1);
-  const pageSize = ref(20);
+  const pageSize = ref(DEFAULT_PAGE_SIZE);
   const total = ref(0);
 
   /** 选中Compare的两个Version */
@@ -163,6 +164,14 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
    */
   async function goToPage(targetPage: number): Promise<void> {
     await loadVersions(targetPage);
+  }
+
+  /**
+   * @param size - 每页条数
+   */
+  async function setPageSize(size: number): Promise<void> {
+    pageSize.value = size;
+    await loadVersions(1);
   }
 
   // ================================================================
@@ -348,6 +357,7 @@ export const useSchemaVersionStore = defineStore("schemaVersion", () => {
     init,
     loadVersions,
     goToPage,
+    setPageSize,
     selectForCompare,
     clearCompare,
     executeCompare,

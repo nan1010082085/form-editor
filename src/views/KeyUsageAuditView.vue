@@ -8,6 +8,7 @@
 import { onMounted, ref, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { useI18n } from "@schema-platform/platform-shared";
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 import {
   fetchKeyUsageLogs,
   fetchKeyUsageStatsByKey,
@@ -21,6 +22,7 @@ import type {
 import type { PaginatedResponse } from "@/types/api";
 import styles from "./KeyUsageAuditView.module.scss";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 
 const { t } = useI18n();
 
@@ -33,7 +35,7 @@ const dateRange = ref<[string, string] | null>(null);
 const logs = ref<KeyUsageLogItem[]>([]);
 const pagination = ref({
   page: 1,
-  pageSize: 20,
+  pageSize: DEFAULT_PAGE_SIZE,
   total: 0,
   totalPages: 0,
 });
@@ -173,6 +175,15 @@ watch(dateRange, () => {
 
 function handlePageChange(page: number): void {
   pagination.value.page = page;
+  loadLogs();
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleSizeChange(size: number): void {
+  pagination.value.pageSize = size;
+  pagination.value.page = 1;
   loadLogs();
 }
 
@@ -373,15 +384,13 @@ function clearDateRange(): void {
             </el-table-column>
           </el-table>
 
-          <div v-if="pagination.total > 0" :class="styles.pagination">
-            <el-pagination
-              v-model:current-page="pagination.page"
-              :page-size="pagination.pageSize"
-              :total="pagination.total"
-              layout="prev, pager, next"
-              @current-change="handlePageChange"
-            />
-          </div>
+          <AppPagination
+            v-model:current-page="pagination.page"
+            v-model:page-size="pagination.pageSize"
+            :total="pagination.total"
+            @current-change="handlePageChange"
+            @size-change="handleSizeChange"
+          />
         </template>
       </div>
 

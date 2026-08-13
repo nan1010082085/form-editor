@@ -7,6 +7,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { useDataLoading } from "@schema-platform/platform-shared/utils/useDataLoading";
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 import {
   fetchTemplates,
   applyTemplate,
@@ -31,7 +32,7 @@ export const useTemplateStore = defineStore("template", () => {
   const searchKeyword = ref("");
   const selectedCategory = ref("");
   const page = ref(1);
-  const pageSize = ref(20);
+  const pageSize = ref(DEFAULT_PAGE_SIZE);
 
   const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
   const hasMore = computed(() => page.value < totalPages.value);
@@ -69,6 +70,14 @@ export const useTemplateStore = defineStore("template", () => {
 
   function setPage(newPage: number): void {
     page.value = newPage;
+  }
+
+  /**
+   * @param size - 每页条数
+   */
+  function setPageSize(size: number): void {
+    pageSize.value = size;
+    page.value = 1;
   }
 
   function resetFilters(): void {
@@ -140,6 +149,7 @@ export const useTemplateStore = defineStore("template", () => {
     setSearch,
     setCategory,
     setPage,
+    setPageSize,
     resetFilters,
     applyTemplateById,
     saveTemplate,

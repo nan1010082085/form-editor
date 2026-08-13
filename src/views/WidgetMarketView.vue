@@ -4,7 +4,7 @@
  *
  * 一屏布局：顶栏固定 + 列表区内滚动 + 底部分页，避免整页无限拉长。
  */
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
 import {
   getAllWidgets,
@@ -13,15 +13,14 @@ import {
 } from "@/widgets/registry";
 import type { WidgetRegistryItem } from "@/widgets/registry";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import EmptyState from "@/components/common/EmptyState.vue";
+import { useClientPagination } from "@schema-platform/platform-shared/utils/useClientPagination";
 
 const { t } = useI18n();
 const searchQuery = ref("");
 const activeGroup = ref<string>("all");
-/** 当前页（从 1 开始） */
-const currentPage = ref(1);
-/** 每页卡片数：约一屏网格容量 */
-const PAGE_SIZE = 12;
+/** 分页由 useClientPagination 管理 */
 
 const allWidgets = computed<WidgetRegistryItem[]>(() => getAllWidgets());
 
@@ -70,18 +69,13 @@ const filteredWidgets = computed(() => {
 
 const totalFiltered = computed(() => filteredWidgets.value.length);
 
-const pagedWidgets = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE;
-  return filteredWidgets.value.slice(start, start + PAGE_SIZE);
-});
-
-watch([searchQuery, activeGroup], () => {
-  currentPage.value = 1;
-});
-
-watch(totalFiltered, (total) => {
-  const maxPage = Math.max(1, Math.ceil(total / PAGE_SIZE) || 1);
-  if (currentPage.value > maxPage) currentPage.value = maxPage;
+const {
+  currentPage,
+  pageSize,
+  pagedItems: pagedWidgets,
+  total: pagedTotal,
+} = useClientPagination(filteredWidgets, {
+  resetOn: [searchQuery, activeGroup],
 });
 </script>
 
@@ -162,15 +156,11 @@ watch(totalFiltered, (total) => {
       />
     </div>
 
-    <footer v-if="totalFiltered > 0" :class="$style.pagination">
-      <el-pagination
-        v-model:current-page="currentPage"
-        :page-size="PAGE_SIZE"
-        :total="totalFiltered"
-        layout="total, prev, pager, next"
-        background
-      />
-    </footer>
+    <AppPagination
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
+      :total="pagedTotal"
+    />
   </div>
 </template>
 
@@ -298,7 +288,7 @@ watch(totalFiltered, (total) => {
 
 /**
  * 固定行列铺满视口：
- * 宽屏 4×3、中屏 3×4、窄屏 2×6，与 PAGE_SIZE=12 对齐
+ * 宽屏 4×3、中屏 3×4、窄屏 2×6，分页条数由 AppPagination 控制
  */
 .grid {
   flex: 1;

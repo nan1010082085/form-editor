@@ -36,8 +36,7 @@ import {
   fetchPublishedByPublishId as apiFetchPublishedByPublishId,
 } from "@/utils/apiClient";
 
-/** 默认Min页大小 */
-const DEFAULT_PAGE_SIZE = 20;
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 
 export const useApiStore = defineStore("schema", () => {
   // ================================================================

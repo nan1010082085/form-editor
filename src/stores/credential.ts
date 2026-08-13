@@ -7,6 +7,7 @@
 import { defineStore } from "pinia";
 import { ref, reactive, computed } from "vue";
 import { useDataLoading } from "@schema-platform/platform-shared/utils/useDataLoading";
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 import { resolveApiErrorMessage } from "@/utils/resolveApiErrorMessage";
 import type { PaginatedResponse } from "@/types/api";
 import type {
@@ -23,8 +24,6 @@ import {
   updateCredential as apiUpdateCredential,
   deleteCredential as apiDeleteCredential,
 } from "@/api/dataApi";
-
-const DEFAULT_PAGE_SIZE = 20;
 
 export const useCredentialStore = defineStore("credential", () => {
   const credentials = ref<CredentialItem[]>([]);

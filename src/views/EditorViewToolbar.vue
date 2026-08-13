@@ -7,9 +7,11 @@
  */
 import { ref, computed } from "vue";
 import { useI18n } from "@schema-platform/platform-shared";
+import { DEFAULT_PAGE_SIZE } from "@schema-platform/platform-shared/utils/pagination";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AppIcon from "@schema-platform/platform-shared/components/common/AppIcon.vue";
+import AppPagination from "@schema-platform/platform-shared/components/common/AppPagination.vue";
 import { useBoardStore, MIN_ZOOM, MAX_ZOOM } from "@/stores/board";
 import { useEditorStore } from "@/stores/editor";
 import { useWidgetStore } from "@/stores/widget";
@@ -151,7 +153,7 @@ const versionList = ref<VersionEntry[]>([]);
 const versionLoading = ref(false);
 const versionPage = ref(1);
 const versionTotal = ref(0);
-const versionPageSize = 10;
+const versionPageSize = ref(DEFAULT_PAGE_SIZE);
 
 function formatVersion(v: string): string {
   if (!v || v.length !== 14) return v;
@@ -163,7 +165,7 @@ async function loadVersionList(page = 1) {
   versionLoading.value = true;
   versionPage.value = page;
   try {
-    const res = await fetchVersions(props.currentEditId, page, versionPageSize);
+    const res = await fetchVersions(props.currentEditId, page, versionPageSize.value);
     versionList.value = res.items;
     versionTotal.value = res.total ?? 0;
   } catch {
@@ -175,6 +177,14 @@ async function loadVersionList(page = 1) {
 
 function handleVersionPageChange(page: number) {
   loadVersionList(page);
+}
+
+/**
+ * @param size - 每页条数
+ */
+function handleVersionSizeChange(size: number) {
+  versionPageSize.value = size;
+  loadVersionList(1);
 }
 
 async function handleLoadVersion(entry: VersionEntry) {
@@ -827,19 +837,14 @@ function handleClearCanvas() {
                 </div>
               </div>
             </div>
-            <div
-              v-if="versionTotal > versionPageSize"
-              :class="styles.versionPagination"
-            >
-              <el-pagination
-                v-model:current-page="versionPage"
-                :page-size="versionPageSize"
-                :total="versionTotal"
-                small
-                layout="prev, pager, next"
-                @current-change="handleVersionPageChange"
-              />
-            </div>
+            <AppPagination
+              v-model:current-page="versionPage"
+              v-model:page-size="versionPageSize"
+              :total="versionTotal"
+              size="small"
+              @current-change="handleVersionPageChange"
+              @size-change="handleVersionSizeChange"
+            />
           </div>
           <template #reference>
             <button
