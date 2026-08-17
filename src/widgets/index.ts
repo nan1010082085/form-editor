@@ -1,1456 +1,260 @@
-import { registerWidget } from "./registry";
-import { FgForm, createFormWidget, formConfig } from "./form";
-import { FgCard, createCardWidget, cardConfig } from "./card";
-import { FgTabs, createTabsWidget, tabsConfig } from "./tabs";
-import { FgDialog, createDialogWidget, dialogConfig } from "./dialog";
-import {
-  FgMicroAppContainer,
-  microAppContainerConfig,
-} from "./micro-app-container";
-import { FgInput, createInputWidget, inputConfig } from "./input";
-import { FgSelect, createSelectWidget, selectConfig } from "./select";
-import { FgNumber, createNumberWidget, numberConfig } from "./number";
-import { FgRadio, createRadioWidget, radioConfig } from "./radio";
-import { FgCheckbox, createCheckboxWidget, checkboxConfig } from "./checkbox";
-import { FgDate, createDateWidget, dateConfig } from "./date";
-import { FgTextarea, createTextareaWidget, textareaConfig } from "./textarea";
-import { FgTitle, createTitleWidget, titleConfig } from "./title";
-import { FgDivider, createDividerWidget, dividerConfig } from "./divider";
-import { FgSpacer, createSpacerWidget, spacerConfig } from "./spacer";
-import {
-  FgToolbarButtons,
-  createToolbarButtonsWidget,
-  toolbarButtonsConfig,
-} from "./toolbar-buttons";
-import { FgButton, createButtonWidget, buttonConfig } from "./button";
-import {
-  FgFilterBar,
-  filterBarConfig,
-  createFilterBarWidget,
-} from "./filter-bar";
-import { FgSubForm, subFormConfig, createSubFormWidget } from "./sub-form";
-import {
-  FgProgressBar,
-  progressBarConfig,
-  createProgressBarWidget,
-} from "./progress-bar";
-import { FgRankList, rankListConfig, createRankListWidget } from "./rank-list";
-import {
-  FgComparisonCard,
-  comparisonCardConfig,
-  createComparisonCardWidget,
-} from "./comparison-card";
-import {
-  FgRealtimeClock,
-  realtimeClockConfig,
-  createRealtimeClockWidget,
-} from "./realtime-clock";
-import {
-  FgMarqueeText,
-  marqueeTextConfig,
-  createMarqueeTextWidget,
-} from "./marquee-text";
-import {
-  FgTabContainer,
-  tabContainerConfig,
-  createTabContainerWidget,
-} from "./tab-container";
-import {
-  FgFormSteps,
-  formStepsConfig,
-  createFormStepsWidget,
-} from "./form-steps";
-import {
-  FgConditionBuilder,
-  conditionBuilderConfig,
-  createConditionBuilderWidget,
-} from "./condition-builder";
-import { FgTreemap, treemapConfig, createTreemapWidget } from "./treemap";
-import { FgCountDown, countDownConfig, createCountDownWidget } from "./count-down";
-import { FgCarousel, carouselConfig, createCarouselWidget } from "./carousel";
-import { FgSankey, sankeyConfig, createSankeyWidget } from "./sankey";
-import { FgParallel, parallelConfig, createParallelWidget } from "./parallel";
-import { FgApprovalProcess, approvalProcessConfig, createApprovalProcessWidget } from "./approval-process";
-import { FgTable, createTableWidget, tableConfig } from "./table";
-import { FgRichtext, createRichtextWidget, richtextConfig } from "./richtext";
-import { FgUpload, createUploadWidget, uploadConfig } from "./upload";
-import { FgBanner, createBannerWidget, bannerConfig } from "./banner";
-import {
-  FgTreeLayout,
-  createTreeLayoutWidget,
-  treeLayoutConfig,
-} from "./tree-layout";
-import {
-  FgDateTimeSlot,
-  createDateTimeSlotWidget,
-  dateTimeSlotConfig,
-} from "./date-time-slot";
-import {
-  FgTimePicker,
-  createTimePickerWidget,
-  timePickerConfig,
-} from "./time-picker";
-import { FgCascader, createCascaderWidget, cascaderConfig } from "./cascader";
-import {
-  FgColorPicker,
-  createColorPickerWidget,
-  colorPickerConfig,
-} from "./color-picker";
-import { FgTagInput, createTagInputWidget, tagInputConfig } from "./tag-input";
-import {
-  FgAutocomplete,
-  createAutocompleteWidget,
-  autocompleteConfig,
-} from "./autocomplete";
-import { FgFileList, createFileListWidget, fileListConfig } from "./file-list";
-import {
-  FgDescriptions,
-  createDescriptionsWidget,
-  descriptionsConfig,
-} from "./descriptions";
-import { FgTransfer, createTransferWidget, transferConfig } from "./transfer";
-import { FgSwitch, createSwitchWidget, switchConfig } from "./switch";
-import { FgSlider, createSliderWidget, sliderConfig } from "./slider";
-import { FgRate, createRateWidget, rateConfig } from "./rate";
-import {
-  FgAdvancedTable,
-  createAdvancedTableWidget,
-  advancedTableConfig,
-} from "./advanced-table";
-import {
-  FgTreeTable,
-  createTreeTableWidget,
-  treeTableConfig,
-} from "./tree-table";
-import { FgBarChart, createBarChartWidget, barChartConfig } from "./bar-chart";
-import {
-  FgLineChart,
-  createLineChartWidget,
-  lineChartConfig,
-} from "./line-chart";
-import { FgPieChart, createPieChartWidget, pieChartConfig } from "./pie-chart";
-import {
-  FgScatterChart,
-  createScatterChartWidget,
-  scatterChartConfig,
-} from "./scatter-chart";
-import { FgRadar, createRadarWidget, radarConfig } from "./radar";
-import { FgGauge, createGaugeWidget, gaugeConfig } from "./gauge";
-import { FgHeatmap, createHeatmapWidget, heatmapConfig } from "./heatmap";
-import { FgFunnel, createFunnelWidget, funnelConfig } from "./funnel";
-import {
-  FgCandlestick,
-  createCandlestickWidget,
-  candlestickConfig,
-} from "./candlestick";
-// Chart变体
-import {
-  FgStackedBarChart,
-  createStackedBarChartWidget,
-  stackedBarChartConfig,
-} from "./bar-chart/stacked";
-import {
-  FgHorizontalBarChart,
-  createHorizontalBarChartWidget,
-  horizontalBarChartConfig,
-} from "./bar-chart/horizontal";
-import {
-  FgAreaChart,
-  createAreaChartWidget,
-  areaChartConfig,
-} from "./line-chart/area";
-import {
-  FgDonutChart,
-  createDonutChartWidget,
-  donutChartConfig,
-} from "./pie-chart/donut";
-import {
-  FgBubbleChart,
-  createBubbleChartWidget,
-  bubbleChartConfig,
-} from "./scatter-chart/bubble";
-import {
-  FgFilledRadar,
-  createFilledRadarWidget,
-  filledRadarConfig,
-} from "./radar/filled";
-import {
-  FgMultiGauge,
-  createMultiGaugeWidget,
-  multiGaugeConfig,
-} from "./gauge/multi";
-import {
-  FgCompareFunnel,
-  createCompareFunnelWidget,
-  compareFunnelConfig,
-} from "./funnel/compare";
-import {
-  FgStatistic,
-  createStatisticWidget,
-  statisticConfig,
-} from "./statistic";
-import {
-  FgSingleCol,
-  createSingleColWidget,
-  singleColConfig,
-} from "./single-col";
-import {
-  FgDoubleCol,
-  createDoubleColWidget,
-  doubleColConfig,
-} from "./double-col";
-import {
-  FgTripleCol,
-  createTripleColWidget,
-  tripleColConfig,
-} from "./triple-col";
-import { FgQuadCol, createQuadColWidget, quadColConfig } from "./quad-col";
-import {
-  FgRowContainer,
-  createRowContainerWidget,
-  rowContainerConfig,
-} from "./row-container";
-import {
-  FgApprovalUserPicker,
-  createApprovalUserPickerWidget,
-  approvalUserPickerConfig,
-} from "./approval-user-picker";
-import {
-  FgApprovalRolePicker,
-  createApprovalRolePickerWidget,
-  approvalRolePickerConfig,
-} from "./approval-role-picker";
-import {
-  FgApprovalComment,
-  createApprovalCommentWidget,
-  approvalCommentConfig,
-} from "./approval-comment";
-import {
-  FgScoreCard,
-  createScoreCardWidget,
-  scoreCardConfig,
-} from "./score-card";
-import {
-  FgRiskBadge,
-  createRiskBadgeWidget,
-  riskBadgeConfig,
-} from "./risk-badge";
-import {
-  FgAiSuggestionPanel,
-  createAiSuggestionPanelWidget,
-  aiSuggestionPanelConfig,
-} from "./ai-suggestion-panel";
-import {
-  FgSignature,
-  createSignatureWidget,
-  signatureConfig,
-} from "./signature";
-import {
-  FgGanttChart,
-  createGanttChartWidget,
-  ganttChartConfig,
-} from "./gantt-chart";
-import {
-  FgFlexZone,
-  createFlexZoneWidget,
-  flexZoneConfig,
-} from "./flex-zone";
-import {
-  FgPivotTable,
-  createPivotTableWidget,
-  pivotTableConfig,
-} from "./pivot-table";
-import {
-  FgMindMap,
-  createMindMapWidget,
-  mindMapConfig,
-} from "./mind-map";
-import {
-  FgFileViewer,
-  createFileViewerWidget,
-  fileViewerConfig,
-} from "./file-viewer";
-import {
-  FgRiskMatrix,
-  createRiskMatrixWidget,
-  riskMatrixConfig,
-} from "./risk-matrix";
-import {
-  FgMedicalRecord,
-  createMedicalRecordWidget,
-  medicalRecordConfig,
-} from "./medical-record";
-import {
-  FgProductCard,
-  createProductCardWidget,
-  productCardConfig,
-} from "./product-card";
-import {
-  FgEnergyDashboard,
-  createEnergyDashboardWidget,
-  energyDashboardConfig,
-} from "./energy-dashboard";
-import {
-  FgIconPicker,
-  createIconPickerWidget,
-  iconPickerConfig,
-} from "./icon-picker";
-import { FgIframe, iframeConfig } from "./iframe";
-import { FgMicroApp, microAppConfig } from "./micro-app";
-import {
-  FgPermissionTree,
-  createPermissionTreeWidget,
-  permissionTreeConfig,
-} from "./permission-tree";
-import {
-  FgRoleManagement,
-  createRoleManagementWidget,
-  roleManagementConfig,
-} from "./role-management";
-import {
-  FgTreeSelect,
-  createTreeSelectWidget,
-  treeSelectConfig,
-} from "./tree-select";
-import {
-  FgUserManagement,
-  createUserManagementWidget,
-  userManagementConfig,
-} from "./user-management";
-import {
-  FgCrudListPage,
-  createCrudListPageWidget,
-  crudListPageConfig,
-} from "./crud-list-page";
-import {
-  FgUserSelector,
-  createUserSelectorWidget,
-  userSelectorConfig,
-} from "./user-selector";
-import {
-  FgFlowTimeline,
-  createFlowTimelineWidget,
-  flowTimelineConfig,
-} from "./flow-timeline";
-import {
-  FgFlowTaskActions,
-  createFlowTaskActionsWidget,
-  flowTaskActionsConfig,
-} from "./flow-task-actions";
-import { FgCalendar, createCalendarWidget, calendarConfig } from "./calendar";
-import { FgKanban, createKanbanWidget, kanbanConfig } from "./kanban";
-import {
-  FgAdhocQuery,
-  createAdhocQueryWidget,
-  adhocQueryConfig,
-} from "./adhoc-query";
-import {
-  FgNotification,
-  createNotificationWidget,
-  notificationConfig,
-} from "./notification";
-import {
-  FgDynamicDetailTable,
-  createDynamicDetailTableWidget,
-  dynamicDetailTableConfig,
-} from "./dynamic-detail-table";
-import {
-  FgComplianceChecklist,
-  createComplianceChecklistWidget,
-  complianceChecklistConfig,
-} from "./compliance-checklist";
-import {
-  FgQrScanner,
-  createQrScannerWidget,
-  qrScannerConfig,
-} from "./qr-scanner";
-import {
-  FgAutoRefresh,
-  createAutoRefreshWidget,
-  autoRefreshConfig,
-} from "./auto-refresh";
-import { FgMap, createMapWidget, mapConfig } from "./map";
+import { defineAsyncComponent, type Component } from "vue";
+import { registerWidget, type WidgetRegistryItem } from "./registry";
+
+// ────────────────────────────────────────────
+// 懒加载 Widget 组件 — 按需加载，减少主 bundle 体积
+// ────────────────────────────────────────────
+
+/** 创建懒加载 Widget 注册项 */
+function lazyWidget(
+  opts: Omit<WidgetRegistryItem, "component"> & { loader: () => Promise<{ default: Component }> },
+): WidgetRegistryItem {
+  return {
+    ...opts,
+    component: defineAsyncComponent(opts.loader),
+  };
+}
+
+// ────────────────────────────────────────────
+// Config imports (同步，体积小)
+// ────────────────────────────────────────────
+import { createFormWidget, formConfig } from "./form";
+import { createCardWidget, cardConfig } from "./card";
+import { createTabsWidget, tabsConfig } from "./tabs";
+import { createDialogWidget, dialogConfig } from "./dialog";
+import { microAppContainerConfig } from "./micro-app-container";
+import { createInputWidget, inputConfig } from "./input";
+import { createSelectWidget, selectConfig } from "./select";
+import { createNumberWidget, numberConfig } from "./number";
+import { createRadioWidget, radioConfig } from "./radio";
+import { createCheckboxWidget, checkboxConfig } from "./checkbox";
+import { createDateWidget, dateConfig } from "./date";
+import { createTextareaWidget, textareaConfig } from "./textarea";
+import { createTitleWidget, titleConfig } from "./title";
+import { createDividerWidget, dividerConfig } from "./divider";
+import { createSpacerWidget, spacerConfig } from "./spacer";
+import { createToolbarButtonsWidget, toolbarButtonsConfig } from "./toolbar-buttons";
+import { createButtonWidget, buttonConfig } from "./button";
+import { filterBarConfig, createFilterBarWidget } from "./filter-bar";
+import { subFormConfig, createSubFormWidget } from "./sub-form";
+import { progressBarConfig, createProgressBarWidget } from "./progress-bar";
+import { rankListConfig, createRankListWidget } from "./rank-list";
+import { comparisonCardConfig, createComparisonCardWidget } from "./comparison-card";
+import { realtimeClockConfig, createRealtimeClockWidget } from "./realtime-clock";
+import { marqueeTextConfig, createMarqueeTextWidget } from "./marquee-text";
+import { tabContainerConfig, createTabContainerWidget } from "./tab-container";
+import { formStepsConfig, createFormStepsWidget } from "./form-steps";
+import { conditionBuilderConfig, createConditionBuilderWidget } from "./condition-builder";
+import { treemapConfig, createTreemapWidget } from "./treemap";
+import { countDownConfig, createCountDownWidget } from "./count-down";
+import { carouselConfig, createCarouselWidget } from "./carousel";
+import { sankeyConfig, createSankeyWidget } from "./sankey";
+import { parallelConfig, createParallelWidget } from "./parallel";
+import { approvalProcessConfig, createApprovalProcessWidget } from "./approval-process";
+import { createTableWidget, tableConfig } from "./table";
+import { createRichtextWidget, richtextConfig } from "./richtext";
+import { createUploadWidget, uploadConfig } from "./upload";
+import { createBannerWidget, bannerConfig } from "./banner";
+import { createTreeLayoutWidget, treeLayoutConfig } from "./tree-layout";
+import { createDateTimeSlotWidget, dateTimeSlotConfig } from "./date-time-slot";
+import { createTimePickerWidget, timePickerConfig } from "./time-picker";
+import { createCascaderWidget, cascaderConfig } from "./cascader";
+import { createColorPickerWidget, colorPickerConfig } from "./color-picker";
+import { createTagInputWidget, tagInputConfig } from "./tag-input";
+import { createAutocompleteWidget, autocompleteConfig } from "./autocomplete";
+import { createFileListWidget, fileListConfig } from "./file-list";
+import { createDescriptionsWidget, descriptionsConfig } from "./descriptions";
+import { createTransferWidget, transferConfig } from "./transfer";
+import { createSwitchWidget, switchConfig } from "./switch";
+import { createSliderWidget, sliderConfig } from "./slider";
+import { createRateWidget, rateConfig } from "./rate";
+import { createAdvancedTableWidget, advancedTableConfig } from "./advanced-table";
+import { createTreeTableWidget, treeTableConfig } from "./tree-table";
+import { createBarChartWidget, barChartConfig } from "./bar-chart";
+import { createLineChartWidget, lineChartConfig } from "./line-chart";
+import { createPieChartWidget, pieChartConfig } from "./pie-chart";
+import { createScatterChartWidget, scatterChartConfig } from "./scatter-chart";
+import { createRadarWidget, radarConfig } from "./radar";
+import { createGaugeWidget, gaugeConfig } from "./gauge";
+import { createHeatmapWidget, heatmapConfig } from "./heatmap";
+import { createFunnelWidget, funnelConfig } from "./funnel";
+import { createCandlestickWidget, candlestickConfig } from "./candlestick";
+import { createStackedBarChartWidget, stackedBarChartConfig } from "./bar-chart/stacked";
+import { createHorizontalBarChartWidget, horizontalBarChartConfig } from "./bar-chart/horizontal";
+import { createAreaChartWidget, areaChartConfig } from "./line-chart/area";
+import { createDonutChartWidget, donutChartConfig } from "./pie-chart/donut";
+import { createBubbleChartWidget, bubbleChartConfig } from "./scatter-chart/bubble";
+import { createFilledRadarWidget, filledRadarConfig } from "./radar/filled";
+import { createMultiGaugeWidget, multiGaugeConfig } from "./gauge/multi";
+import { createCompareFunnelWidget, compareFunnelConfig } from "./funnel/compare";
+import { createStatisticWidget, statisticConfig } from "./statistic";
+import { createSingleColWidget, singleColConfig } from "./single-col";
+import { createDoubleColWidget, doubleColConfig } from "./double-col";
+import { createTripleColWidget, tripleColConfig } from "./triple-col";
+import { createQuadColWidget, quadColConfig } from "./quad-col";
+import { createRowContainerWidget, rowContainerConfig } from "./row-container";
+import { createApprovalUserPickerWidget, approvalUserPickerConfig } from "./approval-user-picker";
+import { createApprovalRolePickerWidget, approvalRolePickerConfig } from "./approval-role-picker";
+import { createApprovalCommentWidget, approvalCommentConfig } from "./approval-comment";
+import { createScoreCardWidget, scoreCardConfig } from "./score-card";
+import { createRiskBadgeWidget, riskBadgeConfig } from "./risk-badge";
+import { createAiSuggestionPanelWidget, aiSuggestionPanelConfig } from "./ai-suggestion-panel";
+import { createSignatureWidget, signatureConfig } from "./signature";
+import { createGanttChartWidget, ganttChartConfig } from "./gantt-chart";
+import { createFlexZoneWidget, flexZoneConfig } from "./flex-zone";
+import { createPivotTableWidget, pivotTableConfig } from "./pivot-table";
+import { createMindMapWidget, mindMapConfig } from "./mind-map";
+import { createFileViewerWidget, fileViewerConfig } from "./file-viewer";
+import { createRiskMatrixWidget, riskMatrixConfig } from "./risk-matrix";
+import { createMedicalRecordWidget, medicalRecordConfig } from "./medical-record";
+import { createProductCardWidget, productCardConfig } from "./product-card";
+import { createEnergyDashboardWidget, energyDashboardConfig } from "./energy-dashboard";
+import { createIconPickerWidget, iconPickerConfig } from "./icon-picker";
+import { iframeConfig } from "./iframe";
+import { microAppConfig } from "./micro-app";
+import { createPermissionTreeWidget, permissionTreeConfig } from "./permission-tree";
+import { createRoleManagementWidget, roleManagementConfig } from "./role-management";
+import { createTreeSelectWidget, treeSelectConfig } from "./tree-select";
+import { createUserManagementWidget, userManagementConfig } from "./user-management";
+import { createCrudListPageWidget, crudListPageConfig } from "./crud-list-page";
+import { createUserSelectorWidget, userSelectorConfig } from "./user-selector";
+import { createFlowTimelineWidget, flowTimelineConfig } from "./flow-timeline";
+import { createFlowTaskActionsWidget, flowTaskActionsConfig } from "./flow-task-actions";
+import { createCalendarWidget, calendarConfig } from "./calendar";
+import { createKanbanWidget, kanbanConfig } from "./kanban";
+import { createAdhocQueryWidget, adhocQueryConfig } from "./adhoc-query";
+import { createNotificationWidget, notificationConfig } from "./notification";
+import { createDynamicDetailTableWidget, dynamicDetailTableConfig } from "./dynamic-detail-table";
+import { createComplianceChecklistWidget, complianceChecklistConfig } from "./compliance-checklist";
+import { createQrScannerWidget, qrScannerConfig } from "./qr-scanner";
+import { createAutoRefreshWidget, autoRefreshConfig } from "./auto-refresh";
+import { createMapWidget, mapConfig } from "./map";
 
 export function registerAllWidgets() {
-  // Layout widgets (结构Layout)
-  registerWidget({
-    name: cardConfig.name,
-    displayName: cardConfig.displayName,
-    type: "card",
-    group: "layout",
-    component: FgCard,
-    create: createCardWidget,
-    config: cardConfig,
-  });
+  // ── Layout widgets ──
+  registerWidget(lazyWidget({ name: cardConfig.name, displayName: cardConfig.displayName, type: "card", group: "layout", create: createCardWidget, config: cardConfig, loader: () => import("./card") }));
+  registerWidget(lazyWidget({ name: tabsConfig.name, displayName: tabsConfig.displayName, type: "tabs", group: "layout", create: createTabsWidget, config: tabsConfig, loader: () => import("./tabs") }));
+  registerWidget(lazyWidget({ name: singleColConfig.name, displayName: singleColConfig.displayName, type: "single-col", group: "layout", create: createSingleColWidget, config: singleColConfig, loader: () => import("./single-col") }));
+  registerWidget(lazyWidget({ name: doubleColConfig.name, displayName: doubleColConfig.displayName, type: "double-col", group: "layout", create: createDoubleColWidget, config: doubleColConfig, loader: () => import("./double-col") }));
+  registerWidget(lazyWidget({ name: tripleColConfig.name, displayName: tripleColConfig.displayName, type: "triple-col", group: "layout", create: createTripleColWidget, config: tripleColConfig, loader: () => import("./triple-col") }));
+  registerWidget(lazyWidget({ name: quadColConfig.name, displayName: quadColConfig.displayName, type: "quad-col", group: "layout", create: createQuadColWidget, config: quadColConfig, loader: () => import("./quad-col") }));
+  registerWidget(lazyWidget({ name: rowContainerConfig.name, displayName: rowContainerConfig.displayName, type: "row-container", group: "layout", create: createRowContainerWidget, config: rowContainerConfig, loader: () => import("./row-container") }));
+  registerWidget(lazyWidget({ name: dividerConfig.name, displayName: dividerConfig.displayName, type: "divider", group: "layout", create: createDividerWidget, config: dividerConfig, loader: () => import("./divider") }));
+  registerWidget(lazyWidget({ name: spacerConfig.name, displayName: spacerConfig.displayName, type: "spacer", group: "layout", create: createSpacerWidget, config: spacerConfig, loader: () => import("./spacer") }));
+  registerWidget(lazyWidget({ name: tabContainerConfig.name, displayName: tabContainerConfig.displayName, type: "tab-container", group: "layout", create: createTabContainerWidget, config: tabContainerConfig, loader: () => import("./tab-container") }));
+  registerWidget(lazyWidget({ name: formStepsConfig.name, displayName: formStepsConfig.displayName, type: "form-steps", group: "layout", create: createFormStepsWidget, config: formStepsConfig, loader: () => import("./form-steps") }));
+  registerWidget(lazyWidget({ name: treeLayoutConfig.name, displayName: treeLayoutConfig.displayName, type: "tree-layout", group: "layout", create: createTreeLayoutWidget, config: treeLayoutConfig, loader: () => import("./tree-layout") }));
+  registerWidget(lazyWidget({ name: carouselConfig.name, displayName: carouselConfig.displayName, type: "carousel", group: "layout", create: createCarouselWidget, config: carouselConfig, loader: () => import("./carousel") }));
 
-  registerWidget({
-    name: tabsConfig.name,
-    displayName: tabsConfig.displayName,
-    type: "tabs",
-    group: "layout",
-    component: FgTabs,
-    create: createTabsWidget,
-    config: tabsConfig,
-  });
+  // ── Container widgets ──
+  registerWidget(lazyWidget({ name: formConfig.name, displayName: formConfig.displayName, type: "form", group: "container", create: createFormWidget, config: formConfig, loader: () => import("./form") }));
+  registerWidget(lazyWidget({ name: dialogConfig.name, displayName: dialogConfig.displayName, type: "dialog", group: "container", create: createDialogWidget, config: dialogConfig, loader: () => import("./dialog") }));
+  registerWidget(lazyWidget({ name: microAppContainerConfig.name, displayName: microAppContainerConfig.displayName, type: "micro-app-container", group: "container", create: (id: string) => ({ id, type: "micro-app-container", name: microAppContainerConfig.name, label: microAppContainerConfig.displayName, props: { ...microAppContainerConfig.defaultProps }, position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 } }), config: microAppContainerConfig, loader: () => import("./micro-app-container") }));
+  registerWidget(lazyWidget({ name: flexZoneConfig.name, displayName: flexZoneConfig.displayName, type: "flex-zone", group: "container", create: createFlexZoneWidget, config: flexZoneConfig, loader: () => import("./flex-zone") }));
+  registerWidget(lazyWidget({ name: iframeConfig.name, displayName: iframeConfig.displayName, type: "iframe", group: "container", create: (id: string) => ({ id, type: "iframe", name: iframeConfig.name, label: iframeConfig.displayName, props: { ...iframeConfig.defaultProps }, position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 } }), config: iframeConfig, loader: () => import("./iframe") }));
+  registerWidget(lazyWidget({ name: microAppConfig.name, displayName: microAppConfig.displayName, type: "micro-app", group: "container", create: (id: string) => ({ id, type: "micro-app", name: microAppConfig.name, label: microAppConfig.displayName, props: { ...microAppConfig.defaultProps }, position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 } }), config: microAppConfig, loader: () => import("./micro-app") }));
 
-  registerWidget({
-    name: singleColConfig.name,
-    displayName: singleColConfig.displayName,
-    type: "single-col",
-    group: "layout",
-    component: FgSingleCol,
-    create: createSingleColWidget,
-    config: singleColConfig,
-  });
+  // ── Form widgets ──
+  registerWidget(lazyWidget({ name: inputConfig.name, displayName: inputConfig.displayName, type: "input", group: "form", create: createInputWidget, config: inputConfig, loader: () => import("./input") }));
+  registerWidget(lazyWidget({ name: selectConfig.name, displayName: selectConfig.displayName, type: "select", group: "form", create: createSelectWidget, config: selectConfig, loader: () => import("./select") }));
+  registerWidget(lazyWidget({ name: numberConfig.name, displayName: numberConfig.displayName, type: "number", group: "form", create: createNumberWidget, config: numberConfig, loader: () => import("./number") }));
+  registerWidget(lazyWidget({ name: radioConfig.name, displayName: radioConfig.displayName, type: "radio", group: "form", create: createRadioWidget, config: radioConfig, loader: () => import("./radio") }));
+  registerWidget(lazyWidget({ name: checkboxConfig.name, displayName: checkboxConfig.displayName, type: "checkbox", group: "form", create: createCheckboxWidget, config: checkboxConfig, loader: () => import("./checkbox") }));
+  registerWidget(lazyWidget({ name: dateConfig.name, displayName: dateConfig.displayName, type: "date", group: "form", create: createDateWidget, config: dateConfig, loader: () => import("./date") }));
+  registerWidget(lazyWidget({ name: textareaConfig.name, displayName: textareaConfig.displayName, type: "textarea", group: "form", create: createTextareaWidget, config: textareaConfig, loader: () => import("./textarea") }));
+  registerWidget(lazyWidget({ name: switchConfig.name, displayName: switchConfig.displayName, type: "switch", group: "form", create: createSwitchWidget, config: switchConfig, loader: () => import("./switch") }));
+  registerWidget(lazyWidget({ name: sliderConfig.name, displayName: sliderConfig.displayName, type: "slider", group: "form", create: createSliderWidget, config: sliderConfig, loader: () => import("./slider") }));
+  registerWidget(lazyWidget({ name: rateConfig.name, displayName: rateConfig.displayName, type: "rate", group: "form", create: createRateWidget, config: rateConfig, loader: () => import("./rate") }));
+  registerWidget(lazyWidget({ name: richtextConfig.name, displayName: richtextConfig.displayName, type: "richtext", group: "form", create: createRichtextWidget, config: richtextConfig, loader: () => import("./richtext") }));
+  registerWidget(lazyWidget({ name: uploadConfig.name, displayName: uploadConfig.displayName, type: "upload", group: "form", create: createUploadWidget, config: uploadConfig, loader: () => import("./upload") }));
+  registerWidget(lazyWidget({ name: dateTimeSlotConfig.name, displayName: dateTimeSlotConfig.displayName, type: "date-time-slot", group: "form", create: createDateTimeSlotWidget, config: dateTimeSlotConfig, loader: () => import("./date-time-slot") }));
+  registerWidget(lazyWidget({ name: timePickerConfig.name, displayName: timePickerConfig.displayName, type: "time-picker", group: "form", create: createTimePickerWidget, config: timePickerConfig, loader: () => import("./time-picker") }));
+  registerWidget(lazyWidget({ name: cascaderConfig.name, displayName: cascaderConfig.displayName, type: "cascader", group: "form", create: createCascaderWidget, config: cascaderConfig, loader: () => import("./cascader") }));
+  registerWidget(lazyWidget({ name: colorPickerConfig.name, displayName: colorPickerConfig.displayName, type: "color-picker", group: "form", create: createColorPickerWidget, config: colorPickerConfig, loader: () => import("./color-picker") }));
+  registerWidget(lazyWidget({ name: tagInputConfig.name, displayName: tagInputConfig.displayName, type: "tag-input", group: "form", create: createTagInputWidget, config: tagInputConfig, loader: () => import("./tag-input") }));
+  registerWidget(lazyWidget({ name: autocompleteConfig.name, displayName: autocompleteConfig.displayName, type: "autocomplete", group: "form", create: createAutocompleteWidget, config: autocompleteConfig, loader: () => import("./autocomplete") }));
+  registerWidget(lazyWidget({ name: fileListConfig.name, displayName: fileListConfig.displayName, type: "file-list", group: "form", create: createFileListWidget, config: fileListConfig, loader: () => import("./file-list") }));
+  registerWidget(lazyWidget({ name: transferConfig.name, displayName: transferConfig.displayName, type: "transfer", group: "form", create: createTransferWidget, config: transferConfig, loader: () => import("./transfer") }));
+  registerWidget(lazyWidget({ name: conditionBuilderConfig.name, displayName: conditionBuilderConfig.displayName, type: "condition-builder", group: "form", create: createConditionBuilderWidget, config: conditionBuilderConfig, loader: () => import("./condition-builder") }));
+  registerWidget(lazyWidget({ name: subFormConfig.name, displayName: subFormConfig.displayName, type: "sub-form", group: "form", create: createSubFormWidget, config: subFormConfig, loader: () => import("./sub-form") }));
+  registerWidget(lazyWidget({ name: treeSelectConfig.name, displayName: treeSelectConfig.displayName, type: "tree-select", group: "form", create: createTreeSelectWidget, config: treeSelectConfig, loader: () => import("./tree-select") }));
+  registerWidget(lazyWidget({ name: iconPickerConfig.name, displayName: iconPickerConfig.displayName, type: "icon-picker", group: "form", create: createIconPickerWidget, config: iconPickerConfig, loader: () => import("./icon-picker") }));
+  registerWidget(lazyWidget({ name: permissionTreeConfig.name, displayName: permissionTreeConfig.displayName, type: "permission-tree", group: "form", create: createPermissionTreeWidget, config: permissionTreeConfig, loader: () => import("./permission-tree") }));
+  registerWidget(lazyWidget({ name: dynamicDetailTableConfig.name, displayName: dynamicDetailTableConfig.displayName, type: "dynamic-detail-table", group: "form", create: createDynamicDetailTableWidget, config: dynamicDetailTableConfig, loader: () => import("./dynamic-detail-table") }));
+  registerWidget(lazyWidget({ name: qrScannerConfig.name, displayName: qrScannerConfig.displayName, type: "qr-scanner", group: "form", create: createQrScannerWidget, config: qrScannerConfig, loader: () => import("./qr-scanner") }));
 
-  registerWidget({
-    name: doubleColConfig.name,
-    displayName: doubleColConfig.displayName,
-    type: "double-col",
-    group: "layout",
-    component: FgDoubleCol,
-    create: createDoubleColWidget,
-    config: doubleColConfig,
-  });
+  // ── Static widgets ──
+  registerWidget(lazyWidget({ name: titleConfig.name, displayName: titleConfig.displayName, type: "title", group: "static", create: createTitleWidget, config: titleConfig, loader: () => import("./title") }));
+  registerWidget(lazyWidget({ name: bannerConfig.name, displayName: bannerConfig.displayName, type: "banner", group: "static", create: createBannerWidget, config: bannerConfig, loader: () => import("./banner") }));
+  registerWidget(lazyWidget({ name: statisticConfig.name, displayName: statisticConfig.displayName, type: "statistic", group: "static", create: createStatisticWidget, config: statisticConfig, loader: () => import("./statistic") }));
+  registerWidget(lazyWidget({ name: rankListConfig.name, displayName: rankListConfig.displayName, type: "rank-list", group: "static", create: createRankListWidget, config: rankListConfig, loader: () => import("./rank-list") }));
+  registerWidget(lazyWidget({ name: comparisonCardConfig.name, displayName: comparisonCardConfig.displayName, type: "comparison-card", group: "static", create: createComparisonCardWidget, config: comparisonCardConfig, loader: () => import("./comparison-card") }));
+  registerWidget(lazyWidget({ name: realtimeClockConfig.name, displayName: realtimeClockConfig.displayName, type: "realtime-clock", group: "static", create: createRealtimeClockWidget, config: realtimeClockConfig, loader: () => import("./realtime-clock") }));
+  registerWidget(lazyWidget({ name: marqueeTextConfig.name, displayName: marqueeTextConfig.displayName, type: "marquee-text", group: "static", create: createMarqueeTextWidget, config: marqueeTextConfig, loader: () => import("./marquee-text") }));
+  registerWidget(lazyWidget({ name: countDownConfig.name, displayName: countDownConfig.displayName, type: "count-down", group: "static", create: createCountDownWidget, config: countDownConfig, loader: () => import("./count-down") }));
+  registerWidget(lazyWidget({ name: descriptionsConfig.name, displayName: descriptionsConfig.displayName, type: "descriptions", group: "static", create: createDescriptionsWidget, config: descriptionsConfig, loader: () => import("./descriptions") }));
 
-  registerWidget({
-    name: tripleColConfig.name,
-    displayName: tripleColConfig.displayName,
-    type: "triple-col",
-    group: "layout",
-    component: FgTripleCol,
-    create: createTripleColWidget,
-    config: tripleColConfig,
-  });
+  // ── Action widgets ──
+  registerWidget(lazyWidget({ name: toolbarButtonsConfig.name, displayName: toolbarButtonsConfig.displayName, type: "toolbar-buttons", group: "action", create: createToolbarButtonsWidget, config: toolbarButtonsConfig, loader: () => import("./toolbar-buttons") }));
+  registerWidget(lazyWidget({ name: buttonConfig.name, displayName: buttonConfig.displayName, type: "button", group: "action", create: createButtonWidget, config: buttonConfig, loader: () => import("./button") }));
+  registerWidget(lazyWidget({ name: filterBarConfig.name, displayName: filterBarConfig.displayName, type: "filter-bar", group: "action", create: createFilterBarWidget, config: filterBarConfig, loader: () => import("./filter-bar") }));
 
-  registerWidget({
-    name: quadColConfig.name,
-    displayName: quadColConfig.displayName,
-    type: "quad-col",
-    group: "layout",
-    component: FgQuadCol,
-    create: createQuadColWidget,
-    config: quadColConfig,
-  });
+  // ── Table widgets ──
+  registerWidget(lazyWidget({ name: tableConfig.name, displayName: tableConfig.displayName, type: "table", group: "table", create: createTableWidget, config: tableConfig, loader: () => import("./table") }));
+  registerWidget(lazyWidget({ name: advancedTableConfig.name, displayName: advancedTableConfig.displayName, type: "advanced-table", group: "table", create: createAdvancedTableWidget, config: advancedTableConfig, loader: () => import("./advanced-table") }));
+  registerWidget(lazyWidget({ name: treeTableConfig.name, displayName: treeTableConfig.displayName, type: "tree-table", group: "table", create: createTreeTableWidget, config: treeTableConfig, loader: () => import("./tree-table") }));
+  registerWidget(lazyWidget({ name: pivotTableConfig.name, displayName: pivotTableConfig.displayName, type: "pivot-table", group: "table", create: createPivotTableWidget, config: pivotTableConfig, loader: () => import("./pivot-table") }));
 
-  registerWidget({
-    name: rowContainerConfig.name,
-    displayName: rowContainerConfig.displayName,
-    type: "row-container",
-    group: "layout",
-    component: FgRowContainer,
-    create: createRowContainerWidget,
-    config: rowContainerConfig,
-  });
+  // ── Chart widgets ──
+  registerWidget(lazyWidget({ name: barChartConfig.name, displayName: barChartConfig.displayName, type: "bar-chart", group: "chart", create: createBarChartWidget, config: barChartConfig, loader: () => import("./bar-chart") }));
+  registerWidget(lazyWidget({ name: stackedBarChartConfig.name, displayName: stackedBarChartConfig.displayName, type: "stacked-bar-chart", group: "chart", create: createStackedBarChartWidget, config: stackedBarChartConfig, loader: () => import("./bar-chart/stacked") }));
+  registerWidget(lazyWidget({ name: horizontalBarChartConfig.name, displayName: horizontalBarChartConfig.displayName, type: "horizontal-bar-chart", group: "chart", create: createHorizontalBarChartWidget, config: horizontalBarChartConfig, loader: () => import("./bar-chart/horizontal") }));
+  registerWidget(lazyWidget({ name: lineChartConfig.name, displayName: lineChartConfig.displayName, type: "line-chart", group: "chart", create: createLineChartWidget, config: lineChartConfig, loader: () => import("./line-chart") }));
+  registerWidget(lazyWidget({ name: areaChartConfig.name, displayName: areaChartConfig.displayName, type: "area-chart", group: "chart", create: createAreaChartWidget, config: areaChartConfig, loader: () => import("./line-chart/area") }));
+  registerWidget(lazyWidget({ name: pieChartConfig.name, displayName: pieChartConfig.displayName, type: "pie-chart", group: "chart", create: createPieChartWidget, config: pieChartConfig, loader: () => import("./pie-chart") }));
+  registerWidget(lazyWidget({ name: donutChartConfig.name, displayName: donutChartConfig.displayName, type: "donut-chart", group: "chart", create: createDonutChartWidget, config: donutChartConfig, loader: () => import("./pie-chart/donut") }));
+  registerWidget(lazyWidget({ name: scatterChartConfig.name, displayName: scatterChartConfig.displayName, type: "scatter-chart", group: "chart", create: createScatterChartWidget, config: scatterChartConfig, loader: () => import("./scatter-chart") }));
+  registerWidget(lazyWidget({ name: bubbleChartConfig.name, displayName: bubbleChartConfig.displayName, type: "bubble-chart", group: "chart", create: createBubbleChartWidget, config: bubbleChartConfig, loader: () => import("./scatter-chart/bubble") }));
+  registerWidget(lazyWidget({ name: radarConfig.name, displayName: radarConfig.displayName, type: "radar", group: "chart", create: createRadarWidget, config: radarConfig, loader: () => import("./radar") }));
+  registerWidget(lazyWidget({ name: filledRadarConfig.name, displayName: filledRadarConfig.displayName, type: "filled-radar", group: "chart", create: createFilledRadarWidget, config: filledRadarConfig, loader: () => import("./radar/filled") }));
+  registerWidget(lazyWidget({ name: gaugeConfig.name, displayName: gaugeConfig.displayName, type: "gauge", group: "chart", create: createGaugeWidget, config: gaugeConfig, loader: () => import("./gauge") }));
+  registerWidget(lazyWidget({ name: multiGaugeConfig.name, displayName: multiGaugeConfig.displayName, type: "multi-gauge", group: "chart", create: createMultiGaugeWidget, config: multiGaugeConfig, loader: () => import("./gauge/multi") }));
+  registerWidget(lazyWidget({ name: heatmapConfig.name, displayName: heatmapConfig.displayName, type: "heatmap", group: "chart", create: createHeatmapWidget, config: heatmapConfig, loader: () => import("./heatmap") }));
+  registerWidget(lazyWidget({ name: funnelConfig.name, displayName: funnelConfig.displayName, type: "funnel", group: "chart", create: createFunnelWidget, config: funnelConfig, loader: () => import("./funnel") }));
+  registerWidget(lazyWidget({ name: compareFunnelConfig.name, displayName: compareFunnelConfig.displayName, type: "compare-funnel", group: "chart", create: createCompareFunnelWidget, config: compareFunnelConfig, loader: () => import("./funnel/compare") }));
+  registerWidget(lazyWidget({ name: candlestickConfig.name, displayName: candlestickConfig.displayName, type: "candlestick", group: "chart", create: createCandlestickWidget, config: candlestickConfig, loader: () => import("./candlestick") }));
+  registerWidget(lazyWidget({ name: progressBarConfig.name, displayName: progressBarConfig.displayName, type: "progress-bar", group: "chart", create: createProgressBarWidget, config: progressBarConfig, loader: () => import("./progress-bar") }));
+  registerWidget(lazyWidget({ name: treemapConfig.name, displayName: treemapConfig.displayName, type: "treemap", group: "chart", create: createTreemapWidget, config: treemapConfig, loader: () => import("./treemap") }));
+  registerWidget(lazyWidget({ name: ganttChartConfig.name, displayName: ganttChartConfig.displayName, type: "gantt-chart", group: "chart", create: createGanttChartWidget, config: ganttChartConfig, loader: () => import("./gantt-chart") }));
+  registerWidget(lazyWidget({ name: sankeyConfig.name, displayName: sankeyConfig.displayName, type: "sankey", group: "chart", create: createSankeyWidget, config: sankeyConfig, loader: () => import("./sankey") }));
+  registerWidget(lazyWidget({ name: parallelConfig.name, displayName: parallelConfig.displayName, type: "parallel", group: "chart", create: createParallelWidget, config: parallelConfig, loader: () => import("./parallel") }));
+  registerWidget(lazyWidget({ name: mapConfig.name, displayName: mapConfig.displayName, type: "map", group: "chart", create: createMapWidget, config: mapConfig, loader: () => import("./map") }));
 
-  registerWidget({
-    name: dividerConfig.name,
-    displayName: dividerConfig.displayName,
-    type: "divider",
-    group: "layout",
-    component: FgDivider,
-    create: createDividerWidget,
-    config: dividerConfig,
-  });
-
-  registerWidget({
-    name: spacerConfig.name,
-    displayName: spacerConfig.displayName,
-    type: "spacer",
-    group: "layout",
-    component: FgSpacer,
-    create: createSpacerWidget,
-    config: spacerConfig,
-  });
-
-  // Container widgets (Container)
-  registerWidget({
-    name: formConfig.name,
-    displayName: formConfig.displayName,
-    type: "form",
-    group: "container",
-    component: FgForm,
-    create: createFormWidget,
-    config: formConfig,
-  });
-
-  registerWidget({
-    name: dialogConfig.name,
-    displayName: dialogConfig.displayName,
-    type: "dialog",
-    group: "container",
-    component: FgDialog,
-    create: createDialogWidget,
-    config: dialogConfig,
-  });
-
-  registerWidget({
-    name: microAppContainerConfig.name,
-    displayName: microAppContainerConfig.displayName,
-    type: "micro-app-container",
-    group: "container",
-    component: FgMicroAppContainer,
-    create: (id: string) => ({
-      id,
-      type: "micro-app-container",
-      name: microAppContainerConfig.name,
-      label: microAppContainerConfig.displayName,
-      props: { ...microAppContainerConfig.defaultProps },
-      position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
-    }),
-    config: microAppContainerConfig,
-  });
-
-  // Form widgets (Form控件)
-  registerWidget({
-    name: inputConfig.name,
-    displayName: inputConfig.displayName,
-    type: "input",
-    group: "form",
-    component: FgInput,
-    create: createInputWidget,
-    config: inputConfig,
-  });
-
-  registerWidget({
-    name: selectConfig.name,
-    displayName: selectConfig.displayName,
-    type: "select",
-    group: "form",
-    component: FgSelect,
-    create: createSelectWidget,
-    config: selectConfig,
-  });
-
-  registerWidget({
-    name: numberConfig.name,
-    displayName: numberConfig.displayName,
-    type: "number",
-    group: "form",
-    component: FgNumber,
-    create: createNumberWidget,
-    config: numberConfig,
-  });
-
-  registerWidget({
-    name: radioConfig.name,
-    displayName: radioConfig.displayName,
-    type: "radio",
-    group: "form",
-    component: FgRadio,
-    create: createRadioWidget,
-    config: radioConfig,
-  });
-
-  registerWidget({
-    name: checkboxConfig.name,
-    displayName: checkboxConfig.displayName,
-    type: "checkbox",
-    group: "form",
-    component: FgCheckbox,
-    create: createCheckboxWidget,
-    config: checkboxConfig,
-  });
-
-  registerWidget({
-    name: dateConfig.name,
-    displayName: dateConfig.displayName,
-    type: "date",
-    group: "form",
-    component: FgDate,
-    create: createDateWidget,
-    config: dateConfig,
-  });
-
-  registerWidget({
-    name: textareaConfig.name,
-    displayName: textareaConfig.displayName,
-    type: "textarea",
-    group: "form",
-    component: FgTextarea,
-    create: createTextareaWidget,
-    config: textareaConfig,
-  });
-
-  registerWidget({
-    name: switchConfig.name,
-    displayName: switchConfig.displayName,
-    type: "switch",
-    group: "form",
-    component: FgSwitch,
-    create: createSwitchWidget,
-    config: switchConfig,
-  });
-
-  registerWidget({
-    name: sliderConfig.name,
-    displayName: sliderConfig.displayName,
-    type: "slider",
-    group: "form",
-    component: FgSlider,
-    create: createSliderWidget,
-    config: sliderConfig,
-  });
-
-  registerWidget({
-    name: rateConfig.name,
-    displayName: rateConfig.displayName,
-    type: "rate",
-    group: "form",
-    component: FgRate,
-    create: createRateWidget,
-    config: rateConfig,
-  });
-
-  registerWidget({
-    name: richtextConfig.name,
-    displayName: richtextConfig.displayName,
-    type: "richtext",
-    group: "form",
-    component: FgRichtext,
-    create: createRichtextWidget,
-    config: richtextConfig,
-  });
-  registerWidget({
-    name: uploadConfig.name,
-    displayName: uploadConfig.displayName,
-    type: "upload",
-    group: "form",
-    component: FgUpload,
-    create: createUploadWidget,
-    config: uploadConfig,
-  });
-  registerWidget({
-    name: dateTimeSlotConfig.name,
-    displayName: dateTimeSlotConfig.displayName,
-    type: "date-time-slot",
-    group: "form",
-    component: FgDateTimeSlot,
-    create: createDateTimeSlotWidget,
-    config: dateTimeSlotConfig,
-  });
-
-  registerWidget({
-    name: timePickerConfig.name,
-    displayName: timePickerConfig.displayName,
-    type: "time-picker",
-    group: "form",
-    component: FgTimePicker,
-    create: createTimePickerWidget,
-    config: timePickerConfig,
-  });
-
-  registerWidget({
-    name: cascaderConfig.name,
-    displayName: cascaderConfig.displayName,
-    type: "cascader",
-    group: "form",
-    component: FgCascader,
-    create: createCascaderWidget,
-    config: cascaderConfig,
-  });
-
-  registerWidget({
-    name: colorPickerConfig.name,
-    displayName: colorPickerConfig.displayName,
-    type: "color-picker",
-    group: "form",
-    component: FgColorPicker,
-    create: createColorPickerWidget,
-    config: colorPickerConfig,
-  });
-
-  registerWidget({
-    name: tagInputConfig.name,
-    displayName: tagInputConfig.displayName,
-    type: "tag-input",
-    group: "form",
-    component: FgTagInput,
-    create: createTagInputWidget,
-    config: tagInputConfig,
-  });
-
-  registerWidget({
-    name: autocompleteConfig.name,
-    displayName: autocompleteConfig.displayName,
-    type: "autocomplete",
-    group: "form",
-    component: FgAutocomplete,
-    create: createAutocompleteWidget,
-    config: autocompleteConfig,
-  });
-
-  // Static widgets (静态展示)
-  registerWidget({
-    name: titleConfig.name,
-    displayName: titleConfig.displayName,
-    type: "title",
-    group: "static",
-    component: FgTitle,
-    create: createTitleWidget,
-    config: titleConfig,
-  });
-
-  registerWidget({
-    name: bannerConfig.name,
-    displayName: bannerConfig.displayName,
-    type: "banner",
-    group: "static",
-    component: FgBanner,
-    create: createBannerWidget,
-    config: bannerConfig,
-  });
-
-  registerWidget({
-    name: statisticConfig.name,
-    displayName: statisticConfig.displayName,
-    type: "statistic",
-    group: "static",
-    component: FgStatistic,
-    create: createStatisticWidget,
-    config: statisticConfig,
-  });
-
-  // Action widgets (ActionButton)
-  registerWidget({
-    name: toolbarButtonsConfig.name,
-    displayName: toolbarButtonsConfig.displayName,
-    type: "toolbar-buttons",
-    group: "action",
-    component: FgToolbarButtons,
-    create: createToolbarButtonsWidget,
-    config: toolbarButtonsConfig,
-  });
-
-  registerWidget({
-    name: buttonConfig.name,
-    displayName: buttonConfig.displayName,
-    type: "button",
-    group: "action",
-    component: FgButton,
-    create: createButtonWidget,
-    config: buttonConfig,
-  });
-
-  registerWidget({
-    name: filterBarConfig.name,
-    displayName: filterBarConfig.displayName,
-    type: "filter-bar",
-    group: "action",
-    component: FgFilterBar,
-    create: createFilterBarWidget,
-    config: filterBarConfig,
-  });
-
-  registerWidget({
-    name: subFormConfig.name,
-    displayName: subFormConfig.displayName,
-    type: "sub-form",
-    group: "form",
-    component: FgSubForm,
-    create: createSubFormWidget,
-    config: subFormConfig,
-  });
-
-  registerWidget({
-    name: progressBarConfig.name,
-    displayName: progressBarConfig.displayName,
-    type: "progress-bar",
-    group: "chart",
-    component: FgProgressBar,
-    create: createProgressBarWidget,
-    config: progressBarConfig,
-  });
-
-  registerWidget({
-    name: rankListConfig.name,
-    displayName: rankListConfig.displayName,
-    type: "rank-list",
-    group: "static",
-    component: FgRankList,
-    create: createRankListWidget,
-    config: rankListConfig,
-  });
-
-  registerWidget({
-    name: comparisonCardConfig.name,
-    displayName: comparisonCardConfig.displayName,
-    type: "comparison-card",
-    group: "static",
-    component: FgComparisonCard,
-    create: createComparisonCardWidget,
-    config: comparisonCardConfig,
-  });
-
-  registerWidget({
-    name: realtimeClockConfig.name,
-    displayName: realtimeClockConfig.displayName,
-    type: "realtime-clock",
-    group: "static",
-    component: FgRealtimeClock,
-    create: createRealtimeClockWidget,
-    config: realtimeClockConfig,
-  });
-
-  registerWidget({
-    name: marqueeTextConfig.name,
-    displayName: marqueeTextConfig.displayName,
-    type: "marquee-text",
-    group: "static",
-    component: FgMarqueeText,
-    create: createMarqueeTextWidget,
-    config: marqueeTextConfig,
-  });
-
-  registerWidget({
-    name: tabContainerConfig.name,
-    displayName: tabContainerConfig.displayName,
-    type: "tab-container",
-    group: "layout",
-    component: FgTabContainer,
-    create: createTabContainerWidget,
-    config: tabContainerConfig,
-  });
-
-  registerWidget({
-    name: formStepsConfig.name,
-    displayName: formStepsConfig.displayName,
-    type: "form-steps",
-    group: "layout",
-    component: FgFormSteps,
-    create: createFormStepsWidget,
-    config: formStepsConfig,
-  });
-
-  registerWidget({
-    name: conditionBuilderConfig.name,
-    displayName: conditionBuilderConfig.displayName,
-    type: "condition-builder",
-    group: "form",
-    component: FgConditionBuilder,
-    create: createConditionBuilderWidget,
-    config: conditionBuilderConfig,
-  });
-
-  registerWidget({
-    name: treemapConfig.name,
-    displayName: treemapConfig.displayName,
-    type: "treemap",
-    group: "chart",
-    component: FgTreemap,
-    create: createTreemapWidget,
-    config: treemapConfig,
-  });
-
-  // Business widgets (业务Component)
-  registerWidget({
-    name: treeLayoutConfig.name,
-    displayName: treeLayoutConfig.displayName,
-    type: "tree-layout",
-    group: "layout",
-    component: FgTreeLayout,
-    create: createTreeLayoutWidget,
-    config: treeLayoutConfig,
-  });
-  registerWidget({
-    name: fileListConfig.name,
-    displayName: fileListConfig.displayName,
-    type: "file-list",
-    group: "form",
-    component: FgFileList,
-    create: createFileListWidget,
-    config: fileListConfig,
-  });
-  registerWidget({
-    name: transferConfig.name,
-    displayName: transferConfig.displayName,
-    type: "transfer",
-    group: "form",
-    component: FgTransfer,
-    create: createTransferWidget,
-    config: transferConfig,
-  });
-  registerWidget({
-    name: descriptionsConfig.name,
-    displayName: descriptionsConfig.displayName,
-    type: "descriptions",
-    group: "static",
-    component: FgDescriptions,
-    create: createDescriptionsWidget,
-    config: descriptionsConfig,
-  });
-
-  // Flow approval widgets (审批专用)
-  registerWidget({
-    name: approvalUserPickerConfig.name,
-    displayName: approvalUserPickerConfig.displayName,
-    type: "approval-user-picker",
-    group: "business",
-    component: FgApprovalUserPicker,
-    create: createApprovalUserPickerWidget,
-    config: approvalUserPickerConfig,
-  });
-  registerWidget({
-    name: approvalRolePickerConfig.name,
-    displayName: approvalRolePickerConfig.displayName,
-    type: "approval-role-picker",
-    group: "business",
-    component: FgApprovalRolePicker,
-    create: createApprovalRolePickerWidget,
-    config: approvalRolePickerConfig,
-  });
-  registerWidget({
-    name: approvalCommentConfig.name,
-    displayName: approvalCommentConfig.displayName,
-    type: "approval-comment",
-    group: "business",
-    component: FgApprovalComment,
-    create: createApprovalCommentWidget,
-    config: approvalCommentConfig,
-  });
-  registerWidget({
-    name: scoreCardConfig.name,
-    displayName: scoreCardConfig.displayName,
-    type: "score-card",
-    group: "business",
-    component: FgScoreCard,
-    create: createScoreCardWidget,
-    config: scoreCardConfig,
-  });
-  registerWidget({
-    name: riskBadgeConfig.name,
-    displayName: riskBadgeConfig.displayName,
-    type: "risk-badge",
-    group: "business",
-    component: FgRiskBadge,
-    create: createRiskBadgeWidget,
-    config: riskBadgeConfig,
-  });
-  registerWidget({
-    name: aiSuggestionPanelConfig.name,
-    displayName: aiSuggestionPanelConfig.displayName,
-    type: "ai-suggestion-panel",
-    group: "business",
-    component: FgAiSuggestionPanel,
-    create: createAiSuggestionPanelWidget,
-    config: aiSuggestionPanelConfig,
-  });
-  registerWidget({
-    name: signatureConfig.name,
-    displayName: signatureConfig.displayName,
-    type: "signature",
-    group: "business",
-    component: FgSignature,
-    create: createSignatureWidget,
-    config: signatureConfig,
-  });
-  registerWidget({
-    name: ganttChartConfig.name,
-    displayName: ganttChartConfig.displayName,
-    type: "gantt-chart",
-    group: "chart",
-    component: FgGanttChart,
-    create: createGanttChartWidget,
-    config: ganttChartConfig,
-  });
-  registerWidget({
-    name: flexZoneConfig.name,
-    displayName: flexZoneConfig.displayName,
-    type: "flex-zone",
-    group: "container",
-    component: FgFlexZone,
-    create: createFlexZoneWidget,
-    config: flexZoneConfig,
-  });
-  registerWidget({
-    name: pivotTableConfig.name,
-    displayName: pivotTableConfig.displayName,
-    type: "pivot-table",
-    group: "table",
-    component: FgPivotTable,
-    create: createPivotTableWidget,
-    config: pivotTableConfig,
-  });
-  registerWidget({
-    name: mindMapConfig.name,
-    displayName: mindMapConfig.displayName,
-    type: "mind-map",
-    group: "business",
-    component: FgMindMap,
-    create: createMindMapWidget,
-    config: mindMapConfig,
-  });
-  registerWidget({
-    name: fileViewerConfig.name,
-    displayName: fileViewerConfig.displayName,
-    type: "file-viewer",
-    group: "business",
-    component: FgFileViewer,
-    create: createFileViewerWidget,
-    config: fileViewerConfig,
-  });
-  registerWidget({
-    name: riskMatrixConfig.name,
-    displayName: riskMatrixConfig.displayName,
-    type: "risk-matrix",
-    group: "business",
-    component: FgRiskMatrix,
-    create: createRiskMatrixWidget,
-    config: riskMatrixConfig,
-  });
-  registerWidget({
-    name: medicalRecordConfig.name,
-    displayName: medicalRecordConfig.displayName,
-    type: "medical-record",
-    group: "business",
-    component: FgMedicalRecord,
-    create: createMedicalRecordWidget,
-    config: medicalRecordConfig,
-  });
-  registerWidget({
-    name: productCardConfig.name,
-    displayName: productCardConfig.displayName,
-    type: "product-card",
-    group: "business",
-    component: FgProductCard,
-    create: createProductCardWidget,
-    config: productCardConfig,
-  });
-  registerWidget({
-    name: energyDashboardConfig.name,
-    displayName: energyDashboardConfig.displayName,
-    type: "energy-dashboard",
-    group: "business",
-    component: FgEnergyDashboard,
-    create: createEnergyDashboardWidget,
-    config: energyDashboardConfig,
-  });
-
-  // Table widgets (表格)
-  registerWidget({
-    name: tableConfig.name,
-    displayName: tableConfig.displayName,
-    type: "table",
-    group: "table",
-    component: FgTable,
-    create: createTableWidget,
-    config: tableConfig,
-  });
-  registerWidget({
-    name: advancedTableConfig.name,
-    displayName: advancedTableConfig.displayName,
-    type: "advanced-table",
-    group: "table",
-    component: FgAdvancedTable,
-    create: createAdvancedTableWidget,
-    config: advancedTableConfig,
-  });
-  registerWidget({
-    name: crudListPageConfig.name,
-    displayName: crudListPageConfig.displayName,
-    type: "crud-list-page",
-    group: "business",
-    component: FgCrudListPage,
-    create: createCrudListPageWidget,
-    config: crudListPageConfig,
-  });
-  registerWidget({
-    name: treeTableConfig.name,
-    displayName: treeTableConfig.displayName,
-    type: "tree-table",
-    group: "table",
-    component: FgTreeTable,
-    create: createTreeTableWidget,
-    config: treeTableConfig,
-  });
-
-  // Chart widgets (Chart)
-  registerWidget({
-    name: barChartConfig.name,
-    displayName: barChartConfig.displayName,
-    type: "bar-chart",
-    group: "chart",
-    component: FgBarChart,
-    create: createBarChartWidget,
-    config: barChartConfig,
-  });
-  registerWidget({
-    name: stackedBarChartConfig.name,
-    displayName: stackedBarChartConfig.displayName,
-    type: "stacked-bar-chart",
-    group: "chart",
-    component: FgStackedBarChart,
-    create: createStackedBarChartWidget,
-    config: stackedBarChartConfig,
-  });
-  registerWidget({
-    name: horizontalBarChartConfig.name,
-    displayName: horizontalBarChartConfig.displayName,
-    type: "horizontal-bar-chart",
-    group: "chart",
-    component: FgHorizontalBarChart,
-    create: createHorizontalBarChartWidget,
-    config: horizontalBarChartConfig,
-  });
-  registerWidget({
-    name: lineChartConfig.name,
-    displayName: lineChartConfig.displayName,
-    type: "line-chart",
-    group: "chart",
-    component: FgLineChart,
-    create: createLineChartWidget,
-    config: lineChartConfig,
-  });
-  registerWidget({
-    name: areaChartConfig.name,
-    displayName: areaChartConfig.displayName,
-    type: "area-chart",
-    group: "chart",
-    component: FgAreaChart,
-    create: createAreaChartWidget,
-    config: areaChartConfig,
-  });
-  registerWidget({
-    name: pieChartConfig.name,
-    displayName: pieChartConfig.displayName,
-    type: "pie-chart",
-    group: "chart",
-    component: FgPieChart,
-    create: createPieChartWidget,
-    config: pieChartConfig,
-  });
-  registerWidget({
-    name: donutChartConfig.name,
-    displayName: donutChartConfig.displayName,
-    type: "donut-chart",
-    group: "chart",
-    component: FgDonutChart,
-    create: createDonutChartWidget,
-    config: donutChartConfig,
-  });
-  registerWidget({
-    name: scatterChartConfig.name,
-    displayName: scatterChartConfig.displayName,
-    type: "scatter-chart",
-    group: "chart",
-    component: FgScatterChart,
-    create: createScatterChartWidget,
-    config: scatterChartConfig,
-  });
-  registerWidget({
-    name: bubbleChartConfig.name,
-    displayName: bubbleChartConfig.displayName,
-    type: "bubble-chart",
-    group: "chart",
-    component: FgBubbleChart,
-    create: createBubbleChartWidget,
-    config: bubbleChartConfig,
-  });
-  registerWidget({
-    name: radarConfig.name,
-    displayName: radarConfig.displayName,
-    type: "radar",
-    group: "chart",
-    component: FgRadar,
-    create: createRadarWidget,
-    config: radarConfig,
-  });
-  registerWidget({
-    name: filledRadarConfig.name,
-    displayName: filledRadarConfig.displayName,
-    type: "filled-radar",
-    group: "chart",
-    component: FgFilledRadar,
-    create: createFilledRadarWidget,
-    config: filledRadarConfig,
-  });
-  registerWidget({
-    name: gaugeConfig.name,
-    displayName: gaugeConfig.displayName,
-    type: "gauge",
-    group: "chart",
-    component: FgGauge,
-    create: createGaugeWidget,
-    config: gaugeConfig,
-  });
-  registerWidget({
-    name: multiGaugeConfig.name,
-    displayName: multiGaugeConfig.displayName,
-    type: "multi-gauge",
-    group: "chart",
-    component: FgMultiGauge,
-    create: createMultiGaugeWidget,
-    config: multiGaugeConfig,
-  });
-  registerWidget({
-    name: heatmapConfig.name,
-    displayName: heatmapConfig.displayName,
-    type: "heatmap",
-    group: "chart",
-    component: FgHeatmap,
-    create: createHeatmapWidget,
-    config: heatmapConfig,
-  });
-  registerWidget({
-    name: funnelConfig.name,
-    displayName: funnelConfig.displayName,
-    type: "funnel",
-    group: "chart",
-    component: FgFunnel,
-    create: createFunnelWidget,
-    config: funnelConfig,
-  });
-  registerWidget({
-    name: compareFunnelConfig.name,
-    displayName: compareFunnelConfig.displayName,
-    type: "compare-funnel",
-    group: "chart",
-    component: FgCompareFunnel,
-    create: createCompareFunnelWidget,
-    config: compareFunnelConfig,
-  });
-  registerWidget({
-    name: candlestickConfig.name,
-    displayName: candlestickConfig.displayName,
-    type: "candlestick",
-    group: "chart",
-    component: FgCandlestick,
-    create: createCandlestickWidget,
-    config: candlestickConfig,
-  });
-  registerWidget({
-    name: mapConfig.name,
-    displayName: mapConfig.displayName,
-    type: "map",
-    group: "chart",
-    component: FgMap,
-    create: createMapWidget,
-    config: mapConfig,
-  });
-
-  // Extended business widgets (扩展业务Component)
-  registerWidget({
-    name: iconPickerConfig.name,
-    displayName: iconPickerConfig.displayName,
-    type: "icon-picker",
-    group: "form",
-    component: FgIconPicker,
-    create: createIconPickerWidget,
-    config: iconPickerConfig,
-  });
-  registerWidget({
-    name: treeSelectConfig.name,
-    displayName: treeSelectConfig.displayName,
-    type: "tree-select",
-    group: "form",
-    component: FgTreeSelect,
-    create: createTreeSelectWidget,
-    config: treeSelectConfig,
-  });
-
-  registerWidget({
-    name: iframeConfig.name,
-    displayName: iframeConfig.displayName,
-    type: "iframe",
-    group: "container",
-    component: FgIframe,
-    create: (id: string) => ({
-      id,
-      type: "iframe",
-      name: iframeConfig.name,
-      label: iframeConfig.displayName,
-      props: { ...iframeConfig.defaultProps },
-      position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
-    }),
-    config: iframeConfig,
-  });
-
-  registerWidget({
-    name: microAppConfig.name,
-    displayName: microAppConfig.displayName,
-    type: "micro-app",
-    group: "container",
-    component: FgMicroApp,
-    create: (id: string) => ({
-      id,
-      type: "micro-app",
-      name: microAppConfig.name,
-      label: microAppConfig.displayName,
-      props: { ...microAppConfig.defaultProps },
-      position: { x: 0, y: 0, w: 600, h: 400, zIndex: 1 },
-    }),
-    config: microAppConfig,
-  });
-
-  registerWidget({
-    name: permissionTreeConfig.name,
-    displayName: permissionTreeConfig.displayName,
-    type: "permission-tree",
-    group: "form",
-    component: FgPermissionTree,
-    create: createPermissionTreeWidget,
-    config: permissionTreeConfig,
-  });
-  registerWidget({
-    name: roleManagementConfig.name,
-    displayName: roleManagementConfig.displayName,
-    type: "role-management",
-    group: "business",
-    component: FgRoleManagement,
-    create: createRoleManagementWidget,
-    config: roleManagementConfig,
-  });
-  registerWidget({
-    name: userManagementConfig.name,
-    displayName: userManagementConfig.displayName,
-    type: "user-management",
-    group: "business",
-    component: FgUserManagement,
-    create: createUserManagementWidget,
-    config: userManagementConfig,
-  });
-  registerWidget({
-    name: flowTimelineConfig.name,
-    displayName: flowTimelineConfig.displayName,
-    type: "flow-timeline",
-    group: "business",
-    component: FgFlowTimeline,
-    create: createFlowTimelineWidget,
-    config: flowTimelineConfig,
-  });
-  registerWidget({
-    name: flowTaskActionsConfig.name,
-    displayName: flowTaskActionsConfig.displayName,
-    type: "flow-task-actions",
-    group: "business",
-    component: FgFlowTaskActions,
-    create: createFlowTaskActionsWidget,
-    config: flowTaskActionsConfig,
-  });
-  registerWidget({
-    name: calendarConfig.name,
-    displayName: calendarConfig.displayName,
-    type: "calendar",
-    group: "business",
-    component: FgCalendar,
-    create: createCalendarWidget,
-    config: calendarConfig,
-  });
-  registerWidget({
-    name: kanbanConfig.name,
-    displayName: kanbanConfig.displayName,
-    type: "kanban",
-    group: "business",
-    component: FgKanban,
-    create: createKanbanWidget,
-    config: kanbanConfig,
-  });
-  registerWidget({
-    name: adhocQueryConfig.name,
-    displayName: adhocQueryConfig.displayName,
-    type: "adhoc-query",
-    group: "business",
-    component: FgAdhocQuery,
-    create: createAdhocQueryWidget,
-    config: adhocQueryConfig,
-  });
-  registerWidget({
-    name: notificationConfig.name,
-    displayName: notificationConfig.displayName,
-    type: "notification",
-    group: "business",
-    component: FgNotification,
-    create: createNotificationWidget,
-    config: notificationConfig,
-  });
-  registerWidget({
-    name: autoRefreshConfig.name,
-    displayName: autoRefreshConfig.displayName,
-    type: "auto-refresh",
-    group: "business",
-    component: FgAutoRefresh,
-    create: createAutoRefreshWidget,
-    config: autoRefreshConfig,
-  });
-  registerWidget({
-    name: dynamicDetailTableConfig.name,
-    displayName: dynamicDetailTableConfig.displayName,
-    type: "dynamic-detail-table",
-    group: "form",
-    component: FgDynamicDetailTable,
-    create: createDynamicDetailTableWidget,
-    config: dynamicDetailTableConfig,
-  });
-  registerWidget({
-    name: complianceChecklistConfig.name,
-    displayName: complianceChecklistConfig.displayName,
-    type: "compliance-checklist",
-    group: "business",
-    component: FgComplianceChecklist,
-    create: createComplianceChecklistWidget,
-    config: complianceChecklistConfig,
-  });
-  registerWidget({
-    name: qrScannerConfig.name,
-    displayName: qrScannerConfig.displayName,
-    type: "qr-scanner",
-    group: "form",
-    component: FgQrScanner,
-    create: createQrScannerWidget,
-    config: qrScannerConfig,
-  });
-  registerWidget({
-    name: userSelectorConfig.name,
-    displayName: userSelectorConfig.displayName,
-    type: "user-selector",
-    group: "business",
-    component: FgUserSelector,
-    create: createUserSelectorWidget,
-    config: userSelectorConfig,
-  });
-  registerWidget({
-    name: countDownConfig.name,
-    displayName: countDownConfig.displayName,
-    type: "count-down",
-    group: "static",
-    component: FgCountDown,
-    create: createCountDownWidget,
-    config: countDownConfig,
-  });
-  registerWidget({
-    name: carouselConfig.name,
-    displayName: carouselConfig.displayName,
-    type: "carousel",
-    group: "layout",
-    component: FgCarousel,
-    create: createCarouselWidget,
-    config: carouselConfig,
-  });
-  registerWidget({
-    name: sankeyConfig.name,
-    displayName: sankeyConfig.displayName,
-    type: "sankey",
-    group: "chart",
-    component: FgSankey,
-    create: createSankeyWidget,
-    config: sankeyConfig,
-  });
-  registerWidget({
-    name: parallelConfig.name,
-    displayName: parallelConfig.displayName,
-    type: "parallel",
-    group: "chart",
-    component: FgParallel,
-    create: createParallelWidget,
-    config: parallelConfig,
-  });
-  registerWidget({
-    name: approvalProcessConfig.name,
-    displayName: approvalProcessConfig.displayName,
-    type: "approval-process",
-    group: "business",
-    component: FgApprovalProcess,
-    create: createApprovalProcessWidget,
-    config: approvalProcessConfig,
-  });
+  // ── Business widgets ──
+  registerWidget(lazyWidget({ name: approvalUserPickerConfig.name, displayName: approvalUserPickerConfig.displayName, type: "approval-user-picker", group: "business", create: createApprovalUserPickerWidget, config: approvalUserPickerConfig, loader: () => import("./approval-user-picker") }));
+  registerWidget(lazyWidget({ name: approvalRolePickerConfig.name, displayName: approvalRolePickerConfig.displayName, type: "approval-role-picker", group: "business", create: createApprovalRolePickerWidget, config: approvalRolePickerConfig, loader: () => import("./approval-role-picker") }));
+  registerWidget(lazyWidget({ name: approvalCommentConfig.name, displayName: approvalCommentConfig.displayName, type: "approval-comment", group: "business", create: createApprovalCommentWidget, config: approvalCommentConfig, loader: () => import("./approval-comment") }));
+  registerWidget(lazyWidget({ name: scoreCardConfig.name, displayName: scoreCardConfig.displayName, type: "score-card", group: "business", create: createScoreCardWidget, config: scoreCardConfig, loader: () => import("./score-card") }));
+  registerWidget(lazyWidget({ name: riskBadgeConfig.name, displayName: riskBadgeConfig.displayName, type: "risk-badge", group: "business", create: createRiskBadgeWidget, config: riskBadgeConfig, loader: () => import("./risk-badge") }));
+  registerWidget(lazyWidget({ name: aiSuggestionPanelConfig.name, displayName: aiSuggestionPanelConfig.displayName, type: "ai-suggestion-panel", group: "business", create: createAiSuggestionPanelWidget, config: aiSuggestionPanelConfig, loader: () => import("./ai-suggestion-panel") }));
+  registerWidget(lazyWidget({ name: signatureConfig.name, displayName: signatureConfig.displayName, type: "signature", group: "business", create: createSignatureWidget, config: signatureConfig, loader: () => import("./signature") }));
+  registerWidget(lazyWidget({ name: mindMapConfig.name, displayName: mindMapConfig.displayName, type: "mind-map", group: "business", create: createMindMapWidget, config: mindMapConfig, loader: () => import("./mind-map") }));
+  registerWidget(lazyWidget({ name: fileViewerConfig.name, displayName: fileViewerConfig.displayName, type: "file-viewer", group: "business", create: createFileViewerWidget, config: fileViewerConfig, loader: () => import("./file-viewer") }));
+  registerWidget(lazyWidget({ name: riskMatrixConfig.name, displayName: riskMatrixConfig.displayName, type: "risk-matrix", group: "business", create: createRiskMatrixWidget, config: riskMatrixConfig, loader: () => import("./risk-matrix") }));
+  registerWidget(lazyWidget({ name: medicalRecordConfig.name, displayName: medicalRecordConfig.displayName, type: "medical-record", group: "business", create: createMedicalRecordWidget, config: medicalRecordConfig, loader: () => import("./medical-record") }));
+  registerWidget(lazyWidget({ name: productCardConfig.name, displayName: productCardConfig.displayName, type: "product-card", group: "business", create: createProductCardWidget, config: productCardConfig, loader: () => import("./product-card") }));
+  registerWidget(lazyWidget({ name: energyDashboardConfig.name, displayName: energyDashboardConfig.displayName, type: "energy-dashboard", group: "business", create: createEnergyDashboardWidget, config: energyDashboardConfig, loader: () => import("./energy-dashboard") }));
+  registerWidget(lazyWidget({ name: roleManagementConfig.name, displayName: roleManagementConfig.displayName, type: "role-management", group: "business", create: createRoleManagementWidget, config: roleManagementConfig, loader: () => import("./role-management") }));
+  registerWidget(lazyWidget({ name: userManagementConfig.name, displayName: userManagementConfig.displayName, type: "user-management", group: "business", create: createUserManagementWidget, config: userManagementConfig, loader: () => import("./user-management") }));
+  registerWidget(lazyWidget({ name: crudListPageConfig.name, displayName: crudListPageConfig.displayName, type: "crud-list-page", group: "business", create: createCrudListPageWidget, config: crudListPageConfig, loader: () => import("./crud-list-page") }));
+  registerWidget(lazyWidget({ name: approvalProcessConfig.name, displayName: approvalProcessConfig.displayName, type: "approval-process", group: "business", create: createApprovalProcessWidget, config: approvalProcessConfig, loader: () => import("./approval-process") }));
+  registerWidget(lazyWidget({ name: flowTimelineConfig.name, displayName: flowTimelineConfig.displayName, type: "flow-timeline", group: "business", create: createFlowTimelineWidget, config: flowTimelineConfig, loader: () => import("./flow-timeline") }));
+  registerWidget(lazyWidget({ name: flowTaskActionsConfig.name, displayName: flowTaskActionsConfig.displayName, type: "flow-task-actions", group: "business", create: createFlowTaskActionsWidget, config: flowTaskActionsConfig, loader: () => import("./flow-task-actions") }));
+  registerWidget(lazyWidget({ name: calendarConfig.name, displayName: calendarConfig.displayName, type: "calendar", group: "business", create: createCalendarWidget, config: calendarConfig, loader: () => import("./calendar") }));
+  registerWidget(lazyWidget({ name: kanbanConfig.name, displayName: kanbanConfig.displayName, type: "kanban", group: "business", create: createKanbanWidget, config: kanbanConfig, loader: () => import("./kanban") }));
+  registerWidget(lazyWidget({ name: adhocQueryConfig.name, displayName: adhocQueryConfig.displayName, type: "adhoc-query", group: "business", create: createAdhocQueryWidget, config: adhocQueryConfig, loader: () => import("./adhoc-query") }));
+  registerWidget(lazyWidget({ name: notificationConfig.name, displayName: notificationConfig.displayName, type: "notification", group: "business", create: createNotificationWidget, config: notificationConfig, loader: () => import("./notification") }));
+  registerWidget(lazyWidget({ name: autoRefreshConfig.name, displayName: autoRefreshConfig.displayName, type: "auto-refresh", group: "business", create: createAutoRefreshWidget, config: autoRefreshConfig, loader: () => import("./auto-refresh") }));
+  registerWidget(lazyWidget({ name: complianceChecklistConfig.name, displayName: complianceChecklistConfig.displayName, type: "compliance-checklist", group: "business", create: createComplianceChecklistWidget, config: complianceChecklistConfig, loader: () => import("./compliance-checklist") }));
+  registerWidget(lazyWidget({ name: userSelectorConfig.name, displayName: userSelectorConfig.displayName, type: "user-selector", group: "business", create: createUserSelectorWidget, config: userSelectorConfig, loader: () => import("./user-selector") }));
 }
