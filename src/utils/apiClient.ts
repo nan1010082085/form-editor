@@ -117,6 +117,7 @@ export class ApiClient {
         throw new ApiError(
           json.error?.message ?? "Unauthorized",
           401,
+          json.error?.code,
           json.error,
         );
       }
@@ -126,6 +127,7 @@ export class ApiClient {
         throw new ApiError(
           json.error?.message ?? `Server error (HTTP ${response.status})`,
           response.status,
+          json.error?.code,
           json.error,
         );
       }
@@ -134,6 +136,7 @@ export class ApiClient {
         throw new ApiError(
           json.error?.message ?? `Request failed (HTTP ${response.status})`,
           response.status,
+          json.error?.code,
           json.error,
         );
       }
@@ -918,6 +921,7 @@ export async function exportSubmissions(
     throw new ApiError(
       json?.error?.message ?? "Export failed",
       response.status,
+      json?.error?.code,
     );
   }
   return response.blob();
@@ -927,13 +931,21 @@ export async function exportSubmissions(
 
 export class ApiError extends Error {
   public readonly status: number;
+  public readonly code?: string;
   public readonly details: unknown;
 
-  constructor(message: string, status: number, details?: unknown) {
+  constructor(message: string, status: number, codeOrDetails?: string | unknown, details?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
-    this.details = details;
+    // 兼容旧调用: new ApiError(msg, status, details) 和新调用: new ApiError(msg, status, code, details)
+    if (typeof codeOrDetails === "string") {
+      this.code = codeOrDetails;
+      this.details = details;
+    } else {
+      this.code = undefined;
+      this.details = codeOrDetails;
+    }
     Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
